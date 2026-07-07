@@ -1,0 +1,190 @@
+import pandas as pd
+import os
+
+covariates = [
+    {
+        "state": "Kerala",
+        "gsdp_per_capita": 213000,
+        "political_alignment": 0,  # 1 = aligned with BJP/NDA, 0 = opposition
+        "press_language": "Malayalam",
+        "distance_delhi_km": 2100,
+        "population_density": 860,   # per km²
+        "literacy_rate": 94.0
+    },
+    {
+        "state": "Bihar",
+        "gsdp_per_capita": 54000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 1000,
+        "population_density": 1102,
+        "literacy_rate": 61.8
+    },
+    {
+        "state": "Assam",
+        "gsdp_per_capita": 95000,
+        "political_alignment": 1,
+        "press_language": "Assamese",
+        "distance_delhi_km": 1700,
+        "population_density": 397,
+        "literacy_rate": 72.2
+    },
+    {
+        "state": "Telangana",
+        "gsdp_per_capita": 228000,
+        "political_alignment": 0,
+        "press_language": "Telugu",
+        "distance_delhi_km": 1500,
+        "population_density": 312,
+        "literacy_rate": 72.8
+    },
+    {
+        "state": "Maharashtra",
+        "gsdp_per_capita": 198000,
+        "political_alignment": 0,
+        "press_language": "Marathi",
+        "distance_delhi_km": 1400,
+        "population_density": 365,
+        "literacy_rate": 82.9
+    },
+    {
+        "state": "Uttarakhand",
+        "gsdp_per_capita": 170000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 400,
+        "population_density": 189,
+        "literacy_rate": 78.8
+    },
+    {
+        "state": "Uttar Pradesh",
+        "gsdp_per_capita": 72000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 500,
+        "population_density": 828,
+        "literacy_rate": 67.7
+    },
+    {
+        "state": "Karnataka",
+        "gsdp_per_capita": 289000,
+        "political_alignment": 0,
+        "press_language": "Kannada",
+        "distance_delhi_km": 1750,
+        "population_density": 319,
+        "literacy_rate": 75.4
+    },
+    {
+        "state": "Odisha",
+        "gsdp_per_capita": 112000,
+        "political_alignment": 0,
+        "press_language": "Odia",
+        "distance_delhi_km": 1500,
+        "population_density": 269,
+        "literacy_rate": 72.9
+    },
+    {
+        "state": "Himachal Pradesh",
+        "gsdp_per_capita": 187000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 480,
+        "population_density": 123,
+        "literacy_rate": 82.8
+    },
+    {
+        "state": "Delhi",
+        "gsdp_per_capita": 390000,
+        "political_alignment": 0,
+        "press_language": "Hindi",
+        "distance_delhi_km": 0,
+        "population_density": 11320,
+        "literacy_rate": 86.2
+    },
+]
+
+df = pd.DataFrame(covariates)
+
+print("Running validation checks...")
+print("-" * 50)
+
+errors = []
+
+# Check 1: All states from events.csv are covered
+events_df = pd.read_csv('data/events.csv')
+event_states = set(events_df['state'].unique())
+covariate_states = set(df['state'].unique())
+missing = event_states - covariate_states
+if missing:
+    errors.append(f"States in events.csv missing from covariates: {missing}")
+else:
+    print(f"  OK  All {len(event_states)} event states have covariate entries")
+
+# Check 2: No duplicate states
+dupes = df[df.duplicated('state')]
+if not dupes.empty:
+    errors.append(f"Duplicate states: {dupes['state'].tolist()}")
+else:
+    print("  OK  No duplicate states")
+
+# Check 3: GSDP values are plausible (INR per capita, should be > 0)
+bad_gsdp = df[df['gsdp_per_capita'] <= 0]
+if not bad_gsdp.empty:
+    errors.append(f"Invalid GSDP: {bad_gsdp['state'].tolist()}")
+else:
+    print(f"  OK  GSDP range: ₹{df['gsdp_per_capita'].min():,} (Bihar) "
+          f"to ₹{df['gsdp_per_capita'].max():,} (Delhi)")
+
+# Check 4: political_alignment is binary
+bad_align = df[~df['political_alignment'].isin([0, 1])]
+if not bad_align.empty:
+    errors.append(f"political_alignment not 0/1: {bad_align['state'].tolist()}")
+else:
+    aligned = df[df['political_alignment']==1]['state'].tolist()
+    opposition = df[df['political_alignment']==0]['state'].tolist()
+    print(f"  OK  Aligned (1): {aligned}")
+    print(f"  OK  Opposition (0): {opposition}")
+
+# Check 5: Distance from Delhi
+bad_dist = df[df['distance_delhi_km'] < 0]
+if not bad_dist.empty:
+    errors.append(f"Negative distance: {bad_dist['state'].tolist()}")
+else:
+    print(f"  OK  Distance range: {df['distance_delhi_km'].min()} km "
+          f"to {df['distance_delhi_km'].max()} km")
+
+# Check 6: Literacy rate in valid range
+bad_lit = df[(df['literacy_rate'] < 0) | (df['literacy_rate'] > 100)]
+if not bad_lit.empty:
+    errors.append(f"Invalid literacy rate: {bad_lit['state'].tolist()}")
+else:
+    print(f"  OK  Literacy range: {df['literacy_rate'].min()}% "
+          f"to {df['literacy_rate'].max()}%")
+
+# Check 7: press_language — show unique values for awareness
+langs = df['press_language'].unique().tolist()
+print(f"  OK  Languages represented: {langs}")
+
+# Check 8: Add a binary English-press flag (used later in regression)
+df['press_lang_english'] = df['press_language'].apply(
+    lambda x: 1 if 'English' in x else 0
+)
+english_states = df[df['press_lang_english']==1]['state'].tolist()
+print(f"  OK  English press flag (1): {english_states if english_states else 'None — all regional language press'}")
+
+print("-" * 50)
+
+if errors:
+    print("VALIDATION FAILED:")
+    for e in errors:
+        print(f"  ERROR: {e}")
+else:
+    os.makedirs('data', exist_ok=True)
+    df.to_csv('data/state_covariates.csv', index=False)
+    print(f"SAVED: data/state_covariates.csv ({len(df)} states)")
+    print()
+    print(df[['state', 'gsdp_per_capita', 'political_alignment',
+              'press_language', 'distance_delhi_km',
+              'population_density', 'literacy_rate']].to_string(index=False))
+    print()
+    print("CP-03 COMPLETE — ready for CP-04")

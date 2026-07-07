@@ -1,0 +1,15 @@
+earthengine-api
+geemap
+rasterio
+shapely
+geopandas
+pandas
+numpy
+requests
+scipy
+statsmodels
+matplotlib
+seaborn
+scikit-learn
+tqdm
+jupyter

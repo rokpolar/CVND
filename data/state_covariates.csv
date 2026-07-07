@@ -1,0 +1,12 @@
+state,gsdp_per_capita,political_alignment,press_language,distance_delhi_km,population_density,literacy_rate,press_lang_english
+Kerala,213000,0,Malayalam,2100,860,94.0,0
+Bihar,54000,1,Hindi,1000,1102,61.8,0
+Assam,95000,1,Assamese,1700,397,72.2,0
+Telangana,228000,0,Telugu,1500,312,72.8,0
+Maharashtra,198000,0,Marathi,1400,365,82.9,0
+Uttarakhand,170000,1,Hindi,400,189,78.8,0
+Uttar Pradesh,72000,1,Hindi,500,828,67.7,0
+Karnataka,289000,0,Kannada,1750,319,75.4,0
+Odisha,112000,0,Odia,1500,269,72.9,0
+Himachal Pradesh,187000,1,Hindi,480,123,82.8,0
+Delhi,390000,0,Hindi,0,11320,86.2,0

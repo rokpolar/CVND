@@ -1,0 +1,13 @@
+event_id,state,affected_area_km2,population_exposed,worldpop_year_used,status
+E01,Kerala,15176.67,600850,2018,OK
+E02,Bihar,15772.56,10939627,2019,OK
+E03,Assam,7968.0,1778921,2020,OK
+E04,Telangana,44.32,9677,2020,OK
+E05,Maharashtra,785.26,302830,2020,OK
+E06,Uttarakhand,719.48,12576,2020,OK
+E07,Uttar Pradesh,3163.37,378242,2020,OK
+E08,Assam,2117.84,543912,2020,OK
+E09,Karnataka,276.42,266185,2020,OK
+E10,Odisha,1879.17,124343,2020,OK
+E11,Himachal Pradesh,2839.26,249260,2020,OK
+E12,Delhi,1593.19,7429736,2020,OK

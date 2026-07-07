@@ -1,0 +1,13 @@
+event_id,state,district,disaster_type,start_date,end_date,lat,lon,bbox,income_group
+E01,Kerala,Ernakulam,flood,2018-08-08,2018-08-23,10.6,76.2,"74.8,8.4,77.6,12.8",Middle
+E02,Bihar,Muzaffarpur,flood,2019-07-10,2019-07-30,26.2,85.8,"84.0,25.0,87.5,27.5",Low
+E03,Assam,Morigaon,flood,2020-05-25,2020-06-10,26.3,92.3,"90.5,25.5,93.0,27.5",Low
+E04,Telangana,Hyderabad,flood,2020-10-13,2020-10-17,17.4,78.5,"78.0,17.0,79.2,17.8",High
+E05,Maharashtra,Raigad,flood,2021-07-22,2021-07-26,18.5,73.3,"72.8,17.8,74.0,19.0",High
+E06,Uttarakhand,Chamoli,flood,2021-02-07,2021-02-09,30.4,79.5,"79.0,30.0,80.5,31.0",Low
+E07,Uttar Pradesh,Bahraich,flood,2021-08-10,2021-08-28,27.6,81.6,"80.5,26.5,83.0,28.5",Low
+E08,Assam,Silchar,flood,2022-06-15,2022-07-05,24.8,92.8,"92.0,24.0,93.5,25.5",Low
+E09,Karnataka,Bengaluru,flood,2022-09-05,2022-09-07,12.9,77.6,"77.3,12.7,78.0,13.3",High
+E10,Odisha,Balasore,flood,2022-09-16,2022-09-22,21.5,86.9,"85.5,20.5,87.5,22.0",Low
+E11,Himachal Pradesh,Mandi,flood,2023-07-08,2023-07-16,31.7,76.9,"76.0,31.0,77.8,32.5",Low
+E12,Delhi,Delhi,flood,2023-07-10,2023-07-14,28.7,77.1,"76.8,28.4,77.6,28.9",High
