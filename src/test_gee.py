@@ -2,6 +2,8 @@ import ee
 import pandas as pd
 from datetime import datetime
 
+from gee_config import initialize_gee
+
 print("=" * 55)
 print("CP-04: GEE CONNECTION + SENTINEL-1 ACCESS TEST")
 print("=" * 55)
@@ -9,13 +11,15 @@ print("=" * 55)
 # --- Test 1: Basic initialization ---
 print("\n[Test 1] Initializing GEE...")
 try:
-    ee.Initialize(project='climate-bias-project-501701')  
+    initialize_gee()
     print("  OK  GEE initialized")
 except Exception as e:
     print(f"  FAIL  GEE init error: {e}")
-    print("\n  FIX: Run 'earthengine authenticate' in terminal first,")
-    print("  then replace 'ee-your-project-id' with your actual GEE project ID.")
-    print("  Your project ID is shown at https://code.earthengine.google.com/")
+    print("\n  FIX:")
+    print("    1. cp .env.example .env")
+    print("    2. Set GEE_PROJECT_ID in .env")
+    print("    3. Run 'earthengine authenticate' if not authenticated yet")
+    print("    Project ID: https://code.earthengine.google.com/")
     exit(1)
 
 # --- Test 2: Sentinel-1 collection exists and is accessible ---

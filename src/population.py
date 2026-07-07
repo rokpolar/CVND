@@ -4,7 +4,9 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-ee.Initialize(project='climate-bias-project-501701')  
+from gee_config import initialize_gee
+
+initialize_gee()
 
 def get_worldpop_year(event_year):
     """

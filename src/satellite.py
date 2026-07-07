@@ -5,7 +5,9 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-ee.Initialize(project='climate-bias-project-501701')  
+from gee_config import initialize_gee
+
+initialize_gee()
 
 # ── Otsu threshold (fixes teammate's hardcoded 3.0 dB) ──────────────────────
 def otsu_threshold(image, region, scale=30, max_pixels=1e8):
