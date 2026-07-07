@@ -1,4 +1,5 @@
 earthengine-api
+python-dotenv
 geemap
 rasterio
 shapely
