@@ -5,9 +5,11 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-ee.Initialize(project='climate-bias-project-501701')  
+from gee_config import initialize_gee
 
-# ── Otsu threshold (fixes teammate's hardcoded 3.0 dB) ──────────────────────
+initialize_gee()
+
+# ── Otsu threshold ──────────────────────
 def otsu_threshold(image, region, scale=30, max_pixels=1e8):
     """
     Compute Otsu's optimal threshold from the histogram of a GEE image.
@@ -71,6 +73,51 @@ def check_image_count(collection, label, event_id, min_required=1):
     return count
 
 
+# ── Sentinel-2 optical NDWI cross-check ──────────────────────────────────────
+def detect_flood_s2(region, start_date):
+    """
+    Optical NDWI flood area (McFeeters NDWI = (B3-B8)/(B3+B8), water > 0).
+    Water-specific, so it avoids the wet-soil over-detection that inflates the
+    SAR result. Blind under cloud, so it COMPLEMENTS Sentinel-1, not replaces it.
+    Returns (area_km2 or None, n_cloudfree_post_images).
+    """
+    pre_start  = ee.Date(start_date).advance(-30, 'day')
+    pre_end    = ee.Date(start_date)
+    post_start = ee.Date(start_date)
+    post_end   = ee.Date(start_date).advance(7, 'day')
+
+    def mask_clouds(img):
+        # SCL: 3=cloud shadow, 8/9/10=cloud (med/high/cirrus), 11=snow -> drop.
+        scl  = img.select('SCL')
+        keep = (scl.neq(3).And(scl.neq(8)).And(scl.neq(9))
+                .And(scl.neq(10)).And(scl.neq(11)))
+        return img.updateMask(keep)
+
+    s2 = (ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
+          .filterBounds(region)
+          .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 80))
+          .map(mask_clouds))
+
+    post_col = s2.filterDate(post_start, post_end)
+    n_post   = post_col.size().getInfo()
+    if n_post == 0:
+        return None, 0  # cloud-blind for this event
+
+    def ndwi_median(col):
+        return col.map(lambda i: i.normalizedDifference(['B3', 'B8'])
+                       .rename('ndwi')).median()
+
+    pre_ndwi  = ndwi_median(s2.filterDate(pre_start, pre_end))
+    post_ndwi = ndwi_median(post_col)
+    # Newly flooded = water now (NDWI>0) but not water before.
+    flood = post_ndwi.gt(0).And(pre_ndwi.lte(0)).rename('flood')
+
+    area = flood.multiply(ee.Image.pixelArea()).reduceRegion(
+        reducer=ee.Reducer.sum(), geometry=region, scale=30, maxPixels=1e9)
+    area_m2 = area.getInfo().get('flood', 0) or 0
+    return round(area_m2 / 1e6, 2), n_post
+
+
 # ── Core flood detection for one event ───────────────────────────────────────
 def detect_flood(row):
     event_id = row['event_id']
@@ -101,13 +148,26 @@ def detect_flood(row):
         pre_n  = check_image_count(pre_col,  'pre-event',  event_id)
         post_n = check_image_count(post_col, 'post-event', event_id)
 
+        # Sentinel-2 optical NDWI cross-check (independent of S1 availability)
+        try:
+            s2_area, s2_n = detect_flood_s2(region, row['start_date'])
+        except Exception as e:
+            print(f"    WARN [{event_id}] S2 failed: {e}")
+            s2_area, s2_n = None, 0
+        if s2_area is None:
+            print(f"    S2 (NDWI): blind — no cloud-free image ({s2_n} imgs)")
+        else:
+            print(f"    S2 (NDWI): {s2_area} km²  ({s2_n} cloud-free imgs)")
+
         # Flag events with zero images — cannot compute flood extent
         if pre_n == 0 or post_n == 0:
             print(f"    SKIP: insufficient imagery (pre={pre_n}, post={post_n})")
             return {
                 'event_id': event_id, 'state': state,
-                'affected_area_km2': None,
+                'affected_area_km2': s2_area,       # S1 unavailable -> use S2 (may be None)
+                'area_s1_km2': None, 'area_s2_km2': s2_area,
                 'pre_images': pre_n, 'post_images': post_n,
+                's2_post_images': s2_n,
                 'otsu_threshold_db': None, 'status': 'SKIPPED_NO_IMAGERY'
             }
 
@@ -142,10 +202,16 @@ def detect_flood(row):
                   f"low threshold, or event outside bbox")
             status = 'ZERO_AREA'
 
+        # Combine: Sentinel-2 (accurate) as primary, fall back to raw Sentinel-1
+        # for cloud-blind events. Interim; to be replaced by multi-temporal later.
+        combined_area = s2_area if s2_area is not None else area_km2
+
         return {
             'event_id': event_id, 'state': state,
-            'affected_area_km2': area_km2,
+            'affected_area_km2': combined_area,     # S2 if available, else S1
+            'area_s1_km2': area_km2, 'area_s2_km2': s2_area,
             'pre_images': pre_n, 'post_images': post_n,
+            's2_post_images': s2_n,
             'otsu_threshold_db': round(threshold, 3),
             'status': status
         }
@@ -163,7 +229,7 @@ def detect_flood(row):
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     print("=" * 55)
-    print("CP-05: SENTINEL-1 FLOOD DETECTION")
+    print("CP-05: SENTINEL-1 + SENTINEL-2 FLOOD DETECTION")
     print("=" * 55)
 
     events  = pd.read_csv('data/events.csv')
@@ -178,8 +244,8 @@ if __name__ == '__main__':
     print("\n" + "=" * 55)
     print("RESULTS SUMMARY")
     print("=" * 55)
-    print(df[['event_id', 'state', 'affected_area_km2',
-              'otsu_threshold_db', 'status']].to_string(index=False))
+    print(df[['event_id', 'state', 'area_s1_km2', 'area_s2_km2',
+              's2_post_images', 'otsu_threshold_db', 'status']].to_string(index=False))
 
     # Stats
     ok      = df[df['status'].isin(['OK', 'ZERO_AREA'])]
