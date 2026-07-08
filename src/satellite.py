@@ -164,7 +164,7 @@ def detect_flood(row):
             print(f"    SKIP: insufficient imagery (pre={pre_n}, post={post_n})")
             return {
                 'event_id': event_id, 'state': state,
-                'affected_area_km2': None,
+                'affected_area_km2': s2_area,       # S1 unavailable -> use S2 (may be None)
                 'area_s1_km2': None, 'area_s2_km2': s2_area,
                 'pre_images': pre_n, 'post_images': post_n,
                 's2_post_images': s2_n,
@@ -202,9 +202,13 @@ def detect_flood(row):
                   f"low threshold, or event outside bbox")
             status = 'ZERO_AREA'
 
+        # Combine: Sentinel-2 (accurate) as primary, fall back to raw Sentinel-1
+        # for cloud-blind events. Interim; to be replaced by multi-temporal later.
+        combined_area = s2_area if s2_area is not None else area_km2
+
         return {
             'event_id': event_id, 'state': state,
-            'affected_area_km2': area_km2,          # = S1 (downstream uses this)
+            'affected_area_km2': combined_area,     # S2 if available, else S1
             'area_s1_km2': area_km2, 'area_s2_km2': s2_area,
             'pre_images': pre_n, 'post_images': post_n,
             's2_post_images': s2_n,
