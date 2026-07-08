@@ -11,3 +11,159 @@ E09,Karnataka,Bengaluru,flood,2022-09-05,2022-09-07,12.9,77.6,"77.3,12.7,78.0,13
 E10,Odisha,Balasore,flood,2022-09-16,2022-09-22,21.5,86.9,"85.5,20.5,87.5,22.0",Low
 E11,Himachal Pradesh,Mandi,flood,2023-07-08,2023-07-16,31.7,76.9,"76.0,31.0,77.8,32.5",Low
 E12,Delhi,Delhi,flood,2023-07-10,2023-07-14,28.7,77.1,"76.8,28.4,77.6,28.9",High
+E13,Andhra Pradesh,Bhopal,flood,2016-07-09,2016-09-29,16.2,80.9,"77.0,12.5,84.8,19.9",Middle
+E14,Andhra Pradesh,Azamgarh,flood,2017-08-16,2017-08-23,16.2,80.9,"77.0,12.5,84.8,19.9",Middle
+E15,Andhra Pradesh,Ganjam,flood,2020-10-01,2020-10-26,16.2,80.9,"77.0,12.5,84.8,19.9",Middle
+E16,Andhra Pradesh,Kottayam,flood,2021-10-11,2021-11-19,16.2,80.9,"77.0,12.5,84.8,19.9",Middle
+E17,Andhra Pradesh,Sultanpur,flood,2024-07-09,2024-07-15,16.2,80.9,"77.0,12.5,84.8,19.9",Middle
+E18,Arunachal Pradesh,Arunachal Pradesh,flood,2015-07-07,2015-07-16,28.0,94.45,"91.5,26.5,97.4,29.5",Low
+E19,Arunachal Pradesh,Arunachal Pradesh,flood,2016-04-22,2016-04-25,28.0,94.45,"91.5,26.5,97.4,29.5",Low
+E20,Arunachal Pradesh,Pithoragarh,flood,2016-06-25,2016-07-01,28.0,94.45,"91.5,26.5,97.4,29.5",Low
+E21,Arunachal Pradesh,Arunachal Pradesh,flood,2020-06-01,2020-08-16,28.0,94.45,"91.5,26.5,97.4,29.5",Low
+E22,Arunachal Pradesh,Arunachal Pradesh,flood,2025-05-31,2025-06-01,28.0,94.45,"91.5,26.5,97.4,29.5",Low
+E23,Assam,Guwahati,flood,2015-08-13,2015-08-30,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E24,Assam,Assam,flood,2016-04-22,2016-04-25,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E25,Assam,Pithoragarh,flood,2016-06-25,2016-07-30,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E26,Assam,Karimganj,flood,2017-06-04,2017-07-24,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E27,Assam,Assam,flood,2018-06-22,2018-08-20,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E28,Assam,Dibrugarh,flood,2021-07-01,2021-07-01,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E29,Assam,Itanagar distrci,flood,2022-05-17,2022-10-31,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E30,Assam,Nalbari,flood,2023-06-14,2023-09-07,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E31,Assam,Guwahati,flood,2024-05-01,2024-07-15,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E32,Assam,Assam,flood,2025-05-31,2025-06-01,26.0,92.85,"89.7,24.1,96.0,27.9",Low
+E33,Bihar,Biha,flood,2016-07-15,2016-09-12,25.9,85.8,"83.3,24.3,88.3,27.5",Low
+E34,Bihar,Bihar,flood,2020-06-01,2020-08-16,25.9,85.8,"83.3,24.3,88.3,27.5",Low
+E35,Bihar,Bihar,flood,2021-06-01,2021-06-30,25.9,85.8,"83.3,24.3,88.3,27.5",Low
+E36,Bihar,Itanagar distrci,flood,2022-05-17,2022-10-31,25.9,85.8,"83.3,24.3,88.3,27.5",Low
+E37,Bihar,Bihar,flood,2023-06-25,2023-09-07,25.9,85.8,"83.3,24.3,88.3,27.5",Low
+E38,Bihar,Darjeeling,flood,2025-10-03,2025-10-07,25.9,85.8,"83.3,24.3,88.3,27.5",Low
+E39,Chhattisgarh,Chhattisgarh,flood,2020-06-01,2020-08-16,20.95,82.3,"80.2,17.8,84.4,24.1",Low
+E40,Chhattisgarh,Chhattisgarh,flood,2021-06-01,2021-06-30,20.95,82.3,"80.2,17.8,84.4,24.1",Low
+E41,Chhattisgarh,Madyah Pradesh,flood,2023-06-25,2023-09-07,20.95,82.3,"80.2,17.8,84.4,24.1",Low
+E42,Delhi,Delhi,flood,2023-06-25,2023-09-07,28.65,77.2,"76.8,28.4,77.6,28.9",High
+E43,Goa,Barpeta,flood,2015-08-28,2015-08-30,15.35,74.0,"73.6,14.9,74.4,15.8",High
+E44,Goa,Barpeta,flood,2016-07-28,2016-07-30,15.35,74.0,"73.6,14.9,74.4,15.8",High
+E45,Goa,Barpeta,flood,2017-06-25,2017-07-24,15.35,74.0,"73.6,14.9,74.4,15.8",High
+E46,Goa,Pune,flood,2021-06-01,2021-09-30,15.35,74.0,"73.6,14.9,74.4,15.8",High
+E47,Gujarat,Surat,flood,2016-08-01,2016-08-03,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E48,Gujarat,Banaskantha,flood,2017-06-01,2017-08-28,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E49,Gujarat,Gujarat,flood,2018-06-22,2018-07-03,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E50,Gujarat,Gujarat,flood,2020-06-01,2020-08-16,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E51,Gujarat,Gujarat,flood,2021-06-01,2021-06-30,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E52,Gujarat,Jamnagar,flood,2021-09-13,2021-09-15,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E53,Gujarat,Itanagar distrci,flood,2022-05-17,2022-10-31,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E54,Gujarat,Madyah Pradesh,flood,2023-06-25,2023-09-07,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E55,Gujarat,Gujarat,flood,2024-08-26,2024-08-27,22.4,71.35,"68.2,20.1,74.5,24.7",High
+E56,Haryana,Haryana,flood,2015-07-07,2015-07-13,29.3,76.05,"74.5,27.7,77.6,30.9",High
+E57,Haryana,Chandigarh,flood,2018-09-23,2018-09-24,29.3,76.05,"74.5,27.7,77.6,30.9",High
+E58,Haryana,Hamirpur,flood,2023-06-26,2023-07-12,29.3,76.05,"74.5,27.7,77.6,30.9",High
+E59,Himachal Pradesh,Shimla,flood,2015-07-07,2015-07-13,31.8,77.3,"75.6,30.4,79.0,33.2",Low
+E60,Himachal Pradesh,Azamgarh,flood,2017-08-16,2017-08-23,31.8,77.3,"75.6,30.4,79.0,33.2",Low
+E61,Himachal Pradesh,Thrissur,flood,2018-08-07,2018-08-20,31.8,77.3,"75.6,30.4,79.0,33.2",Low
+E62,Himachal Pradesh,Barpeta,flood,2019-07-14,2019-09-30,31.8,77.3,"75.6,30.4,79.0,33.2",Low
+E63,Himachal Pradesh,Pune,flood,2021-06-01,2021-09-30,31.8,77.3,"75.6,30.4,79.0,33.2",Low
+E64,Himachal Pradesh,Itanagar distrci,flood,2022-05-17,2022-10-31,31.8,77.3,"75.6,30.4,79.0,33.2",Low
+E65,Himachal Pradesh,Mandi,flood,2024-07-31,2024-08-23,31.8,77.3,"75.6,30.4,79.0,33.2",Low
+E66,Himachal Pradesh,Himachal Pradesh,flood,2025-06-20,2025-07-07,31.8,77.3,"75.6,30.4,79.0,33.2",Low
+E67,Jammu and Kashmir,Administrative unit not available,flood,2015-03-20,2015-03-31,34.45,77.05,"73.7,32.3,80.4,36.6",Low
+E68,Jammu and Kashmir,Kishtwar,flood,2025-08-14,2025-08-15,34.45,77.05,"73.7,32.3,80.4,36.6",Low
+E69,Jharkhand,Karimganj,flood,2017-06-04,2017-06-06,23.6,85.6,"83.3,21.9,87.9,25.3",Low
+E70,Jharkhand,Pune,flood,2021-06-01,2021-09-30,23.6,85.6,"83.3,21.9,87.9,25.3",Low
+E71,Jharkhand,Ranchi,flood,2022-08-01,2022-08-22,23.6,85.6,"83.3,21.9,87.9,25.3",Low
+E72,Karnataka,Barpeta,flood,2019-07-14,2019-09-30,15.05,76.35,"74.1,11.6,78.6,18.5",High
+E73,Karnataka,Karnataka,flood,2020-06-01,2020-08-16,15.05,76.35,"74.1,11.6,78.6,18.5",High
+E74,Karnataka,Ganjam,flood,2020-10-01,2020-10-26,15.05,76.35,"74.1,11.6,78.6,18.5",High
+E75,Karnataka,Pune,flood,2021-06-01,2021-09-30,15.05,76.35,"74.1,11.6,78.6,18.5",High
+E76,Karnataka,Madyah Pradesh,flood,2023-06-25,2023-09-07,15.05,76.35,"74.1,11.6,78.6,18.5",High
+E77,Kerala,Barpeta,flood,2019-07-14,2019-10-23,10.55,76.2,"74.8,8.3,77.6,12.8",Middle
+E78,Kerala,Kerala,flood,2020-06-01,2020-08-16,10.55,76.2,"74.8,8.3,77.6,12.8",Middle
+E79,Kerala,Kerala,flood,2021-06-01,2021-06-30,10.55,76.2,"74.8,8.3,77.6,12.8",Middle
+E80,Kerala,Kottayam,flood,2021-10-11,2021-10-20,10.55,76.2,"74.8,8.3,77.6,12.8",Middle
+E81,Madhya Pradesh,Darjiling,flood,2015-06-23,2015-08-30,24.0,78.4,"74.0,21.1,82.8,26.9",Low
+E82,Madhya Pradesh,Bhopal,flood,2016-07-09,2016-08-22,24.0,78.4,"74.0,21.1,82.8,26.9",Low
+E83,Madhya Pradesh,Barpeta,flood,2017-06-25,2017-08-23,24.0,78.4,"74.0,21.1,82.8,26.9",Low
+E84,Madhya Pradesh,Barpeta,flood,2018-08-02,2018-08-06,24.0,78.4,"74.0,21.1,82.8,26.9",Low
+E85,Madhya Pradesh,Madhya Pradesh,flood,2020-06-01,2020-08-16,24.0,78.4,"74.0,21.1,82.8,26.9",Low
+E86,Madhya Pradesh,Itanagar distrci,flood,2022-05-17,2022-10-31,24.0,78.4,"74.0,21.1,82.8,26.9",Low
+E87,Madhya Pradesh,Nalbari,flood,2023-06-14,2023-06-23,24.0,78.4,"74.0,21.1,82.8,26.9",Low
+E88,Madhya Pradesh,Dehradun,flood,2025-09-15,2025-09-17,24.0,78.4,"74.0,21.1,82.8,26.9",Low
+E89,Maharashtra,Amreli,flood,2015-06-19,2015-06-20,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E90,Maharashtra,Surat,flood,2016-08-01,2016-08-03,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E91,Maharashtra,Thane,flood,2017-08-29,2017-08-29,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E92,Maharashtra,Maharashtra,flood,2018-06-22,2018-07-03,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E93,Maharashtra,Thrissur,flood,2018-08-07,2018-08-20,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E94,Maharashtra,Pune,flood,2019-06-28,2019-09-30,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E95,Maharashtra,Mumbai,flood,2020-06-01,2020-08-16,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E96,Maharashtra,Maharashtra,flood,2021-06-01,2021-06-30,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E97,Maharashtra,Madyah Pradesh,flood,2023-06-25,2023-09-07,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E98,Maharashtra,Maharashtra,flood,2024-08-26,2024-08-27,18.8,76.75,"72.6,15.6,80.9,22.0",High
+E99,Manipur,Darrang,flood,2015-07-15,2015-08-19,24.75,93.9,"93.0,23.8,94.8,25.7",Low
+E100,Manipur,Karimganj,flood,2017-06-04,2017-07-28,24.75,93.9,"93.0,23.8,94.8,25.7",Low
+E101,Manipur,Manipur,flood,2025-05-31,2025-06-01,24.75,93.9,"93.0,23.8,94.8,25.7",Low
+E102,Meghalaya,Itanagar distrci,flood,2022-05-17,2022-10-31,25.55,91.3,"89.8,25.0,92.8,26.1",Low
+E103,Meghalaya,Shillong,flood,2024-05-01,2024-07-08,25.55,91.3,"89.8,25.0,92.8,26.1",Low
+E104,Meghalaya,Meghalaya,flood,2024-10-04,2024-10-07,25.55,91.3,"89.8,25.0,92.8,26.1",Low
+E105,Meghalaya,Shillong,flood,2025-05-31,2025-06-01,25.55,91.3,"89.8,25.0,92.8,26.1",Low
+E106,Mizoram,Mizoram,flood,2025-05-31,2025-06-01,23.2,92.9,"92.3,21.9,93.5,24.5",Low
+E107,Nagaland,Kohima,flood,2016-04-22,2016-04-25,26.05,94.3,"93.3,25.1,95.3,27.0",Low
+E108,Nagaland,Karimganj,flood,2017-06-04,2017-06-06,26.05,94.3,"93.3,25.1,95.3,27.0",Low
+E109,Nagaland,Thrissur,flood,2018-08-07,2018-08-20,26.05,94.3,"93.3,25.1,95.3,27.0",Low
+E110,Nagaland,Itanagar distrci,flood,2022-05-17,2022-10-31,26.05,94.3,"93.3,25.1,95.3,27.0",Low
+E111,Nagaland,Kohima,flood,2025-05-31,2025-06-01,26.05,94.3,"93.3,25.1,95.3,27.0",Low
+E112,Odisha,Darrang,flood,2015-07-15,2015-08-19,20.2,84.45,"81.4,17.8,87.5,22.6",Low
+E113,Odisha,Bhubaneswar,flood,2018-07-20,2018-08-20,20.2,84.45,"81.4,17.8,87.5,22.6",Low
+E114,Odisha,Barpeta,flood,2019-07-14,2019-09-30,20.2,84.45,"81.4,17.8,87.5,22.6",Low
+E115,Odisha,Odisha,flood,2020-06-01,2020-08-16,20.2,84.45,"81.4,17.8,87.5,22.6",Low
+E116,Punjab,Punjab,flood,2015-07-07,2015-07-13,31.0,75.4,"73.9,29.5,76.9,32.5",Middle
+E117,Punjab,Punjab,flood,2018-09-23,2018-09-24,31.0,75.4,"73.9,29.5,76.9,32.5",Middle
+E118,Punjab,Barpeta,flood,2019-07-14,2019-09-30,31.0,75.4,"73.9,29.5,76.9,32.5",Middle
+E119,Punjab,Madyah Pradesh,flood,2023-06-25,2023-09-07,31.0,75.4,"73.9,29.5,76.9,32.5",Middle
+E120,Punjab,Chandigarh,flood,2025-08-15,2025-09-19,31.0,75.4,"73.9,29.5,76.9,32.5",Middle
+E121,Rajasthan,Rajasthan,flood,2015-07-07,2015-08-19,26.6,73.9,"69.5,23.0,78.3,30.2",Low
+E122,Rajasthan,Banaskantha,flood,2017-06-01,2017-08-28,26.6,73.9,"69.5,23.0,78.3,30.2",Low
+E123,Rajasthan,Rajasthan,flood,2018-07-26,2018-07-28,26.6,73.9,"69.5,23.0,78.3,30.2",Low
+E124,Rajasthan,Barpeta,flood,2019-07-14,2019-09-30,26.6,73.9,"69.5,23.0,78.3,30.2",Low
+E125,Sikkim,Darrang,flood,2020-05-24,2020-05-26,27.6,88.45,"88.0,27.1,88.9,28.1",Low
+E126,Sikkim,Nalbari,flood,2023-06-14,2023-06-23,27.6,88.45,"88.0,27.1,88.9,28.1",Low
+E127,Sikkim,Sikkim,flood,2025-05-31,2025-06-01,27.6,88.45,"88.0,27.1,88.9,28.1",Low
+E128,Tamil Nadu,Virudhunagar,flood,2015-05-17,2015-05-21,10.85,78.25,"76.2,8.1,80.3,13.6",Middle
+E129,Tamil Nadu,Bhopal,flood,2016-07-09,2016-08-22,10.85,78.25,"76.2,8.1,80.3,13.6",Middle
+E130,Tamil Nadu,Chennai,flood,2017-10-30,2017-11-08,10.85,78.25,"76.2,8.1,80.3,13.6",Middle
+E131,Tamil Nadu,Pune,flood,2019-06-28,2019-07-04,10.85,78.25,"76.2,8.1,80.3,13.6",Middle
+E132,Tamil Nadu,Belgaum,flood,2019-10-19,2019-10-23,10.85,78.25,"76.2,8.1,80.3,13.6",Middle
+E133,Tamil Nadu,Tamil Nadu,flood,2021-11-06,2021-11-08,10.85,78.25,"76.2,8.1,80.3,13.6",Middle
+E134,Tamil Nadu,Tirunelveli,flood,2023-12-18,2023-12-20,10.85,78.25,"76.2,8.1,80.3,13.6",Middle
+E135,Telangana,western Telangana,flood,2023-07-27,2023-07-31,17.9,79.25,"77.2,15.9,81.3,19.9",High
+E136,Tripura,Agartala,flood,2018-05-17,2018-05-20,23.7,91.75,"91.2,22.9,92.3,24.5",Low
+E137,Tripura,Agartala,flood,2021-06-01,2021-06-30,23.7,91.75,"91.2,22.9,92.3,24.5",Low
+E138,Tripura,Agartala,flood,2024-08-19,2024-08-27,23.7,91.75,"91.2,22.9,92.3,24.5",Low
+E139,Tripura,Tripura,flood,2025-05-31,2025-06-01,23.7,91.75,"91.2,22.9,92.3,24.5",Low
+E140,Uttar Pradesh,Virudhunagar,flood,2015-05-17,2015-05-21,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E141,Uttar Pradesh,Uttar Pradesh,flood,2015-07-07,2015-07-13,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E142,Uttar Pradesh,Barpeta,flood,2015-08-28,2015-08-30,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E143,Uttar Pradesh,Biha,flood,2016-07-15,2016-09-12,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E144,Uttar Pradesh,Thoubal,flood,2017-07-01,2017-08-31,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E145,Uttar Pradesh,Dakshin Kannad,flood,2018-05-29,2018-05-31,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E146,Uttar Pradesh,Uttar Pradesh,flood,2018-07-26,2018-10-06,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E147,Uttar Pradesh,Barpeta,flood,2019-07-14,2019-09-30,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E148,Uttar Pradesh,Lucknow,flood,2020-05-10,2020-08-16,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E149,Uttar Pradesh,Uttar Pradesh,flood,2021-06-01,2021-06-30,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E150,Uttar Pradesh,Uttar Pradesh,flood,2022-09-18,2022-09-24,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E151,Uttar Pradesh,Sultanpur,flood,2024-07-09,2024-07-15,27.15,80.9,"77.1,23.9,84.7,30.4",Low
+E152,Uttarakhand,Uttarakhand,flood,2015-07-07,2015-07-13,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E153,Uttarakhand,Barpeta,flood,2015-08-28,2015-08-30,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E154,Uttarakhand,Azamgarh,flood,2017-08-16,2017-08-23,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E155,Uttarakhand,Barpeta,flood,2019-07-14,2019-09-30,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E156,Uttarakhand,Pune,flood,2021-06-01,2021-10-20,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E157,Uttarakhand,Dehradun,flood,2022-08-01,2022-08-22,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E158,Uttarakhand,Uttarakhand,flood,2023-06-25,2023-09-07,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E159,Uttarakhand,Tirunelveli,flood,2023-12-18,2023-12-20,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E160,Uttarakhand,Uttarakhand,flood,2025-06-20,2025-07-07,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E161,Uttarakhand,Dehradun,flood,2025-09-15,2025-09-17,30.1,79.5,"78.0,28.7,81.0,31.5",Low
+E162,West Bengal,Darjiling,flood,2015-06-23,2015-06-30,24.35,87.85,"85.8,21.5,89.9,27.2",Middle
+E163,West Bengal,Banaskantha,flood,2017-06-01,2017-08-31,24.35,87.85,"85.8,21.5,89.9,27.2",Middle
+E164,West Bengal,Barpeta,flood,2018-08-02,2018-08-20,24.35,87.85,"85.8,21.5,89.9,27.2",Middle
+E165,West Bengal,Barpeta,flood,2019-07-14,2019-09-30,24.35,87.85,"85.8,21.5,89.9,27.2",Middle
+E166,West Bengal,West Bengal,flood,2020-06-01,2020-08-16,24.35,87.85,"85.8,21.5,89.9,27.2",Middle
+E167,West Bengal,Pune,flood,2021-06-01,2021-09-30,24.35,87.85,"85.8,21.5,89.9,27.2",Middle
+E168,West Bengal,Darjeeling,flood,2025-10-03,2025-10-07,24.35,87.85,"85.8,21.5,89.9,27.2",Middle
