@@ -1,13 +1,13 @@
-event_id,state,affected_area_km2,pre_images,post_images,otsu_threshold_db,status
-E01,Kerala,15176.67,17,6,3.0,OK
-E02,Bihar,15772.56,19,5,0.745,OK
-E03,Assam,7968.0,11,3,1.243,OK
-E04,Telangana,44.32,5,1,0.251,OK
-E05,Maharashtra,785.26,8,4,3.0,OK
-E06,Uttarakhand,719.48,10,2,3.0,OK
-E07,Uttar Pradesh,3163.37,12,3,3.0,OK
-E08,Assam,2117.84,10,2,3.0,OK
-E09,Karnataka,276.42,1,1,3.0,OK
-E10,Odisha,1879.17,8,2,3.0,OK
-E11,Himachal Pradesh,2839.26,15,3,3.0,OK
-E12,Delhi,1593.19,5,1,0.246,OK
+event_id,state,affected_area_km2,area_s1_km2,area_s2_km2,pre_images,post_images,s2_post_images,otsu_threshold_db,status
+E01,Kerala,357.42,357.42,,17,6,0,-24.249,OK
+E02,Bihar,775.74,8324.07,775.74,19,5,6,-19.746,OK
+E03,Assam,560.47,596.72,560.47,11,3,12,-22.0,OK
+E04,Telangana,34.72,0.35,34.72,5,1,7,-22.0,OK
+E05,Maharashtra,0.82,91.82,0.82,8,4,7,-20.239,OK
+E06,Uttarakhand,44.67,5.87,44.67,10,2,13,-22.0,OK
+E07,Uttar Pradesh,304.48,622.3,304.48,12,3,11,-22.0,OK
+E08,Assam,849.52,849.52,,10,2,0,-19.24,OK
+E09,Karnataka,45.43,28.3,45.43,1,1,2,-22.0,OK
+E10,Odisha,17.55,138.29,17.55,8,2,6,-22.737,OK
+E11,Himachal Pradesh,244.77,465.55,244.77,15,3,11,-22.0,OK
+E12,Delhi,131.93,253.47,131.93,5,1,3,-22.0,OK
