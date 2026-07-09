@@ -251,10 +251,10 @@ def detect_flood(row):
         post_start = ee.Date(row['start_date'])
         post_end   = ee.Date(row['start_date']).advance(7, 'day')
 
-        # Sentinel-1 IW VH DESCENDING (VH separates water/land better than VV)
+        # Sentinel-1 IW VV DESCENDING
         s1 = (ee.ImageCollection('COPERNICUS/S1_GRD')
               .filter(ee.Filter.eq('instrumentMode', 'IW'))
-              .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH'))
+              .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
               .filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING'))
               .filterBounds(region))
 
@@ -287,15 +287,13 @@ def detect_flood(row):
                 'otsu_threshold_db': None, 'status': 'SKIPPED_NO_IMAGERY'
             }
 
-        post_img = post_col.select('VH').median()
+        post_img = post_col.select('VV').median()
 
         # Speckle filter (focal median, 3x3) before thresholding.
         post_f = post_img.focal_median(1, 'square')
 
-        # Option A: water = dark backscatter (VH). Otsu with a VH-appropriate range;
-        # fixed fallback if the scene is unimodal (water too small a fraction).
-        threshold = otsu_backscatter_threshold(post_f, region,
-                                               fallback=-22.0, lo=-28.0, hi=-18.0)
+        # Option A: water = dark backscatter (VV). Otsu with fallback if unimodal.
+        threshold = otsu_backscatter_threshold(post_f, region)
         water = post_f.lt(threshold)                     # dark = water
 
         # Masks (all carry over to multi-temporal):
@@ -313,7 +311,7 @@ def detect_flood(row):
         flood_mask = (water.And(permanent.Not()).And(flat)
                       .clipToCollection(india).rename('flood'))
 
-        print(f"    Water threshold (VH): {threshold:.3f} dB  "
+        print(f"    Water threshold (VV): {threshold:.3f} dB  "
               f"(pre={pre_n} imgs, post={post_n} imgs)")
 
         # Compute flooded area in km²
