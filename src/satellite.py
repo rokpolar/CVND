@@ -63,6 +63,122 @@ def otsu_threshold(image, region, scale=30, max_pixels=1e8):
         return 3.0
 
 
+# ── Otsu on post-event backscatter (Option A) ────────────────────────────────
+def otsu_backscatter_threshold(image, region, scale=30,
+                               fallback=-16.0, lo=-20.0, hi=-13.0):
+    """
+    Otsu threshold on a backscatter image (water = below threshold, i.e. dark).
+    Clamped to a plausible VV water range [lo, hi]; if Otsu lands outside it
+    (or fails and returns the 3.0 dB fallback), use `fallback` instead. This
+    avoids splitting within the land class when water is a small fraction of
+    the scene.
+    """
+    # Use the guard-free Otsu (_otsu_from_hist) — backscatter water thresholds are
+    # NEGATIVE, which the difference-image otsu_threshold() would discard (>0 guard).
+    try:
+        hist = image.reduceRegion(
+            reducer=ee.Reducer.histogram(255, 0.5),
+            geometry=region, scale=scale, maxPixels=1e8, bestEffort=True
+        ).getInfo()
+        band = list(hist.keys())[0]
+        t, _ = _otsu_from_hist(hist.get(band))
+    except Exception as e:
+        print(f"    (backscatter Otsu failed: {e})")
+        t = None
+    if t is None or not (lo <= t <= hi):
+        print(f"    (raw Otsu = {t} — outside [{lo}, {hi}] -> fallback {fallback})")
+        return fallback
+    print(f"    (raw Otsu = {t:.3f} — in range)")
+    return t
+
+
+# ── Split-based Otsu on the difference image (Option B, unused) ───────────────
+def _otsu_from_hist(h):
+    """From a GEE histogram dict -> (otsu_threshold, separability eta in 0..1)."""
+    if not h or 'histogram' not in h or 'bucketMeans' not in h:
+        return None, 0.0
+    counts  = np.array(h['histogram'], dtype=float)
+    buckets = np.array(h['bucketMeans'], dtype=float)
+    total = counts.sum()
+    if total == 0:
+        return None, 0.0
+    total_mean = (counts * buckets).sum() / total
+    total_var  = (counts * (buckets - total_mean) ** 2).sum() / total
+    if total_var == 0:
+        return None, 0.0
+    w0, sum0, best_var, best_t = 0.0, 0.0, 0.0, None
+    for i in range(len(counts)):
+        w0 += counts[i] / total
+        w1 = 1.0 - w0
+        if w0 == 0 or w1 == 0:
+            continue
+        sum0 += counts[i] * buckets[i] / total
+        mu0 = sum0 / w0
+        mu1 = (total_mean - w0 * mu0) / w1
+        var = w0 * w1 * (mu0 - mu1) ** 2
+        if var > best_var:
+            best_var, best_t = var, buckets[i]
+    sep = best_var / total_var          # Otsu separability (eta): high => bimodal
+    return (float(best_t) if best_t is not None else None), sep
+
+
+def split_based_otsu(diff, region, n_tiles=4, scale=100, min_sep=0.6):
+    """
+    Option B: keep change detection, but apply Otsu properly.
+
+    The whole-scene difference histogram is dominated by the no-change class
+    (unimodal), so a single Otsu misfires. Here we tile the scene, compute Otsu
+    + a separability score per tile, keep only the tiles that are actually
+    bimodal (separability >= min_sep), and return the median of their thresholds.
+    Falls back to whole-scene Otsu if no bimodal tile is found.
+    """
+    try:
+        ring = region.bounds().coordinates().get(0).getInfo()
+        xs = [c[0] for c in ring]
+        ys = [c[1] for c in ring]
+        xmin, xmax, ymin, ymax = min(xs), max(xs), min(ys), max(ys)
+        dx = (xmax - xmin) / n_tiles
+        dy = (ymax - ymin) / n_tiles
+
+        cells = []
+        for i in range(n_tiles):
+            for j in range(n_tiles):
+                cells.append(ee.Feature(ee.Geometry.Rectangle(
+                    [xmin + i * dx, ymin + j * dy,
+                     xmin + (i + 1) * dx, ymin + (j + 1) * dy])))
+        grid = ee.FeatureCollection(cells)
+
+        fc = diff.reduceRegions(
+            collection=grid,
+            reducer=ee.Reducer.histogram(255, 0.5),
+            scale=scale, tileScale=4).getInfo()
+
+        thresholds, seps = [], []
+        for feat in fc['features']:
+            hist = None
+            for v in feat['properties'].values():
+                if isinstance(v, dict) and 'bucketMeans' in v:
+                    hist = v
+                    break
+            t, sep = _otsu_from_hist(hist)
+            if t is not None and sep >= min_sep:
+                thresholds.append(t)
+                seps.append(sep)
+
+        if thresholds:
+            thr = float(np.median(thresholds))
+            print(f"    Split-Otsu: {len(thresholds)}/{n_tiles * n_tiles} bimodal tiles"
+                  f" (median sep {np.median(seps):.2f}) -> {thr:.3f} dB")
+            return thr
+
+        print("    Split-Otsu: no bimodal tile — falling back to whole-scene Otsu")
+        return otsu_threshold(diff, region)
+
+    except Exception as e:
+        print(f"    WARN: split-Otsu failed ({e}) — whole-scene Otsu")
+        return otsu_threshold(diff, region)
+
+
 # ── Pre/post image quality check ─────────────────────────────────────────────
 def check_image_count(collection, label, event_id, min_required=1):
     """Returns count; warns if below minimum."""
@@ -171,17 +287,32 @@ def detect_flood(row):
                 'otsu_threshold_db': None, 'status': 'SKIPPED_NO_IMAGERY'
             }
 
-        pre_img  = pre_col.select('VV').median()
         post_img = post_col.select('VV').median()
-        diff     = pre_img.subtract(post_img)
 
-        # Otsu threshold (per-event, fixes Bug 1)
-        threshold = otsu_threshold(diff, region)
-        print(f"    Otsu threshold: {threshold:.3f} dB  "
+        # Speckle filter (focal median, 3x3) before thresholding.
+        post_f = post_img.focal_median(1, 'square')
+
+        # Option A: water = dark backscatter (VV). Otsu with fallback if unimodal.
+        threshold = otsu_backscatter_threshold(post_f, region)
+        water = post_f.lt(threshold)                     # dark = water
+
+        # Masks (all carry over to multi-temporal):
+        #  - JRC       : remove inland permanent water (rivers/lakes)
+        #  - LSIB India: clip to land so the ocean isn't flagged on coastal events
+        #                (SRTM.mask() leaves coastal sea, so use the land polygon)
+        #  - slope<5deg: floods sit on flat land; also removes SAR radar-shadow
+        #                false positives on steep mountain slopes (Chamoli, Mandi)
+        srtm = ee.Image('USGS/SRTMGL1_003')
+        jrc = ee.Image('JRC/GSW1_4/GlobalSurfaceWater').select('occurrence')
+        permanent = jrc.gte(50).unmask(0)
+        flat = ee.Terrain.slope(srtm).lt(5)
+        india = (ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017')
+                 .filter(ee.Filter.eq('country_na', 'India')))
+        flood_mask = (water.And(permanent.Not()).And(flat)
+                      .clipToCollection(india).rename('flood'))
+
+        print(f"    Water threshold (VV): {threshold:.3f} dB  "
               f"(pre={pre_n} imgs, post={post_n} imgs)")
-
-        # Apply threshold — pixels where backscatter dropped more than threshold
-        flood_mask = diff.gt(threshold)
 
         # Compute flooded area in km²
         pixel_area = flood_mask.multiply(ee.Image.pixelArea())
@@ -191,7 +322,7 @@ def detect_flood(row):
             scale=30,
             maxPixels=1e9
         )
-        area_m2  = area_stats.getInfo().get('VV', 0) or 0
+        area_m2  = area_stats.getInfo().get('flood', 0) or 0
         area_km2 = round(area_m2 / 1e6, 2)
 
         print(f"    Flooded area: {area_km2} km²")
