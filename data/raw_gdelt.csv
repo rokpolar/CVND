@@ -1,0 +1,21 @@
+event_id,state,article_count,coverage_days,time_to_first_report,avg_tone
+E01,Kerala,913,19,10,0.0
+E02,Bihar,307,9,9,0.0
+E03,Assam,229,28,0,0.0
+E04,Telangana,210,7,4,0.0
+E05,Maharashtra,27,7,11,0.0
+E06,Uttarakhand,343,14,2,0.0
+E07,Uttar Pradesh,298,21,11,0.0
+E08,Assam,665,36,0,0.0
+E09,Karnataka,0,0,14,0.0
+E10,Odisha,15,7,4,0.0
+E11,Himachal Pradesh,927,25,0,0.0
+E12,Delhi,291,7,4,0.0
+E13,Andhra Pradesh,0,0,14,0.0
+E14,Andhra Pradesh,0,0,14,0.0
+E15,Andhra Pradesh,0,0,14,0.0
+E16,Andhra Pradesh,99,35,0,0.0
+E17,Andhra Pradesh,93,23,0,0.0
+E18,Arunachal Pradesh,0,0,14,0.0
+E19,Arunachal Pradesh,0,0,14,0.0
+E20,Arunachal Pradesh,0,0,14,0.0

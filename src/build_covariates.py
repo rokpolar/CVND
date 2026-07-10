@@ -101,6 +101,177 @@ covariates = [
         "population_density": 11320,
         "literacy_rate": 86.2
     },
+    {
+        "state": "Andhra Pradesh",
+        "gsdp_per_capita": 147000,
+        "political_alignment": 1,
+        "press_language": "Telugu",
+        "distance_delhi_km": 1650,
+        "population_density": 308,
+        "literacy_rate": 67.4
+    },
+    {
+        "state": "Arunachal Pradesh",
+        "gsdp_per_capita": 148000,
+        "political_alignment": 1,
+        "press_language": "English",
+        "distance_delhi_km": 2300,
+        "population_density": 17,
+        "literacy_rate": 65.4
+    },
+    {
+        "state": "Chhattisgarh",
+        "gsdp_per_capita": 97000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 1100,
+        "population_density": 189,
+        "literacy_rate": 70.3
+    },
+    {
+        "state": "Goa",
+        "gsdp_per_capita": 461000,
+        "political_alignment": 1,
+        "press_language": "Konkani",
+        "distance_delhi_km": 1900,
+        "population_density": 394,
+        "literacy_rate": 88.7
+    },
+    {
+        "state": "Gujarat",
+        "gsdp_per_capita": 214000,
+        "political_alignment": 1,
+        "press_language": "Gujarati",
+        "distance_delhi_km": 950,
+        "population_density": 308,
+        "literacy_rate": 78.0
+    },
+    {
+        "state": "Haryana",
+        "gsdp_per_capita": 211000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 160,
+        "population_density": 573,
+        "literacy_rate": 75.6
+    },
+    {
+        "state": "Jammu and Kashmir",
+        "gsdp_per_capita": 101000,
+        "political_alignment": 1,
+        "press_language": "Urdu",
+        "distance_delhi_km": 580,
+        "population_density": 124,
+        "literacy_rate": 67.2
+    },
+    {
+        "state": "Jharkhand",
+        "gsdp_per_capita": 72000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 1200,
+        "population_density": 414,
+        "literacy_rate": 66.4
+    },
+    {
+        "state": "Madhya Pradesh",
+        "gsdp_per_capita": 89000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 780,
+        "population_density": 236,
+        "literacy_rate": 69.3
+    },
+    {
+        "state": "Manipur",
+        "gsdp_per_capita": 71000,
+        "political_alignment": 1,
+        "press_language": "Meitei",
+        "distance_delhi_km": 2500,
+        "population_density": 115,
+        "literacy_rate": 76.9
+    },
+    {
+        "state": "Meghalaya",
+        "gsdp_per_capita": 91000,
+        "political_alignment": 0,
+        "press_language": "English",
+        "distance_delhi_km": 2000,
+        "population_density": 132,
+        "literacy_rate": 74.4
+    },
+    {
+        "state": "Mizoram",
+        "gsdp_per_capita": 130000,
+        "political_alignment": 0,
+        "press_language": "Mizo",
+        "distance_delhi_km": 2600,
+        "population_density": 52,
+        "literacy_rate": 91.3
+    },
+    {
+        "state": "Nagaland",
+        "gsdp_per_capita": 78000,
+        "political_alignment": 1,
+        "press_language": "English",
+        "distance_delhi_km": 2400,
+        "population_density": 119,
+        "literacy_rate": 79.6
+    },
+    {
+        "state": "Punjab",
+        "gsdp_per_capita": 162000,
+        "political_alignment": 0,
+        "press_language": "Punjabi",
+        "distance_delhi_km": 450,
+        "population_density": 550,
+        "literacy_rate": 75.8
+    },
+    {
+        "state": "Rajasthan",
+        "gsdp_per_capita": 95000,
+        "political_alignment": 1,
+        "press_language": "Hindi",
+        "distance_delhi_km": 500,
+        "population_density": 201,
+        "literacy_rate": 66.1
+    },
+    {
+        "state": "Sikkim",
+        "gsdp_per_capita": 295000,
+        "political_alignment": 0,
+        "press_language": "Nepali",
+        "distance_delhi_km": 2100,
+        "population_density": 86,
+        "literacy_rate": 81.4
+    },
+    {
+        "state": "Tamil Nadu",
+        "gsdp_per_capita": 194000,
+        "political_alignment": 0,
+        "press_language": "Tamil",
+        "distance_delhi_km": 2200,
+        "population_density": 555,
+        "literacy_rate": 80.1
+    },
+    {
+        "state": "Tripura",
+        "gsdp_per_capita": 95000,
+        "political_alignment": 1,
+        "press_language": "Bengali",
+        "distance_delhi_km": 2500,
+        "population_density": 350,
+        "literacy_rate": 87.2
+    },
+    {
+        "state": "West Bengal",
+        "gsdp_per_capita": 114000,
+        "political_alignment": 0,
+        "press_language": "Bengali",
+        "distance_delhi_km": 1500,
+        "population_density": 1029,
+        "literacy_rate": 76.3
+    }
 ]
 
 df = pd.DataFrame(covariates)
