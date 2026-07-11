@@ -9,13 +9,161 @@ E07,Uttar Pradesh,298,21,11,0.0
 E08,Assam,665,36,0,0.0
 E09,Karnataka,0,0,14,0.0
 E10,Odisha,15,7,4,0.0
+E100,Manipur,445,71,0,0.0
+E101,Manipur,87,7,0,0.0
+E102,Meghalaya,77,159,4,0.0
+E103,Meghalaya,137,35,32,0.0
+E104,Meghalaya,3,6,11,0.0
+E105,Meghalaya,6,13,0,0.0
+E106,Mizoram,18,7,4,0.0
+E107,Nagaland,0,0,14,0.0
+E108,Nagaland,11,10,2,0.0
+E109,Nagaland,17,12,6,0.0
 E11,Himachal Pradesh,927,25,0,0.0
+E110,Nagaland,59,160,3,0.0
+E111,Nagaland,48,5,0,0.0
+E112,Odisha,0,0,14,0.0
+E113,Odisha,148,48,0,0.0
+E114,Odisha,302,83,4,0.0
+E115,Odisha,255,93,0,0.0
+E116,Punjab,0,0,14,0.0
+E117,Punjab,311,17,0,0.0
+E118,Punjab,836,85,4,0.0
+E119,Punjab,629,69,19,0.0
 E12,Delhi,291,7,4,0.0
+E120,Punjab,174,35,4,0.0
+E121,Rajasthan,0,0,14,0.0
+E122,Rajasthan,718,90,12,0.0
+E123,Rajasthan,0,0,14,0.0
+E124,Rajasthan,125,68,0,0.0
+E125,Sikkim,3,1,12,0.0
+E126,Sikkim,0,0,14,0.0
+E127,Sikkim,0,0,14,0.0
+E128,Tamil Nadu,0,0,14,0.0
+E129,Tamil Nadu,0,0,14,0.0
 E13,Andhra Pradesh,0,0,14,0.0
+E130,Tamil Nadu,29,14,4,0.0
+E131,Tamil Nadu,42,21,0,0.0
+E132,Tamil Nadu,34,16,2,0.0
+E133,Tamil Nadu,172,7,0,0.0
+E134,Tamil Nadu,332,19,0,0.0
+E135,Telangana,71,11,0,0.0
+E136,Tripura,56,13,4,0.0
+E137,Tripura,21,28,4,0.0
+E138,Tripura,250,8,4,0.0
+E139,Tripura,0,0,14,0.0
 E14,Andhra Pradesh,0,0,14,0.0
+E140,Uttar Pradesh,0,0,14,0.0
+E141,Uttar Pradesh,0,0,14,0.0
+E142,Uttar Pradesh,0,0,14,0.0
+E143,Uttar Pradesh,0,0,14,0.0
+E144,Uttar Pradesh,968,78,0,0.0
+E145,Uttar Pradesh,58,14,0,0.0
+E146,Uttar Pradesh,539,89,0,0.0
+E147,Uttar Pradesh,444,91,0,0.0
+E148,Uttar Pradesh,871,105,0,0.0
+E149,Uttar Pradesh,331,46,0,0.0
 E15,Andhra Pradesh,0,0,14,0.0
+E150,Uttar Pradesh,231,14,4,0.0
+E151,Uttar Pradesh,21,16,4,0.0
+E152,Uttarakhand,0,0,14,0.0
+E153,Uttarakhand,0,0,14,0.0
+E154,Uttarakhand,0,0,14,0.0
+E155,Uttarakhand,323,73,0,0.0
+E156,Uttarakhand,371,156,0,0.0
+E157,Uttarakhand,7,32,0,0.0
+E158,Uttarakhand,320,70,14,0.0
+E159,Uttarakhand,9,7,4,0.0
 E16,Andhra Pradesh,99,35,0,0.0
+E160,Uttarakhand,74,13,12,0.0
+E161,Uttarakhand,77,7,0,0.0
+E162,West Bengal,0,0,14,0.0
+E163,West Bengal,1135,90,5,0.0
+E164,West Bengal,77,35,0,0.0
+E165,West Bengal,331,84,0,0.0
+E166,West Bengal,215,93,0,0.0
+E167,West Bengal,232,111,13,0.0
+E168,West Bengal,187,21,0,0.0
 E17,Andhra Pradesh,93,23,0,0.0
 E18,Arunachal Pradesh,0,0,14,0.0
 E19,Arunachal Pradesh,0,0,14,0.0
 E20,Arunachal Pradesh,0,0,14,0.0
+E21,Arunachal Pradesh,19,93,0,0.0
+E22,Arunachal Pradesh,0,0,14,0.0
+E23,Assam,0,0,14,0.0
+E24,Assam,0,0,14,0.0
+E25,Assam,0,0,14,0.0
+E26,Assam,643,53,11,0.0
+E27,Assam,910,54,7,0.0
+E28,Assam,9,6,0,0.0
+E29,Assam,1443,174,0,0.0
+E30,Assam,233,69,0,0.0
+E31,Assam,382,83,6,0.0
+E32,Assam,239,17,0,0.0
+E33,Bihar,0,0,14,0.0
+E34,Bihar,971,93,0,0.0
+E35,Bihar,52,46,0,0.0
+E36,Bihar,151,176,4,0.0
+E37,Bihar,104,77,0,0.0
+E38,Bihar,0,0,14,0.0
+E39,Chhattisgarh,80,77,4,0.0
+E40,Chhattisgarh,7,38,5,0.0
+E41,Chhattisgarh,116,65,18,0.0
+E42,Delhi,730,63,0,0.0
+E43,Goa,0,0,14,0.0
+E44,Goa,0,0,14,0.0
+E45,Goa,5,25,7,0.0
+E46,Goa,5,107,12,0.0
+E47,Gujarat,0,0,14,0.0
+E48,Gujarat,1810,105,0,0.0
+E49,Gujarat,68,21,0,0.0
+E50,Gujarat,354,92,0,0.0
+E51,Gujarat,35,44,0,0.0
+E52,Gujarat,85,6,0,0.0
+E53,Gujarat,230,183,0,0.0
+E54,Gujarat,229,91,0,0.0
+E55,Gujarat,3,4,11,0.0
+E56,Haryana,0,0,14,0.0
+E57,Haryana,2,2,0,0.0
+E58,Haryana,418,28,0,0.0
+E59,Himachal Pradesh,0,0,14,0.0
+E60,Himachal Pradesh,363,24,0,0.0
+E61,Himachal Pradesh,164,29,0,0.0
+E62,Himachal Pradesh,287,94,0,0.0
+E63,Himachal Pradesh,216,132,0,0.0
+E64,Himachal Pradesh,351,170,11,0.0
+E65,Himachal Pradesh,204,28,4,0.0
+E66,Himachal Pradesh,121,18,12,0.0
+E67,Jammu and Kashmir,0,0,14,0.0
+E68,Jammu and Kashmir,599,16,0,0.0
+E69,Jharkhand,1,1,7,0.0
+E70,Jharkhand,93,111,12,0.0
+E71,Jharkhand,9,30,0,0.0
+E72,Karnataka,1964,96,0,0.0
+E73,Karnataka,691,94,0,0.0
+E74,Karnataka,213,27,11,0.0
+E75,Karnataka,518,137,0,0.0
+E76,Karnataka,216,64,10,0.0
+E77,Kerala,1450,111,4,0.0
+E78,Kerala,181,84,0,0.0
+E79,Kerala,64,35,8,0.0
+E80,Kerala,4,1,1,0.0
+E81,Madhya Pradesh,0,0,14,0.0
+E82,Madhya Pradesh,0,0,14,0.0
+E83,Madhya Pradesh,193,69,4,0.0
+E84,Madhya Pradesh,269,22,0,0.0
+E85,Madhya Pradesh,96,89,0,0.0
+E86,Madhya Pradesh,377,170,1,0.0
+E87,Madhya Pradesh,26,24,0,0.0
+E88,Madhya Pradesh,52,20,0,0.0
+E89,Maharashtra,0,0,14,0.0
+E90,Maharashtra,0,0,14,0.0
+E91,Maharashtra,645,12,0,0.0
+E92,Maharashtra,302,26,0,0.0
+E93,Maharashtra,385,30,0,0.0
+E94,Maharashtra,1367,105,0,0.0
+E95,Maharashtra,552,50,4,0.0
+E96,Maharashtra,258,32,11,0.0
+E97,Maharashtra,485,91,0,0.0
+E98,Maharashtra,54,14,0,0.0
+E99,Manipur,0,0,14,0.0
