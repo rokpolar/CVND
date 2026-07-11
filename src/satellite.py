@@ -1,101 +1,56 @@
 import ee
 import pandas as pd
 import numpy as np
+import h5py
 import os
 import warnings
 warnings.filterwarnings('ignore')
+from datetime import datetime, timedelta
 
 from gee_config import initialize_gee
 
 initialize_gee()
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SITS-EXTREME UPGRADE
+# satellite.py — CVND Flood Detection Pipeline
 # ───────────────────────────────────────────────────────────────────────────────
-# Original code used a single 30-day pre-event median (bi-temporal).
-# Problem: a single median can't distinguish recurring seasonal water
-# (rivers, rice paddies) from actual flood signal.
+# This file does TWO things when run:
 #
-# SITS-Extreme fix: build a 12-month multi-temporal baseline from monthly
-# medians, compute per-pixel mean and std of that baseline, then flag pixels
-# where the post-event backscatter drops more than Z standard deviations
-# below the baseline mean. This is an anomaly score — not a fixed threshold —
-# so it adapts to each pixel's own historical behaviour.
+#   TRACK A — Otsu bi-temporal (S1 + S2) baseline
+#     Runs entirely on GEE. Fast. No GPU needed.
+#     Output: data/flood_extent.csv
 #
-# Result: fewer false positives on permanently wet areas, better detection
-# of genuine flood anomalies especially in monsoon-season imagery.
+#   TRACK B — SITS-Extreme-VAE data preparation
+#     Pulls Sentinel-2 time series, formats to RaVAEn patch spec (HDF5).
+#     Output: data/sits_patches/<event_id>.h5
+#     → Upload to Google Drive → run sits_inference.ipynb on Colab GPU
+#     → Download sits_vae_results.csv → merge into pipeline
+#
+# Issue #14 asks for Track B (official pretrained checkpoint, not reimplemented).
+# Track A is kept as the baseline for comparison (as specified in the issue).
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-# ── SITS-Extreme: build multi-temporal baseline ───────────────────────────────
-def build_sits_baseline(region, event_start, n_months=12):
-    """
-    Build a per-pixel baseline from n_months of monthly Sentinel-1 medians
-    BEFORE the event. Returns (mean_image, std_image).
+# ══════════════════════════════════════════════════════════════════════════════
+# SHARED CONFIG
+# ══════════════════════════════════════════════════════════════════════════════
 
-    Each month contributes one median composite → stack of n_months images →
-    per-pixel mean and std across that stack. This captures seasonal variation
-    in backscatter so the anomaly detector knows what 'normal' looks like for
-    each pixel across a full annual cycle.
-    """
-    print(f"    SITS: building {n_months}-month baseline...")
-
-    monthly_images = []
-    for m in range(n_months, 0, -1):
-        month_start = ee.Date(event_start).advance(-m,       'month')
-        month_end   = ee.Date(event_start).advance(-(m - 1), 'month')
-
-        monthly_median = (
-            ee.ImageCollection('COPERNICUS/S1_GRD')
-            .filter(ee.Filter.eq('instrumentMode', 'IW'))
-            .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
-            .filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING'))
-            .filterBounds(region)
-            .filterDate(month_start, month_end)
-            .select('VV')
-            .median()
-        )
-        monthly_images.append(monthly_median)
-
-    baseline_stack = ee.ImageCollection(monthly_images)
-
-    baseline_mean = baseline_stack.mean().rename('baseline_mean')
-    baseline_std  = baseline_stack.reduce(ee.Reducer.stdDev()).rename('baseline_std')
-
-    return baseline_mean, baseline_std
+# ── Track B (SITS-VAE) config ─────────────────────────────────────────────────
+SITS_BANDS      = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12']
+SITS_PATCH_SIZE = 64        # 64x64 px @ 10m = 640m x 640m per patch
+SITS_N_PRE      = 6         # monthly pre-event composites
+SITS_NORM       = 10000.0   # S2 L2A scale factor → normalize to 0-1
+SITS_CLOUD_MAX  = 80        # max cloud cover % per image
+SITS_OUTPUT_DIR = 'data/sits_patches'
 
 
-# ── SITS-Extreme: anomaly-based flood detection ───────────────────────────────
-def sits_extreme_flood(post_img, baseline_mean, baseline_std,
-                       region, z_threshold=2.0, min_std_db=0.5):
-    """
-    Flag pixels where post-event backscatter is anomalously LOW compared to
-    the multi-temporal baseline. Water = dark SAR backscatter.
+# ══════════════════════════════════════════════════════════════════════════════
+# TRACK A — OTSU BI-TEMPORAL BASELINE (S1 + S2)
+# Unchanged from previous version — kept as baseline per Issue #14
+# ══════════════════════════════════════════════════════════════════════════════
 
-    anomaly_score = (baseline_mean - post_img) / max(baseline_std, min_std_db)
-
-    Pixels with anomaly_score > z_threshold are classified as flooded.
-
-    z_threshold=2.0 means the pixel must drop >2 standard deviations below
-    its own historical mean to be called flooded. Adjust down (1.5) to be
-    more sensitive, up (2.5) to be more conservative.
-
-    min_std_db guards against near-zero std on permanently stable pixels
-    (e.g. urban concrete) where any tiny noise would produce a huge z-score.
-    """
-    # Speckle filter before anomaly computation
-    post_filtered = post_img.focal_median(1, 'square')
-
-    anomaly = (baseline_mean.subtract(post_filtered)
-               .divide(baseline_std.max(min_std_db))
-               .rename('anomaly_score'))
-
-    flood_raw = anomaly.gt(z_threshold).rename('flood')
-    return flood_raw, anomaly
-
-
-# ── Otsu threshold (kept for fallback) ────────────────────────────────────────
 def otsu_threshold(image, region, scale=30, max_pixels=1e8):
+    """Compute Otsu threshold from GEE image histogram. Falls back to 3.0 dB."""
     try:
         histogram = image.reduceRegion(
             reducer=ee.Reducer.histogram(255, 0.5),
@@ -105,7 +60,7 @@ def otsu_threshold(image, region, scale=30, max_pixels=1e8):
             bestEffort=True
         ).getInfo()
 
-        band = list(histogram.keys())[0]
+        band      = list(histogram.keys())[0]
         hist_data = histogram.get(band)
 
         if not hist_data or 'histogram' not in hist_data:
@@ -123,8 +78,8 @@ def otsu_threshold(image, region, scale=30, max_pixels=1e8):
         total_mean = (counts * buckets).sum() / total
 
         for i in range(len(counts)):
-            w0   += counts[i] / total
-            w1    = 1.0 - w0
+            w0  += counts[i] / total
+            w1   = 1.0 - w0
             if w0 == 0 or w1 == 0:
                 continue
             sum0 += counts[i] * buckets[i] / total
@@ -166,7 +121,7 @@ def _otsu_from_hist(h):
         return None, 0.0
     counts  = np.array(h['histogram'], dtype=float)
     buckets = np.array(h['bucketMeans'], dtype=float)
-    total = counts.sum()
+    total   = counts.sum()
     if total == 0:
         return None, 0.0
     total_mean = (counts * buckets).sum() / total
@@ -176,7 +131,7 @@ def _otsu_from_hist(h):
     w0, sum0, best_var, best_t = 0.0, 0.0, 0.0, None
     for i in range(len(counts)):
         w0 += counts[i] / total
-        w1 = 1.0 - w0
+        w1  = 1.0 - w0
         if w0 == 0 or w1 == 0:
             continue
         sum0 += counts[i] * buckets[i] / total
@@ -189,7 +144,6 @@ def _otsu_from_hist(h):
     return (float(best_t) if best_t is not None else None), sep
 
 
-# ── Pre/post image quality check ──────────────────────────────────────────────
 def check_image_count(collection, label, event_id, min_required=1):
     count = collection.size().getInfo()
     if count < min_required:
@@ -198,8 +152,8 @@ def check_image_count(collection, label, event_id, min_required=1):
     return count
 
 
-# ── Sentinel-2 optical NDWI cross-check (unchanged from original) ─────────────
 def detect_flood_s2(region, start_date):
+    """Sentinel-2 optical NDWI flood cross-check."""
     pre_start  = ee.Date(start_date).advance(-30, 'day')
     pre_end    = ee.Date(start_date)
     post_start = ee.Date(start_date)
@@ -227,16 +181,16 @@ def detect_flood_s2(region, start_date):
 
     pre_ndwi  = ndwi_median(s2.filterDate(pre_start, pre_end))
     post_ndwi = ndwi_median(post_col)
-    flood = post_ndwi.gt(0).And(pre_ndwi.lte(0)).rename('flood')
+    flood     = post_ndwi.gt(0).And(pre_ndwi.lte(0)).rename('flood')
 
-    area = flood.multiply(ee.Image.pixelArea()).reduceRegion(
+    area    = flood.multiply(ee.Image.pixelArea()).reduceRegion(
         reducer=ee.Reducer.sum(), geometry=region, scale=30, maxPixels=1e9)
     area_m2 = area.getInfo().get('flood', 0) or 0
     return round(area_m2 / 1e6, 2), n_post
 
 
-# ── Shared masks (JRC, slope, India boundary) ─────────────────────────────────
 def get_masks(region):
+    """JRC permanent water + slope + India boundary masks."""
     srtm      = ee.Image('USGS/SRTMGL1_003')
     jrc       = ee.Image('JRC/GSW1_4/GlobalSurfaceWater').select('occurrence')
     permanent = jrc.gte(50).unmask(0)
@@ -246,204 +200,328 @@ def get_masks(region):
     return permanent, flat, india
 
 
-# ── Core flood detection for one event ───────────────────────────────────────
-def detect_flood(row, z_threshold=2.0, n_baseline_months=12):
+def detect_flood_baseline(row):
+    """
+    Track A: Otsu bi-temporal baseline.
+    S1 SAR + S2 NDWI. Kept as baseline per Issue #14.
+    """
     event_id = row['event_id']
     state    = row['state']
-    print(f"\n[{event_id}] {state} / {row['district']} "
-          f"({row['start_date']} → {row['end_date']})")
+    print(f"\n  [Baseline] [{event_id}] {state}")
 
     try:
         bbox   = [float(x) for x in row['bbox'].split(',')]
         region = ee.Geometry.Rectangle(bbox)
 
+        pre_start  = ee.Date(row['start_date']).advance(-30, 'day')
+        pre_end    = ee.Date(row['start_date'])
         post_start = ee.Date(row['start_date'])
         post_end   = ee.Date(row['start_date']).advance(7, 'day')
 
-        # ── Sentinel-1 post-event image ───────────────────────────────────────
         s1 = (ee.ImageCollection('COPERNICUS/S1_GRD')
               .filter(ee.Filter.eq('instrumentMode', 'IW'))
               .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
               .filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING'))
               .filterBounds(region))
 
+        pre_col  = s1.filterDate(pre_start, pre_end)
         post_col = s1.filterDate(post_start, post_end)
+        pre_n    = check_image_count(pre_col,  'pre-event',  event_id)
         post_n   = check_image_count(post_col, 'post-event', event_id)
 
-        # ── Sentinel-2 optical NDWI (independent cross-check) ─────────────────
         try:
             s2_area, s2_n = detect_flood_s2(region, row['start_date'])
         except Exception as e:
-            print(f"    WARN [{event_id}] S2 failed: {e}")
+            print(f"    WARN S2 failed: {e}")
             s2_area, s2_n = None, 0
-        if s2_area is None:
-            print(f"    S2 (NDWI): blind — no cloud-free image ({s2_n} imgs)")
-        else:
-            print(f"    S2 (NDWI): {s2_area} km²  ({s2_n} cloud-free imgs)")
 
-        if post_n == 0:
-            print(f"    SKIP: no post-event imagery")
+        if s2_area is None:
+            print(f"    S2 (NDWI): blind ({s2_n} imgs)")
+        else:
+            print(f"    S2 (NDWI): {s2_area} km² ({s2_n} cloud-free imgs)")
+
+        if pre_n == 0 or post_n == 0:
             return {
                 'event_id': event_id, 'state': state,
-                'affected_area_km2': s2_area,
-                'area_sits_km2': None, 'area_s2_km2': s2_area,
-                'post_images': post_n, 's2_post_images': s2_n,
-                'z_threshold': z_threshold,
-                'baseline_months': n_baseline_months,
-                'status': 'SKIPPED_NO_IMAGERY'
+                'area_baseline_km2': s2_area, 'area_s2_km2': s2_area,
+                'pre_images': pre_n, 'post_images': post_n,
+                'otsu_threshold_db': None, 'baseline_status': 'SKIPPED_NO_IMAGERY'
             }
 
         post_img = post_col.select('VV').median()
+        post_f   = post_img.focal_median(1, 'square')
+        threshold = otsu_backscatter_threshold(post_f, region)
+        water    = post_f.lt(threshold)
 
-        # ── SITS-Extreme: multi-temporal baseline ─────────────────────────────
-        try:
-            baseline_mean, baseline_std = build_sits_baseline(
-                region, row['start_date'], n_months=n_baseline_months
-            )
+        permanent, flat, india = get_masks(region)
+        flood_masked = (water.And(permanent.Not()).And(flat)
+                        .clipToCollection(india).rename('flood'))
 
-            flood_sits, anomaly_img = sits_extreme_flood(
-                post_img, baseline_mean, baseline_std,
-                region, z_threshold=z_threshold
-            )
+        pixel_area = flood_masked.multiply(ee.Image.pixelArea())
+        area_stats = pixel_area.reduceRegion(
+            reducer=ee.Reducer.sum(), geometry=region,
+            scale=30, maxPixels=1e9
+        )
+        area_m2  = area_stats.getInfo().get('flood', 0) or 0
+        area_km2 = round(area_m2 / 1e6, 2)
+        print(f"    S1 (Otsu, threshold={threshold:.2f} dB): {area_km2} km²")
 
-            # Apply masks: permanent water, slope, India boundary
-            permanent, flat, india = get_masks(region)
-            flood_masked = (flood_sits
-                            .And(permanent.Not())
-                            .And(flat)
-                            .clipToCollection(india)
-                            .rename('flood'))
-
-            # Compute flooded area
-            pixel_area = flood_masked.multiply(ee.Image.pixelArea())
-            area_stats = pixel_area.reduceRegion(
-                reducer=ee.Reducer.sum(),
-                geometry=region, scale=30, maxPixels=1e9
-            )
-            sits_area_m2 = area_stats.getInfo().get('flood', 0) or 0
-            sits_area_km2 = round(sits_area_m2 / 1e6, 2)
-
-            print(f"    SITS-Extreme (z>{z_threshold}, {n_baseline_months}mo baseline): "
-                  f"{sits_area_km2} km²")
-
-            sits_status = 'OK' if sits_area_km2 > 0 else 'ZERO_AREA'
-
-        except Exception as e:
-            print(f"    WARN: SITS-Extreme failed ({e}) — falling back to Otsu")
-            # ── Fallback: original Otsu bi-temporal (kept as safety net) ──────
-            post_f    = post_img.focal_median(1, 'square')
-            threshold = otsu_backscatter_threshold(post_f, region)
-            water     = post_f.lt(threshold)
-
-            permanent, flat, india = get_masks(region)
-            flood_masked = (water
-                            .And(permanent.Not())
-                            .And(flat)
-                            .clipToCollection(india)
-                            .rename('flood'))
-
-            pixel_area = flood_masked.multiply(ee.Image.pixelArea())
-            area_stats = pixel_area.reduceRegion(
-                reducer=ee.Reducer.sum(),
-                geometry=region, scale=30, maxPixels=1e9
-            )
-            sits_area_m2  = area_stats.getInfo().get('flood', 0) or 0
-            sits_area_km2 = round(sits_area_m2 / 1e6, 2)
-            sits_status = 'FALLBACK_OTSU'
-            print(f"    Fallback Otsu: {sits_area_km2} km²")
-
-        # ── Final combined area ───────────────────────────────────────────────
-        # S2 NDWI is cloud-limited but more accurate when available.
-        # SITS-Extreme handles cloud-covered events S2 can't see.
-        # Priority: S2 if available, else SITS-Extreme.
-        combined_area = s2_area if s2_area is not None else sits_area_km2
-
-        if combined_area == 0 or combined_area is None:
-            print(f"    WARN: 0 km² — possible cloud cover, z too high, "
-                  f"or event outside bbox")
+        combined = s2_area if s2_area is not None else area_km2
+        status   = 'OK' if area_km2 > 0 else 'ZERO_AREA'
 
         return {
-            'event_id':          event_id,
-            'state':             state,
-            'affected_area_km2': combined_area,
-            'area_sits_km2':     sits_area_km2,
-            'area_s2_km2':       s2_area,
-            'post_images':       post_n,
-            's2_post_images':    s2_n,
-            'z_threshold':       z_threshold,
-            'baseline_months':   n_baseline_months,
-            'status':            sits_status
+            'event_id': event_id, 'state': state,
+            'area_baseline_km2': combined, 'area_s2_km2': s2_area,
+            'pre_images': pre_n, 'post_images': post_n,
+            'otsu_threshold_db': round(threshold, 3),
+            'baseline_status': status
         }
 
     except Exception as e:
         print(f"    ERROR: {e}")
         return {
-            'event_id':          event_id,
-            'state':             state,
-            'affected_area_km2': None,
-            'area_sits_km2':     None,
-            'area_s2_km2':       None,
-            'post_images':       None,
-            's2_post_images':    None,
-            'z_threshold':       z_threshold,
-            'baseline_months':   n_baseline_months,
-            'status':            f'ERROR: {e}'
+            'event_id': event_id, 'state': state,
+            'area_baseline_km2': None, 'area_s2_km2': None,
+            'pre_images': None, 'post_images': None,
+            'otsu_threshold_db': None, 'baseline_status': f'ERROR: {e}'
         }
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
-if __name__ == '__main__':
-    print("=" * 60)
-    print("CP-05: SITS-EXTREME MULTI-TEMPORAL FLOOD DETECTION")
-    print("=" * 60)
-    print("Method: 12-month per-pixel baseline → z-score anomaly detection")
-    print("Fallback: Otsu bi-temporal (if SITS baseline fails)")
-    print("Cross-check: Sentinel-2 NDWI (when cloud-free)")
-    print("=" * 60)
+# ══════════════════════════════════════════════════════════════════════════════
+# TRACK B — SITS-EXTREME-VAE DATA PREPARATION
+# Formats Sentinel-2 time series patches to RaVAEn input spec for
+# inference with pretrained checkpoint on Colab GPU.
+#
+# Input spec (RaVAEn / SITS-Extreme-VAE):
+#   Bands     : B2 B3 B4 B5 B6 B7 B8 B8A B11 B12 (10 Sentinel-2 bands)
+#   Patch size: 64 x 64 pixels at 10m resolution
+#   Time series: 6 monthly pre-event composites + 1 post-event composite
+#   Normalization: divide by 10000 → float32 in [0, 1]
+#   HDF5 structure:
+#     /pre   (6, 10, 64, 64)  — pre-event monthly composites
+#     /post  (1, 10, 64, 64)  — post-event composite
+#     /meta  attributes       — event_id, state, start_date, lat, lon
+#
+# Citation: Fang & Azizpour (WACV 2025) — MIT license, must cite.
+# ══════════════════════════════════════════════════════════════════════════════
 
-    # ── Tunable parameters ────────────────────────────────────────────────────
-    Z_THRESHOLD      = 2.0   # lower = more sensitive, higher = more conservative
-    N_BASELINE_MONTHS = 12   # months of history for baseline (6 min, 12 recommended)
+def _mask_s2_sits(img):
+    """Cloud mask for SITS patch extraction."""
+    scl  = img.select('SCL')
+    keep = (scl.neq(3).And(scl.neq(8)).And(scl.neq(9))
+            .And(scl.neq(10)).And(scl.neq(11)))
+    return img.updateMask(keep)
 
-    events  = pd.read_csv('data/events.csv')
-    results = []
 
-    for _, row in events.iterrows():
-        result = detect_flood(row,
-                              z_threshold=Z_THRESHOLD,
-                              n_baseline_months=N_BASELINE_MONTHS)
-        results.append(result)
+def _get_s2_sits(region):
+    """Sentinel-2 collection for SITS patch extraction (10 bands)."""
+    return (ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
+            .filterBounds(region)
+            .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', SITS_CLOUD_MAX))
+            .map(_mask_s2_sits)
+            .select(SITS_BANDS))
 
-    df = pd.DataFrame(results)
 
-    print("\n" + "=" * 60)
-    print("RESULTS SUMMARY")
-    print("=" * 60)
-    print(df[['event_id', 'state', 'area_sits_km2', 'area_s2_km2',
-              'post_images', 'z_threshold', 'status']].to_string(index=False))
+def _monthly_composite_sits(s2, target_dt):
+    """One monthly median composite for a given datetime."""
+    start = ee.Date.fromYMD(target_dt.year, target_dt.month, 1)
+    end   = start.advance(1, 'month')
+    col   = s2.filterDate(start, end)
+    n     = col.size().getInfo()
+    if n == 0:
+        return None, 0
+    return col.median(), n
 
-    ok       = df[df['status'].isin(['OK', 'ZERO_AREA'])]
-    fallback = df[df['status'] == 'FALLBACK_OTSU']
-    skipped  = df[df['status'] == 'SKIPPED_NO_IMAGERY']
-    errors   = df[df['status'].str.startswith('ERROR', na=False)]
 
-    print(f"\nProcessed      : {len(df)} events")
-    print(f"SITS-Extreme OK: {len(ok)}")
-    print(f"Fallback Otsu  : {len(fallback)}")
-    print(f"Skipped        : {len(skipped)}  (no imagery)")
-    print(f"Errors         : {len(errors)}")
+def _extract_patch_sits(image, lat, lon):
+    """
+    Extract 64x64 patch centred on (lat, lon) from a GEE image.
+    Returns numpy array (10, 64, 64) normalized to [0,1], or zeros on failure.
+    """
+    half_m     = (SITS_PATCH_SIZE * 10) / 2
+    point      = ee.Geometry.Point([lon, lat])
+    patch_geom = point.buffer(half_m).bounds()
 
-    if len(ok) + len(fallback) < 6:
-        print("\nWARN: Fewer than 6 usable events — review before proceeding.")
+    try:
+        data = image.reduceRegion(
+            reducer   = ee.Reducer.toList(),
+            geometry  = patch_geom,
+            scale     = 10,
+            maxPixels = SITS_PATCH_SIZE * SITS_PATCH_SIZE * 2
+        ).getInfo()
 
-    os.makedirs('data', exist_ok=True)
-    df.to_csv('data/flood_extent.csv', index=False)
-    print(f"\nSAVED: data/flood_extent.csv")
+        arrays = []
+        n_px   = SITS_PATCH_SIZE * SITS_PATCH_SIZE
+        for band in SITS_BANDS:
+            vals = data.get(band, [])
+            if len(vals) == 0:
+                return None
+            arr = np.array(vals, dtype=np.float32)
+            if len(arr) < n_px:
+                arr = np.pad(arr, (0, n_px - len(arr)), constant_values=0)
+            arr = arr[:n_px].reshape(SITS_PATCH_SIZE, SITS_PATCH_SIZE)
+            arrays.append(arr)
 
-    if len(ok) + len(fallback) == 0:
-        print("\nFAIL: No events returned valid flood area. "
-              "Paste output above and debug before proceeding.")
+        patch = np.stack(arrays, axis=0)        # (10, 64, 64)
+        patch = np.clip(patch / SITS_NORM, 0, 1)
+        return patch
+
+    except Exception as e:
+        print(f"      Patch extraction failed: {e}")
+        return None
+
+
+def prepare_sits_patch(row):
+    """
+    Track B: prepare one event's Sentinel-2 time series as HDF5 patch.
+    Saves to data/sits_patches/<event_id>.h5
+    Returns output path or None on failure.
+    """
+    event_id  = row['event_id']
+    state     = row['state']
+    lat       = float(row['lat'])
+    lon       = float(row['lon'])
+    start_str = row['start_date']
+
+    print(f"\n  [SITS prep] [{event_id}] {state} — {start_str}")
+
+    bbox     = [float(x) for x in row['bbox'].split(',')]
+    region   = ee.Geometry.Rectangle(bbox)
+    s2       = _get_s2_sits(region)
+    event_dt = datetime.strptime(start_str, '%Y-%m-%d')
+    zeros    = np.zeros((len(SITS_BANDS), SITS_PATCH_SIZE, SITS_PATCH_SIZE),
+                        dtype=np.float32)
+
+    # ── 6 monthly pre-event composites ───────────────────────────────────────
+    pre_patches = []
+    for m in range(SITS_N_PRE, 0, -1):
+        target = event_dt - timedelta(days=30 * m)
+        img, n = _monthly_composite_sits(s2, target)
+        if img is None:
+            print(f"    Pre -{m}mo: no imagery → zeros")
+            pre_patches.append(zeros.copy())
+            continue
+        patch = _extract_patch_sits(img, lat, lon)
+        if patch is None:
+            print(f"    Pre -{m}mo: extraction failed → zeros")
+            pre_patches.append(zeros.copy())
+        else:
+            print(f"    Pre -{m}mo: OK ({n} imgs)")
+            pre_patches.append(patch)
+
+    pre_array = np.stack(pre_patches, axis=0)   # (6, 10, 64, 64)
+
+    # ── 1 post-event composite (0-14 days after event) ───────────────────────
+    post_col = s2.filterDate(
+        ee.Date(start_str),
+        ee.Date(start_str).advance(14, 'day')
+    )
+    post_n = post_col.size().getInfo()
+
+    if post_n == 0:
+        print(f"    Post: no imagery → zeros")
+        post_patch = zeros.copy()
     else:
-        print(f"\nCP-05 COMPLETE — ready for CP-06")
-        print(f"Tip: if areas seem too large, raise Z_THRESHOLD to 2.5")
-        print(f"Tip: if too many zeros, lower Z_THRESHOLD to 1.5")
+        post_patch = _extract_patch_sits(post_col.median(), lat, lon)
+        if post_patch is None:
+            print(f"    Post: extraction failed → zeros")
+            post_patch = zeros.copy()
+        else:
+            print(f"    Post: OK ({post_n} imgs)")
+
+    post_array = post_patch[np.newaxis, ...]    # (1, 10, 64, 64)
+
+    # ── Save HDF5 ─────────────────────────────────────────────────────────────
+    os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
+    out_path = os.path.join(SITS_OUTPUT_DIR, f'{event_id}.h5')
+
+    with h5py.File(out_path, 'w') as f:
+        f.create_dataset('pre',  data=pre_array,  dtype='float32')
+        f.create_dataset('post', data=post_array, dtype='float32')
+        m = f.create_group('meta')
+        m.attrs['event_id']   = event_id
+        m.attrs['state']      = state
+        m.attrs['start_date'] = start_str
+        m.attrs['lat']        = lat
+        m.attrs['lon']        = lon
+        m.attrs['bands']      = ','.join(SITS_BANDS)
+        m.attrs['n_pre']      = SITS_N_PRE
+        m.attrs['patch_size'] = SITS_PATCH_SIZE
+
+    print(f"    Saved: {out_path}  "
+          f"[pre {pre_array.shape}, post {post_array.shape}]")
+    return out_path
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MAIN
+# ══════════════════════════════════════════════════════════════════════════════
+
+if __name__ == '__main__':
+    print("=" * 65)
+    print("CVND SATELLITE PIPELINE")
+    print("  Track A: Otsu bi-temporal baseline  → data/flood_extent.csv")
+    print("  Track B: SITS-VAE patch preparation → data/sits_patches/")
+    print("=" * 65)
+
+    events = pd.read_csv('data/events.csv')
+
+    # ── Track A: baseline flood detection ────────────────────────────────────
+    print("\n" + "─" * 65)
+    print("TRACK A — BI-TEMPORAL BASELINE (S1 Otsu + S2 NDWI)")
+    print("─" * 65)
+    baseline_results = []
+    for _, row in events.iterrows():
+        baseline_results.append(detect_flood_baseline(row))
+
+    baseline_df = pd.DataFrame(baseline_results)
+    os.makedirs('data', exist_ok=True)
+    baseline_df.to_csv('data/flood_extent.csv', index=False)
+
+    ok_b = baseline_df[baseline_df['baseline_status'].isin(['OK', 'ZERO_AREA'])]
+    print(f"\nTrack A: {len(ok_b)}/{len(events)} events OK")
+    print("Saved: data/flood_extent.csv")
+
+    # ── Track B: SITS-VAE patch preparation ──────────────────────────────────
+    print("\n" + "─" * 65)
+    print("TRACK B — SITS-EXTREME-VAE PATCH PREPARATION")
+    print(f"  Bands: {SITS_BANDS}")
+    print(f"  Patch: {SITS_PATCH_SIZE}x{SITS_PATCH_SIZE}px @ 10m | "
+          f"{SITS_N_PRE} pre-event months + 1 post")
+    print(f"  Norm:  divide by {SITS_NORM}")
+    print("─" * 65)
+
+    sits_results = []
+    for _, row in events.iterrows():
+        try:
+            path = prepare_sits_patch(row)
+            sits_results.append({
+                'event_id': row['event_id'], 'h5_path': path, 'status': 'OK'
+            })
+        except Exception as e:
+            print(f"  ERROR on {row['event_id']}: {e}")
+            sits_results.append({
+                'event_id': row['event_id'], 'h5_path': None,
+                'status': f'ERROR: {e}'
+            })
+
+    sits_df = pd.DataFrame(sits_results)
+    sits_df.to_csv('data/sits_patches_index.csv', index=False)
+
+    ok_s = sits_df[sits_df['status'] == 'OK']
+    print(f"\nTrack B: {len(ok_s)}/{len(events)} patches prepared")
+    print(f"Saved:  {SITS_OUTPUT_DIR}/")
+    print(f"Index:  data/sits_patches_index.csv")
+
+    # ── Final summary ─────────────────────────────────────────────────────────
+    print("\n" + "=" * 65)
+    print("DONE")
+    print("=" * 65)
+    print(f"Track A OK: {len(ok_b)}/{len(events)}  → data/flood_extent.csv")
+    print(f"Track B OK: {len(ok_s)}/{len(events)}  → data/sits_patches/")
+    print()
+    print("Next steps:")
+    print("  1. Upload data/sits_patches/ folder to Google Drive")
+    print("  2. Open sits_inference.ipynb on Google Colab (T4 GPU)")
+    print("  3. Download sits_vae_results.csv → place in data/")
+    print("  4. Run compute_pss.py — it will auto-merge both tracks")
