@@ -9,20 +9,100 @@ from gee_config import initialize_gee
 
 initialize_gee()
 
-# ── Otsu threshold ──────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# SITS-EXTREME UPGRADE
+# ───────────────────────────────────────────────────────────────────────────────
+# Original code used a single 30-day pre-event median (bi-temporal).
+# Problem: a single median can't distinguish recurring seasonal water
+# (rivers, rice paddies) from actual flood signal.
+#
+# SITS-Extreme fix: build a 12-month multi-temporal baseline from monthly
+# medians, compute per-pixel mean and std of that baseline, then flag pixels
+# where the post-event backscatter drops more than Z standard deviations
+# below the baseline mean. This is an anomaly score — not a fixed threshold —
+# so it adapts to each pixel's own historical behaviour.
+#
+# Result: fewer false positives on permanently wet areas, better detection
+# of genuine flood anomalies especially in monsoon-season imagery.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ── SITS-Extreme: build multi-temporal baseline ───────────────────────────────
+def build_sits_baseline(region, event_start, n_months=12):
+    """
+    Build a per-pixel baseline from n_months of monthly Sentinel-1 medians
+    BEFORE the event. Returns (mean_image, std_image).
+
+    Each month contributes one median composite → stack of n_months images →
+    per-pixel mean and std across that stack. This captures seasonal variation
+    in backscatter so the anomaly detector knows what 'normal' looks like for
+    each pixel across a full annual cycle.
+    """
+    print(f"    SITS: building {n_months}-month baseline...")
+
+    monthly_images = []
+    for m in range(n_months, 0, -1):
+        month_start = ee.Date(event_start).advance(-m,       'month')
+        month_end   = ee.Date(event_start).advance(-(m - 1), 'month')
+
+        monthly_median = (
+            ee.ImageCollection('COPERNICUS/S1_GRD')
+            .filter(ee.Filter.eq('instrumentMode', 'IW'))
+            .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+            .filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING'))
+            .filterBounds(region)
+            .filterDate(month_start, month_end)
+            .select('VV')
+            .median()
+        )
+        monthly_images.append(monthly_median)
+
+    baseline_stack = ee.ImageCollection(monthly_images)
+
+    baseline_mean = baseline_stack.mean().rename('baseline_mean')
+    baseline_std  = baseline_stack.reduce(ee.Reducer.stdDev()).rename('baseline_std')
+
+    return baseline_mean, baseline_std
+
+
+# ── SITS-Extreme: anomaly-based flood detection ───────────────────────────────
+def sits_extreme_flood(post_img, baseline_mean, baseline_std,
+                       region, z_threshold=2.0, min_std_db=0.5):
+    """
+    Flag pixels where post-event backscatter is anomalously LOW compared to
+    the multi-temporal baseline. Water = dark SAR backscatter.
+
+    anomaly_score = (baseline_mean - post_img) / max(baseline_std, min_std_db)
+
+    Pixels with anomaly_score > z_threshold are classified as flooded.
+
+    z_threshold=2.0 means the pixel must drop >2 standard deviations below
+    its own historical mean to be called flooded. Adjust down (1.5) to be
+    more sensitive, up (2.5) to be more conservative.
+
+    min_std_db guards against near-zero std on permanently stable pixels
+    (e.g. urban concrete) where any tiny noise would produce a huge z-score.
+    """
+    # Speckle filter before anomaly computation
+    post_filtered = post_img.focal_median(1, 'square')
+
+    anomaly = (baseline_mean.subtract(post_filtered)
+               .divide(baseline_std.max(min_std_db))
+               .rename('anomaly_score'))
+
+    flood_raw = anomaly.gt(z_threshold).rename('flood')
+    return flood_raw, anomaly
+
+
+# ── Otsu threshold (kept for fallback) ────────────────────────────────────────
 def otsu_threshold(image, region, scale=30, max_pixels=1e8):
-    """
-    Compute Otsu's optimal threshold from the histogram of a GEE image.
-    Uses bestEffort=True to handle large bounding boxes gracefully.
-    Falls back to 3.0 dB if histogram is empty or computation fails.
-    """
     try:
         histogram = image.reduceRegion(
             reducer=ee.Reducer.histogram(255, 0.5),
             geometry=region,
             scale=scale,
             maxPixels=max_pixels,
-            bestEffort=True          # <-- fixes the Too many pixels error
+            bestEffort=True
         ).getInfo()
 
         band = list(histogram.keys())[0]
@@ -35,7 +115,6 @@ def otsu_threshold(image, region, scale=30, max_pixels=1e8):
         counts  = np.array(hist_data['histogram'], dtype=float)
         buckets = np.array(hist_data['bucketMeans'], dtype=float)
         total   = counts.sum()
-
         if total == 0:
             return 3.0
 
@@ -63,18 +142,8 @@ def otsu_threshold(image, region, scale=30, max_pixels=1e8):
         return 3.0
 
 
-# ── Otsu on post-event backscatter (Option A) ────────────────────────────────
 def otsu_backscatter_threshold(image, region, scale=30,
                                fallback=-16.0, lo=-20.0, hi=-13.0):
-    """
-    Otsu threshold on a backscatter image (water = below threshold, i.e. dark).
-    Clamped to a plausible VV water range [lo, hi]; if Otsu lands outside it
-    (or fails and returns the 3.0 dB fallback), use `fallback` instead. This
-    avoids splitting within the land class when water is a small fraction of
-    the scene.
-    """
-    # Use the guard-free Otsu (_otsu_from_hist) — backscatter water thresholds are
-    # NEGATIVE, which the difference-image otsu_threshold() would discard (>0 guard).
     try:
         hist = image.reduceRegion(
             reducer=ee.Reducer.histogram(255, 0.5),
@@ -92,9 +161,7 @@ def otsu_backscatter_threshold(image, region, scale=30,
     return t
 
 
-# ── Split-based Otsu on the difference image (Option B, unused) ───────────────
 def _otsu_from_hist(h):
-    """From a GEE histogram dict -> (otsu_threshold, separability eta in 0..1)."""
     if not h or 'histogram' not in h or 'bucketMeans' not in h:
         return None, 0.0
     counts  = np.array(h['histogram'], dtype=float)
@@ -118,70 +185,12 @@ def _otsu_from_hist(h):
         var = w0 * w1 * (mu0 - mu1) ** 2
         if var > best_var:
             best_var, best_t = var, buckets[i]
-    sep = best_var / total_var          # Otsu separability (eta): high => bimodal
+    sep = best_var / total_var
     return (float(best_t) if best_t is not None else None), sep
 
 
-def split_based_otsu(diff, region, n_tiles=4, scale=100, min_sep=0.6):
-    """
-    Option B: keep change detection, but apply Otsu properly.
-
-    The whole-scene difference histogram is dominated by the no-change class
-    (unimodal), so a single Otsu misfires. Here we tile the scene, compute Otsu
-    + a separability score per tile, keep only the tiles that are actually
-    bimodal (separability >= min_sep), and return the median of their thresholds.
-    Falls back to whole-scene Otsu if no bimodal tile is found.
-    """
-    try:
-        ring = region.bounds().coordinates().get(0).getInfo()
-        xs = [c[0] for c in ring]
-        ys = [c[1] for c in ring]
-        xmin, xmax, ymin, ymax = min(xs), max(xs), min(ys), max(ys)
-        dx = (xmax - xmin) / n_tiles
-        dy = (ymax - ymin) / n_tiles
-
-        cells = []
-        for i in range(n_tiles):
-            for j in range(n_tiles):
-                cells.append(ee.Feature(ee.Geometry.Rectangle(
-                    [xmin + i * dx, ymin + j * dy,
-                     xmin + (i + 1) * dx, ymin + (j + 1) * dy])))
-        grid = ee.FeatureCollection(cells)
-
-        fc = diff.reduceRegions(
-            collection=grid,
-            reducer=ee.Reducer.histogram(255, 0.5),
-            scale=scale, tileScale=4).getInfo()
-
-        thresholds, seps = [], []
-        for feat in fc['features']:
-            hist = None
-            for v in feat['properties'].values():
-                if isinstance(v, dict) and 'bucketMeans' in v:
-                    hist = v
-                    break
-            t, sep = _otsu_from_hist(hist)
-            if t is not None and sep >= min_sep:
-                thresholds.append(t)
-                seps.append(sep)
-
-        if thresholds:
-            thr = float(np.median(thresholds))
-            print(f"    Split-Otsu: {len(thresholds)}/{n_tiles * n_tiles} bimodal tiles"
-                  f" (median sep {np.median(seps):.2f}) -> {thr:.3f} dB")
-            return thr
-
-        print("    Split-Otsu: no bimodal tile — falling back to whole-scene Otsu")
-        return otsu_threshold(diff, region)
-
-    except Exception as e:
-        print(f"    WARN: split-Otsu failed ({e}) — whole-scene Otsu")
-        return otsu_threshold(diff, region)
-
-
-# ── Pre/post image quality check ─────────────────────────────────────────────
+# ── Pre/post image quality check ──────────────────────────────────────────────
 def check_image_count(collection, label, event_id, min_required=1):
-    """Returns count; warns if below minimum."""
     count = collection.size().getInfo()
     if count < min_required:
         print(f"    WARN [{event_id}] {label}: only {count} images "
@@ -189,21 +198,14 @@ def check_image_count(collection, label, event_id, min_required=1):
     return count
 
 
-# ── Sentinel-2 optical NDWI cross-check ──────────────────────────────────────
+# ── Sentinel-2 optical NDWI cross-check (unchanged from original) ─────────────
 def detect_flood_s2(region, start_date):
-    """
-    Optical NDWI flood area (McFeeters NDWI = (B3-B8)/(B3+B8), water > 0).
-    Water-specific, so it avoids the wet-soil over-detection that inflates the
-    SAR result. Blind under cloud, so it COMPLEMENTS Sentinel-1, not replaces it.
-    Returns (area_km2 or None, n_cloudfree_post_images).
-    """
     pre_start  = ee.Date(start_date).advance(-30, 'day')
     pre_end    = ee.Date(start_date)
     post_start = ee.Date(start_date)
     post_end   = ee.Date(start_date).advance(7, 'day')
 
     def mask_clouds(img):
-        # SCL: 3=cloud shadow, 8/9/10=cloud (med/high/cirrus), 11=snow -> drop.
         scl  = img.select('SCL')
         keep = (scl.neq(3).And(scl.neq(8)).And(scl.neq(9))
                 .And(scl.neq(10)).And(scl.neq(11)))
@@ -217,7 +219,7 @@ def detect_flood_s2(region, start_date):
     post_col = s2.filterDate(post_start, post_end)
     n_post   = post_col.size().getInfo()
     if n_post == 0:
-        return None, 0  # cloud-blind for this event
+        return None, 0
 
     def ndwi_median(col):
         return col.map(lambda i: i.normalizedDifference(['B3', 'B8'])
@@ -225,7 +227,6 @@ def detect_flood_s2(region, start_date):
 
     pre_ndwi  = ndwi_median(s2.filterDate(pre_start, pre_end))
     post_ndwi = ndwi_median(post_col)
-    # Newly flooded = water now (NDWI>0) but not water before.
     flood = post_ndwi.gt(0).And(pre_ndwi.lte(0)).rename('flood')
 
     area = flood.multiply(ee.Image.pixelArea()).reduceRegion(
@@ -234,8 +235,19 @@ def detect_flood_s2(region, start_date):
     return round(area_m2 / 1e6, 2), n_post
 
 
+# ── Shared masks (JRC, slope, India boundary) ─────────────────────────────────
+def get_masks(region):
+    srtm      = ee.Image('USGS/SRTMGL1_003')
+    jrc       = ee.Image('JRC/GSW1_4/GlobalSurfaceWater').select('occurrence')
+    permanent = jrc.gte(50).unmask(0)
+    flat      = ee.Terrain.slope(srtm).lt(5)
+    india     = (ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017')
+                 .filter(ee.Filter.eq('country_na', 'India')))
+    return permanent, flat, india
+
+
 # ── Core flood detection for one event ───────────────────────────────────────
-def detect_flood(row):
+def detect_flood(row, z_threshold=2.0, n_baseline_months=12):
     event_id = row['event_id']
     state    = row['state']
     print(f"\n[{event_id}] {state} / {row['district']} "
@@ -245,26 +257,20 @@ def detect_flood(row):
         bbox   = [float(x) for x in row['bbox'].split(',')]
         region = ee.Geometry.Rectangle(bbox)
 
-        # Date windows: 30-day pre, 7-day post
-        pre_start  = ee.Date(row['start_date']).advance(-30, 'day')
-        pre_end    = ee.Date(row['start_date'])
         post_start = ee.Date(row['start_date'])
         post_end   = ee.Date(row['start_date']).advance(7, 'day')
 
-        # Sentinel-1 IW VV DESCENDING
+        # ── Sentinel-1 post-event image ───────────────────────────────────────
         s1 = (ee.ImageCollection('COPERNICUS/S1_GRD')
               .filter(ee.Filter.eq('instrumentMode', 'IW'))
               .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
               .filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING'))
               .filterBounds(region))
 
-        pre_col  = s1.filterDate(pre_start,  pre_end)
         post_col = s1.filterDate(post_start, post_end)
+        post_n   = check_image_count(post_col, 'post-event', event_id)
 
-        pre_n  = check_image_count(pre_col,  'pre-event',  event_id)
-        post_n = check_image_count(post_col, 'post-event', event_id)
-
-        # Sentinel-2 optical NDWI cross-check (independent of S1 availability)
+        # ── Sentinel-2 optical NDWI (independent cross-check) ─────────────────
         try:
             s2_area, s2_n = detect_flood_s2(region, row['start_date'])
         except Exception as e:
@@ -275,130 +281,169 @@ def detect_flood(row):
         else:
             print(f"    S2 (NDWI): {s2_area} km²  ({s2_n} cloud-free imgs)")
 
-        # Flag events with zero images — cannot compute flood extent
-        if pre_n == 0 or post_n == 0:
-            print(f"    SKIP: insufficient imagery (pre={pre_n}, post={post_n})")
+        if post_n == 0:
+            print(f"    SKIP: no post-event imagery")
             return {
                 'event_id': event_id, 'state': state,
-                'affected_area_km2': s2_area,       # S1 unavailable -> use S2 (may be None)
-                'area_s1_km2': None, 'area_s2_km2': s2_area,
-                'pre_images': pre_n, 'post_images': post_n,
-                's2_post_images': s2_n,
-                'otsu_threshold_db': None, 'status': 'SKIPPED_NO_IMAGERY'
+                'affected_area_km2': s2_area,
+                'area_sits_km2': None, 'area_s2_km2': s2_area,
+                'post_images': post_n, 's2_post_images': s2_n,
+                'z_threshold': z_threshold,
+                'baseline_months': n_baseline_months,
+                'status': 'SKIPPED_NO_IMAGERY'
             }
 
         post_img = post_col.select('VV').median()
 
-        # Speckle filter (focal median, 3x3) before thresholding.
-        post_f = post_img.focal_median(1, 'square')
+        # ── SITS-Extreme: multi-temporal baseline ─────────────────────────────
+        try:
+            baseline_mean, baseline_std = build_sits_baseline(
+                region, row['start_date'], n_months=n_baseline_months
+            )
 
-        # Option A: water = dark backscatter (VV). Otsu with fallback if unimodal.
-        threshold = otsu_backscatter_threshold(post_f, region)
-        water = post_f.lt(threshold)                     # dark = water
+            flood_sits, anomaly_img = sits_extreme_flood(
+                post_img, baseline_mean, baseline_std,
+                region, z_threshold=z_threshold
+            )
 
-        # Masks (all carry over to multi-temporal):
-        #  - JRC       : remove inland permanent water (rivers/lakes)
-        #  - LSIB India: clip to land so the ocean isn't flagged on coastal events
-        #                (SRTM.mask() leaves coastal sea, so use the land polygon)
-        #  - slope<5deg: floods sit on flat land; also removes SAR radar-shadow
-        #                false positives on steep mountain slopes (Chamoli, Mandi)
-        srtm = ee.Image('USGS/SRTMGL1_003')
-        jrc = ee.Image('JRC/GSW1_4/GlobalSurfaceWater').select('occurrence')
-        permanent = jrc.gte(50).unmask(0)
-        flat = ee.Terrain.slope(srtm).lt(5)
-        india = (ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017')
-                 .filter(ee.Filter.eq('country_na', 'India')))
-        flood_mask = (water.And(permanent.Not()).And(flat)
-                      .clipToCollection(india).rename('flood'))
+            # Apply masks: permanent water, slope, India boundary
+            permanent, flat, india = get_masks(region)
+            flood_masked = (flood_sits
+                            .And(permanent.Not())
+                            .And(flat)
+                            .clipToCollection(india)
+                            .rename('flood'))
 
-        print(f"    Water threshold (VV): {threshold:.3f} dB  "
-              f"(pre={pre_n} imgs, post={post_n} imgs)")
+            # Compute flooded area
+            pixel_area = flood_masked.multiply(ee.Image.pixelArea())
+            area_stats = pixel_area.reduceRegion(
+                reducer=ee.Reducer.sum(),
+                geometry=region, scale=30, maxPixels=1e9
+            )
+            sits_area_m2 = area_stats.getInfo().get('flood', 0) or 0
+            sits_area_km2 = round(sits_area_m2 / 1e6, 2)
 
-        # Compute flooded area in km²
-        pixel_area = flood_mask.multiply(ee.Image.pixelArea())
-        area_stats = pixel_area.reduceRegion(
-            reducer=ee.Reducer.sum(),
-            geometry=region,
-            scale=30,
-            maxPixels=1e9
-        )
-        area_m2  = area_stats.getInfo().get('flood', 0) or 0
-        area_km2 = round(area_m2 / 1e6, 2)
+            print(f"    SITS-Extreme (z>{z_threshold}, {n_baseline_months}mo baseline): "
+                  f"{sits_area_km2} km²")
 
-        print(f"    Flooded area: {area_km2} km²")
+            sits_status = 'OK' if sits_area_km2 > 0 else 'ZERO_AREA'
 
-        status = 'OK'
-        if area_km2 == 0:
-            print(f"    WARN: 0 km² detected — possible cloud cover, "
-                  f"low threshold, or event outside bbox")
-            status = 'ZERO_AREA'
+        except Exception as e:
+            print(f"    WARN: SITS-Extreme failed ({e}) — falling back to Otsu")
+            # ── Fallback: original Otsu bi-temporal (kept as safety net) ──────
+            post_f    = post_img.focal_median(1, 'square')
+            threshold = otsu_backscatter_threshold(post_f, region)
+            water     = post_f.lt(threshold)
 
-        # Combine: Sentinel-2 (accurate) as primary, fall back to raw Sentinel-1
-        # for cloud-blind events. Interim; to be replaced by multi-temporal later.
-        combined_area = s2_area if s2_area is not None else area_km2
+            permanent, flat, india = get_masks(region)
+            flood_masked = (water
+                            .And(permanent.Not())
+                            .And(flat)
+                            .clipToCollection(india)
+                            .rename('flood'))
+
+            pixel_area = flood_masked.multiply(ee.Image.pixelArea())
+            area_stats = pixel_area.reduceRegion(
+                reducer=ee.Reducer.sum(),
+                geometry=region, scale=30, maxPixels=1e9
+            )
+            sits_area_m2  = area_stats.getInfo().get('flood', 0) or 0
+            sits_area_km2 = round(sits_area_m2 / 1e6, 2)
+            sits_status = 'FALLBACK_OTSU'
+            print(f"    Fallback Otsu: {sits_area_km2} km²")
+
+        # ── Final combined area ───────────────────────────────────────────────
+        # S2 NDWI is cloud-limited but more accurate when available.
+        # SITS-Extreme handles cloud-covered events S2 can't see.
+        # Priority: S2 if available, else SITS-Extreme.
+        combined_area = s2_area if s2_area is not None else sits_area_km2
+
+        if combined_area == 0 or combined_area is None:
+            print(f"    WARN: 0 km² — possible cloud cover, z too high, "
+                  f"or event outside bbox")
 
         return {
-            'event_id': event_id, 'state': state,
-            'affected_area_km2': combined_area,     # S2 if available, else S1
-            'area_s1_km2': area_km2, 'area_s2_km2': s2_area,
-            'pre_images': pre_n, 'post_images': post_n,
-            's2_post_images': s2_n,
-            'otsu_threshold_db': round(threshold, 3),
-            'status': status
+            'event_id':          event_id,
+            'state':             state,
+            'affected_area_km2': combined_area,
+            'area_sits_km2':     sits_area_km2,
+            'area_s2_km2':       s2_area,
+            'post_images':       post_n,
+            's2_post_images':    s2_n,
+            'z_threshold':       z_threshold,
+            'baseline_months':   n_baseline_months,
+            'status':            sits_status
         }
 
     except Exception as e:
         print(f"    ERROR: {e}")
         return {
-            'event_id': event_id, 'state': state,
+            'event_id':          event_id,
+            'state':             state,
             'affected_area_km2': None,
-            'pre_images': None, 'post_images': None,
-            'otsu_threshold_db': None, 'status': f'ERROR: {e}'
+            'area_sits_km2':     None,
+            'area_s2_km2':       None,
+            'post_images':       None,
+            's2_post_images':    None,
+            'z_threshold':       z_threshold,
+            'baseline_months':   n_baseline_months,
+            'status':            f'ERROR: {e}'
         }
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    print("=" * 55)
-    print("CP-05: SENTINEL-1 + SENTINEL-2 FLOOD DETECTION")
-    print("=" * 55)
+    print("=" * 60)
+    print("CP-05: SITS-EXTREME MULTI-TEMPORAL FLOOD DETECTION")
+    print("=" * 60)
+    print("Method: 12-month per-pixel baseline → z-score anomaly detection")
+    print("Fallback: Otsu bi-temporal (if SITS baseline fails)")
+    print("Cross-check: Sentinel-2 NDWI (when cloud-free)")
+    print("=" * 60)
+
+    # ── Tunable parameters ────────────────────────────────────────────────────
+    Z_THRESHOLD      = 2.0   # lower = more sensitive, higher = more conservative
+    N_BASELINE_MONTHS = 12   # months of history for baseline (6 min, 12 recommended)
 
     events  = pd.read_csv('data/events.csv')
     results = []
 
     for _, row in events.iterrows():
-        result = detect_flood(row)
+        result = detect_flood(row,
+                              z_threshold=Z_THRESHOLD,
+                              n_baseline_months=N_BASELINE_MONTHS)
         results.append(result)
 
     df = pd.DataFrame(results)
 
-    print("\n" + "=" * 55)
+    print("\n" + "=" * 60)
     print("RESULTS SUMMARY")
-    print("=" * 55)
-    print(df[['event_id', 'state', 'area_s1_km2', 'area_s2_km2',
-              's2_post_images', 'otsu_threshold_db', 'status']].to_string(index=False))
+    print("=" * 60)
+    print(df[['event_id', 'state', 'area_sits_km2', 'area_s2_km2',
+              'post_images', 'z_threshold', 'status']].to_string(index=False))
 
-    # Stats
-    ok      = df[df['status'].isin(['OK', 'ZERO_AREA'])]
-    skipped = df[df['status'] == 'SKIPPED_NO_IMAGERY']
-    errors  = df[df['status'].str.startswith('ERROR', na=False)]
+    ok       = df[df['status'].isin(['OK', 'ZERO_AREA'])]
+    fallback = df[df['status'] == 'FALLBACK_OTSU']
+    skipped  = df[df['status'] == 'SKIPPED_NO_IMAGERY']
+    errors   = df[df['status'].str.startswith('ERROR', na=False)]
 
-    print(f"\nProcessed : {len(df)} events")
-    print(f"OK        : {len(ok)}")
-    print(f"Skipped   : {len(skipped)}  (no imagery)")
-    print(f"Errors    : {len(errors)}")
+    print(f"\nProcessed      : {len(df)} events")
+    print(f"SITS-Extreme OK: {len(ok)}")
+    print(f"Fallback Otsu  : {len(fallback)}")
+    print(f"Skipped        : {len(skipped)}  (no imagery)")
+    print(f"Errors         : {len(errors)}")
 
-    if len(ok) < 6:
-        print("\nWARN: Fewer than 6 usable events — pipeline may be "
-              "underpowered. We will review before proceeding.")
+    if len(ok) + len(fallback) < 6:
+        print("\nWARN: Fewer than 6 usable events — review before proceeding.")
 
     os.makedirs('data', exist_ok=True)
     df.to_csv('data/flood_extent.csv', index=False)
     print(f"\nSAVED: data/flood_extent.csv")
 
-    # Hard stop if too many failures
-    if len(ok) == 0:
+    if len(ok) + len(fallback) == 0:
         print("\nFAIL: No events returned valid flood area. "
-              "Do not proceed — paste output and we debug.")
+              "Paste output above and debug before proceeding.")
     else:
-        print("\nCP-05 COMPLETE — ready for CP-06")
+        print(f"\nCP-05 COMPLETE — ready for CP-06")
+        print(f"Tip: if areas seem too large, raise Z_THRESHOLD to 2.5")
+        print(f"Tip: if too many zeros, lower Z_THRESHOLD to 1.5")
