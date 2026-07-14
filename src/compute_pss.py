@@ -24,8 +24,8 @@ print(df[['event_id', 'state', 'affected_area_km2', 'area_norm',
           'population_exposed', 'pop_norm']].to_string(index=False))
 
 # ── PSS with primary weights (0.6 area, 0.4 population) ──────────────────────
-W_AREA = 0.6
-W_POP  = 0.4
+W_AREA = 0.5
+W_POP  = 0.5
 
 df['PSS'] = ((W_AREA * df['area_norm']) + (W_POP * df['pop_norm'])).round(4)
 

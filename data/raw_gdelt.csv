@@ -1,14 +1,14 @@
 event_id,state,article_count,coverage_days,time_to_first_report,avg_tone
-E01,Kerala,913,19,10,0.0
-E02,Bihar,307,9,9,0.0
-E03,Assam,229,28,0,0.0
-E04,Telangana,210,7,4,0.0
-E05,Maharashtra,27,7,11,0.0
-E06,Uttarakhand,343,14,2,0.0
-E07,Uttar Pradesh,298,21,11,0.0
-E08,Assam,665,36,0,0.0
-E09,Karnataka,0,0,14,0.0
-E10,Odisha,15,7,4,0.0
+E01,Kerala,34918,19,10,-2.9874
+E02,Bihar,5794,9,9,-5.2102
+E03,Assam,815,28,0,-3.6235
+E04,Telangana,887,7,4,-3.7482
+E05,Maharashtra,4504,7,11,-3.8213
+E06,Uttarakhand,4378,14,2,-3.6123
+E07,Uttar Pradesh,2157,21,11,-2.8792
+E08,Assam,2811,36,0,-4.6808
+E09,Karnataka,2110,0,14,-3.6392
+E10,Odisha,173,7,4,-2.0752
 E100,Manipur,445,71,0,0.0
 E101,Manipur,87,7,0,0.0
 E102,Meghalaya,77,159,4,0.0
@@ -19,7 +19,7 @@ E106,Mizoram,18,7,4,0.0
 E107,Nagaland,0,0,14,0.0
 E108,Nagaland,11,10,2,0.0
 E109,Nagaland,17,12,6,0.0
-E11,Himachal Pradesh,927,25,0,0.0
+E11,Himachal Pradesh,5574,25,0,-3.6653
 E110,Nagaland,59,160,3,0.0
 E111,Nagaland,48,5,0,0.0
 E112,Odisha,0,0,14,0.0
@@ -30,7 +30,7 @@ E116,Punjab,0,0,14,0.0
 E117,Punjab,311,17,0,0.0
 E118,Punjab,836,85,4,0.0
 E119,Punjab,629,69,19,0.0
-E12,Delhi,291,7,4,0.0
+E12,Delhi,14168,7,4,-3.3631
 E120,Punjab,174,35,4,0.0
 E121,Rajasthan,0,0,14,0.0
 E122,Rajasthan,718,90,12,0.0

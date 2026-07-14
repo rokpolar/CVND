@@ -1,0 +1,5104 @@
+[{
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "en",
+  "article_count": "1430",
+  "first_article_date": "2017-06-01",
+  "last_article_date": "2017-08-11",
+  "coverage_days": "72",
+  "coverage_days_threshold_1": "72"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "hin",
+  "article_count": "339",
+  "first_article_date": "2017-06-01",
+  "last_article_date": "2017-08-11",
+  "coverage_days": "56",
+  "coverage_days_threshold_1": "56"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "ben",
+  "article_count": "65",
+  "first_article_date": "2017-06-01",
+  "last_article_date": "2017-08-11",
+  "coverage_days": "30",
+  "coverage_days_threshold_1": "30"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "tam",
+  "article_count": "22",
+  "first_article_date": "2017-06-02",
+  "last_article_date": "2017-08-03",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "rus",
+  "article_count": "15",
+  "first_article_date": "2017-06-12",
+  "last_article_date": "2017-08-06",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "mar",
+  "article_count": "12",
+  "first_article_date": "2017-06-21",
+  "last_article_date": "2017-08-07",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "tel",
+  "article_count": "10",
+  "first_article_date": "2017-06-06",
+  "last_article_date": "2017-08-07",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "spa",
+  "article_count": "8",
+  "first_article_date": "2017-07-14",
+  "last_article_date": "2017-07-31",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "ara",
+  "article_count": "7",
+  "first_article_date": "2017-06-13",
+  "last_article_date": "2017-07-14",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "guj",
+  "article_count": "6",
+  "first_article_date": "2017-06-14",
+  "last_article_date": "2017-07-12",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "kan",
+  "article_count": "5",
+  "first_article_date": "2017-06-15",
+  "last_article_date": "2017-08-04",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "fas",
+  "article_count": "4",
+  "first_article_date": "2017-06-20",
+  "last_article_date": "2017-07-15",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "urd",
+  "article_count": "4",
+  "first_article_date": "2017-07-05",
+  "last_article_date": "2017-08-01",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "kor",
+  "article_count": "3",
+  "first_article_date": "2017-07-14",
+  "last_article_date": "2017-07-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "deu",
+  "article_count": "2",
+  "first_article_date": "2017-07-14",
+  "last_article_date": "2017-07-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "pan",
+  "article_count": "2",
+  "first_article_date": "2017-06-19",
+  "last_article_date": "2017-07-31",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "axe",
+  "article_count": "1",
+  "first_article_date": "2017-07-14",
+  "last_article_date": "2017-07-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E100",
+  "state": "Manipur",
+  "source_lang": "jpn",
+  "article_count": "1",
+  "first_article_date": "2017-06-05",
+  "last_article_date": "2017-06-05",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E107",
+  "state": "Nagaland",
+  "source_lang": "en",
+  "article_count": "296",
+  "first_article_date": "2016-04-19",
+  "last_article_date": "2016-05-09",
+  "coverage_days": "21",
+  "coverage_days_threshold_1": "21"
+}, {
+  "event_id": "E107",
+  "state": "Nagaland",
+  "source_lang": "ben",
+  "article_count": "7",
+  "first_article_date": "2016-04-21",
+  "last_article_date": "2016-05-07",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E107",
+  "state": "Nagaland",
+  "source_lang": "hin",
+  "article_count": "4",
+  "first_article_date": "2016-04-19",
+  "last_article_date": "2016-05-07",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E107",
+  "state": "Nagaland",
+  "source_lang": "tel",
+  "article_count": "2",
+  "first_article_date": "2016-04-19",
+  "last_article_date": "2016-04-23",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E108",
+  "state": "Nagaland",
+  "source_lang": "en",
+  "article_count": "200",
+  "first_article_date": "2017-06-01",
+  "last_article_date": "2017-06-20",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E108",
+  "state": "Nagaland",
+  "source_lang": "hin",
+  "article_count": "21",
+  "first_article_date": "2017-06-01",
+  "last_article_date": "2017-06-20",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E108",
+  "state": "Nagaland",
+  "source_lang": "ben",
+  "article_count": "4",
+  "first_article_date": "2017-06-09",
+  "last_article_date": "2017-06-19",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E112",
+  "state": "Odisha",
+  "source_lang": "en",
+  "article_count": "1900",
+  "first_article_date": "2015-07-12",
+  "last_article_date": "2015-09-02",
+  "coverage_days": "53",
+  "coverage_days_threshold_1": "53"
+}, {
+  "event_id": "E112",
+  "state": "Odisha",
+  "source_lang": "spa",
+  "article_count": "59",
+  "first_article_date": "2015-07-18",
+  "last_article_date": "2015-08-16",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E112",
+  "state": "Odisha",
+  "source_lang": "zho",
+  "article_count": "14",
+  "first_article_date": "2015-07-15",
+  "last_article_date": "2015-08-05",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E112",
+  "state": "Odisha",
+  "source_lang": "mar",
+  "article_count": "13",
+  "first_article_date": "2015-07-30",
+  "last_article_date": "2015-08-16",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E112",
+  "state": "Odisha",
+  "source_lang": "guj",
+  "article_count": "6",
+  "first_article_date": "2015-07-12",
+  "last_article_date": "2015-08-05",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E112",
+  "state": "Odisha",
+  "source_lang": "mal",
+  "article_count": "5",
+  "first_article_date": "2015-07-13",
+  "last_article_date": "2015-08-02",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E112",
+  "state": "Odisha",
+  "source_lang": "tel",
+  "article_count": "1",
+  "first_article_date": "2015-08-02",
+  "last_article_date": "2015-08-02",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E112",
+  "state": "Odisha",
+  "source_lang": "fra",
+  "article_count": "1",
+  "first_article_date": "2015-08-02",
+  "last_article_date": "2015-08-02",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "en",
+  "article_count": "3011",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "24",
+  "coverage_days_threshold_1": "24"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "urd",
+  "article_count": "415",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "24",
+  "coverage_days_threshold_1": "24"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "hin",
+  "article_count": "160",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "23",
+  "coverage_days_threshold_1": "23"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "ara",
+  "article_count": "84",
+  "first_article_date": "2015-07-05",
+  "last_article_date": "2015-07-26",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "pan",
+  "article_count": "74",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "23",
+  "coverage_days_threshold_1": "23"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "fra",
+  "article_count": "66",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "22",
+  "coverage_days_threshold_1": "22"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "spa",
+  "article_count": "32",
+  "first_article_date": "2015-07-12",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "ben",
+  "article_count": "20",
+  "first_article_date": "2015-07-09",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "guj",
+  "article_count": "14",
+  "first_article_date": "2015-07-09",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "tel",
+  "article_count": "12",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-25",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "fas",
+  "article_count": "6",
+  "first_article_date": "2015-07-09",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "tam",
+  "article_count": "6",
+  "first_article_date": "2015-07-08",
+  "last_article_date": "2015-07-25",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "zho",
+  "article_count": "4",
+  "first_article_date": "2015-07-10",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "deu",
+  "article_count": "3",
+  "first_article_date": "2015-07-08",
+  "last_article_date": "2015-07-25",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "kan",
+  "article_count": "3",
+  "first_article_date": "2015-07-07",
+  "last_article_date": "2015-07-13",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "ces",
+  "article_count": "3",
+  "first_article_date": "2015-07-25",
+  "last_article_date": "2015-07-26",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "mar",
+  "article_count": "2",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-07-22",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "ita",
+  "article_count": "2",
+  "first_article_date": "2015-07-14",
+  "last_article_date": "2015-07-23",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "tur",
+  "article_count": "2",
+  "first_article_date": "2015-07-14",
+  "last_article_date": "2015-07-25",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "sin",
+  "article_count": "2",
+  "first_article_date": "2015-07-13",
+  "last_article_date": "2015-07-13",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "mkd",
+  "article_count": "1",
+  "first_article_date": "2015-07-21",
+  "last_article_date": "2015-07-21",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "hrv",
+  "article_count": "1",
+  "first_article_date": "2015-07-21",
+  "last_article_date": "2015-07-21",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "mal",
+  "article_count": "1",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-07-06",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E116",
+  "state": "Punjab",
+  "source_lang": "tha",
+  "article_count": "1",
+  "first_article_date": "2015-07-09",
+  "last_article_date": "2015-07-09",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "en",
+  "article_count": "3446",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-09-02",
+  "coverage_days": "61",
+  "coverage_days_threshold_1": "61"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "hin",
+  "article_count": "1106",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-09-02",
+  "coverage_days": "61",
+  "coverage_days_threshold_1": "61"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "mar",
+  "article_count": "91",
+  "first_article_date": "2015-07-05",
+  "last_article_date": "2015-08-30",
+  "coverage_days": "41",
+  "coverage_days_threshold_1": "41"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "ben",
+  "article_count": "67",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-08-30",
+  "coverage_days": "39",
+  "coverage_days_threshold_1": "39"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "guj",
+  "article_count": "53",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-08-28",
+  "coverage_days": "26",
+  "coverage_days_threshold_1": "26"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "tel",
+  "article_count": "34",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-09-01",
+  "coverage_days": "22",
+  "coverage_days_threshold_1": "22"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "zho",
+  "article_count": "30",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-08-28",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "spa",
+  "article_count": "26",
+  "first_article_date": "2015-07-12",
+  "last_article_date": "2015-08-23",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "pan",
+  "article_count": "25",
+  "first_article_date": "2015-07-10",
+  "last_article_date": "2015-09-01",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "ara",
+  "article_count": "22",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-09-02",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "tam",
+  "article_count": "17",
+  "first_article_date": "2015-07-16",
+  "last_article_date": "2015-08-31",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "urd",
+  "article_count": "12",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-08-16",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "kan",
+  "article_count": "12",
+  "first_article_date": "2015-07-14",
+  "last_article_date": "2015-08-26",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "fas",
+  "article_count": "6",
+  "first_article_date": "2015-08-04",
+  "last_article_date": "2015-08-26",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "fra",
+  "article_count": "5",
+  "first_article_date": "2015-07-08",
+  "last_article_date": "2015-08-22",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "por",
+  "article_count": "5",
+  "first_article_date": "2015-07-10",
+  "last_article_date": "2015-08-15",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "ind",
+  "article_count": "4",
+  "first_article_date": "2015-08-01",
+  "last_article_date": "2015-08-20",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "nep",
+  "article_count": "4",
+  "first_article_date": "2015-07-10",
+  "last_article_date": "2015-08-30",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "mal",
+  "article_count": "3",
+  "first_article_date": "2015-07-25",
+  "last_article_date": "2015-08-17",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "ron",
+  "article_count": "2",
+  "first_article_date": "2015-07-28",
+  "last_article_date": "2015-07-28",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "rus",
+  "article_count": "2",
+  "first_article_date": "2015-07-22",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "tur",
+  "article_count": "2",
+  "first_article_date": "2015-07-18",
+  "last_article_date": "2015-08-25",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "ell",
+  "article_count": "2",
+  "first_article_date": "2015-08-22",
+  "last_article_date": "2015-08-23",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "deu",
+  "article_count": "2",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-30",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "sin",
+  "article_count": "1",
+  "first_article_date": "2015-07-10",
+  "last_article_date": "2015-07-10",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "tha",
+  "article_count": "1",
+  "first_article_date": "2015-09-01",
+  "last_article_date": "2015-09-01",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "jpn",
+  "article_count": "1",
+  "first_article_date": "2015-08-03",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E121",
+  "state": "Rajasthan",
+  "source_lang": "kor",
+  "article_count": "1",
+  "first_article_date": "2015-07-09",
+  "last_article_date": "2015-07-09",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "en",
+  "article_count": "4485",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "105",
+  "coverage_days_threshold_1": "105"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "hin",
+  "article_count": "1450",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "104",
+  "coverage_days_threshold_1": "104"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "mar",
+  "article_count": "238",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-10",
+  "coverage_days": "76",
+  "coverage_days_threshold_1": "76"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "tel",
+  "article_count": "212",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "55",
+  "coverage_days_threshold_1": "55"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "guj",
+  "article_count": "127",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "43",
+  "coverage_days_threshold_1": "43"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "ben",
+  "article_count": "123",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-09-10",
+  "coverage_days": "56",
+  "coverage_days_threshold_1": "56"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "zho",
+  "article_count": "52",
+  "first_article_date": "2017-06-04",
+  "last_article_date": "2017-09-01",
+  "coverage_days": "27",
+  "coverage_days_threshold_1": "27"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "urd",
+  "article_count": "43",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "29",
+  "coverage_days_threshold_1": "29"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "tam",
+  "article_count": "31",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-09-06",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "tur",
+  "article_count": "31",
+  "first_article_date": "2017-07-06",
+  "last_article_date": "2017-07-18",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "spa",
+  "article_count": "27",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-02",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "pan",
+  "article_count": "21",
+  "first_article_date": "2017-06-05",
+  "last_article_date": "2017-09-08",
+  "coverage_days": "18",
+  "coverage_days_threshold_1": "18"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "nep",
+  "article_count": "18",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-08-31",
+  "coverage_days": "16",
+  "coverage_days_threshold_1": "16"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "kan",
+  "article_count": "18",
+  "first_article_date": "2017-06-14",
+  "last_article_date": "2017-09-03",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "fra",
+  "article_count": "14",
+  "first_article_date": "2017-06-08",
+  "last_article_date": "2017-08-27",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "mal",
+  "article_count": "11",
+  "first_article_date": "2017-06-13",
+  "last_article_date": "2017-08-31",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "bul",
+  "article_count": "6",
+  "first_article_date": "2017-07-21",
+  "last_article_date": "2017-08-11",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "fas",
+  "article_count": "6",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-08-01",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "ara",
+  "article_count": "6",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-06",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "rus",
+  "article_count": "3",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-07-12",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "sin",
+  "article_count": "3",
+  "first_article_date": "2017-07-13",
+  "last_article_date": "2017-09-04",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "ind",
+  "article_count": "2",
+  "first_article_date": "2017-06-07",
+  "last_article_date": "2017-08-23",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "tha",
+  "article_count": "2",
+  "first_article_date": "2017-06-29",
+  "last_article_date": "2017-09-05",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "lit",
+  "article_count": "2",
+  "first_article_date": "2017-05-31",
+  "last_article_date": "2017-06-01",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "por",
+  "article_count": "2",
+  "first_article_date": "2017-06-08",
+  "last_article_date": "2017-06-15",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "ces",
+  "article_count": "2",
+  "first_article_date": "2017-06-11",
+  "last_article_date": "2017-08-03",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "hye",
+  "article_count": "2",
+  "first_article_date": "2017-07-27",
+  "last_article_date": "2017-07-27",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "srp",
+  "article_count": "1",
+  "first_article_date": "2017-06-16",
+  "last_article_date": "2017-06-16",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "deu",
+  "article_count": "1",
+  "first_article_date": "2017-08-14",
+  "last_article_date": "2017-08-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E122",
+  "state": "Rajasthan",
+  "source_lang": "nld",
+  "article_count": "1",
+  "first_article_date": "2017-08-16",
+  "last_article_date": "2017-08-16",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "en",
+  "article_count": "1712",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "22",
+  "coverage_days_threshold_1": "22"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "tam",
+  "article_count": "198",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "22",
+  "coverage_days_threshold_1": "22"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "hin",
+  "article_count": "113",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "tha",
+  "article_count": "36",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "tel",
+  "article_count": "28",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "ara",
+  "article_count": "19",
+  "first_article_date": "2015-05-18",
+  "last_article_date": "2015-06-03",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "fas",
+  "article_count": "14",
+  "first_article_date": "2015-05-17",
+  "last_article_date": "2015-06-03",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "zho",
+  "article_count": "12",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "ben",
+  "article_count": "11",
+  "first_article_date": "2015-05-16",
+  "last_article_date": "2015-06-03",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "mar",
+  "article_count": "8",
+  "first_article_date": "2015-05-18",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "spa",
+  "article_count": "7",
+  "first_article_date": "2015-05-15",
+  "last_article_date": "2015-05-16",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "mal",
+  "article_count": "7",
+  "first_article_date": "2015-05-22",
+  "last_article_date": "2015-05-30",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "guj",
+  "article_count": "5",
+  "first_article_date": "2015-05-22",
+  "last_article_date": "2015-06-01",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "urd",
+  "article_count": "4",
+  "first_article_date": "2015-05-21",
+  "last_article_date": "2015-05-30",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "slk",
+  "article_count": "4",
+  "first_article_date": "2015-05-29",
+  "last_article_date": "2015-05-29",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "kan",
+  "article_count": "3",
+  "first_article_date": "2015-05-16",
+  "last_article_date": "2015-05-30",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "jpn",
+  "article_count": "2",
+  "first_article_date": "2015-05-16",
+  "last_article_date": "2015-05-25",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "ita",
+  "article_count": "1",
+  "first_article_date": "2015-05-21",
+  "last_article_date": "2015-05-21",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E128",
+  "state": "Tamil Nadu",
+  "source_lang": "deu",
+  "article_count": "1",
+  "first_article_date": "2015-05-17",
+  "last_article_date": "2015-05-17",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "en",
+  "article_count": "9333",
+  "first_article_date": "2016-07-06",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "62",
+  "coverage_days_threshold_1": "62"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "tam",
+  "article_count": "1218",
+  "first_article_date": "2016-07-06",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "62",
+  "coverage_days_threshold_1": "62"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "hin",
+  "article_count": "364",
+  "first_article_date": "2016-07-06",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "60",
+  "coverage_days_threshold_1": "60"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "ben",
+  "article_count": "207",
+  "first_article_date": "2016-07-06",
+  "last_article_date": "2016-09-04",
+  "coverage_days": "33",
+  "coverage_days_threshold_1": "33"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "tel",
+  "article_count": "192",
+  "first_article_date": "2016-07-06",
+  "last_article_date": "2016-09-04",
+  "coverage_days": "50",
+  "coverage_days_threshold_1": "50"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "tha",
+  "article_count": "140",
+  "first_article_date": "2016-07-06",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "52",
+  "coverage_days_threshold_1": "52"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "kan",
+  "article_count": "74",
+  "first_article_date": "2016-07-13",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "38",
+  "coverage_days_threshold_1": "38"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "zho",
+  "article_count": "65",
+  "first_article_date": "2016-07-06",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "34",
+  "coverage_days_threshold_1": "34"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "fas",
+  "article_count": "53",
+  "first_article_date": "2016-07-10",
+  "last_article_date": "2016-09-03",
+  "coverage_days": "32",
+  "coverage_days_threshold_1": "32"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "ara",
+  "article_count": "52",
+  "first_article_date": "2016-07-10",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "spa",
+  "article_count": "37",
+  "first_article_date": "2016-07-23",
+  "last_article_date": "2016-08-20",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "mar",
+  "article_count": "34",
+  "first_article_date": "2016-07-06",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "22",
+  "coverage_days_threshold_1": "22"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "mal",
+  "article_count": "28",
+  "first_article_date": "2016-07-10",
+  "last_article_date": "2016-09-01",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "rus",
+  "article_count": "25",
+  "first_article_date": "2016-07-07",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "guj",
+  "article_count": "17",
+  "first_article_date": "2016-07-17",
+  "last_article_date": "2016-09-01",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "urd",
+  "article_count": "15",
+  "first_article_date": "2016-07-09",
+  "last_article_date": "2016-08-29",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "pan",
+  "article_count": "11",
+  "first_article_date": "2016-07-07",
+  "last_article_date": "2016-09-01",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "pol",
+  "article_count": "4",
+  "first_article_date": "2016-07-10",
+  "last_article_date": "2016-08-22",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "deu",
+  "article_count": "4",
+  "first_article_date": "2016-07-24",
+  "last_article_date": "2016-09-04",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "fra",
+  "article_count": "3",
+  "first_article_date": "2016-07-14",
+  "last_article_date": "2016-08-09",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "kor",
+  "article_count": "2",
+  "first_article_date": "2016-07-23",
+  "last_article_date": "2016-08-01",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "ell",
+  "article_count": "2",
+  "first_article_date": "2016-07-10",
+  "last_article_date": "2016-07-22",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "ita",
+  "article_count": "2",
+  "first_article_date": "2016-08-01",
+  "last_article_date": "2016-08-07",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "sin",
+  "article_count": "1",
+  "first_article_date": "2016-07-19",
+  "last_article_date": "2016-07-19",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "jpn",
+  "article_count": "1",
+  "first_article_date": "2016-07-14",
+  "last_article_date": "2016-07-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E129",
+  "state": "Tamil Nadu",
+  "source_lang": "mon",
+  "article_count": "1",
+  "first_article_date": "2016-08-25",
+  "last_article_date": "2016-08-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "en",
+  "article_count": "2784",
+  "first_article_date": "2017-10-27",
+  "last_article_date": "2017-11-22",
+  "coverage_days": "27",
+  "coverage_days_threshold_1": "27"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "tam",
+  "article_count": "1611",
+  "first_article_date": "2017-10-27",
+  "last_article_date": "2017-11-22",
+  "coverage_days": "27",
+  "coverage_days_threshold_1": "27"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "hin",
+  "article_count": "280",
+  "first_article_date": "2017-10-27",
+  "last_article_date": "2017-11-22",
+  "coverage_days": "25",
+  "coverage_days_threshold_1": "25"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "tel",
+  "article_count": "91",
+  "first_article_date": "2017-10-27",
+  "last_article_date": "2017-11-22",
+  "coverage_days": "21",
+  "coverage_days_threshold_1": "21"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "ben",
+  "article_count": "60",
+  "first_article_date": "2017-10-29",
+  "last_article_date": "2017-11-19",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "tha",
+  "article_count": "59",
+  "first_article_date": "2017-10-27",
+  "last_article_date": "2017-11-22",
+  "coverage_days": "23",
+  "coverage_days_threshold_1": "23"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "mal",
+  "article_count": "59",
+  "first_article_date": "2017-10-27",
+  "last_article_date": "2017-11-21",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "ara",
+  "article_count": "53",
+  "first_article_date": "2017-10-29",
+  "last_article_date": "2017-11-14",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "kan",
+  "article_count": "27",
+  "first_article_date": "2017-10-27",
+  "last_article_date": "2017-11-11",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "guj",
+  "article_count": "25",
+  "first_article_date": "2017-10-30",
+  "last_article_date": "2017-11-20",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "swe",
+  "article_count": "24",
+  "first_article_date": "2017-11-04",
+  "last_article_date": "2017-11-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "mar",
+  "article_count": "22",
+  "first_article_date": "2017-10-28",
+  "last_article_date": "2017-11-22",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "rus",
+  "article_count": "20",
+  "first_article_date": "2017-11-04",
+  "last_article_date": "2017-11-08",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "zho",
+  "article_count": "18",
+  "first_article_date": "2017-10-29",
+  "last_article_date": "2017-11-20",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "spa",
+  "article_count": "13",
+  "first_article_date": "2017-11-04",
+  "last_article_date": "2017-11-18",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "fas",
+  "article_count": "13",
+  "first_article_date": "2017-10-28",
+  "last_article_date": "2017-11-22",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "urd",
+  "article_count": "10",
+  "first_article_date": "2017-10-31",
+  "last_article_date": "2017-11-05",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "pan",
+  "article_count": "7",
+  "first_article_date": "2017-10-31",
+  "last_article_date": "2017-11-08",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "deu",
+  "article_count": "4",
+  "first_article_date": "2017-11-04",
+  "last_article_date": "2017-11-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "srp",
+  "article_count": "2",
+  "first_article_date": "2017-11-04",
+  "last_article_date": "2017-11-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "slk",
+  "article_count": "2",
+  "first_article_date": "2017-11-04",
+  "last_article_date": "2017-11-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "fra",
+  "article_count": "1",
+  "first_article_date": "2017-11-05",
+  "last_article_date": "2017-11-05",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "kor",
+  "article_count": "1",
+  "first_article_date": "2017-11-04",
+  "last_article_date": "2017-11-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "sin",
+  "article_count": "1",
+  "first_article_date": "2017-11-12",
+  "last_article_date": "2017-11-12",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "ukr",
+  "article_count": "1",
+  "first_article_date": "2017-11-06",
+  "last_article_date": "2017-11-06",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E130",
+  "state": "Tamil Nadu",
+  "source_lang": "hrv",
+  "article_count": "1",
+  "first_article_date": "2017-11-04",
+  "last_article_date": "2017-11-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "en",
+  "article_count": "2997",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "22",
+  "coverage_days_threshold_1": "22"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "hin",
+  "article_count": "384",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "21",
+  "coverage_days_threshold_1": "21"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "spa",
+  "article_count": "121",
+  "first_article_date": "2015-05-15",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "zho",
+  "article_count": "27",
+  "first_article_date": "2015-05-18",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "ben",
+  "article_count": "23",
+  "first_article_date": "2015-05-15",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "mar",
+  "article_count": "19",
+  "first_article_date": "2015-05-18",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "guj",
+  "article_count": "19",
+  "first_article_date": "2015-05-18",
+  "last_article_date": "2015-06-03",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "fra",
+  "article_count": "14",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-05-29",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "tam",
+  "article_count": "10",
+  "first_article_date": "2015-05-16",
+  "last_article_date": "2015-06-03",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "ara",
+  "article_count": "10",
+  "first_article_date": "2015-05-22",
+  "last_article_date": "2015-06-03",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "kan",
+  "article_count": "8",
+  "first_article_date": "2015-05-24",
+  "last_article_date": "2015-06-02",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "tel",
+  "article_count": "8",
+  "first_article_date": "2015-05-15",
+  "last_article_date": "2015-06-02",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "urd",
+  "article_count": "6",
+  "first_article_date": "2015-05-19",
+  "last_article_date": "2015-06-02",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "ron",
+  "article_count": "5",
+  "first_article_date": "2015-05-26",
+  "last_article_date": "2015-06-02",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "por",
+  "article_count": "4",
+  "first_article_date": "2015-05-16",
+  "last_article_date": "2015-05-25",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "ind",
+  "article_count": "3",
+  "first_article_date": "2015-05-15",
+  "last_article_date": "2015-05-31",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "tha",
+  "article_count": "3",
+  "first_article_date": "2015-05-14",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "ita",
+  "article_count": "3",
+  "first_article_date": "2015-05-25",
+  "last_article_date": "2015-05-28",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "nep",
+  "article_count": "2",
+  "first_article_date": "2015-05-24",
+  "last_article_date": "2015-06-04",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "ell",
+  "article_count": "2",
+  "first_article_date": "2015-05-27",
+  "last_article_date": "2015-06-02",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "rus",
+  "article_count": "2",
+  "first_article_date": "2015-05-15",
+  "last_article_date": "2015-05-29",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "swe",
+  "article_count": "2",
+  "first_article_date": "2015-05-24",
+  "last_article_date": "2015-05-28",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "ukr",
+  "article_count": "2",
+  "first_article_date": "2015-05-15",
+  "last_article_date": "2015-05-15",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "nld",
+  "article_count": "1",
+  "first_article_date": "2015-05-25",
+  "last_article_date": "2015-05-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "deu",
+  "article_count": "1",
+  "first_article_date": "2015-05-18",
+  "last_article_date": "2015-05-18",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "bul",
+  "article_count": "1",
+  "first_article_date": "2015-05-25",
+  "last_article_date": "2015-05-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "fas",
+  "article_count": "1",
+  "first_article_date": "2015-05-25",
+  "last_article_date": "2015-05-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "pol",
+  "article_count": "1",
+  "first_article_date": "2015-05-25",
+  "last_article_date": "2015-05-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "mal",
+  "article_count": "1",
+  "first_article_date": "2015-05-31",
+  "last_article_date": "2015-05-31",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E140",
+  "state": "Uttar Pradesh",
+  "source_lang": "heb",
+  "article_count": "1",
+  "first_article_date": "2015-05-25",
+  "last_article_date": "2015-05-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "en",
+  "article_count": "2034",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "24",
+  "coverage_days_threshold_1": "24"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "hin",
+  "article_count": "762",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "24",
+  "coverage_days_threshold_1": "24"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "guj",
+  "article_count": "35",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "16",
+  "coverage_days_threshold_1": "16"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "ben",
+  "article_count": "31",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "16",
+  "coverage_days_threshold_1": "16"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "tam",
+  "article_count": "29",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "tel",
+  "article_count": "19",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "mar",
+  "article_count": "16",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "pan",
+  "article_count": "12",
+  "first_article_date": "2015-07-05",
+  "last_article_date": "2015-07-22",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "urd",
+  "article_count": "9",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-24",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "swe",
+  "article_count": "8",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-07-25",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "ara",
+  "article_count": "8",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-24",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "rus",
+  "article_count": "8",
+  "first_article_date": "2015-07-08",
+  "last_article_date": "2015-07-24",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "zho",
+  "article_count": "6",
+  "first_article_date": "2015-07-05",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "kan",
+  "article_count": "6",
+  "first_article_date": "2015-07-09",
+  "last_article_date": "2015-07-24",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "tha",
+  "article_count": "5",
+  "first_article_date": "2015-07-14",
+  "last_article_date": "2015-07-25",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "nep",
+  "article_count": "4",
+  "first_article_date": "2015-07-10",
+  "last_article_date": "2015-07-24",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "spa",
+  "article_count": "4",
+  "first_article_date": "2015-07-08",
+  "last_article_date": "2015-07-19",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "sin",
+  "article_count": "3",
+  "first_article_date": "2015-07-19",
+  "last_article_date": "2015-07-19",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "por",
+  "article_count": "2",
+  "first_article_date": "2015-07-10",
+  "last_article_date": "2015-07-17",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "kor",
+  "article_count": "1",
+  "first_article_date": "2015-07-12",
+  "last_article_date": "2015-07-12",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "est",
+  "article_count": "1",
+  "first_article_date": "2015-07-09",
+  "last_article_date": "2015-07-09",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "mal",
+  "article_count": "1",
+  "first_article_date": "2015-07-16",
+  "last_article_date": "2015-07-16",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E141",
+  "state": "Uttar Pradesh",
+  "source_lang": "fra",
+  "article_count": "1",
+  "first_article_date": "2015-07-19",
+  "last_article_date": "2015-07-19",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "en",
+  "article_count": "1198",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-13",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "hin",
+  "article_count": "373",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-13",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "swe",
+  "article_count": "28",
+  "first_article_date": "2015-09-01",
+  "last_article_date": "2015-09-12",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "ben",
+  "article_count": "22",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-08",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "mar",
+  "article_count": "16",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-11",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "tel",
+  "article_count": "15",
+  "first_article_date": "2015-09-01",
+  "last_article_date": "2015-09-11",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "ara",
+  "article_count": "14",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-09",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "guj",
+  "article_count": "13",
+  "first_article_date": "2015-08-27",
+  "last_article_date": "2015-09-11",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "tam",
+  "article_count": "13",
+  "first_article_date": "2015-08-29",
+  "last_article_date": "2015-09-10",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "tha",
+  "article_count": "9",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-07",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "pan",
+  "article_count": "4",
+  "first_article_date": "2015-08-30",
+  "last_article_date": "2015-09-10",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "por",
+  "article_count": "4",
+  "first_article_date": "2015-09-02",
+  "last_article_date": "2015-09-07",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "rus",
+  "article_count": "4",
+  "first_article_date": "2015-08-26",
+  "last_article_date": "2015-09-11",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "urd",
+  "article_count": "3",
+  "first_article_date": "2015-08-29",
+  "last_article_date": "2015-09-08",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "fra",
+  "article_count": "3",
+  "first_article_date": "2015-08-30",
+  "last_article_date": "2015-09-10",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "spa",
+  "article_count": "3",
+  "first_article_date": "2015-08-30",
+  "last_article_date": "2015-09-13",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "zho",
+  "article_count": "2",
+  "first_article_date": "2015-09-06",
+  "last_article_date": "2015-09-11",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "ell",
+  "article_count": "2",
+  "first_article_date": "2015-08-27",
+  "last_article_date": "2015-09-09",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "ita",
+  "article_count": "2",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-04",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "mal",
+  "article_count": "1",
+  "first_article_date": "2015-09-09",
+  "last_article_date": "2015-09-09",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E142",
+  "state": "Uttar Pradesh",
+  "source_lang": "kan",
+  "article_count": "1",
+  "first_article_date": "2015-09-12",
+  "last_article_date": "2015-09-12",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "en",
+  "article_count": "16429",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-26",
+  "coverage_days": "77",
+  "coverage_days_threshold_1": "77"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "hin",
+  "article_count": "3065",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-26",
+  "coverage_days": "77",
+  "coverage_days_threshold_1": "77"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "ben",
+  "article_count": "2847",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-26",
+  "coverage_days": "75",
+  "coverage_days_threshold_1": "75"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "swe",
+  "article_count": "462",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-26",
+  "coverage_days": "74",
+  "coverage_days_threshold_1": "74"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "guj",
+  "article_count": "206",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-26",
+  "coverage_days": "42",
+  "coverage_days_threshold_1": "42"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "urd",
+  "article_count": "189",
+  "first_article_date": "2016-07-15",
+  "last_article_date": "2016-09-26",
+  "coverage_days": "49",
+  "coverage_days_threshold_1": "49"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "mar",
+  "article_count": "110",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-26",
+  "coverage_days": "51",
+  "coverage_days_threshold_1": "51"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "tel",
+  "article_count": "108",
+  "first_article_date": "2016-07-13",
+  "last_article_date": "2016-09-25",
+  "coverage_days": "45",
+  "coverage_days_threshold_1": "45"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "tam",
+  "article_count": "83",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-24",
+  "coverage_days": "40",
+  "coverage_days_threshold_1": "40"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "spa",
+  "article_count": "71",
+  "first_article_date": "2016-07-17",
+  "last_article_date": "2016-09-09",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "ara",
+  "article_count": "67",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-25",
+  "coverage_days": "29",
+  "coverage_days_threshold_1": "29"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "nep",
+  "article_count": "62",
+  "first_article_date": "2016-07-13",
+  "last_article_date": "2016-09-26",
+  "coverage_days": "41",
+  "coverage_days_threshold_1": "41"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "por",
+  "article_count": "60",
+  "first_article_date": "2016-07-15",
+  "last_article_date": "2016-09-25",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "rus",
+  "article_count": "53",
+  "first_article_date": "2016-07-13",
+  "last_article_date": "2016-09-21",
+  "coverage_days": "21",
+  "coverage_days_threshold_1": "21"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "tha",
+  "article_count": "53",
+  "first_article_date": "2016-07-13",
+  "last_article_date": "2016-09-23",
+  "coverage_days": "35",
+  "coverage_days_threshold_1": "35"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "kan",
+  "article_count": "37",
+  "first_article_date": "2016-07-14",
+  "last_article_date": "2016-09-23",
+  "coverage_days": "25",
+  "coverage_days_threshold_1": "25"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "fra",
+  "article_count": "37",
+  "first_article_date": "2016-07-13",
+  "last_article_date": "2016-09-25",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "zho",
+  "article_count": "32",
+  "first_article_date": "2016-07-15",
+  "last_article_date": "2016-09-03",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "pan",
+  "article_count": "27",
+  "first_article_date": "2016-07-12",
+  "last_article_date": "2016-09-24",
+  "coverage_days": "22",
+  "coverage_days_threshold_1": "22"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "mkd",
+  "article_count": "22",
+  "first_article_date": "2016-08-03",
+  "last_article_date": "2016-08-30",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "mal",
+  "article_count": "17",
+  "first_article_date": "2016-07-18",
+  "last_article_date": "2016-09-25",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "fas",
+  "article_count": "16",
+  "first_article_date": "2016-07-16",
+  "last_article_date": "2016-09-06",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "ron",
+  "article_count": "14",
+  "first_article_date": "2016-08-03",
+  "last_article_date": "2016-08-23",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "ita",
+  "article_count": "10",
+  "first_article_date": "2016-07-16",
+  "last_article_date": "2016-09-22",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "ukr",
+  "article_count": "8",
+  "first_article_date": "2016-07-18",
+  "last_article_date": "2016-08-29",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "lit",
+  "article_count": "7",
+  "first_article_date": "2016-08-20",
+  "last_article_date": "2016-08-25",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "axe",
+  "article_count": "4",
+  "first_article_date": "2016-08-17",
+  "last_article_date": "2016-08-20",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "deu",
+  "article_count": "4",
+  "first_article_date": "2016-07-15",
+  "last_article_date": "2016-09-18",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "bul",
+  "article_count": "3",
+  "first_article_date": "2016-07-25",
+  "last_article_date": "2016-08-13",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "hye",
+  "article_count": "3",
+  "first_article_date": "2016-09-04",
+  "last_article_date": "2016-09-05",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "slv",
+  "article_count": "2",
+  "first_article_date": "2016-08-25",
+  "last_article_date": "2016-08-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "ind",
+  "article_count": "2",
+  "first_article_date": "2016-09-15",
+  "last_article_date": "2016-09-17",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "sin",
+  "article_count": "1",
+  "first_article_date": "2016-07-19",
+  "last_article_date": "2016-07-19",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "ell",
+  "article_count": "1",
+  "first_article_date": "2016-09-07",
+  "last_article_date": "2016-09-07",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "est",
+  "article_count": "1",
+  "first_article_date": "2016-09-15",
+  "last_article_date": "2016-09-15",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "nld",
+  "article_count": "1",
+  "first_article_date": "2016-08-30",
+  "last_article_date": "2016-08-30",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "hrv",
+  "article_count": "1",
+  "first_article_date": "2016-08-25",
+  "last_article_date": "2016-08-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E143",
+  "state": "Uttar Pradesh",
+  "source_lang": "ces",
+  "article_count": "1",
+  "first_article_date": "2016-07-24",
+  "last_article_date": "2016-07-24",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "en",
+  "article_count": "11446",
+  "first_article_date": "2017-06-28",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "78",
+  "coverage_days_threshold_1": "78"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "hin",
+  "article_count": "3734",
+  "first_article_date": "2017-06-28",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "77",
+  "coverage_days_threshold_1": "77"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "ben",
+  "article_count": "259",
+  "first_article_date": "2017-06-30",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "67",
+  "coverage_days_threshold_1": "67"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "tel",
+  "article_count": "153",
+  "first_article_date": "2017-06-28",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "52",
+  "coverage_days_threshold_1": "52"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "zho",
+  "article_count": "123",
+  "first_article_date": "2017-07-03",
+  "last_article_date": "2017-09-10",
+  "coverage_days": "35",
+  "coverage_days_threshold_1": "35"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "guj",
+  "article_count": "117",
+  "first_article_date": "2017-06-29",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "36",
+  "coverage_days_threshold_1": "36"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "spa",
+  "article_count": "106",
+  "first_article_date": "2017-07-02",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "33",
+  "coverage_days_threshold_1": "33"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "urd",
+  "article_count": "103",
+  "first_article_date": "2017-06-28",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "48",
+  "coverage_days_threshold_1": "48"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "tam",
+  "article_count": "80",
+  "first_article_date": "2017-06-30",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "41",
+  "coverage_days_threshold_1": "41"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "fra",
+  "article_count": "76",
+  "first_article_date": "2017-06-29",
+  "last_article_date": "2017-09-03",
+  "coverage_days": "16",
+  "coverage_days_threshold_1": "16"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "mar",
+  "article_count": "75",
+  "first_article_date": "2017-06-29",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "47",
+  "coverage_days_threshold_1": "47"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "tha",
+  "article_count": "47",
+  "first_article_date": "2017-06-28",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "29",
+  "coverage_days_threshold_1": "29"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "swe",
+  "article_count": "45",
+  "first_article_date": "2017-06-28",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "21",
+  "coverage_days_threshold_1": "21"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "nep",
+  "article_count": "43",
+  "first_article_date": "2017-06-29",
+  "last_article_date": "2017-08-26",
+  "coverage_days": "23",
+  "coverage_days_threshold_1": "23"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "rus",
+  "article_count": "41",
+  "first_article_date": "2017-07-02",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "23",
+  "coverage_days_threshold_1": "23"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "kan",
+  "article_count": "40",
+  "first_article_date": "2017-07-04",
+  "last_article_date": "2017-09-13",
+  "coverage_days": "32",
+  "coverage_days_threshold_1": "32"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "ron",
+  "article_count": "39",
+  "first_article_date": "2017-07-03",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "ara",
+  "article_count": "29",
+  "first_article_date": "2017-07-03",
+  "last_article_date": "2017-09-13",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "pan",
+  "article_count": "23",
+  "first_article_date": "2017-07-18",
+  "last_article_date": "2017-09-06",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "deu",
+  "article_count": "19",
+  "first_article_date": "2017-07-14",
+  "last_article_date": "2017-09-09",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "por",
+  "article_count": "16",
+  "first_article_date": "2017-06-29",
+  "last_article_date": "2017-09-02",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "mkd",
+  "article_count": "14",
+  "first_article_date": "2017-08-19",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "mal",
+  "article_count": "7",
+  "first_article_date": "2017-06-30",
+  "last_article_date": "2017-08-30",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "ces",
+  "article_count": "4",
+  "first_article_date": "2017-07-17",
+  "last_article_date": "2017-08-19",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "kor",
+  "article_count": "3",
+  "first_article_date": "2017-07-14",
+  "last_article_date": "2017-07-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "axe",
+  "article_count": "3",
+  "first_article_date": "2017-07-14",
+  "last_article_date": "2017-08-20",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "bul",
+  "article_count": "2",
+  "first_article_date": "2017-08-13",
+  "last_article_date": "2017-08-13",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "ita",
+  "article_count": "2",
+  "first_article_date": "2017-07-03",
+  "last_article_date": "2017-07-05",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "fas",
+  "article_count": "2",
+  "first_article_date": "2017-07-14",
+  "last_article_date": "2017-07-15",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "sin",
+  "article_count": "2",
+  "first_article_date": "2017-08-28",
+  "last_article_date": "2017-09-10",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "ell",
+  "article_count": "2",
+  "first_article_date": "2017-07-22",
+  "last_article_date": "2017-08-06",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "jpn",
+  "article_count": "1",
+  "first_article_date": "2017-07-28",
+  "last_article_date": "2017-07-28",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "kaz",
+  "article_count": "1",
+  "first_article_date": "2017-08-17",
+  "last_article_date": "2017-08-17",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "est",
+  "article_count": "1",
+  "first_article_date": "2017-07-03",
+  "last_article_date": "2017-07-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "slv",
+  "article_count": "1",
+  "first_article_date": "2017-07-25",
+  "last_article_date": "2017-07-25",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E144",
+  "state": "Uttar Pradesh",
+  "source_lang": "ukr",
+  "article_count": "1",
+  "first_article_date": "2017-09-14",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "en",
+  "article_count": "607",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "24",
+  "coverage_days_threshold_1": "24"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "hin",
+  "article_count": "419",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "24",
+  "coverage_days_threshold_1": "24"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "guj",
+  "article_count": "29",
+  "first_article_date": "2015-07-06",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "tam",
+  "article_count": "10",
+  "first_article_date": "2015-07-11",
+  "last_article_date": "2015-07-25",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "mar",
+  "article_count": "9",
+  "first_article_date": "2015-07-05",
+  "last_article_date": "2015-07-23",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "ben",
+  "article_count": "7",
+  "first_article_date": "2015-07-04",
+  "last_article_date": "2015-07-27",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "kan",
+  "article_count": "6",
+  "first_article_date": "2015-07-11",
+  "last_article_date": "2015-07-21",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "mal",
+  "article_count": "3",
+  "first_article_date": "2015-07-11",
+  "last_article_date": "2015-07-12",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "pan",
+  "article_count": "3",
+  "first_article_date": "2015-07-05",
+  "last_article_date": "2015-07-24",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "fra",
+  "article_count": "3",
+  "first_article_date": "2015-07-20",
+  "last_article_date": "2015-07-21",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E152",
+  "state": "Uttarakhand",
+  "source_lang": "tel",
+  "article_count": "2",
+  "first_article_date": "2015-07-05",
+  "last_article_date": "2015-07-16",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E153",
+  "state": "Uttarakhand",
+  "source_lang": "en",
+  "article_count": "174",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-13",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E153",
+  "state": "Uttarakhand",
+  "source_lang": "hin",
+  "article_count": "49",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-09-13",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E153",
+  "state": "Uttarakhand",
+  "source_lang": "pan",
+  "article_count": "3",
+  "first_article_date": "2015-08-27",
+  "last_article_date": "2015-09-09",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E153",
+  "state": "Uttarakhand",
+  "source_lang": "tel",
+  "article_count": "3",
+  "first_article_date": "2015-08-29",
+  "last_article_date": "2015-09-10",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E153",
+  "state": "Uttarakhand",
+  "source_lang": "mar",
+  "article_count": "2",
+  "first_article_date": "2015-09-03",
+  "last_article_date": "2015-09-08",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E153",
+  "state": "Uttarakhand",
+  "source_lang": "guj",
+  "article_count": "2",
+  "first_article_date": "2015-09-06",
+  "last_article_date": "2015-09-10",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "en",
+  "article_count": "654",
+  "first_article_date": "2017-08-13",
+  "last_article_date": "2017-09-06",
+  "coverage_days": "24",
+  "coverage_days_threshold_1": "24"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "hin",
+  "article_count": "164",
+  "first_article_date": "2017-08-13",
+  "last_article_date": "2017-09-06",
+  "coverage_days": "23",
+  "coverage_days_threshold_1": "23"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "tel",
+  "article_count": "6",
+  "first_article_date": "2017-08-14",
+  "last_article_date": "2017-09-02",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "guj",
+  "article_count": "6",
+  "first_article_date": "2017-08-13",
+  "last_article_date": "2017-09-01",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "tam",
+  "article_count": "4",
+  "first_article_date": "2017-08-15",
+  "last_article_date": "2017-09-03",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "jpn",
+  "article_count": "3",
+  "first_article_date": "2017-08-14",
+  "last_article_date": "2017-08-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "pan",
+  "article_count": "3",
+  "first_article_date": "2017-08-23",
+  "last_article_date": "2017-09-06",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "zho",
+  "article_count": "2",
+  "first_article_date": "2017-08-13",
+  "last_article_date": "2017-08-20",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "mar",
+  "article_count": "1",
+  "first_article_date": "2017-08-15",
+  "last_article_date": "2017-08-15",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "mal",
+  "article_count": "1",
+  "first_article_date": "2017-08-19",
+  "last_article_date": "2017-08-19",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E154",
+  "state": "Uttarakhand",
+  "source_lang": "kan",
+  "article_count": "1",
+  "first_article_date": "2017-08-14",
+  "last_article_date": "2017-08-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "en",
+  "article_count": "1500",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "25",
+  "coverage_days_threshold_1": "25"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "hin",
+  "article_count": "224",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "ben",
+  "article_count": "153",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "24",
+  "coverage_days_threshold_1": "24"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "spa",
+  "article_count": "60",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "16",
+  "coverage_days_threshold_1": "16"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "deu",
+  "article_count": "17",
+  "first_article_date": "2015-06-24",
+  "last_article_date": "2015-07-08",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "tel",
+  "article_count": "14",
+  "first_article_date": "2015-06-22",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "fra",
+  "article_count": "13",
+  "first_article_date": "2015-07-01",
+  "last_article_date": "2015-07-13",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "zho",
+  "article_count": "11",
+  "first_article_date": "2015-06-22",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "mar",
+  "article_count": "9",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-07-10",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "tam",
+  "article_count": "7",
+  "first_article_date": "2015-07-01",
+  "last_article_date": "2015-07-12",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "guj",
+  "article_count": "6",
+  "first_article_date": "2015-06-23",
+  "last_article_date": "2015-07-12",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "slk",
+  "article_count": "6",
+  "first_article_date": "2015-07-03",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "rus",
+  "article_count": "5",
+  "first_article_date": "2015-06-30",
+  "last_article_date": "2015-07-12",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "ara",
+  "article_count": "5",
+  "first_article_date": "2015-06-30",
+  "last_article_date": "2015-07-01",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "por",
+  "article_count": "3",
+  "first_article_date": "2015-07-09",
+  "last_article_date": "2015-07-11",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "tha",
+  "article_count": "3",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-06-21",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "pan",
+  "article_count": "3",
+  "first_article_date": "2015-06-25",
+  "last_article_date": "2015-07-13",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "ces",
+  "article_count": "1",
+  "first_article_date": "2015-07-14",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "bul",
+  "article_count": "1",
+  "first_article_date": "2015-06-27",
+  "last_article_date": "2015-06-27",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "tur",
+  "article_count": "1",
+  "first_article_date": "2015-07-12",
+  "last_article_date": "2015-07-12",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "ell",
+  "article_count": "1",
+  "first_article_date": "2015-06-23",
+  "last_article_date": "2015-06-23",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "kan",
+  "article_count": "1",
+  "first_article_date": "2015-07-03",
+  "last_article_date": "2015-07-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E162",
+  "state": "West Bengal",
+  "source_lang": "urd",
+  "article_count": "1",
+  "first_article_date": "2015-07-14",
+  "last_article_date": "2015-07-14",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "en",
+  "article_count": "6059",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "108",
+  "coverage_days_threshold_1": "108"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "ben",
+  "article_count": "1176",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "107",
+  "coverage_days_threshold_1": "107"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "hin",
+  "article_count": "961",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "104",
+  "coverage_days_threshold_1": "104"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "spa",
+  "article_count": "201",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "65",
+  "coverage_days_threshold_1": "65"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "zho",
+  "article_count": "125",
+  "first_article_date": "2017-06-02",
+  "last_article_date": "2017-09-05",
+  "coverage_days": "51",
+  "coverage_days_threshold_1": "51"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "tel",
+  "article_count": "104",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "80",
+  "coverage_days_threshold_1": "80"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "tam",
+  "article_count": "72",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "32",
+  "coverage_days_threshold_1": "32"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "mar",
+  "article_count": "50",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "33",
+  "coverage_days_threshold_1": "33"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "deu",
+  "article_count": "39",
+  "first_article_date": "2017-06-12",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "urd",
+  "article_count": "32",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-09-10",
+  "coverage_days": "25",
+  "coverage_days_threshold_1": "25"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "pol",
+  "article_count": "31",
+  "first_article_date": "2017-06-06",
+  "last_article_date": "2017-09-13",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "slk",
+  "article_count": "30",
+  "first_article_date": "2017-06-02",
+  "last_article_date": "2017-09-07",
+  "coverage_days": "18",
+  "coverage_days_threshold_1": "18"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "fra",
+  "article_count": "27",
+  "first_article_date": "2017-06-20",
+  "last_article_date": "2017-08-28",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "nep",
+  "article_count": "26",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-09-08",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "por",
+  "article_count": "24",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "kan",
+  "article_count": "22",
+  "first_article_date": "2017-05-29",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "ara",
+  "article_count": "20",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-09-14",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "ces",
+  "article_count": "15",
+  "first_article_date": "2017-05-30",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "guj",
+  "article_count": "15",
+  "first_article_date": "2017-06-03",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "rus",
+  "article_count": "11",
+  "first_article_date": "2017-06-15",
+  "last_article_date": "2017-09-08",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "ind",
+  "article_count": "7",
+  "first_article_date": "2017-06-06",
+  "last_article_date": "2017-08-19",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "ell",
+  "article_count": "6",
+  "first_article_date": "2017-06-20",
+  "last_article_date": "2017-08-28",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "nld",
+  "article_count": "6",
+  "first_article_date": "2017-06-16",
+  "last_article_date": "2017-09-04",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "pan",
+  "article_count": "6",
+  "first_article_date": "2017-06-24",
+  "last_article_date": "2017-07-28",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "tha",
+  "article_count": "6",
+  "first_article_date": "2017-06-12",
+  "last_article_date": "2017-08-03",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "fas",
+  "article_count": "5",
+  "first_article_date": "2017-06-19",
+  "last_article_date": "2017-09-07",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "jpn",
+  "article_count": "5",
+  "first_article_date": "2017-06-06",
+  "last_article_date": "2017-08-26",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "kor",
+  "article_count": "4",
+  "first_article_date": "2017-07-08",
+  "last_article_date": "2017-09-05",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "bos",
+  "article_count": "4",
+  "first_article_date": "2017-07-26",
+  "last_article_date": "2017-07-26",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "tur",
+  "article_count": "4",
+  "first_article_date": "2017-07-12",
+  "last_article_date": "2017-07-25",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "fin",
+  "article_count": "2",
+  "first_article_date": "2017-06-08",
+  "last_article_date": "2017-06-08",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "mal",
+  "article_count": "2",
+  "first_article_date": "2017-06-12",
+  "last_article_date": "2017-06-26",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "hrv",
+  "article_count": "2",
+  "first_article_date": "2017-06-07",
+  "last_article_date": "2017-08-15",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "srp",
+  "article_count": "1",
+  "first_article_date": "2017-07-26",
+  "last_article_date": "2017-07-26",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "mkd",
+  "article_count": "1",
+  "first_article_date": "2017-09-04",
+  "last_article_date": "2017-09-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "sin",
+  "article_count": "1",
+  "first_article_date": "2017-06-05",
+  "last_article_date": "2017-06-05",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "heb",
+  "article_count": "1",
+  "first_article_date": "2017-09-06",
+  "last_article_date": "2017-09-06",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E163",
+  "state": "West Bengal",
+  "source_lang": "hye",
+  "article_count": "1",
+  "first_article_date": "2017-07-17",
+  "last_article_date": "2017-07-17",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "en",
+  "article_count": "4382",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "hin",
+  "article_count": "436",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "mar",
+  "article_count": "264",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "guj",
+  "article_count": "110",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "rus",
+  "article_count": "51",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-02",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "tha",
+  "article_count": "47",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "ben",
+  "article_count": "36",
+  "first_article_date": "2015-06-18",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "tam",
+  "article_count": "32",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-02",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "tel",
+  "article_count": "27",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "zho",
+  "article_count": "24",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "fra",
+  "article_count": "15",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-06-27",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "urd",
+  "article_count": "14",
+  "first_article_date": "2015-06-18",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "kan",
+  "article_count": "12",
+  "first_article_date": "2015-06-18",
+  "last_article_date": "2015-07-02",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "mal",
+  "article_count": "12",
+  "first_article_date": "2015-06-19",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "pol",
+  "article_count": "11",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-06-20",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "lit",
+  "article_count": "9",
+  "first_article_date": "2015-06-19",
+  "last_article_date": "2015-06-21",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "spa",
+  "article_count": "7",
+  "first_article_date": "2015-06-18",
+  "last_article_date": "2015-07-03",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "por",
+  "article_count": "7",
+  "first_article_date": "2015-06-24",
+  "last_article_date": "2015-07-02",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "ara",
+  "article_count": "7",
+  "first_article_date": "2015-06-18",
+  "last_article_date": "2015-07-02",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "kor",
+  "article_count": "6",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-01",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "ron",
+  "article_count": "6",
+  "first_article_date": "2015-06-17",
+  "last_article_date": "2015-07-01",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "pan",
+  "article_count": "4",
+  "first_article_date": "2015-06-16",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "ell",
+  "article_count": "4",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-06-24",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "deu",
+  "article_count": "4",
+  "first_article_date": "2015-06-23",
+  "last_article_date": "2015-06-29",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "ukr",
+  "article_count": "4",
+  "first_article_date": "2015-06-19",
+  "last_article_date": "2015-06-25",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "fas",
+  "article_count": "3",
+  "first_article_date": "2015-06-28",
+  "last_article_date": "2015-07-04",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "bul",
+  "article_count": "2",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-06-20",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "nep",
+  "article_count": "2",
+  "first_article_date": "2015-06-17",
+  "last_article_date": "2015-07-03",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "hun",
+  "article_count": "1",
+  "first_article_date": "2015-06-19",
+  "last_article_date": "2015-06-19",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "jpn",
+  "article_count": "1",
+  "first_article_date": "2015-06-27",
+  "last_article_date": "2015-06-27",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "swe",
+  "article_count": "1",
+  "first_article_date": "2015-06-26",
+  "last_article_date": "2015-06-26",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "ces",
+  "article_count": "1",
+  "first_article_date": "2015-06-20",
+  "last_article_date": "2015-06-20",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "sqi",
+  "article_count": "1",
+  "first_article_date": "2015-06-26",
+  "last_article_date": "2015-06-26",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E89",
+  "state": "Maharashtra",
+  "source_lang": "est",
+  "article_count": "1",
+  "first_article_date": "2015-06-21",
+  "last_article_date": "2015-06-21",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "en",
+  "article_count": "7641",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "ben",
+  "article_count": "1129",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-16",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "mar",
+  "article_count": "656",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "hin",
+  "article_count": "616",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "guj",
+  "article_count": "232",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "rus",
+  "article_count": "187",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "20",
+  "coverage_days_threshold_1": "20"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "tha",
+  "article_count": "105",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "19",
+  "coverage_days_threshold_1": "19"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "tel",
+  "article_count": "102",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "18",
+  "coverage_days_threshold_1": "18"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "ara",
+  "article_count": "72",
+  "first_article_date": "2016-07-31",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "tam",
+  "article_count": "59",
+  "first_article_date": "2016-07-30",
+  "last_article_date": "2016-08-16",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "por",
+  "article_count": "49",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-16",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "zho",
+  "article_count": "43",
+  "first_article_date": "2016-07-31",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "swe",
+  "article_count": "37",
+  "first_article_date": "2016-08-03",
+  "last_article_date": "2016-08-16",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "kan",
+  "article_count": "37",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-16",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "urd",
+  "article_count": "37",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-16",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "spa",
+  "article_count": "34",
+  "first_article_date": "2016-07-31",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "mal",
+  "article_count": "24",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-12",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "ell",
+  "article_count": "24",
+  "first_article_date": "2016-08-02",
+  "last_article_date": "2016-08-04",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "ukr",
+  "article_count": "23",
+  "first_article_date": "2016-07-31",
+  "last_article_date": "2016-08-16",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "ron",
+  "article_count": "21",
+  "first_article_date": "2016-07-30",
+  "last_article_date": "2016-08-16",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "kor",
+  "article_count": "21",
+  "first_article_date": "2016-07-29",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "pan",
+  "article_count": "18",
+  "first_article_date": "2016-07-30",
+  "last_article_date": "2016-08-09",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "bul",
+  "article_count": "16",
+  "first_article_date": "2016-07-31",
+  "last_article_date": "2016-08-10",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "pol",
+  "article_count": "12",
+  "first_article_date": "2016-07-30",
+  "last_article_date": "2016-08-03",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "ind",
+  "article_count": "9",
+  "first_article_date": "2016-08-10",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "fas",
+  "article_count": "8",
+  "first_article_date": "2016-08-03",
+  "last_article_date": "2016-08-08",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "fra",
+  "article_count": "8",
+  "first_article_date": "2016-07-31",
+  "last_article_date": "2016-08-04",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "hrv",
+  "article_count": "8",
+  "first_article_date": "2016-08-03",
+  "last_article_date": "2016-08-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "deu",
+  "article_count": "7",
+  "first_article_date": "2016-08-02",
+  "last_article_date": "2016-08-17",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "heb",
+  "article_count": "5",
+  "first_article_date": "2016-08-02",
+  "last_article_date": "2016-08-04",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "fin",
+  "article_count": "4",
+  "first_article_date": "2016-08-03",
+  "last_article_date": "2016-08-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "mkd",
+  "article_count": "3",
+  "first_article_date": "2016-08-08",
+  "last_article_date": "2016-08-15",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "nep",
+  "article_count": "3",
+  "first_article_date": "2016-08-01",
+  "last_article_date": "2016-08-14",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "sin",
+  "article_count": "2",
+  "first_article_date": "2016-08-04",
+  "last_article_date": "2016-08-07",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "mon",
+  "article_count": "2",
+  "first_article_date": "2016-08-02",
+  "last_article_date": "2016-08-03",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "tur",
+  "article_count": "2",
+  "first_article_date": "2016-08-04",
+  "last_article_date": "2016-08-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "srp",
+  "article_count": "1",
+  "first_article_date": "2016-08-08",
+  "last_article_date": "2016-08-08",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E90",
+  "state": "Maharashtra",
+  "source_lang": "ces",
+  "article_count": "1",
+  "first_article_date": "2016-08-01",
+  "last_article_date": "2016-08-01",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "en",
+  "article_count": "4773",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "hin",
+  "article_count": "637",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "spa",
+  "article_count": "290",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "12",
+  "coverage_days_threshold_1": "12"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "mar",
+  "article_count": "232",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "zho",
+  "article_count": "147",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "ell",
+  "article_count": "130",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "por",
+  "article_count": "127",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "rus",
+  "article_count": "119",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "tel",
+  "article_count": "105",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "15",
+  "coverage_days_threshold_1": "15"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "tam",
+  "article_count": "101",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "deu",
+  "article_count": "100",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "ben",
+  "article_count": "84",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "16",
+  "coverage_days_threshold_1": "16"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "tha",
+  "article_count": "80",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "17",
+  "coverage_days_threshold_1": "17"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "ara",
+  "article_count": "77",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "swe",
+  "article_count": "74",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-02",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "guj",
+  "article_count": "72",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "16",
+  "coverage_days_threshold_1": "16"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "hye",
+  "article_count": "67",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-03",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "ukr",
+  "article_count": "42",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-07",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "urd",
+  "article_count": "42",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "14",
+  "coverage_days_threshold_1": "14"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "fra",
+  "article_count": "41",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-10",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "srp",
+  "article_count": "31",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-07",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "ron",
+  "article_count": "30",
+  "first_article_date": "2017-09-04",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "pol",
+  "article_count": "29",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-05",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "kor",
+  "article_count": "27",
+  "first_article_date": "2017-08-27",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "9",
+  "coverage_days_threshold_1": "9"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "fas",
+  "article_count": "24",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "7",
+  "coverage_days_threshold_1": "7"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "tur",
+  "article_count": "23",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-08",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "fin",
+  "article_count": "21",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-01",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "kan",
+  "article_count": "20",
+  "first_article_date": "2017-08-27",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "10",
+  "coverage_days_threshold_1": "10"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "bul",
+  "article_count": "18",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-01",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "slk",
+  "article_count": "17",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-02",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "hun",
+  "article_count": "15",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-03",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "pan",
+  "article_count": "15",
+  "first_article_date": "2017-08-28",
+  "last_article_date": "2017-09-08",
+  "coverage_days": "8",
+  "coverage_days_threshold_1": "8"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "lit",
+  "article_count": "14",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-07",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "mal",
+  "article_count": "12",
+  "first_article_date": "2017-08-27",
+  "last_article_date": "2017-09-10",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "ces",
+  "article_count": "12",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-12",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "mkd",
+  "article_count": "11",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-09-06",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "hrv",
+  "article_count": "9",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "ita",
+  "article_count": "8",
+  "first_article_date": "2017-08-28",
+  "last_article_date": "2017-09-08",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "ind",
+  "article_count": "6",
+  "first_article_date": "2017-09-01",
+  "last_article_date": "2017-09-11",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "mon",
+  "article_count": "5",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-04",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "slv",
+  "article_count": "4",
+  "first_article_date": "2017-08-30",
+  "last_article_date": "2017-08-31",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "sin",
+  "article_count": "4",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-09-07",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "jpn",
+  "article_count": "1",
+  "first_article_date": "2017-08-26",
+  "last_article_date": "2017-08-26",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "isl",
+  "article_count": "1",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-08-31",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "glg",
+  "article_count": "1",
+  "first_article_date": "2017-09-02",
+  "last_article_date": "2017-09-02",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "nep",
+  "article_count": "1",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-08-31",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "heb",
+  "article_count": "1",
+  "first_article_date": "2017-08-31",
+  "last_article_date": "2017-08-31",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E91",
+  "state": "Maharashtra",
+  "source_lang": "est",
+  "article_count": "1",
+  "first_article_date": "2017-09-05",
+  "last_article_date": "2017-09-05",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "en",
+  "article_count": "1716",
+  "first_article_date": "2015-07-12",
+  "last_article_date": "2015-09-02",
+  "coverage_days": "53",
+  "coverage_days_threshold_1": "53"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "hin",
+  "article_count": "121",
+  "first_article_date": "2015-07-12",
+  "last_article_date": "2015-09-02",
+  "coverage_days": "23",
+  "coverage_days_threshold_1": "23"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "spa",
+  "article_count": "96",
+  "first_article_date": "2015-08-01",
+  "last_article_date": "2015-08-06",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "ara",
+  "article_count": "78",
+  "first_article_date": "2015-08-01",
+  "last_article_date": "2015-08-08",
+  "coverage_days": "6",
+  "coverage_days_threshold_1": "6"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "por",
+  "article_count": "52",
+  "first_article_date": "2015-08-02",
+  "last_article_date": "2015-08-13",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "ben",
+  "article_count": "39",
+  "first_article_date": "2015-07-26",
+  "last_article_date": "2015-09-02",
+  "coverage_days": "13",
+  "coverage_days_threshold_1": "13"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "rus",
+  "article_count": "29",
+  "first_article_date": "2015-08-02",
+  "last_article_date": "2015-08-06",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "deu",
+  "article_count": "28",
+  "first_article_date": "2015-08-02",
+  "last_article_date": "2015-08-05",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "tam",
+  "article_count": "26",
+  "first_article_date": "2015-07-13",
+  "last_article_date": "2015-08-15",
+  "coverage_days": "11",
+  "coverage_days_threshold_1": "11"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "zho",
+  "article_count": "24",
+  "first_article_date": "2015-08-02",
+  "last_article_date": "2015-08-14",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "tel",
+  "article_count": "10",
+  "first_article_date": "2015-08-01",
+  "last_article_date": "2015-09-01",
+  "coverage_days": "5",
+  "coverage_days_threshold_1": "5"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "fra",
+  "article_count": "9",
+  "first_article_date": "2015-08-01",
+  "last_article_date": "2015-08-04",
+  "coverage_days": "4",
+  "coverage_days_threshold_1": "4"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "mal",
+  "article_count": "8",
+  "first_article_date": "2015-08-01",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "guj",
+  "article_count": "6",
+  "first_article_date": "2015-08-03",
+  "last_article_date": "2015-08-14",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "mar",
+  "article_count": "5",
+  "first_article_date": "2015-08-01",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "3",
+  "coverage_days_threshold_1": "3"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "kor",
+  "article_count": "4",
+  "first_article_date": "2015-08-03",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "tha",
+  "article_count": "3",
+  "first_article_date": "2015-08-25",
+  "last_article_date": "2015-08-28",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "pan",
+  "article_count": "2",
+  "first_article_date": "2015-07-14",
+  "last_article_date": "2015-08-22",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "kan",
+  "article_count": "2",
+  "first_article_date": "2015-08-02",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "fas",
+  "article_count": "2",
+  "first_article_date": "2015-08-01",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "2",
+  "coverage_days_threshold_1": "2"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "axe",
+  "article_count": "1",
+  "first_article_date": "2015-08-03",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "kaz",
+  "article_count": "1",
+  "first_article_date": "2015-08-04",
+  "last_article_date": "2015-08-04",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "slk",
+  "article_count": "1",
+  "first_article_date": "2015-08-03",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}, {
+  "event_id": "E99",
+  "state": "Manipur",
+  "source_lang": "jpn",
+  "article_count": "1",
+  "first_article_date": "2015-08-03",
+  "last_article_date": "2015-08-03",
+  "coverage_days": "1",
+  "coverage_days_threshold_1": "1"
+}]

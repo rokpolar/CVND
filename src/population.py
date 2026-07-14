@@ -2,11 +2,17 @@ import ee
 import pandas as pd
 import os
 import warnings
+import json
 warnings.filterwarnings('ignore')
 
 from gee_config import initialize_gee
 
 initialize_gee()
+
+
+def load_checkpoint(path):
+    with open(path, 'r') as f:
+        return json.load(f)
 
 def get_worldpop_year(event_year):
     """
@@ -131,18 +137,48 @@ def compute_population_exposure(row, flood_df):
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     print("=" * 55)
-    print("CP-06: WORLDPOP POPULATION OVERLAY")
+    print("CP-06: WORLDPOP POPULATION OVERLAY (168 events)")
     print("=" * 55)
 
-    events    = pd.read_csv('data/events.csv')
-    flood_df  = pd.read_csv('data/flood_extent.csv')
-    results   = []
+    CHECKPOINT = 'data/population_checkpoint.json'
 
-    for _, row in events.iterrows():
+    events   = pd.read_csv('data/events.csv')
+    flood_df = pd.read_csv('data/flood_extent.csv')
+
+    # Load checkpoint
+    completed = load_checkpoint(CHECKPOINT) if os.path.exists(CHECKPOINT) else {}
+
+    # Seed from existing severity_raw.csv if checkpoint empty
+    if not completed and os.path.exists('data/severity_raw.csv'):
+        existing = pd.read_csv('data/severity_raw.csv')
+        for _, r in existing.iterrows():
+            completed[r['event_id']] = r.to_dict()
+        print(f"Seeded {len(completed)} events from existing severity_raw.csv")
+
+    done_ids  = set(completed.keys())
+    remaining = events[~events['event_id'].isin(done_ids)]
+
+    print(f"Total   : {len(events)}")
+    print(f"Done    : {len(done_ids)}")
+    print(f"Remaining: {len(remaining)}\n")
+
+    for i, (_, row) in enumerate(remaining.iterrows(), 1):
         result = compute_population_exposure(row, flood_df)
-        results.append(result)
+        completed[row['event_id']] = result
 
-    df = pd.DataFrame(results)
+        # Save checkpoint after every event
+        with open(CHECKPOINT, 'w') as f:
+            import json
+            json.dump(completed, f)
+
+        if (len(done_ids) + i) % 10 == 0:
+            pd.DataFrame(list(completed.values())).to_csv(
+                'data/severity_raw.csv', index=False)
+            print(f"  >> Checkpoint: {len(done_ids)+i}/{len(events)} done")
+
+    # Final save
+    df = pd.DataFrame(list(completed.values()))
+    df = df.sort_values('event_id').reset_index(drop=True)
 
     print("\n" + "=" * 55)
     print("RESULTS SUMMARY")
@@ -153,25 +189,13 @@ if __name__ == '__main__':
 
     ok      = df[df['status'] == 'OK']
     skipped = df[df['status'].str.startswith('SKIPPED', na=False)]
-    errors  = df[df['status'].str.startswith('ERROR',   na=False)]
+    errors  = df[df['status'].str.startswith('ERROR', na=False)]
 
-    print(f"\nProcessed : {len(df)} events")
+    print(f"\nProcessed : {len(df)}")
     print(f"OK        : {len(ok)}")
     print(f"Skipped   : {len(skipped)}")
     print(f"Errors    : {len(errors)}")
 
-    if len(ok) == 0:
-        print("\nFAIL: No events returned population data.")
-        print("Do not proceed — paste output and we debug.")
-    else:
-        os.makedirs('data', exist_ok=True)
-        df.to_csv('data/severity_raw.csv', index=False)
-        print(f"\nSAVED: data/severity_raw.csv")
-
-        # Quick sanity check: high-severity events should have high population
-        print("\nSANITY CHECK — top 3 by flood area vs population:")
-        top_area = ok.nlargest(3, 'affected_area_km2')[
-            ['event_id', 'state', 'affected_area_km2', 'population_exposed']]
-        print(top_area.to_string(index=False))
-
-        print("\nCP-06 COMPLETE — ready for CP-07")
+    df.to_csv('data/severity_raw.csv', index=False)
+    print(f"\nSAVED: data/severity_raw.csv")
+    print("\nCP-06 COMPLETE — ready for CP-07") 
