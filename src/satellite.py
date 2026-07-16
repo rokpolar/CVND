@@ -2,6 +2,10 @@ import ee
 import pandas as pd
 import numpy as np
 import h5py
+import io
+import math
+import time
+import requests
 import json
 import os
 import warnings
@@ -36,6 +40,10 @@ SITS_N_PRE      = 6
 SITS_NORM       = 10000.0
 SITS_CLOUD_MAX  = 80
 SITS_OUTPUT_DIR = 'data/sits_patches'
+
+# Tiling (whole-district) settings
+SITS_BLOCK_PATCHES = 16     # download block = 16*64 = 1024 px/side (keeps NPY request small)
+SITS_KEEP_VALID    = 0.70   # keep a 64x64 tile only if >= this fraction is cloud/nodata-free in EVERY timestep
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -202,10 +210,10 @@ def get_masks(region):
 
 
 def get_region(row):
-    """이벤트 AOI = 이벤트 좌표를 포함하는 district(구) 경계 (FAO GAUL 2015 level-2).
-    Track A(bi-temporal)와 Track B(SITS)가 공용으로 씀 → AOI 일관.
-    (구버전은 느슨한 bbox: 주 크기라 홍수와 무관한 영역이 대부분이었음.)
-    이름 매칭 대신 point-in-polygon으로 잡아 매칭 오류(Bengaluru/Bangalore 등)를 회피.
+    """Event AOI = the district polygon containing the event coordinate (FAO GAUL 2015 level-2).
+    Shared by Track A (bi-temporal) and Track B (SITS) so both use a consistent AOI.
+    (The old version used a loose bbox: state-sized, mostly area unrelated to the flood.)
+    Uses point-in-polygon instead of name matching to avoid mismatches (Bengaluru/Bangalore, etc.).
     """
     lon = float(row['lon'])
     lat = float(row['lat'])
@@ -221,9 +229,9 @@ def detect_flood_baseline(row):
           f"({row['start_date']})")
 
     try:
-        bbox   = [float(x) for x in row['bbox'].split(',')]
-        # region = ee.Geometry.Rectangle(bbox)   # (구버전) 느슨한 bbox
-        region = get_region(row)                  # district 경계 (Track B와 공용)
+        # bbox   = [float(x) for x in row['bbox'].split(',')]   # (old) unused since AOI = district
+        # region = ee.Geometry.Rectangle(bbox)                  # (old) loose bbox
+        region = get_region(row)                                # district polygon (shared with Track B)
 
         pre_start  = ee.Date(row['start_date']).advance(-30, 'day')
         pre_end    = ee.Date(row['start_date'])
@@ -344,6 +352,8 @@ def _monthly_composite_sits(s2, target_dt):
     return col.median(), n
 
 
+# ══ (OLD) center single-patch method — superseded by whole-district tiling. Kept for reference ══
+_OLD_CENTER_PATCH_CODE = r'''
 def _extract_patch_sits(image, lat, lon):
     """Extract (10, 64, 64) float32 patch centred on (lat, lon)."""
     half_m     = (SITS_PATCH_SIZE * 10) / 2
@@ -388,8 +398,8 @@ def prepare_sits_patch(row):
     print(f"\n  [Track B] [{event_id}] {state} — {start_str}")
 
     bbox     = [float(x) for x in row['bbox'].split(',')]
-    # region   = ee.Geometry.Rectangle(bbox)   # (구버전) 느슨한 bbox
-    region   = get_region(row)                  # district 경계 (Track A와 공용)
+    # region   = ee.Geometry.Rectangle(bbox)   # (old) loose bbox
+    region   = get_region(row)                  # district polygon (shared with Track A)
     s2       = _get_s2_sits(region)
     event_dt = datetime.strptime(start_str, '%Y-%m-%d')
     zeros    = np.zeros((len(SITS_BANDS), SITS_PATCH_SIZE, SITS_PATCH_SIZE),
@@ -452,6 +462,156 @@ def prepare_sits_patch(row):
 
     print(f"    Saved: {out_path}  "
           f"[pre={pre_array.shape}, post={post_array.shape}]")
+    return out_path
+'''  # ══ (end of OLD) ══
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NEW: tile the whole district into 64x64 patches
+#   - getDownloadURL(NPY) block download -> preserves pixel order (fixes toList reshape bug)
+#   - keep only tiles that are clear (cloud/nodata-free) in EVERY timestep (B is optical)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _download_block(image, region_block):
+    """Download one block as NPY -> order-preserving structured array (bands + 'valid').
+    valid = 1 only where every band is present (not cloud/nodata)."""
+    valid = image.mask().reduce(ee.Reducer.min()).rename('valid').toByte()
+    stack = image.select(SITS_BANDS).toInt16().addBands(valid)   # int16 keeps NPY under the 48MB request limit
+    url = stack.getDownloadURL({'region': region_block, 'scale': 10, 'format': 'NPY'})
+    for attempt in range(4):
+        try:
+            r = requests.get(url, timeout=180)
+            r.raise_for_status()
+            return np.load(io.BytesIO(r.content))
+        except Exception:
+            if attempt == 3:
+                raise
+            time.sleep(2 ** attempt)
+
+
+def _append_h5(f, pre, post, coord):
+    """Append this block's patch batch to the open hdf5's resizable datasets."""
+    for name, val in (('pre', pre), ('post', post), ('coords', coord)):
+        ds = f[name]
+        n0 = ds.shape[0]
+        ds.resize(n0 + val.shape[0], axis=0)
+        ds[n0:] = val
+
+
+def _tile_region(images, region, hdf):
+    """Tile region (district) into 64x64 tiles, download block by block, keep only
+    tiles that are clear in every timestep, and append them to the open hdf5.
+    Returns the number of patches saved."""
+    ring = region.bounds().coordinates().getInfo()[0]
+    lons = [p[0] for p in ring]
+    lats = [p[1] for p in ring]
+    minx, maxx = min(lons), max(lons)
+    miny, maxy = min(lats), max(lats)
+    clat = (miny + maxy) / 2.0
+    # Approx degree grid for tiling. GEE's actual pixel grid may differ by <1px, so the
+    # stored coords (row/col/lat/lon) are approximate metadata; each 64x64 patch itself is intact.
+    dlat = SITS_PATCH_SIZE * 10 / 110540.0
+    dlon = SITS_PATCH_SIZE * 10 / (111320.0 * math.cos(math.radians(clat)))
+    npy = int((maxy - miny) / dlat)   # tiles tall
+    npx = int((maxx - minx) / dlon)   # tiles wide
+    print(f"    tiling: {npx}x{npy} tiles (@10m), block={SITS_BLOCK_PATCHES}")
+
+    P = SITS_PATCH_SIZE
+    kept = 0
+    for bi in range(0, npy, SITS_BLOCK_PATCHES):
+        for bj in range(0, npx, SITS_BLOCK_PATCHES):
+            pi = min(bi + SITS_BLOCK_PATCHES, npy)
+            pj = min(bj + SITS_BLOCK_PATCHES, npx)
+            lon0, lon1 = minx + bj * dlon, minx + pj * dlon
+            lat_top, lat_bot = maxy - bi * dlat, maxy - pi * dlat
+            block = ee.Geometry.Rectangle([lon0, lat_bot, lon1, lat_top])
+            try:
+                arrs = [_download_block(im, block) for im in images]
+            except Exception as e:
+                print(f"      block ({bi},{bj}) download failed: {e}")
+                continue
+
+            H = min(a.shape[0] for a in arrs)
+            W = min(a.shape[1] for a in arrs)
+            ny, nx = H // P, W // P
+
+            b_pre, b_post, b_coord = [], [], []
+            for r in range(ny):
+                for c in range(nx):
+                    rs, cs = r * P, c * P
+                    # keep only tiles clear enough in EVERY timestep
+                    vfr = [float(a['valid'][rs:rs+P, cs:cs+P].mean()) for a in arrs]
+                    if min(vfr) < SITS_KEEP_VALID:
+                        continue
+                    stacks = []
+                    for a in arrs:
+                        bands = np.stack([a[b][rs:rs+P, cs:cs+P] for b in SITS_BANDS]).astype(np.float32)
+                        stacks.append(np.clip(bands / SITS_NORM, 0, 1))  # (10,64,64)
+                    b_pre.append(np.stack(stacks[:SITS_N_PRE]))           # (6,10,64,64)
+                    b_post.append(np.stack(stacks[SITS_N_PRE:]))          # (1,10,64,64)
+                    plat = lat_top - (r + 0.5) * dlat
+                    plon = lon0 + (c + 0.5) * dlon
+                    b_coord.append([(bi+r)*P, (bj+c)*P, plat, plon])
+
+            if b_pre:
+                _append_h5(hdf, np.stack(b_pre), np.stack(b_post),
+                           np.array(b_coord, dtype='float64'))
+                kept += len(b_pre)
+    return kept
+
+
+def prepare_sits_patch(row):
+    """Track B: tile the whole district into 64x64 patches and save the time series to hdf5.
+    Each patch = (pre: 6x10x64x64, post: 1x10x64x64), coords=(row,col,lat,lon)."""
+    event_id  = row['event_id']
+    state     = row['state']
+    start_str = row['start_date']
+    print(f"\n  [Track B] [{event_id}] {state} / {row['district']} — {start_str}")
+
+    region   = get_region(row)
+    s2       = _get_s2_sits(region)
+    event_dt = datetime.strptime(start_str, '%Y-%m-%d')
+
+    # Timesteps: 6 monthly pre-event composites + 1 post-event (0-14 days)
+    images, tags = [], []
+    for m in range(SITS_N_PRE, 0, -1):
+        img, n = _monthly_composite_sits(s2, event_dt - timedelta(days=30 * m))
+        images.append(img); tags.append(f'pre-{m}mo({n})')
+    post_col = s2.filterDate(ee.Date(start_str), ee.Date(start_str).advance(14, 'day'))
+    post_n   = post_col.size().getInfo()
+    images.append(post_col.median() if post_n > 0 else None)
+    tags.append(f'post({post_n})')
+    print("    timesteps: " + " | ".join(tags))
+
+    if any(im is None for im in images):
+        print("    -> some timestep has no imagery -> incomplete series, 0 patches")
+        return None
+
+    images = [im.clip(region) for im in images]   # outside district is masked -> tiles dropped
+
+    os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
+    out_path = os.path.join(SITS_OUTPUT_DIR, f'{event_id}.h5')
+    P, B = SITS_PATCH_SIZE, len(SITS_BANDS)
+    with h5py.File(out_path, 'w') as f:
+        f.create_dataset('pre',  shape=(0, SITS_N_PRE, B, P, P),
+                         maxshape=(None, SITS_N_PRE, B, P, P), dtype='float32',
+                         chunks=(1, SITS_N_PRE, B, P, P))
+        f.create_dataset('post', shape=(0, 1, B, P, P),
+                         maxshape=(None, 1, B, P, P), dtype='float32',
+                         chunks=(1, 1, B, P, P))
+        f.create_dataset('coords', shape=(0, 4), maxshape=(None, 4), dtype='float64')
+        meta = f.create_group('meta')
+        meta.attrs['event_id']    = event_id
+        meta.attrs['state']       = state
+        meta.attrs['district']    = str(row['district'])
+        meta.attrs['start_date']  = start_str
+        meta.attrs['bands']       = ','.join(SITS_BANDS)
+        meta.attrs['n_pre']       = SITS_N_PRE
+        meta.attrs['patch_size']  = P
+        meta.attrs['coords_cols'] = 'row,col,lat,lon'
+        n = _tile_region(images, region, f)
+
+    print(f"    Saved: {out_path}  [{n} clear patches]")
     return out_path
 
 
