@@ -201,6 +201,18 @@ def get_masks(region):
     return permanent, flat, india
 
 
+def get_region(row):
+    """이벤트 AOI = 이벤트 좌표를 포함하는 district(구) 경계 (FAO GAUL 2015 level-2).
+    Track A(bi-temporal)와 Track B(SITS)가 공용으로 씀 → AOI 일관.
+    (구버전은 느슨한 bbox: 주 크기라 홍수와 무관한 영역이 대부분이었음.)
+    이름 매칭 대신 point-in-polygon으로 잡아 매칭 오류(Bengaluru/Bangalore 등)를 회피.
+    """
+    lon = float(row['lon'])
+    lat = float(row['lat'])
+    pt  = ee.Geometry.Point([lon, lat])
+    return ee.FeatureCollection('FAO/GAUL/2015/level2').filterBounds(pt).geometry()
+
+
 def detect_flood_baseline(row):
     """Track A: Otsu bi-temporal baseline (S1 SAR + S2 NDWI)."""
     event_id = row['event_id']
@@ -210,7 +222,8 @@ def detect_flood_baseline(row):
 
     try:
         bbox   = [float(x) for x in row['bbox'].split(',')]
-        region = ee.Geometry.Rectangle(bbox)
+        # region = ee.Geometry.Rectangle(bbox)   # (구버전) 느슨한 bbox
+        region = get_region(row)                  # district 경계 (Track B와 공용)
 
         pre_start  = ee.Date(row['start_date']).advance(-30, 'day')
         pre_end    = ee.Date(row['start_date'])
@@ -375,7 +388,8 @@ def prepare_sits_patch(row):
     print(f"\n  [Track B] [{event_id}] {state} — {start_str}")
 
     bbox     = [float(x) for x in row['bbox'].split(',')]
-    region   = ee.Geometry.Rectangle(bbox)
+    # region   = ee.Geometry.Rectangle(bbox)   # (구버전) 느슨한 bbox
+    region   = get_region(row)                  # district 경계 (Track A와 공용)
     s2       = _get_s2_sits(region)
     event_dt = datetime.strptime(start_str, '%Y-%m-%d')
     zeros    = np.zeros((len(SITS_BANDS), SITS_PATCH_SIZE, SITS_PATCH_SIZE),

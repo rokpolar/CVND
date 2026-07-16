@@ -6,6 +6,8 @@ shapely
 geopandas
 pandas
 numpy
+h5py
+openpyxl
 requests
 scipy
 statsmodels
