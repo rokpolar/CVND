@@ -6,7 +6,6 @@ cd "$ROOT"
 
 VENV_DIR="$ROOT/venv"
 PYTHON="$VENV_DIR/bin/python"
-PIP="$VENV_DIR/bin/pip"
 
 setup_environment() {
   if ! command -v python3 >/dev/null 2>&1; then
@@ -23,7 +22,7 @@ setup_environment() {
 
   echo ">>> Installing dependencies from requirements.txt..."
   "$PYTHON" -m pip install --upgrade pip
-  "$PIP" install -r "$ROOT/requirements.txt"
+  "$PYTHON" -m pip install -r "$ROOT/requirements.txt"
 }
 
 setup_environment
