@@ -535,8 +535,21 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
     P = SITS_PATCH_SIZE
     all_blocks = [(bi, bj) for bi in range(0, npy, SITS_BLOCK_PATCHES)
                   for bj in range(0, npx, SITS_BLOCK_PATCHES)]
-    todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks) if i not in done_blocks]
-    print(f"    tiling: {npx}x{npy} tiles (@10m), {len(todo)}/{len(all_blocks)} blocks to download")
+
+    def _blk_geom(bi, bj):
+        pi = min(bi + SITS_BLOCK_PATCHES, npy)
+        pj = min(bj + SITS_BLOCK_PATCHES, npx)
+        return ee.Geometry.Rectangle([minx + bj * dlon, maxy - pi * dlat,
+                                      minx + pj * dlon, maxy - bi * dlat])
+
+    # only download blocks that actually intersect the district (skip bbox corners outside it)
+    feats = [ee.Feature(_blk_geom(bi, bj), {'i': i}) for i, (bi, bj) in enumerate(all_blocks)]
+    inside = set(ee.FeatureCollection(feats).filterBounds(region)
+                 .aggregate_array('i').getInfo())
+    todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks)
+            if i in inside and i not in done_blocks]
+    print(f"    tiling: {npx}x{npy} tiles (@10m), "
+          f"{len(inside)}/{len(all_blocks)} blocks in district, {len(todo)} to download")
     bar = tqdm(todo, desc='    downloading', unit='blk')
     for i, bi, bj in bar:
         pi = min(bi + SITS_BLOCK_PATCHES, npy)
