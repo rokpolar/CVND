@@ -7,6 +7,7 @@ warnings.filterwarnings('ignore')
 
 # ── Load data ─────────────────────────────────────────────────────────────────
 df = pd.read_csv('data/severity_raw.csv')
+df['affected_area_km2'] = df['adjusted_flood_area_km2']
 df = df.dropna(subset=['affected_area_km2', 'population_exposed'])
 
 print("=" * 55)
