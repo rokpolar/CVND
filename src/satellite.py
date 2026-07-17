@@ -11,6 +11,8 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
 
 from gee_config import initialize_gee
 initialize_gee()
@@ -34,9 +36,9 @@ CHECKPOINT_A    = 'data/satellite_checkpoint_a.json'
 CHECKPOINT_B    = 'data/satellite_checkpoint_b.json'
 
 # ── Track B config ────────────────────────────────────────────────────────────
-SITS_BANDS      = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12']
+SITS_BANDS      = ['B4', 'B3', 'B2', 'B8']   # RGB (B4,B3,B2) for the model + B8 for NDWI
 SITS_PATCH_SIZE = 64
-SITS_N_PRE      = 6
+SITS_N_PRE      = 4          # baseline t1..t4 (same-season composites); t5 = event month
 SITS_NORM       = 10000.0
 SITS_CLOUD_MAX  = 80
 SITS_OUTPUT_DIR = 'data/sits_patches'
@@ -162,7 +164,8 @@ def check_image_count(collection, label, event_id, min_required=1):
 
 
 def detect_flood_s2(region, start_date):
-    """Sentinel-2 NDWI flood cross-check. Returns (area_km2 or None, n_imgs)."""
+    """Sentinel-2 NDWI. Returns (new_flood_km2, pre_water_km2, during_water_km2, n_imgs),
+    or (None, None, None, 0) if cloud-blind (no post imagery)."""
     pre_start  = ee.Date(start_date).advance(-30, 'day')
     pre_end    = ee.Date(start_date)
     post_start = ee.Date(start_date)
@@ -182,7 +185,7 @@ def detect_flood_s2(region, start_date):
     post_col = s2.filterDate(post_start, post_end)
     n_post   = post_col.size().getInfo()
     if n_post == 0:
-        return None, 0
+        return None, None, None, 0
 
     def ndwi_median(col):
         return col.map(lambda i: i.normalizedDifference(['B3', 'B8'])
@@ -190,12 +193,17 @@ def detect_flood_s2(region, start_date):
 
     pre_ndwi  = ndwi_median(s2.filterDate(pre_start, pre_end))
     post_ndwi = ndwi_median(post_col)
-    flood     = post_ndwi.gt(0).And(pre_ndwi.lte(0)).rename('flood')
 
-    area    = flood.multiply(ee.Image.pixelArea()).reduceRegion(
-        reducer=ee.Reducer.sum(), geometry=region, scale=30, maxPixels=1e9)
-    area_m2 = area.getInfo().get('flood', 0) or 0
-    return round(area_m2 / 1e6, 2), n_post
+    def area_km2(mask):
+        m2 = (mask.rename('w').multiply(ee.Image.pixelArea()).reduceRegion(
+            reducer=ee.Reducer.sum(), geometry=region, scale=30, maxPixels=1e9)
+            .getInfo().get('w', 0) or 0)
+        return round(m2 / 1e6, 2)
+
+    flood  = area_km2(post_ndwi.gt(0).And(pre_ndwi.lte(0)))   # new flood (during - pre)
+    pre    = area_km2(pre_ndwi.gt(0))                          # water before the flood
+    during = area_km2(post_ndwi.gt(0))                         # water during the flood
+    return flood, pre, during, n_post
 
 
 def get_masks(region):
@@ -251,10 +259,10 @@ def detect_flood_baseline(row):
 
         # S2 NDWI cross-check (independent)
         try:
-            s2_area, s2_n = detect_flood_s2(region, row['start_date'])
+            s2_area, s2_pre, s2_during, s2_n = detect_flood_s2(region, row['start_date'])
         except Exception as e:
             print(f"    WARN S2: {e}")
-            s2_area, s2_n = None, 0
+            s2_area, s2_pre, s2_during, s2_n = None, None, None, 0
 
         s2_str = f"{s2_area} km² ({s2_n} imgs)" if s2_area is not None \
                  else f"blind ({s2_n} imgs)"
@@ -268,6 +276,9 @@ def detect_flood_baseline(row):
                 'affected_area_km2': fallback,      # pipeline-standard column name
                 'area_s1_km2': None,
                 'area_s2_km2': s2_area,
+                'ndwi_flood_area_km2': s2_area,       # NDWI new-flood area
+                'ndwi_pre_water_km2': s2_pre,         # NDWI water before the flood
+                'ndwi_during_water_km2': s2_during,   # NDWI water during the flood
                 'pre_images': pre_n, 'post_images': post_n,
                 's2_post_images': s2_n,
                 'otsu_threshold_db': None,
@@ -304,6 +315,9 @@ def detect_flood_baseline(row):
             'affected_area_km2': combined,          # pipeline-standard column name
             'area_s1_km2': area_km2,
             'area_s2_km2': s2_area,
+            'ndwi_flood_area_km2': s2_area,         # NDWI new-flood area
+            'ndwi_pre_water_km2': s2_pre,           # NDWI water before the flood
+            'ndwi_during_water_km2': s2_during,     # NDWI water during the flood
             'pre_images': pre_n, 'post_images': post_n,
             's2_post_images': s2_n,
             'otsu_threshold_db': round(threshold, 3),
@@ -316,6 +330,9 @@ def detect_flood_baseline(row):
             'event_id': event_id, 'state': state,
             'affected_area_km2': None,
             'area_s1_km2': None, 'area_s2_km2': None,
+            'ndwi_flood_area_km2': None,
+            'ndwi_pre_water_km2': None,
+            'ndwi_during_water_km2': None,
             'pre_images': None, 'post_images': None,
             's2_post_images': None,
             'otsu_threshold_db': None,
@@ -498,10 +515,11 @@ def _append_h5(f, pre, post, coord):
         ds[n0:] = val
 
 
-def _tile_region(images, region, hdf):
+def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
     """Tile region (district) into 64x64 tiles, download block by block, keep only
     tiles that are clear in every timestep, and append them to the open hdf5.
-    Returns the number of patches saved."""
+    Skips blocks already in done_blocks and records each finished block to blocks_ckpt
+    (block-level resume). Returns the total number of patches in the hdf5."""
     ring = region.bounds().coordinates().getInfo()[0]
     lons = [p[0] for p in ring]
     lats = [p[1] for p in ring]
@@ -514,55 +532,100 @@ def _tile_region(images, region, hdf):
     dlon = SITS_PATCH_SIZE * 10 / (111320.0 * math.cos(math.radians(clat)))
     npy = int((maxy - miny) / dlat)   # tiles tall
     npx = int((maxx - minx) / dlon)   # tiles wide
-    print(f"    tiling: {npx}x{npy} tiles (@10m), block={SITS_BLOCK_PATCHES}")
-
     P = SITS_PATCH_SIZE
-    kept = 0
-    for bi in range(0, npy, SITS_BLOCK_PATCHES):
-        for bj in range(0, npx, SITS_BLOCK_PATCHES):
-            pi = min(bi + SITS_BLOCK_PATCHES, npy)
-            pj = min(bj + SITS_BLOCK_PATCHES, npx)
-            lon0, lon1 = minx + bj * dlon, minx + pj * dlon
-            lat_top, lat_bot = maxy - bi * dlat, maxy - pi * dlat
-            block = ee.Geometry.Rectangle([lon0, lat_bot, lon1, lat_top])
-            try:
-                arrs = [_download_block(im, block) for im in images]
-            except Exception as e:
-                print(f"      block ({bi},{bj}) download failed: {e}")
+    all_blocks = [(bi, bj) for bi in range(0, npy, SITS_BLOCK_PATCHES)
+                  for bj in range(0, npx, SITS_BLOCK_PATCHES)]
+    todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks) if i not in done_blocks]
+    print(f"    tiling: {npx}x{npy} tiles (@10m), {len(todo)}/{len(all_blocks)} blocks to download")
+    bar = tqdm(todo, desc='    downloading', unit='blk')
+    for i, bi, bj in bar:
+        pi = min(bi + SITS_BLOCK_PATCHES, npy)
+        pj = min(bj + SITS_BLOCK_PATCHES, npx)
+        lon0, lon1 = minx + bj * dlon, minx + pj * dlon
+        lat_top, lat_bot = maxy - bi * dlat, maxy - pi * dlat
+        block = ee.Geometry.Rectangle([lon0, lat_bot, lon1, lat_top])
+        try:
+            # download the 5 timesteps of this block concurrently (order preserved)
+            with ThreadPoolExecutor(max_workers=len(images)) as ex:
+                arrs = list(ex.map(lambda im: _download_block(im, block), images))
+        except Exception as e:
+            bar.write(f"      block ({bi},{bj}) download failed: {e}")
+            continue
+
+        H = min(a.shape[0] for a in arrs)
+        W = min(a.shape[1] for a in arrs)
+        ny, nx = H // P, W // P
+
+        b_pre, b_post, b_coord = [], [], []
+        for r in range(ny):
+            for c in range(nx):
+                rs, cs = r * P, c * P
+                # keep only tiles clear enough in EVERY timestep
+                vfr = [float(a['valid'][rs:rs+P, cs:cs+P].mean()) for a in arrs]
+                if min(vfr) < SITS_KEEP_VALID:
+                    continue
+                stacks = []
+                for a in arrs:
+                    bands = np.stack([a[b][rs:rs+P, cs:cs+P] for b in SITS_BANDS]).astype(np.float32)
+                    stacks.append(np.clip(bands / SITS_NORM, 0, 1))  # (nbands,64,64)
+                b_pre.append(np.stack(stacks[:SITS_N_PRE]))           # (4,10,64,64)
+                b_post.append(np.stack(stacks[SITS_N_PRE:]))          # (1,10,64,64)
+                plat = lat_top - (r + 0.5) * dlat
+                plon = lon0 + (c + 0.5) * dlon
+                b_coord.append([(bi+r)*P, (bj+c)*P, plat, plon])
+
+        if b_pre:
+            _append_h5(hdf, np.stack(b_pre), np.stack(b_post),
+                       np.array(b_coord, dtype='float64'))
+        done_blocks.add(i)
+        with open(blocks_ckpt, 'w') as cf:
+            json.dump(sorted(done_blocks), cf)
+        bar.set_postfix(kept=hdf['pre'].shape[0])
+    return hdf['pre'].shape[0]
+
+
+def _ndwi_water_frac(img, region):
+    """Fraction of the district's valid pixels with NDWI>0 (water). Lower = drier."""
+    water = img.normalizedDifference(['B3', 'B8']).gt(0)
+    return water.reduceRegion(ee.Reducer.mean(), region, scale=100,
+                              maxPixels=1e9, bestEffort=True).values().get(0)
+
+
+def _dry_baseline(s2, region, event_dt, n_pre=SITS_N_PRE, n_years=6):
+    """Baseline t1..t4 = the n_pre 'driest' SAME-SEASON composites (all before the event).
+    Candidates = the event's calendar month +/-2, over the previous n_years and the
+    event year's pre-event months. Ranked by NDWI water fraction (drier = closer to
+    'normal', auto-avoids flooded years): same season across years, but if all wet it
+    falls back to the least-wet nearby month. Returns [(date_str, img, wf)] date-sorted,
+    or None if fewer than n_pre valid (cloud-free enough) candidates exist."""
+    cand = []
+    for yr in range(event_dt.year - n_years, event_dt.year + 1):
+        for off in (-2, -1, 0, 1, 2):
+            y, mo = yr, event_dt.month + off
+            if mo < 1:
+                y, mo = y - 1, mo + 12
+            elif mo > 12:
+                y, mo = y + 1, mo - 12
+            if datetime(y, mo, 15) >= event_dt:      # only months strictly before the event
                 continue
-
-            H = min(a.shape[0] for a in arrs)
-            W = min(a.shape[1] for a in arrs)
-            ny, nx = H // P, W // P
-
-            b_pre, b_post, b_coord = [], [], []
-            for r in range(ny):
-                for c in range(nx):
-                    rs, cs = r * P, c * P
-                    # keep only tiles clear enough in EVERY timestep
-                    vfr = [float(a['valid'][rs:rs+P, cs:cs+P].mean()) for a in arrs]
-                    if min(vfr) < SITS_KEEP_VALID:
-                        continue
-                    stacks = []
-                    for a in arrs:
-                        bands = np.stack([a[b][rs:rs+P, cs:cs+P] for b in SITS_BANDS]).astype(np.float32)
-                        stacks.append(np.clip(bands / SITS_NORM, 0, 1))  # (10,64,64)
-                    b_pre.append(np.stack(stacks[:SITS_N_PRE]))           # (6,10,64,64)
-                    b_post.append(np.stack(stacks[SITS_N_PRE:]))          # (1,10,64,64)
-                    plat = lat_top - (r + 0.5) * dlat
-                    plon = lon0 + (c + 0.5) * dlon
-                    b_coord.append([(bi+r)*P, (bj+c)*P, plat, plon])
-
-            if b_pre:
-                _append_h5(hdf, np.stack(b_pre), np.stack(b_post),
-                           np.array(b_coord, dtype='float64'))
-                kept += len(b_pre)
-    return kept
+            img, _ = _monthly_composite_sits(s2, datetime(y, mo, 15))
+            if img is None:
+                continue
+            wf = _ndwi_water_frac(img, region).getInfo()
+            if wf is None:
+                continue
+            cand.append((f"{y:04d}-{mo:02d}", img, float(wf)))
+    print(f"    baseline candidates found: {len(cand)}")
+    if len(cand) < n_pre:
+        return None
+    cand.sort(key=lambda c: c[2])                          # driest first
+    return sorted(cand[:n_pre], key=lambda c: c[0])        # date ascending -> t1..t4
 
 
 def prepare_sits_patch(row):
     """Track B: tile the whole district into 64x64 patches and save the time series to hdf5.
-    Each patch = (pre: 6x10x64x64, post: 1x10x64x64), coords=(row,col,lat,lon)."""
+    Each patch = (pre: 4x10x64x64, post: 1x10x64x64), coords=(row,col,lat,lon).
+    Baseline t1..t4 = driest same-season composites (removes seasonal change), t5 = event."""
     event_id  = row['event_id']
     state     = row['state']
     start_str = row['start_date']
@@ -572,45 +635,62 @@ def prepare_sits_patch(row):
     s2       = _get_s2_sits(region)
     event_dt = datetime.strptime(start_str, '%Y-%m-%d')
 
-    # Timesteps: 6 monthly pre-event composites + 1 post-event (0-14 days)
-    images, tags = [], []
-    for m in range(SITS_N_PRE, 0, -1):
-        img, n = _monthly_composite_sits(s2, event_dt - timedelta(days=30 * m))
-        images.append(img); tags.append(f'pre-{m}mo({n})')
+    # Timesteps: t1..t4 = driest same-season composites (same month +/-1 over prior years),
+    #            t5 = event-month post. Same-season baseline removes seasonal change.
+    baseline = _dry_baseline(s2, region, event_dt)
+    if baseline is None:
+        print("    -> not enough same-season baseline candidates -> skip")
+        return None
+    images = [b[1] for b in baseline]
+    tags = [f"{b[0]}(w{b[2]:.2f})" for b in baseline]
+
     post_col = s2.filterDate(ee.Date(start_str), ee.Date(start_str).advance(14, 'day'))
-    post_n   = post_col.size().getInfo()
-    images.append(post_col.median() if post_n > 0 else None)
+    post_n = post_col.size().getInfo()
+    if post_n == 0:
+        print("    -> no post imagery -> skip")
+        return None
+    images.append(post_col.median())
     tags.append(f'post({post_n})')
     print("    timesteps: " + " | ".join(tags))
-
-    if any(im is None for im in images):
-        print("    -> some timestep has no imagery -> incomplete series, 0 patches")
-        return None
 
     images = [im.clip(region) for im in images]   # outside district is masked -> tiles dropped
 
     os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
     out_path = os.path.join(SITS_OUTPUT_DIR, f'{event_id}.h5')
+    blocks_ckpt = out_path + '.blocks.json'
     P, B = SITS_PATCH_SIZE, len(SITS_BANDS)
-    with h5py.File(out_path, 'w') as f:
-        f.create_dataset('pre',  shape=(0, SITS_N_PRE, B, P, P),
-                         maxshape=(None, SITS_N_PRE, B, P, P), dtype='float32',
-                         chunks=(1, SITS_N_PRE, B, P, P))
-        f.create_dataset('post', shape=(0, 1, B, P, P),
-                         maxshape=(None, 1, B, P, P), dtype='float32',
-                         chunks=(1, 1, B, P, P))
-        f.create_dataset('coords', shape=(0, 4), maxshape=(None, 4), dtype='float64')
-        meta = f.create_group('meta')
-        meta.attrs['event_id']    = event_id
-        meta.attrs['state']       = state
-        meta.attrs['district']    = str(row['district'])
-        meta.attrs['start_date']  = start_str
-        meta.attrs['bands']       = ','.join(SITS_BANDS)
-        meta.attrs['n_pre']       = SITS_N_PRE
-        meta.attrs['patch_size']  = P
-        meta.attrs['coords_cols'] = 'row,col,lat,lon'
-        n = _tile_region(images, region, f)
 
+    # Block-level resume: continue if a partial h5 + its block checkpoint both exist
+    done_blocks = set()
+    resume = os.path.exists(out_path) and os.path.exists(blocks_ckpt)
+    if resume:
+        with open(blocks_ckpt) as bf:
+            done_blocks = set(json.load(bf))
+        print(f"    resuming: {len(done_blocks)} blocks already done")
+
+    with h5py.File(out_path, 'a' if resume else 'w') as f:
+        if not resume:
+            f.create_dataset('pre',  shape=(0, SITS_N_PRE, B, P, P),
+                             maxshape=(None, SITS_N_PRE, B, P, P), dtype='float32',
+                             chunks=(1, SITS_N_PRE, B, P, P))
+            f.create_dataset('post', shape=(0, 1, B, P, P),
+                             maxshape=(None, 1, B, P, P), dtype='float32',
+                             chunks=(1, 1, B, P, P))
+            f.create_dataset('coords', shape=(0, 4), maxshape=(None, 4), dtype='float64')
+            meta = f.create_group('meta')
+            meta.attrs['event_id']    = event_id
+            meta.attrs['state']       = state
+            meta.attrs['district']    = str(row['district'])
+            meta.attrs['start_date']  = start_str
+            meta.attrs['bands']       = ','.join(SITS_BANDS)
+            meta.attrs['n_pre']       = SITS_N_PRE
+            meta.attrs['patch_size']  = P
+            meta.attrs['coords_cols'] = 'row,col,lat,lon'
+        n = _tile_region(images, region, f, done_blocks, blocks_ckpt)
+
+    # finished cleanly -> drop the block checkpoint so a future run starts fresh
+    if os.path.exists(blocks_ckpt):
+        os.remove(blocks_ckpt)
     print(f"    Saved: {out_path}  [{n} clear patches]")
     return out_path
 
@@ -625,6 +705,8 @@ if __name__ == '__main__':
     parser.add_argument('--track', choices=['A', 'B', 'both'],
                         default='both',
                         help='Which track to run (default: both)')
+    parser.add_argument('--events', nargs='*', default=None,
+                        help='Only run these event_ids (e.g. --events E02). Default: all')
     args = parser.parse_args()
 
     print("=" * 65)
@@ -633,6 +715,9 @@ if __name__ == '__main__':
     print("=" * 65)
 
     events = pd.read_csv('data/events.csv')
+    if args.events:
+        events = events[events['event_id'].isin(args.events)]
+        print(f"  Filtered to events: {args.events}")
     os.makedirs('data', exist_ok=True)
 
     # ── Track A ───────────────────────────────────────────────────────────────
@@ -700,13 +785,14 @@ if __name__ == '__main__':
         for _, row in remaining_b.iterrows():
             try:
                 path = prepare_sits_patch(row)
-                result = {'event_id': row['event_id'],
-                          'h5_path': path, 'status': 'OK'}
             except Exception as e:
                 print(f"  ERROR {row['event_id']}: {e}")
-                result = {'event_id': row['event_id'],
-                          'h5_path': None, 'status': f'ERROR: {e}'}
-            completed_b[row['event_id']] = result
+                path = None
+            if path is None:
+                # skipped (no imagery / not enough baseline) -> don't mark done, retry next run
+                continue
+            completed_b[row['event_id']] = {'event_id': row['event_id'],
+                                            'h5_path': path, 'status': 'OK'}
             save_checkpoint(completed_b, CHECKPOINT_B)
 
         df_b = pd.DataFrame(list(completed_b.values()))
