@@ -48,10 +48,16 @@ fi
 STEPS+=("src/compute_pss.py")
 
 if [[ "$SKIP_ARTICLES" != "1" ]]; then
-  STEPS+=("src/build_articles.py")
+  STEPS+=("src/news.py")
 else
-  echo "NOTE: SKIP_ARTICLES=1 — skipping article dataset build"
+  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT API collection (CP-08)"
 fi
+
+STEPS+=(
+  "src/compute_mss.py"
+  "src/compute_di.py"
+  "src/visualize.py"
+)
 
 echo "======================================================="
 echo "CVND PIPELINE"
