@@ -591,13 +591,10 @@ def _ndwi_water_frac(img, region):
                               maxPixels=1e9, bestEffort=True).values().get(0)
 
 
+# ── (OLD) driest-only baseline — replaced by _pick_baseline (clear-first). Kept for reference ──
+_OLD_DRY_BASELINE = r'''
 def _dry_baseline(s2, region, event_dt, n_pre=SITS_N_PRE, n_years=6):
-    """Baseline t1..t4 = the n_pre 'driest' SAME-SEASON composites (all before the event).
-    Candidates = the event's calendar month +/-2, over the previous n_years and the
-    event year's pre-event months. Ranked by NDWI water fraction (drier = closer to
-    'normal', auto-avoids flooded years): same season across years, but if all wet it
-    falls back to the least-wet nearby month. Returns [(date_str, img, wf)] date-sorted,
-    or None if fewer than n_pre valid (cloud-free enough) candidates exist."""
+    """Baseline t1..t4 = the n_pre 'driest' SAME-SEASON composites (all before the event)."""
     cand = []
     for yr in range(event_dt.year - n_years, event_dt.year + 1):
         for off in (-2, -1, 0, 1, 2):
@@ -606,7 +603,7 @@ def _dry_baseline(s2, region, event_dt, n_pre=SITS_N_PRE, n_years=6):
                 y, mo = y - 1, mo + 12
             elif mo > 12:
                 y, mo = y + 1, mo - 12
-            if datetime(y, mo, 15) >= event_dt:      # only months strictly before the event
+            if datetime(y, mo, 15) >= event_dt:
                 continue
             img, _ = _monthly_composite_sits(s2, datetime(y, mo, 15))
             if img is None:
@@ -618,8 +615,73 @@ def _dry_baseline(s2, region, event_dt, n_pre=SITS_N_PRE, n_years=6):
     print(f"    baseline candidates found: {len(cand)}")
     if len(cand) < n_pre:
         return None
-    cand.sort(key=lambda c: c[2])                          # driest first
-    return sorted(cand[:n_pre], key=lambda c: c[0])        # date ascending -> t1..t4
+    cand.sort(key=lambda c: c[2])
+    return sorted(cand[:n_pre], key=lambda c: c[0])
+'''  # ── (end of OLD) ──
+
+
+def _pick_baseline(s2, region, event_dt, n_pre=SITS_N_PRE, n_years=3, min_clear=0.5):
+    """Baseline t1..t4: prefer CLOUD-FREE, same-season, recent composites; if not enough,
+    fall back to the event year's clear months; keep a mix of the clearest and driest.
+      pool A (preferred) = same calendar month +/-1 over the previous n_years
+      pool B (fallback)  = the event year's months before the event
+    Each candidate is scored by clear fraction (non-cloud) and NDWI water fraction (dryness).
+    Returns [(date_str, img, clear_frac, water_frac)] date-sorted, or None."""
+
+    def score(y, mo):
+        if mo < 1:
+            y, mo = y - 1, mo + 12
+        elif mo > 12:
+            y, mo = y + 1, mo - 12
+        if datetime(y, mo, 15) >= event_dt:
+            return None
+        img, _ = _monthly_composite_sits(s2, datetime(y, mo, 15))
+        if img is None:
+            return None
+        clear = (img.mask().reduce(ee.Reducer.min()).rename('c')
+                 .reduceRegion(ee.Reducer.mean(), region, 100,
+                               maxPixels=1e9, bestEffort=True).get('c'))
+        info = ee.Dictionary({'clear': clear,
+                              'water': _ndwi_water_frac(img, region)}).getInfo()
+        if info.get('clear') is None:
+            return None
+        return (f"{y:04d}-{mo:02d}", img,
+                float(info['clear']), float(info.get('water') or 0.0))
+
+    def gather(pairs):
+        out = []
+        for y, mo in pairs:
+            c = score(y, mo)
+            if c is not None:
+                out.append(c)
+        return out
+
+    # pool A: same month +/-1 over the previous n_years (same season, preferred)
+    poolA = [(yr, event_dt.month + off)
+             for yr in range(event_dt.year - n_years, event_dt.year)
+             for off in (-1, 0, 1)]
+    cands = [c for c in gather(poolA) if c[2] >= min_clear]
+
+    # pool B fallback: the event year's clear months (before the event)
+    if len(cands) < n_pre:
+        seen = {c[0] for c in cands}
+        poolB = [(event_dt.year, mo) for mo in range(1, 13)]
+        cands += [c for c in gather(poolB) if c[2] >= min_clear and c[0] not in seen]
+
+    print(f"    baseline candidates (clear>={min_clear}): {len(cands)}")
+    if len(cands) < n_pre:
+        return None
+
+    # diversity: take the 2 clearest, then fill with the driest (dedup by date)
+    chosen, seen = [], set()
+    for c in sorted(cands, key=lambda x: -x[2])[:2] + sorted(cands, key=lambda x: x[3]):
+        if c[0] in seen:
+            continue
+        chosen.append(c)
+        seen.add(c[0])
+        if len(chosen) == n_pre:
+            break
+    return sorted(chosen, key=lambda c: c[0])   # date ascending -> t1..t4
 
 
 def prepare_sits_patch(row):
@@ -637,12 +699,12 @@ def prepare_sits_patch(row):
 
     # Timesteps: t1..t4 = driest same-season composites (same month +/-1 over prior years),
     #            t5 = event-month post. Same-season baseline removes seasonal change.
-    baseline = _dry_baseline(s2, region, event_dt)
+    baseline = _pick_baseline(s2, region, event_dt)
     if baseline is None:
-        print("    -> not enough same-season baseline candidates -> skip")
+        print("    -> not enough clear baseline candidates -> skip")
         return None
     images = [b[1] for b in baseline]
-    tags = [f"{b[0]}(w{b[2]:.2f})" for b in baseline]
+    tags = [f"{b[0]}(c{b[2]:.2f}/w{b[3]:.2f})" for b in baseline]
 
     post_col = s2.filterDate(ee.Date(start_str), ee.Date(start_str).advance(14, 'day'))
     post_n = post_col.size().getInfo()
