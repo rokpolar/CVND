@@ -103,10 +103,13 @@ def plot_pss_mss_scatter():
 
     pss_df = pd.read_csv(pss_path)
     mss_df = pd.read_csv(mss_path)
-    events = pd.read_csv('data/events.csv')[['event_id', 'income_group']]
 
+    # pss_results already includes income_group; do not re-merge events
+    # (duplicate column → income_group_x/_y and KeyError).
     df = pss_df.merge(mss_df[['event_id', 'MSS']], on='event_id')
-    df = df.merge(events, on='event_id')
+    if 'income_group' not in df.columns:
+        events = pd.read_csv('data/events.csv')[['event_id', 'income_group']]
+        df = df.merge(events, on='event_id')
 
     fig, ax = plt.subplots(figsize=(10, 7))
 
