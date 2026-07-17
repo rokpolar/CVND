@@ -1,169 +1,234 @@
+"""
+cp_10_di.py  —  Discrepancy Index (DI)
+
+Formula:
+    EIS = α·PSS_n + (1-α)·HER_n        [default α = 0.6]
+    DI  = MSS_n - EIS                   [range: -1 to +1]
+
+Interpretation:
+    DI > 0  →  over-reported  (more coverage than severity warrants)
+    DI = 0  →  fairly reported
+    DI < 0  →  under-reported (less coverage than severity warrants)
+
+Inputs:
+    data/pss_results.csv          — event_id, state, PSS, income_group
+    data/mss_results.csv          — event_id, MSS
+    data/severity_raw.csv         — event_id, exposure_rate
+
+Output:
+    data/di_results.csv
+    data/state_di.csv
+"""
+
 import pandas as pd
 import numpy as np
-import statsmodels.api as sm
+from sklearn.preprocessing import MinMaxScaler
 from scipy import stats
+import statsmodels.api as sm
 import os
 import warnings
 warnings.filterwarnings('ignore')
 
+# ── tuneable ──────────────────────────────────────────────────────────────────
+ALPHA = 0.6   # weight on PSS in EIS; (1-ALPHA) goes to HER
+
 print("=" * 60)
 print("CP-10: DISCREPANCY INDEX (DI)")
 print("=" * 60)
+print(f"\nFormula : EIS = {ALPHA}·PSS_n + {1-ALPHA}·HER_n")
+print(f"          DI  = MSS_n - EIS")
 
-# ── Load PSS and MSS ──────────────────────────────────────────────────────────
-pss = pd.read_csv('data/pss_results.csv')
-mss = pd.read_csv('data/mss_results.csv')
-events = pd.read_csv('data/events.csv')[['event_id','state','income_group','start_date']]
-covars = pd.read_csv('data/state_covariates.csv')
+# ── Load ──────────────────────────────────────────────────────────────────────
+pss    = pd.read_csv('data/pss_results.csv')
+mss    = pd.read_csv('data/mss_results.csv')
+sev    = pd.read_csv('data/severity_raw.csv')[['event_id', 'exposure_rate']]
+events = pd.read_csv('data/events.csv')[['event_id', 'income_group']]
 
-print(f"\nPSS events: {len(pss)}")
-print(f"MSS events: {len(mss)}")
+print(f"\nPSS events : {len(pss)}")
+print(f"MSS events : {len(mss)}")
+print(f"Severity rows: {len(sev)}")
 
-# ── Merge PSS and MSS ─────────────────────────────────────────────────────────
-df = pss[['event_id','state','PSS','income_group']].merge(
-    mss[['event_id','MSS','total_articles','indic_share',
-         'coverage_days','t_first_days']], on='event_id', how='inner')
+# ── Merge ─────────────────────────────────────────────────────────────────────
+df = (pss[['event_id', 'state', 'PSS']]
+      .merge(events, on='event_id', how='left')
+      .merge(mss[['event_id', 'MSS']], on='event_id', how='left')
+      .merge(sev, on='event_id', how='left'))
 
-print(f"Events with both PSS and MSS: {len(df)}")
+# Events with PSS but no MSS → zero coverage
+no_mss = df['MSS'].isna().sum()
+if no_mss:
+    print(f"\n{no_mss} events have no MSS → assigned MSS = 0 (zero coverage)")
+df['MSS'] = df['MSS'].fillna(0.0)
 
-# Handle events in PSS but not MSS — assign MSS=0 (zero coverage)
-pss_only = pss[~pss['event_id'].isin(mss['event_id'])]
-if len(pss_only) > 0:
-    print(f"Events with PSS but no MSS (zero coverage): {len(pss_only)}")
-    zero_mss = pss_only[['event_id','state','PSS','income_group']].copy()
-    zero_mss['MSS'] = 0.0
-    zero_mss['total_articles'] = 0
-    zero_mss['indic_share'] = 0.0
-    zero_mss['coverage_days'] = 0
-    zero_mss['t_first_days'] = 14
-    df = pd.concat([df, zero_mss], ignore_index=True)
+# Drop rows where PSS or exposure_rate is missing (can't compute EIS)
+before = len(df)
+df = df.dropna(subset=['PSS', 'exposure_rate'])
+dropped = before - len(df)
+if dropped:
+    print(f"{dropped} events dropped: missing PSS or exposure_rate")
 
-print(f"Total events for DI computation: {len(df)}")
+print(f"\nEvents entering DI computation: {len(df)}")
 
-# ── Step 1: OLS regression MSS ~ PSS ─────────────────────────────────────────
-print("\n[Step 1] OLS regression: MSS ~ PSS")
-print("-" * 40)
+# ── Step 1: Normalize PSS, MSS, HER to [0, 1] ────────────────────────────────
+print("\n[Step 1] Normalizing PSS, MSS, HER to [0, 1]")
 
-X = sm.add_constant(df['PSS'])
-model = sm.OLS(df['MSS'], X).fit()
+scaler = MinMaxScaler()
+df['PSS_n'] = scaler.fit_transform(df[['PSS']]).round(6)
+df['MSS_n'] = scaler.fit_transform(df[['MSS']]).round(6)
+df['HER_n'] = scaler.fit_transform(df[['exposure_rate']]).round(6)
 
-print(model.summary())
+print(f"  PSS_n : {df['PSS_n'].min():.4f} – {df['PSS_n'].max():.4f}")
+print(f"  MSS_n : {df['MSS_n'].min():.4f} – {df['MSS_n'].max():.4f}")
+print(f"  HER_n : {df['HER_n'].min():.4f} – {df['HER_n'].max():.4f}")
 
-# Key stats
-r2       = model.rsquared
-coef_pss = model.params['PSS']
-p_pss    = model.pvalues['PSS']
+# ── Step 2: Expected Impact Score ─────────────────────────────────────────────
+print(f"\n[Step 2] EIS = {ALPHA}·PSS_n + {1-ALPHA}·HER_n")
 
-print(f"\nR²: {r2:.4f}")
-print(f"PSS coefficient: {coef_pss:.4f} (p={p_pss:.4f})")
+df['EIS'] = (ALPHA * df['PSS_n'] + (1 - ALPHA) * df['HER_n']).round(6)
 
-if p_pss < 0.05:
-    print("  PSS is a significant predictor of MSS")
-    print("  → Regression residuals are a valid bias measure")
+print(f"  EIS range  : {df['EIS'].min():.4f} – {df['EIS'].max():.4f}")
+print(f"  EIS mean   : {df['EIS'].mean():.4f}")
+print(f"  EIS median : {df['EIS'].median():.4f}")
+
+# ── Step 3: Discrepancy Index ─────────────────────────────────────────────────
+print("\n[Step 3] DI = MSS_n - EIS")
+
+df['DI'] = (df['MSS_n'] - df['EIS']).round(6)
+
+print(f"  DI range   : {df['DI'].min():.4f} – {df['DI'].max():.4f}  (theoretical: -1 to +1)")
+print(f"  DI mean    : {df['DI'].mean():.4f}")
+print(f"  DI median  : {df['DI'].median():.4f}")
+print(f"  DI std     : {df['DI'].std():.4f}")
+
+over  = (df['DI'] > 0).sum()
+under = (df['DI'] < 0).sum()
+fair  = (df['DI'] == 0).sum()
+print(f"\n  Over-reported  (DI > 0): {over}  events")
+print(f"  Fairly reported (DI = 0): {fair}  events")
+print(f"  Under-reported (DI < 0): {under}  events")
+
+# ── Step 4: Sensitivity analysis on α ────────────────────────────────────────
+print("\n[Step 4] Sensitivity analysis — DI rank stability across α values")
+print("-" * 55)
+
+alphas = {'α=0.5': 0.5, 'α=0.6 (base)': 0.6, 'α=0.7': 0.7, 'α=0.8': 0.8}
+rank_df = df[['event_id', 'state']].copy()
+
+for label, a in alphas.items():
+    eis_alt = a * df['PSS_n'] + (1 - a) * df['HER_n']
+    di_alt  = df['MSS_n'] - eis_alt
+    rank_df[label] = di_alt.rank(ascending=True).astype(int)  # rank 1 = most undercovered
+
+rank_cols = list(alphas.keys())
+rank_df['max_rank_shift'] = rank_df[rank_cols].max(axis=1) - rank_df[rank_cols].min(axis=1)
+max_shift = rank_df['max_rank_shift'].max()
+unstable  = rank_df[rank_df['max_rank_shift'] > 5]
+
+print(f"  Max rank shift across α values: {max_shift}")
+if unstable.empty:
+    print("  ✓ Rankings stable (shift ≤ 5) — α = 0.6 is defensible")
 else:
-    print("  WARN: PSS not significant predictor of MSS")
-    print("  → DI residuals capture noise as well as bias")
-    print("  → Note this as a limitation in paper")
+    print(f"  ⚠ {len(unstable)} events shift rank by > 5 positions across α:")
+    print(unstable[['event_id', 'state', 'max_rank_shift']].to_string(index=False))
+    print("  Note this as a sensitivity limitation in the paper.")
 
-# ── Step 2: Compute DI as regression residual ─────────────────────────────────
-print("\n[Step 2] Computing DI = MSS residual from OLS")
-df['MSS_predicted'] = model.predict(X)
-df['DI'] = model.resid  # positive = undercovered, negative = overcovered
+# ── Step 5: DI by income group ────────────────────────────────────────────────
+print("\n[Step 5] DI by income group")
+print("-" * 55)
 
-# Standardize DI for comparability
-df['DI_std'] = (df['DI'] - df['DI'].mean()) / df['DI'].std()
+di_income = (df.groupby('income_group')['DI']
+               .agg(mean='mean', median='median', std='std', n='count')
+               .round(4))
+print(di_income)
 
-print(f"\nDI range  : {df['DI'].min():.4f} – {df['DI'].max():.4f}")
-print(f"DI mean   : {df['DI'].mean():.4f}  (should be ~0 by OLS property)")
-print(f"DI std    : {df['DI'].std():.4f}")
-print(f"DI median : {df['DI'].median():.4f}")
-
-# ── Step 3: DI by income group ────────────────────────────────────────────────
-print("\n[Step 3] DI by income group")
-print("-" * 40)
-
-di_income = df.groupby('income_group')['DI'].agg(['mean','std','count','median'])
-print(di_income.round(4))
-
-# Statistical test: Low vs High DI difference
+# T-test and Mann-Whitney: Low vs High
 low_di  = df[df['income_group'] == 'Low']['DI']
 high_di = df[df['income_group'] == 'High']['DI']
-mid_di  = df[df['income_group'] == 'Middle']['DI']
 
-t_stat, p_val = stats.ttest_ind(low_di, high_di)
-print(f"\nT-test Low vs High DI:")
-print(f"  t={t_stat:.4f}, p={p_val:.4f}")
-if p_val < 0.05:
-    print("  SIGNIFICANT: Low-income events are systematically under/overcovered vs High-income")
+if len(low_di) > 1 and len(high_di) > 1:
+    t_stat, p_t = stats.ttest_ind(low_di, high_di)
+    u_stat, p_u = stats.mannwhitneyu(low_di, high_di, alternative='two-sided')
+    print(f"\n  T-test (Low vs High):          t={t_stat:.4f}, p={p_t:.4f}")
+    print(f"  Mann-Whitney U (Low vs High):  U={u_stat:.1f}, p={p_u:.4f}")
+
+    sig = p_u < 0.05
+    direction = "lower" if low_di.mean() < high_di.mean() else "higher"
+    if sig:
+        print(f"\n  ✓ SIGNIFICANT (p<0.05): Low-income events have {direction} DI")
+        print("    → Evidence of systematic reporting bias by income group")
+    else:
+        print(f"\n  ✗ Not significant (p≥0.05) — note as limitation (small N per group)")
 else:
-    print("  Not significant at p<0.05 — note as limitation (small N per group)")
+    print("\n  Insufficient data for Low vs High comparison")
 
-# Mann-Whitney U (non-parametric, more robust for small N)
-u_stat, p_mw = stats.mannwhitneyu(low_di, high_di, alternative='two-sided')
-print(f"\nMann-Whitney U test Low vs High DI:")
-print(f"  U={u_stat:.1f}, p={p_mw:.4f}")
+# ── Step 6: OLS regression DI ~ income (for the covariate file) ──────────────
+# This is a preview only — full regression vs state covariates is in a
+# separate script. Here we just confirm DI varies meaningfully with income.
+print("\n[Step 6] OLS preview: DI ~ income group dummies")
+print("-" * 55)
 
-# ── Step 4: DI per event table ────────────────────────────────────────────────
-print("\n[Step 4] Full DI table")
-print("-" * 40)
+dummies = pd.get_dummies(df['income_group'], drop_first=True)
+X = sm.add_constant(dummies.astype(float))
+ols = sm.OLS(df['DI'], X).fit()
+print(ols.summary2())
 
-result = df[['event_id','state','income_group',
-             'PSS','MSS','MSS_predicted','DI','DI_std',
-             'total_articles','indic_share','coverage_days']].copy()
+# ── Step 7: Calibration check ────────────────────────────────────────────────
+print("\n[Step 7] Calibration check on known events")
+print("-" * 55)
 
-result = result.sort_values('DI', ascending=False)
-
-print("\nMost UNDERCOVERED (DI > 0, positive residual):")
-print(result.head(15)[['event_id','state','income_group',
-                         'PSS','MSS','DI']].to_string(index=False))
-
-print("\nMost OVERCOVERED (DI < 0, negative residual):")
-print(result.tail(15)[['event_id','state','income_group',
-                        'PSS','MSS','DI']].to_string(index=False))
-
-# ── Step 5: State-level aggregation ──────────────────────────────────────────
-print("\n[Step 5] State-level mean DI")
-print("-" * 40)
-
-state_di = (df.groupby(['state','income_group'])
-              .agg(mean_DI=('DI','mean'),
-                   std_DI=('DI','std'),
-                   n_events=('DI','count'),
-                   mean_PSS=('PSS','mean'),
-                   mean_MSS=('MSS','mean'))
-              .reset_index()
-              .sort_values('mean_DI', ascending=False))
-
-print(state_di.round(4).to_string(index=False))
-
-print("\nMean DI by income group (state-level):")
-print(state_di.groupby('income_group')['mean_DI'].mean().round(4))
-
-# ── Step 6: Calibration check on known events ────────────────────────────────
-print("\n[Step 6] Calibration check on known events")
-print("-" * 40)
 known = {
-    'E01': ('Kerala 2018 — historically catastrophic, high coverage expected', 'overcovered'),
-    'E10': ('Odisha 2022 Balasore — real disaster, low coverage expected',     'undercovered'),
-    'E12': ('Delhi 2023 — metro event, high coverage expected',                'overcovered'),
-    'E02': ('Bihar 2019 — severe but peripheral, underreported',               'undercovered'),
+    'E01': ('Kerala 2018 — catastrophic, high coverage expected',   'over'),
+    'E12': ('Delhi 2023 — metro event, high coverage expected',     'over'),
+    'E02': ('Bihar 2019 — severe but peripheral',                   'under'),
+    'E10': ('Odisha 2022 — real disaster, low coverage expected',   'under'),
 }
 for eid, (desc, expected) in known.items():
-    row = df[df['event_id']==eid]
+    row = df[df['event_id'] == eid]
     if row.empty:
-        print(f"  {eid}: NOT IN DATA")
+        print(f"  ? {eid}: not in data")
         continue
     di_val = row['DI'].values[0]
-    actual = 'overcovered' if di_val < 0 else 'undercovered'
-    match  = '✓' if actual == expected else '✗'
-    print(f"  {match} {eid} {desc}")
-    print(f"      DI={di_val:.4f} → {actual} (expected: {expected})")
+    actual = 'over' if di_val > 0 else 'under'
+    mark   = '✓' if actual == expected else '✗'
+    print(f"  {mark} {eid} {desc}")
+    print(f"      DI={di_val:.4f}  PSS_n={row['PSS_n'].values[0]:.4f}"
+          f"  HER_n={row['HER_n'].values[0]:.4f}  MSS_n={row['MSS_n'].values[0]:.4f}")
+
+# ── Step 8: Full sorted table ─────────────────────────────────────────────────
+print("\n[Step 8] Full DI table (most under-reported first)")
+print("-" * 55)
+
+result = df[['event_id', 'state', 'income_group',
+             'PSS_n', 'HER_n', 'EIS', 'MSS_n', 'DI']].copy()
+result = result.sort_values('DI')
+
+print("\nMost UNDER-REPORTED (DI most negative):")
+print(result.head(15).to_string(index=False))
+
+print("\nMost OVER-REPORTED (DI most positive):")
+print(result.tail(15).to_string(index=False))
+
+# ── State-level aggregation ───────────────────────────────────────────────────
+state_di = (df.groupby(['state', 'income_group'])
+              .agg(mean_DI    =('DI', 'mean'),
+                   median_DI  =('DI', 'median'),
+                   std_DI     =('DI', 'std'),
+                   n_events   =('DI', 'count'),
+                   mean_PSS_n =('PSS_n', 'mean'),
+                   mean_HER_n =('HER_n', 'mean'),
+                   mean_MSS_n =('MSS_n', 'mean'),
+                   mean_EIS   =('EIS', 'mean'))
+              .reset_index()
+              .sort_values('mean_DI'))
+
+print("\n[State-level DI]")
+print(state_di.round(4).to_string(index=False))
 
 # ── Save ──────────────────────────────────────────────────────────────────────
 os.makedirs('data', exist_ok=True)
 result.to_csv('data/di_results.csv', index=False)
 state_di.to_csv('data/state_di.csv', index=False)
 
-print(f"\nSAVED: data/di_results.csv")
-print(f"SAVED: data/state_di.csv")
-print("\nCP-10 COMPLETE — ready for CP-11 and visualize.py")
+print(f"\nSAVED: data/di_results.csv  ({len(result)} events)")
+print(f"SAVED: data/state_di.csv   ({len(state_di)} states)")
+print("\nCP-10 COMPLETE — ready for covariate regression script")
