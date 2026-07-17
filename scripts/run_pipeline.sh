@@ -31,7 +31,6 @@ SKIP_GEE="${SKIP_GEE:-0}"
 SKIP_ARTICLES="${SKIP_ARTICLES:-0}"
 
 STEPS=(
-  "src/build_events.py"
   "src/build_covariates.py"
 )
 
@@ -39,7 +38,7 @@ if [[ "$SKIP_GEE" != "1" ]]; then
   STEPS+=(
     "src/test_gee.py"
     "src/satellite.py"
-    "src/population.py"
+    "src/compute_population.py"
   )
 else
   echo "NOTE: SKIP_GEE=1 — skipping GEE steps (CP-04 to CP-06)"
