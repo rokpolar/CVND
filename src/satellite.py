@@ -769,6 +769,8 @@ if __name__ == '__main__':
                         help='Which track to run (default: both)')
     parser.add_argument('--events', nargs='*', default=None,
                         help='Only run these event_ids (e.g. --events E02). Default: all')
+    parser.add_argument('--reverse', action='store_true',
+                        help='Process events last-to-first (E168 -> E01)')
     args = parser.parse_args()
 
     print("=" * 65)
@@ -780,6 +782,9 @@ if __name__ == '__main__':
     if args.events:
         events = events[events['event_id'].isin(args.events)]
         print(f"  Filtered to events: {args.events}")
+    if args.reverse:
+        events = events.iloc[::-1]
+        print("  Reverse order: last -> first")
     os.makedirs('data', exist_ok=True)
 
     # ── Track A ───────────────────────────────────────────────────────────────
