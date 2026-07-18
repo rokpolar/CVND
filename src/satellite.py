@@ -551,6 +551,7 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
     print(f"    tiling: {npx}x{npy} tiles (@10m), "
           f"{len(inside)}/{len(all_blocks)} blocks in district, {len(todo)} to download")
     bar = tqdm(todo, desc='    downloading', unit='blk')
+    failed = 0
     for i, bi, bj in bar:
         pi = min(bi + SITS_BLOCK_PATCHES, npy)
         pj = min(bj + SITS_BLOCK_PATCHES, npx)
@@ -563,6 +564,7 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
                 arrs = list(ex.map(lambda im: _download_block(im, block), images))
         except Exception as e:
             bar.write(f"      block ({bi},{bj}) download failed: {e}")
+            failed += 1
             continue
 
         H = min(a.shape[0] for a in arrs)
@@ -594,7 +596,7 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
         with open(blocks_ckpt, 'w') as cf:
             json.dump(sorted(done_blocks), cf)
         bar.set_postfix(kept=hdf['pre'].shape[0])
-    return hdf['pre'].shape[0]
+    return hdf['pre'].shape[0], failed
 
 
 def _ndwi_water_frac(img, region):
@@ -761,13 +763,15 @@ def prepare_sits_patch(row):
             meta.attrs['n_pre']       = SITS_N_PRE
             meta.attrs['patch_size']  = P
             meta.attrs['coords_cols'] = 'row,col,lat,lon'
-        n = _tile_region(images, region, f, done_blocks, blocks_ckpt)
+        n, failed = _tile_region(images, region, f, done_blocks, blocks_ckpt)
 
-    # finished cleanly -> drop the block checkpoint so a future run starts fresh
-    if os.path.exists(blocks_ckpt):
+    complete = (failed == 0)
+    # drop the block checkpoint only if every block succeeded; otherwise keep it so a
+    # re-run resumes and retries the failed blocks
+    if complete and os.path.exists(blocks_ckpt):
         os.remove(blocks_ckpt)
-    print(f"    Saved: {out_path}  [{n} clear patches]")
-    return out_path
+    print(f"    Saved: {out_path}  [{n} clear patches, {failed} blocks failed]")
+    return out_path, complete
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -863,16 +867,23 @@ if __name__ == '__main__':
         print(f"Already done: {len(done_b)} | Remaining: {len(remaining_b)}\n")
 
         for _, row in remaining_b.iterrows():
+            ev = row['event_id']
             try:
-                path = prepare_sits_patch(row)
+                res = prepare_sits_patch(row)
             except Exception as e:
-                print(f"  ERROR {row['event_id']}: {e}")
-                path = None
-            if path is None:
-                # skipped (no imagery / not enough baseline) -> don't mark done, retry next run
+                print(f"  ERROR {ev}: {e}")
+                completed_b[ev] = {'event_id': ev, 'h5_path': None, 'status': f'ERROR: {e}'}
+                save_checkpoint(completed_b, CHECKPOINT_B)
                 continue
-            completed_b[row['event_id']] = {'event_id': row['event_id'],
-                                            'h5_path': path, 'status': 'OK'}
+            if res is None:                        # no clear baseline / no post -> cloudy, don't retry
+                completed_b[ev] = {'event_id': ev, 'h5_path': None, 'status': 'SKIPPED_CLOUDY'}
+                save_checkpoint(completed_b, CHECKPOINT_B)
+                continue
+            path, complete = res
+            if not complete:                       # some blocks failed -> NOT marked done, retry next run
+                print(f"  {ev}: incomplete (failed blocks) -> will retry on re-run")
+                continue
+            completed_b[ev] = {'event_id': ev, 'h5_path': path, 'status': 'OK'}
             save_checkpoint(completed_b, CHECKPOINT_B)
 
         df_b = pd.DataFrame(list(completed_b.values()))

@@ -1,0 +1,15 @@
+event_id,sits_flood_km2,sits_threshold,sits_method,ndwi_flood_km2,s1_flood_km2,optical_available,combined_km2,combined_source
+E02,604.16,0.68,low-conf,148.34,2987.39,True,148.34,NDWI
+E03,6.14,0.305,otsu,1.36,431.66,True,1.36,NDWI
+E04,97.89,0.398,otsu,1.61,0.37,True,1.61,NDWI
+E05,38.91,0.414,otsu,0.0,15.95,True,0.0,NDWI
+E06,1495.86,0.233,ndwi-calib,4.59,2.33,True,1495.86,SITS
+E07,655.36,0.32,low-conf,55.21,226.01,True,55.21,NDWI
+E08,496.03,0.233,ndwi-calib,98.32,295.0,False,295.0,S1(cloud)
+E09,528.38,0.328,ndwi-calib,14.71,20.68,True,528.38,SITS
+E10,568.12,0.273,low-conf,14.3,60.52,True,14.3,NDWI
+E11,280.58,0.305,otsu,1.61,201.43,True,1.61,NDWI
+E12,455.07,0.468,ndwi-calib,34.82,118.21,True,455.07,SITS
+E15,154.83,0.265,ndwi-calib,3.71,3206.52,True,154.83,SITS
+E16,304.33,0.367,low-conf,76.93,4781.2,True,76.93,NDWI
+E17,517.32,0.499,ndwi-calib,3.77,6009.07,True,517.32,SITS
