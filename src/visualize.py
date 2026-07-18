@@ -313,6 +313,128 @@ def plot_spatial_di_map():
     print(f"  SAVED: {path}")
 
 
+# ══════════════════════════════════════════════════════════
+# PRIMARY — expected coverage calibration (observed vs expected)
+# ══════════════════════════════════════════════════════════
+def plot_observed_vs_expected():
+    path = 'data/expected_coverage.csv'
+    if not os.path.exists(path):
+        print("  SKIP Plot 5: waiting for expected_coverage.csv")
+        return
+
+    df = pd.read_csv(path)
+    fig, ax = plt.subplots(figsize=(8, 8))
+    for income in INCOME_ORDER:
+        grp = df[df['income_group'] == income]
+        if grp.empty:
+            continue
+        ax.scatter(grp['expected'], grp['observed'],
+                   label=f'{income} income',
+                   color=COLORS.get(income, 'gray'),
+                   s=70, alpha=0.85, edgecolors='white', linewidth=0.5, zorder=3)
+
+    lim = max(df['expected'].max(), df['observed'].max()) * 1.05
+    ax.plot([0, lim], [0, lim], 'k--', alpha=0.35, linewidth=1.2, label='y = expected')
+    ax.set_xlabel('Expected article count (μ̂)', labelpad=8)
+    ax.set_ylabel('Observed article count (y)', labelpad=8)
+    ax.set_title('Calibration: Observed vs Expected Coverage\n'
+                 'GDELT-monitored counts vs sparse NegBin severity model')
+    ax.legend(framealpha=0.9)
+    ax.set_xlim(0, lim)
+    ax.set_ylim(0, lim)
+    plt.tight_layout()
+    out = 'outputs/plot5_observed_vs_expected.png'
+    plt.savefig(out, dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"  SAVED: {out}")
+
+
+def plot_log_ratio_histogram():
+    path = 'data/expected_coverage.csv'
+    if not os.path.exists(path):
+        print("  SKIP Plot 6: waiting for expected_coverage.csv")
+        return
+
+    df = pd.read_csv(path)
+    fig, ax = plt.subplots(figsize=(9, 5.5))
+    ax.hist(df['log_ratio'], bins=25, color='#5c6bc0', edgecolor='white', alpha=0.9)
+    ax.axvline(0, color='black', linestyle='--', linewidth=1.0, alpha=0.6)
+    ax.set_xlabel('log_ratio = ln((y+0.5)/(μ̂+0.5))', labelpad=8)
+    ax.set_ylabel('Number of events', labelpad=8)
+    ax.set_title('Residual Distribution (log ratio)\n'
+                 'Negative = under-covered vs model; positive = over-covered')
+    ax.grid(axis='y', alpha=0.3)
+    plt.tight_layout()
+    out = 'outputs/plot6_log_ratio_histogram.png'
+    plt.savefig(out, dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"  SAVED: {out}")
+
+
+def plot_log_ratio_ranking():
+    path = 'data/expected_coverage.csv'
+    if not os.path.exists(path):
+        print("  SKIP Plot 7: waiting for expected_coverage.csv")
+        return
+
+    df = pd.read_csv(path).sort_values('log_ratio')
+    # Show extremes only for readability
+    show = pd.concat([df.head(20), df.tail(20)]).drop_duplicates('event_id')
+    labels = show['state'] + ' (' + show['event_id'] + ')'
+    colors = ['#e74c3c' if v < 0 else '#2ecc71' for v in show['log_ratio']]
+
+    fig, ax = plt.subplots(figsize=(11, 9))
+    ax.barh(labels, show['log_ratio'], color=colors, zorder=3)
+    ax.axvline(0, color='black', linestyle='--', linewidth=0.9, alpha=0.5)
+    ax.set_xlabel('log_ratio', labelpad=8)
+    ax.set_title('Coverage Imbalance Ranking (extremes)\n'
+                 'Red = under-covered  |  Green = over-covered\n'
+                 'Not ground-truth media bias — GDELT vs sparse severity model')
+    ax.grid(axis='x', alpha=0.3, zorder=0)
+    plt.tight_layout()
+    out = 'outputs/plot7_log_ratio_ranking.png'
+    plt.savefig(out, dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"  SAVED: {out}")
+
+
+def plot_log_ratio_by_income():
+    path = 'data/expected_coverage.csv'
+    if not os.path.exists(path):
+        print("  SKIP Plot 8: waiting for expected_coverage.csv")
+        return
+
+    df = pd.read_csv(path)
+    avg = (df.groupby('income_group')['log_ratio']
+             .agg(['mean', 'sem'])
+             .reindex(INCOME_ORDER)
+             .reset_index())
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    bars = ax.bar(avg['income_group'], avg['mean'],
+                  color=[COLORS[g] for g in avg['income_group']],
+                  width=0.5, zorder=3,
+                  yerr=avg['sem'], capsize=5,
+                  error_kw={'elinewidth': 1.5, 'ecolor': '#555'})
+    ax.axhline(0, color='black', linewidth=0.9, linestyle='--', alpha=0.5)
+    for bar, val in zip(bars, avg['mean']):
+        offset = 0.02 if val >= 0 else -0.04
+        ax.text(bar.get_x() + bar.get_width() / 2, val + offset,
+                f'{val:.3f}', ha='center', fontsize=10, fontweight='bold')
+    ax.set_xlabel('Income Group', labelpad=8)
+    ax.set_ylabel('Mean log_ratio', labelpad=8)
+    ax.set_title('log_ratio by Income Group\n'
+                 'Inference uses cluster-robust SE by state in '
+                 'compute_expected_coverage.py\n'
+                 'If income CIs cover 0 → no detectable gradient')
+    ax.grid(axis='y', alpha=0.3, zorder=0)
+    plt.tight_layout()
+    out = 'outputs/plot8_log_ratio_by_income.png'
+    plt.savefig(out, dpi=150, bbox_inches='tight')
+    plt.close()
+    print(f"  SAVED: {out}")
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     print("=" * 55)
@@ -321,22 +443,35 @@ if __name__ == '__main__':
 
     available = [f for f in [
         'data/pss_results.csv', 'data/mss_results.csv',
-        'data/di_results.csv',  'data/raw_gdelt.csv'
+        'data/di_results.csv',  'data/expected_coverage.csv',
+        'data/raw_gdelt.csv'
     ] if os.path.exists(f)]
 
     print(f"CSVs found: {available}\n")
 
-    print("Plot 1: PSS vs MSS scatter")
+    print("Plot 1: PSS vs MSS scatter (legacy)")
     plot_pss_mss_scatter()
 
-    print("\nPlot 2: DI by income group")
+    print("\nPlot 2: DI by income group (legacy)")
     plot_di_by_income()
 
-    print("\nPlot 3: DI per event")
+    print("\nPlot 3: DI per event (legacy)")
     plot_di_per_event()
 
-    print("\nPlot 4: Spatial DI map")
+    print("\nPlot 4: Spatial DI map (legacy)")
     plot_spatial_di_map()
+
+    print("\nPlot 5: Observed vs expected (PRIMARY)")
+    plot_observed_vs_expected()
+
+    print("\nPlot 6: log_ratio histogram (PRIMARY)")
+    plot_log_ratio_histogram()
+
+    print("\nPlot 7: log_ratio ranking (PRIMARY)")
+    plot_log_ratio_ranking()
+
+    print("\nPlot 8: log_ratio by income (PRIMARY)")
+    plot_log_ratio_by_income()
 
     saved = [f for f in os.listdir('outputs') if f.endswith('.png')]
     print(f"\n{'=' * 55}")

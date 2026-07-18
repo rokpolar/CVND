@@ -55,6 +55,7 @@ fi
 STEPS+=(
   "src/compute_mss.py"
   "src/compute_di.py"
+  "src/compute_expected_coverage.py"
   "src/visualize.py"
 )
 
