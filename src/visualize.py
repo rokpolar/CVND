@@ -470,11 +470,97 @@ if __name__ == '__main__':
     print("\nPlot 7: log_ratio ranking (PRIMARY)")
     plot_log_ratio_ranking()
 
+def refresh_pipeline_result_figures(md_path='outputs/pipeline_result.md'):
+    """Insert / replace the Figures section after plots are written."""
+    plot_links = []
+    for fname, label in [
+        ('plot5_observed_vs_expected.png', 'Observed vs expected calibration'),
+        ('plot6_log_ratio_histogram.png', 'log_ratio residual histogram'),
+        ('plot7_log_ratio_ranking.png', 'Coverage imbalance ranking (extremes)'),
+        ('plot8_log_ratio_by_income.png', 'log_ratio by income group'),
+        ('plot1_pss_vs_mss_scatter.png', 'Legacy: PSS vs MSS scatter'),
+        ('plot2_di_by_income_group.png', 'Legacy: DI by income group'),
+        ('plot3_di_per_event.png', 'Legacy: DI per event'),
+        ('plot4_spatial_di_map.png', 'Legacy: Spatial DI map'),
+    ]:
+        if os.path.exists(os.path.join('outputs', fname)):
+            plot_links.append(f'- [{label}]({fname})')
+
+    if not plot_links:
+        return
+
+    section = '## Figures\n\n' + '\n'.join(plot_links) + '\n'
+    if not os.path.exists(md_path):
+        with open(md_path, 'w', encoding='utf-8') as f:
+            f.write('# CVND Pipeline Results\n\n' + section)
+        print(f'  SAVED: {md_path}')
+        return
+
+    with open(md_path, 'r', encoding='utf-8') as f:
+        text = f.read()
+
+    import re
+    if re.search(r'^## Figures\b', text, flags=re.M):
+        text = re.sub(
+            r'^## Figures\b.*?(?=^## |\Z)',
+            section + '\n',
+            text,
+            count=1,
+            flags=re.M | re.S,
+        )
+    else:
+        text = text.rstrip() + '\n\n' + section
+
+    with open(md_path, 'w', encoding='utf-8') as f:
+        f.write(text)
+    print(f'  SAVED: {md_path} (figures section refreshed)')
+
+
+# ── Main ──────────────────────────────────────────────────────────────────────
+if __name__ == '__main__':
+    print("=" * 55)
+    print("VISUALIZE — CVND PIPELINE FIGURES")
+    print("=" * 55)
+
+    available = [f for f in [
+        'data/pss_results.csv', 'data/mss_results.csv',
+        'data/di_results.csv',  'data/expected_coverage.csv',
+        'data/raw_gdelt.csv'
+    ] if os.path.exists(f)]
+
+    print(f"CSVs found: {available}\n")
+
+    print("Plot 1: PSS vs MSS scatter (legacy)")
+    plot_pss_mss_scatter()
+
+    print("\nPlot 2: DI by income group (legacy)")
+    plot_di_by_income()
+
+    print("\nPlot 3: DI per event (legacy)")
+    plot_di_per_event()
+
+    print("\nPlot 4: Spatial DI map (legacy)")
+    plot_spatial_di_map()
+
+    print("\nPlot 5: Observed vs expected (PRIMARY)")
+    plot_observed_vs_expected()
+
+    print("\nPlot 6: log_ratio histogram (PRIMARY)")
+    plot_log_ratio_histogram()
+
+    print("\nPlot 7: log_ratio ranking (PRIMARY)")
+    plot_log_ratio_ranking()
+
     print("\nPlot 8: log_ratio by income (PRIMARY)")
     plot_log_ratio_by_income()
+
+    print("\nRefreshing markdown report figure links")
+    refresh_pipeline_result_figures()
 
     saved = [f for f in os.listdir('outputs') if f.endswith('.png')]
     print(f"\n{'=' * 55}")
     print(f"Done. {len(saved)} figure(s) saved in outputs/")
     for f in sorted(saved):
-        print(f"  outputs/{f}") 
+        print(f"  outputs/{f}")
+    if os.path.exists('outputs/pipeline_result.md'):
+        print("  outputs/pipeline_result.md") 
