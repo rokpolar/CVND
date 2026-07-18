@@ -17,7 +17,7 @@ Hybrid labels:
     over_flag      = log_ratio > 0
     severity_tier  = tertile low/mid/high   # severe-neglect exploration pool (P33/P67)
 
-Deaths (option A):
+Deaths (option A; #20):
     Keep rows with missing EM-DAT deaths.
     deaths_missing = 1 if total_deaths was NA, else 0
     log1p_deaths   = log1p(fillna(total_deaths, 0))
