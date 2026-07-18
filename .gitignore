@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .envgit 
 .env
+# large generated SITS patch files (h5) + SITS outputs
+data/sits_patches/
+data/sits_vae_results.csv
+data/e02_sits_map.png
