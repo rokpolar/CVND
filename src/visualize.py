@@ -193,7 +193,7 @@ def plot_di_by_income():
     ax.set_xlabel('Income Group', labelpad=8)
     ax.set_ylabel('Mean Discrepancy Index (DI)', labelpad=8)
     ax.set_title('Media Coverage Bias by Economic Group\n'
-                 'Positive DI = undercovered relative to physical damage')
+                 'Positive DI = over-reported; negative DI = under-reported')
     ax.grid(axis='y', alpha=0.3, zorder=0)
     plt.tight_layout()
     path = 'outputs/plot2_di_by_income_group.png'
@@ -213,7 +213,8 @@ def plot_di_per_event():
 
     df     = pd.read_csv(di_path).sort_values('DI')
     labels = df['state'] + ' (' + df['event_id'] + ')'
-    bar_colors = ['#e74c3c' if v > 0 else '#2ecc71' for v in df['DI']]
+    # Align with compute_di.py: DI > 0 over-reported, DI < 0 under-reported
+    bar_colors = ['#2ecc71' if v > 0 else '#e74c3c' for v in df['DI']]
 
     fig, ax = plt.subplots(figsize=(12, 7))
     bars = ax.barh(labels, df['DI'], color=bar_colors, zorder=3)
@@ -230,10 +231,10 @@ def plot_di_per_event():
 
     ax.set_xlabel('Discrepancy Index (DI)', labelpad=8)
     ax.set_title('Discrepancy Index per Flood Event\n'
-                 'Red = undercovered  |  Green = overcovered')
+                 'Red = under-reported  |  Green = over-reported')
 
-    red_patch   = mpatches.Patch(color='#e74c3c', label='Undercovered (DI > 0)')
-    green_patch = mpatches.Patch(color='#2ecc71', label='Overcovered (DI < 0)')
+    red_patch   = mpatches.Patch(color='#e74c3c', label='Under-reported (DI < 0)')
+    green_patch = mpatches.Patch(color='#2ecc71', label='Over-reported (DI > 0)')
     ax.legend(handles=[red_patch, green_patch], loc='lower right')
     ax.grid(axis='x', alpha=0.3, zorder=0)
     plt.tight_layout()
@@ -276,7 +277,7 @@ def plot_spatial_di_map():
         vmax = max(abs(gdf_data['DI'].min()), abs(gdf_data['DI'].max()))
         gdf_data.plot(
             ax=ax, column='DI',
-            cmap='RdYlGn_r',   # red = undercovered, green = overcovered
+            cmap='RdYlGn',   # red = under-reported (low DI), green = over-reported
             vmin=-vmax, vmax=vmax,
             edgecolor='white', linewidth=0.5,
             legend=True,
@@ -301,7 +302,7 @@ def plot_spatial_di_map():
                 pass
 
     ax.set_title('Spatial Distribution of Discrepancy Index\n'
-                 'Red = undercovered  |  Green = overcovered\n'
+                 'Red = under-reported  |  Green = over-reported\n'
                  'Gray = no event in dataset',
                  pad=12)
     ax.set_axis_off()

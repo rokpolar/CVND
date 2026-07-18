@@ -48,24 +48,40 @@ print(f"\nPSS events : {len(pss)}")
 print(f"MSS events : {len(mss)}")
 print(f"Severity rows: {len(sev)}")
 
+# ── Quarantine list (duplicates / malformed / incomplete) ─────────────────────
+QUARANTINE_PATH = 'data/events_quarantine.csv'
+quarantine_ids = set()
+if os.path.exists(QUARANTINE_PATH):
+    qdf = pd.read_csv(QUARANTINE_PATH)
+    quarantine_ids = set(qdf.loc[qdf['status'] == 'quarantine', 'event_id'].astype(str))
+    print(f"\nQuarantine list: {len(quarantine_ids)} events from {QUARANTINE_PATH}")
+else:
+    print(f"\nWARNING: {QUARANTINE_PATH} not found — no events quarantined")
+
 # ── Merge ─────────────────────────────────────────────────────────────────────
 df = (pss[['event_id', 'state', 'PSS']]
       .merge(events, on='event_id', how='left')
       .merge(mss[['event_id', 'MSS']], on='event_id', how='left')
       .merge(sev, on='event_id', how='left'))
 
-# Events with PSS but no MSS → zero coverage
+# Drop quarantined events before scoring
+n_q = df['event_id'].isin(quarantine_ids).sum()
+if n_q:
+    print(f"Excluding {n_q} quarantined events: "
+          f"{sorted(df.loc[df['event_id'].isin(quarantine_ids), 'event_id'].tolist())}")
+    df = df[~df['event_id'].isin(quarantine_ids)].copy()
+
+# Missing MSS stays missing — do not impute zero coverage
 no_mss = df['MSS'].isna().sum()
 if no_mss:
-    print(f"\n{no_mss} events have no MSS → assigned MSS = 0 (zero coverage)")
-df['MSS'] = df['MSS'].fillna(0.0)
+    print(f"{no_mss} events have no MSS → dropped (not imputed as 0)")
 
-# Drop rows where PSS or exposure_rate is missing (can't compute EIS)
+# Drop rows where PSS, MSS, or exposure_rate is missing (can't compute DI)
 before = len(df)
-df = df.dropna(subset=['PSS', 'exposure_rate'])
+df = df.dropna(subset=['PSS', 'MSS', 'exposure_rate'])
 dropped = before - len(df)
 if dropped:
-    print(f"{dropped} events dropped: missing PSS or exposure_rate")
+    print(f"{dropped} events dropped: missing PSS, MSS, or exposure_rate")
 
 print(f"\nEvents entering DI computation: {len(df)}")
 
