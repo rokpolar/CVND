@@ -191,15 +191,21 @@ def choose_severity_proxy(df: pd.DataFrame, include_deaths: bool) -> str:
 
 
 def percentile_tier(resid: pd.Series) -> pd.Series:
-    lo = resid.quantile(0.20)
-    hi = resid.quantile(0.80)
+    """Exploratory tertile buckets on log_ratio (not statistical significance).
+
+    - low  = bottom tertile  (≤ 33rd percentile) — expanded under-covered pool
+    - high = top tertile     (≥ 67th percentile)
+    - mid  = middle tertile
+    """
+    lo = resid.quantile(1.0 / 3.0)
+    hi = resid.quantile(2.0 / 3.0)
     return pd.Series(
         np.where(resid <= lo, "low", np.where(resid >= hi, "high", "mid")),
         index=resid.index,
     )
 
 
-def income_cluster_robust(df: pd.DataFrame) -> None:
+def income_cluster_robust(df: pd.DataFrame) -> dict:
     """log_ratio ~ income dummies with cluster-robust SE by state."""
     print("\n[Income contrast] log_ratio ~ income_group (cluster-robust by state)")
     print("-" * 55)
@@ -210,36 +216,195 @@ def income_cluster_robust(df: pd.DataFrame) -> None:
     )
     print(ols.summary2())
 
-    # Low vs High contrast if both present
-    if "Low" in dummies.columns or "High" not in df["income_group"].unique():
-        # With drop_first, reference is usually High alphabetically? 
-        # get_dummies drop_first drops first category alphabetically: High
-        pass
-
+    rows = []
     any_sig = False
-    for name, param, ci_lo, ci_hi, pval in zip(
-        ols.params.index,
-        ols.params.values,
-        ols.conf_int()[0],
-        ols.conf_int()[1],
-        ols.pvalues.values,
-    ):
+    for name in ols.params.index:
         if name == "const":
             continue
-        covers_zero = (ci_lo <= 0 <= ci_hi)
+        ci_lo, ci_hi = ols.conf_int().loc[name]
+        covers_zero = bool(ci_lo <= 0 <= ci_hi)
+        rows.append(
+            {
+                "term": name,
+                "coef": float(ols.params[name]),
+                "ci_lo": float(ci_lo),
+                "ci_hi": float(ci_hi),
+                "p": float(ols.pvalues[name]),
+                "ci_covers_0": covers_zero,
+            }
+        )
         print(
-            f"  {name}: coef={param:.4f}, 95% CI [{ci_lo:.4f}, {ci_hi:.4f}], "
-            f"p={pval:.4f}, CI_covers_0={covers_zero}"
+            f"  {name}: coef={ols.params[name]:.4f}, 95% CI [{ci_lo:.4f}, {ci_hi:.4f}], "
+            f"p={ols.pvalues[name]:.4f}, CI_covers_0={covers_zero}"
         )
         if not covers_zero:
             any_sig = True
 
     if any_sig:
-        print("  → Detectable income gradient in this GDELT-monitored system "
-              "(at least one CI excludes 0).")
+        verdict = (
+            "Detectable income gradient in this GDELT-monitored system "
+            "(at least one CI excludes 0)."
+        )
     else:
-        print("  → No detectable income gradient in this GDELT system "
-              "(all income CIs cover 0) — do not claim bias.")
+        verdict = (
+            "No detectable income gradient in this GDELT system "
+            "(all income CIs cover 0) — do not claim bias."
+        )
+    print(f"  → {verdict}")
+    return {"terms": rows, "verdict": verdict, "r2": float(ols.rsquared)}
+
+
+def _md_table(df: pd.DataFrame, cols: list[str], float_cols: dict[str, str] | None = None) -> str:
+    """Render a small markdown table."""
+    float_cols = float_cols or {}
+    view = df[cols].copy()
+    for c, fmt in float_cols.items():
+        if c in view.columns:
+            view[c] = view[c].map(lambda x, f=fmt: f.format(x) if pd.notna(x) else "")
+    header = "| " + " | ".join(cols) + " |"
+    sep = "| " + " | ".join("---" for _ in cols) + " |"
+    lines = [header, sep]
+    for _, row in view.iterrows():
+        lines.append("| " + " | ".join(str(row[c]) for c in cols) + " |")
+    return "\n".join(lines)
+
+
+def write_markdown_report(
+    out: pd.DataFrame,
+    state_agg: pd.DataFrame,
+    result,
+    severity_col: str,
+    include_deaths: bool,
+    income_summary: dict,
+    path: str = "outputs/pipeline_result.md",
+) -> str:
+    """Write final expected-coverage results to a markdown file."""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    generated = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    income_means = (
+        out.groupby("income_group")["log_ratio"]
+        .agg(mean="mean", median="median", std="std", n="count")
+        .reindex(["High", "Middle", "Low"])
+        .reset_index()
+    )
+
+    under = out.nsmallest(15, "log_ratio")
+    over = out.nlargest(15, "log_ratio")
+
+    income_rows = []
+    for t in income_summary["terms"]:
+        income_rows.append(
+            f"| {t['term']} | {t['coef']:.4f} | [{t['ci_lo']:.4f}, {t['ci_hi']:.4f}] | "
+            f"{t['p']:.4f} | {t['ci_covers_0']} |"
+        )
+
+    plot_links = []
+    for fname, label in [
+        ("plot5_observed_vs_expected.png", "Observed vs expected calibration"),
+        ("plot6_log_ratio_histogram.png", "log_ratio residual histogram"),
+        ("plot7_log_ratio_ranking.png", "Coverage imbalance ranking (extremes)"),
+        ("plot8_log_ratio_by_income.png", "log_ratio by income group"),
+    ]:
+        p = os.path.join("outputs", fname)
+        if os.path.exists(p):
+            plot_links.append(f"- [{label}]({fname})")
+
+    md = f"""# CVND Pipeline Results — Expected Coverage
+
+Generated: `{generated}`
+
+## Summary
+
+| Item | Value |
+| --- | --- |
+| Primary metric | `log_ratio = ln((y+0.5)/(μ̂+0.5))` |
+| Model | Sparse Negative-Binomial (cluster-robust SE by state) |
+| GDELT volume offset | **None** (primary) |
+| Media window (design) | onset + {MEDIA_WINDOW_DAYS} days |
+| Outcome (interim) | `mss_results.total_articles` as `n_articles_0_14` proxy |
+| Severity proxy (AIC) | `{severity_col}` |
+| Deaths included | {include_deaths} |
+| N events | {len(out)} |
+| NegBin AIC | {float(result.aic):.1f} |
+| NegBin log-likelihood | {float(result.llf):.1f} |
+| Exploratory tiers | Tertiles on `log_ratio` (low ≤ P33, high ≥ P67; not significance tests) |
+
+Legacy Min-Max DI is demoted; see `data/di_results.csv` for continuity only.
+
+## Exploratory tertile pool
+
+| Tier | Meaning | n |
+| --- | --- | --- |
+| low | Bottom tertile (≤ 33rd pct) — under-covered pool | {(out['tier'] == 'low').sum()} |
+| mid | Middle tertile | {(out['tier'] == 'mid').sum()} |
+| high | Top tertile (≥ 67th pct) — over-covered pool | {(out['tier'] == 'high').sum()} |
+
+## Model coefficients (cluster-robust)
+
+```
+{result.summary2().as_text()}
+```
+
+## log_ratio by income group
+
+{_md_table(
+    income_means,
+    ["income_group", "mean", "median", "std", "n"],
+    {"mean": "{:.4f}", "median": "{:.4f}", "std": "{:.4f}"},
+)}
+
+## Income contrast (cluster-robust OLS on log_ratio)
+
+Reference category = first dummy dropped by `get_dummies` (alphabetical; typically High).
+
+| Term | Coef | 95% CI | p | CI covers 0 |
+| --- | --- | --- | --- | --- |
+{chr(10).join(income_rows)}
+
+**Verdict:** {income_summary["verdict"]}  
+R² = {income_summary["r2"]:.4f}
+
+## Most under-covered (lowest log_ratio)
+
+{_md_table(
+    under,
+    ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "tier"],
+    {"observed": "{:.0f}", "expected": "{:.1f}", "log_ratio": "{:.4f}"},
+)}
+
+## Most over-covered (highest log_ratio)
+
+{_md_table(
+    over,
+    ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "tier"],
+    {"observed": "{:.0f}", "expected": "{:.1f}", "log_ratio": "{:.4f}"},
+)}
+
+## State-level mean log_ratio
+
+{_md_table(
+    state_agg.sort_values("mean_log_ratio"),
+    ["state", "income_group", "mean_log_ratio", "median_log_ratio", "n_events"],
+    {"mean_log_ratio": "{:.4f}", "median_log_ratio": "{:.4f}"},
+)}
+
+## Figures
+
+{(chr(10).join(plot_links) if plot_links else "_Run `src/visualize.py` to generate primary figures, then re-run this step or the pipeline to embed links._")}
+
+## Output files
+
+- `data/expected_coverage.csv`
+- `data/state_expected_coverage.csv`
+- `data/di_results.csv` (legacy)
+- `data/events_quarantine.csv`
+- `{path}`
+"""
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(md)
+    return path
 
 
 def main() -> None:
@@ -300,6 +465,11 @@ def main() -> None:
     out["rank_undercovered"] = out["log_ratio"].rank(method="average", ascending=True).astype(int)
 
     out = out.sort_values("log_ratio")
+    tier_counts = out["tier"].value_counts()
+    print(
+        "\nExploratory tertile tiers on log_ratio "
+        f"(low≤P33, high≥P67): {tier_counts.to_dict()}"
+    )
 
     print("\nMost UNDER-covered (lowest log_ratio):")
     print(
@@ -314,7 +484,7 @@ def main() -> None:
         ].to_string(index=False)
     )
 
-    income_cluster_robust(out)
+    income_summary = income_cluster_robust(out)
 
     state_agg = (
         out.groupby(["state", "income_group"], as_index=False)
@@ -333,6 +503,17 @@ def main() -> None:
     state_agg.to_csv("data/state_expected_coverage.csv", index=False)
     print(f"\nSAVED: data/expected_coverage.csv ({len(out)} events)")
     print(f"SAVED: data/state_expected_coverage.csv ({len(state_agg)} states)")
+
+    md_path = write_markdown_report(
+        out=out,
+        state_agg=state_agg,
+        result=result,
+        severity_col=severity_col,
+        include_deaths=include_deaths,
+        income_summary=income_summary,
+        path="outputs/pipeline_result.md",
+    )
+    print(f"SAVED: {md_path}")
     print("\nEXPECTED COVERAGE COMPLETE")
 
 
