@@ -17,6 +17,12 @@ Hybrid labels:
     over_flag      = log_ratio > 0
     severity_tier  = tertile low/mid/high   # severe-neglect exploration pool (P33/P67)
 
+Deaths (option A):
+    Keep rows with missing EM-DAT deaths.
+    deaths_missing = 1 if total_deaths was NA, else 0
+    log1p_deaths   = log1p(fillna(total_deaths, 0))
+    Both enter the NegBin so "unknown" is not treated as confirmed zero without a flag.
+
 Notes:
 - Respects data/events_quarantine.csv (#17).
 - Does not impute missing article counts as zero.
@@ -151,7 +157,9 @@ def design_matrix(df: pd.DataFrame, severity_col: str, include_deaths: bool) -> 
     X = pd.DataFrame(index=df.index)
     X["log1p_severity"] = np.log1p(df[severity_col].astype(float))
     if include_deaths:
+        # Option A: filled zeros + missingness flag (do not drop rows)
         X["log1p_deaths"] = np.log1p(df["total_deaths"].astype(float))
+        X["deaths_missing"] = df["deaths_missing"].astype(float)
     X["monsoon_flag"] = df["monsoon_flag"].astype(float)
     year_dummies = pd.get_dummies(df["onset_year"], prefix="year", drop_first=True)
     X = pd.concat([X, year_dummies.astype(float)], axis=1)
@@ -352,7 +360,8 @@ Generated: `{generated}`
 | Outcome (interim) | `mss_results.total_articles` as `n_articles_0_14` proxy |
 | Severity proxy (AIC) | `{severity_col}` |
 | Flood area source | `flood_combined.combined_km2` (district-level; via severity_raw) |
-| Deaths included | {include_deaths} |
+| Deaths handling | Option A: `log1p(deaths)` with `fillna(0)` + `deaths_missing` flag (rows kept) |
+| Deaths missing (flag=1) | {int(out['deaths_missing'].sum()) if 'deaths_missing' in out.columns else 'n/a'} / {len(out)} |
 | N events | {len(out)} |
 | NegBin AIC | {float(result.aic):.1f} |
 | NegBin log-likelihood | {float(result.llf):.1f} |
@@ -453,16 +462,16 @@ def main() -> None:
 
     df = build_analysis_frame()
 
-    death_coverage = df["total_deaths"].notna().mean()
-    include_deaths = death_coverage >= 0.5
-    if include_deaths:
-        # For rows still missing deaths after match, drop (no zero-impute)
-        before = len(df)
-        df = df.dropna(subset=["total_deaths"]).copy()
-        print(f"Deaths included; dropped {before - len(df)} rows still missing deaths")
-    else:
-        print(f"Death coverage {death_coverage:.0%} < 50% — omitting log1p(deaths) "
-              f"from primary model")
+    # Option A: keep missing-death rows; flag missingness; fill deaths with 0 for log1p
+    n_miss_deaths = int(df["total_deaths"].isna().sum())
+    df["deaths_missing"] = df["total_deaths"].isna().astype(int)
+    df["total_deaths"] = df["total_deaths"].fillna(0.0)
+    include_deaths = True
+    print(
+        f"Deaths handling (option A): keep all rows; "
+        f"deaths_missing=1 for {n_miss_deaths}/{len(df)} events; "
+        f"log1p_deaths uses fillna(0)"
+    )
 
     severity_col = choose_severity_proxy(df, include_deaths=include_deaths)
     y = df["n_articles_0_14"].astype(float)
@@ -489,6 +498,7 @@ def main() -> None:
             "population_exposed",
             "adjusted_flood_area_km2",
             "total_deaths",
+            "deaths_missing",
         ]
     ].copy()
     out["severity_proxy"] = severity_col
