@@ -1,169 +1,169 @@
-event_id,state,district,canonical_state,start_date,bbox_area_km2,state_area_km2,raw_flood_area_km2,adjusted_flood_area_km2,region_total_population,population_exposed,exposure_rate,warnings
-E01,Kerala,Thrissur,Kerala,2018-08-08,149204.4,38852,101782.62,26503.63,36111000,24633807.0,0.682169,BBOX OVERFLOW: bbox=149204 km2 > state=38852 km2 (scale factor=0.260). Flood area scaled from 101782.6 to 26503.6 km2.
-E02,Bihar,Darbhanga,Bihar,2019-07-10,96690.7,94163,9081.17,9081.17,131041000,12637715.0,0.096441,
-E03,Assam,Morigaon,Assam,2020-05-25,55132.4,78438,1210.91,1210.91,36493000,563371.0,0.015438,
-E04,Telangana,Hyderabad,Telangana,2020-10-13,11286.9,112077,14.73,14.73,38499000,5060.0,0.000131,
-E05,Maharashtra,Raigad,Maharashtra,2021-07-22,16835.2,307713,13405.43,13405.43,128659000,5604992.0,0.043565,
-E06,Uttarakhand,Chamoli,Uttarakhand,2021-02-07,15924.2,53483,9542.57,9542.57,11913000,2125547.0,0.178422,
-E07,Uttar Pradesh,Bahraich,Uttar Pradesh,2021-08-10,54644.3,240928,20578.39,20578.39,241265000,20607173.0,0.085413,
-E08,Assam,Cachar,Assam,2022-06-15,25175.8,78438,1636.22,1636.22,36493000,761244.0,0.02086,
-E09,Karnataka,Bengaluru,Karnataka,2022-09-05,5042.2,191791,2399.58,2399.58,68679000,859272.0,0.012511,
-E10,Odisha,Balasore,Odisha,2022-09-16,34449.8,155707,5082.18,5082.18,46953000,1532517.0,0.032639,
-E11,Himachal Pradesh,Mandi,Himachal Pradesh,2023-07-08,28288.4,55673,11603.26,11603.26,7555000,1574599.0,0.208418,
-E12,Delhi,North West Delhi,Delhi,2023-07-10,4325.0,1484,173.87,59.66,22277000,895573.0,0.040202,BBOX OVERFLOW: bbox=4325 km2 > state=1484 km2 (scale factor=0.343). Flood area scaled from 173.9 to 59.7 km2.
-E13,Andhra Pradesh,Krishna,Andhra Pradesh,2016-07-09,682930.3,162975,127605.09,30451.78,53586000,10012510.0,0.186849,BBOX OVERFLOW: bbox=682930 km2 > state=162975 km2 (scale factor=0.239). Flood area scaled from 127605.1 to 30451.8 km2.
-E14,Andhra Pradesh,Krishna,Andhra Pradesh,2017-08-16,682930.3,162975,173493.52,41402.63,53586000,13613138.0,0.254043,BBOX OVERFLOW: bbox=682930 km2 > state=162975 km2 (scale factor=0.239). Flood area scaled from 173493.5 to 41402.6 km2.
-E15,Andhra Pradesh,Krishna,Andhra Pradesh,2020-10-01,682930.3,162975,101293.13,24172.67,53586000,7947947.0,0.148321,BBOX OVERFLOW: bbox=682930 km2 > state=162975 km2 (scale factor=0.239). Flood area scaled from 101293.1 to 24172.7 km2.
-E16,Andhra Pradesh,Krishna,Andhra Pradesh,2021-10-11,682930.3,162975,292011.42,69685.83,53586000,22912624.0,0.427586,BBOX OVERFLOW: bbox=682930 km2 > state=162975 km2 (scale factor=0.239). Flood area scaled from 292011.4 to 69685.8 km2.
-E17,Andhra Pradesh,Krishna,Andhra Pradesh,2024-07-09,682930.3,162975,168926.42,40312.73,53586000,13254781.0,0.247355,BBOX OVERFLOW: bbox=682930 km2 > state=162975 km2 (scale factor=0.239). Flood area scaled from 168926.4 to 40312.7 km2.
-E18,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2015-07-07,192554.7,83743,8133.09,3537.12,1594000,67327.0,0.042238,BBOX OVERFLOW: bbox=192555 km2 > state=83743 km2 (scale factor=0.435). Flood area scaled from 8133.1 to 3537.1 km2.
-E19,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2016-04-22,192554.7,83743,25917.16,11271.5,1594000,214547.0,0.134596,BBOX OVERFLOW: bbox=192555 km2 > state=83743 km2 (scale factor=0.435). Flood area scaled from 25917.2 to 11271.5 km2.
-E20,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2016-06-25,192554.7,83743,12091.54,5258.67,1594000,100096.0,0.062795,BBOX OVERFLOW: bbox=192555 km2 > state=83743 km2 (scale factor=0.435). Flood area scaled from 12091.5 to 5258.7 km2.
-E21,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2020-06-01,192554.7,83743,35830.54,15582.88,1594000,296611.0,0.18608,BBOX OVERFLOW: bbox=192555 km2 > state=83743 km2 (scale factor=0.435). Flood area scaled from 35830.5 to 15582.9 km2.
-E22,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2025-05-31,192554.7,83743,43472.19,18906.27,1594000,359870.0,0.225765,BBOX OVERFLOW: bbox=192555 km2 > state=83743 km2 (scale factor=0.435). Flood area scaled from 43472.2 to 18906.3 km2.
-E23,Assam,Hojai,Assam,2015-08-13,265112.6,78438,10175.99,3010.74,36493000,1400735.0,0.038384,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 10176.0 to 3010.7 km2.
-E24,Assam,Hojai,Assam,2016-04-22,265112.6,78438,3187.98,943.22,36493000,438829.0,0.012025,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 3188.0 to 943.2 km2.
-E25,Assam,Hojai,Assam,2016-06-25,265112.6,78438,318.84,94.33,36493000,43888.0,0.001203,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 318.8 to 94.3 km2.
-E26,Assam,Hojai,Assam,2017-06-04,265112.6,78438,55683.41,16474.87,36493000,7664876.0,0.210037,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 55683.4 to 16474.9 km2.
-E27,Assam,Hojai,Assam,2018-06-22,265112.6,78438,89486.72,26476.15,36493000,12317934.0,0.337542,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 89486.7 to 26476.1 km2.
-E28,Assam,Hojai,Assam,2021-07-01,265112.6,78438,14595.53,4318.33,36493000,2009089.0,0.055054,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 14595.5 to 4318.3 km2.
-E29,Assam,Hojai,Assam,2022-05-17,265112.6,78438,7040.4,2083.02,36493000,969118.0,0.026556,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 7040.4 to 2083.0 km2.
-E30,Assam,Hojai,Assam,2023-06-14,,78438,,,36493000,,,NO S1 DATA: no Sentinel-1 imagery for this event window
-E31,Assam,Hojai,Assam,2024-05-01,265112.6,78438,63154.63,18685.36,36493000,8693296.0,0.238218,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 63154.6 to 18685.4 km2.
-E32,Assam,Hojai,Assam,2025-05-31,265112.6,78438,7069.18,2091.54,36493000,973079.0,0.026665,BBOX OVERFLOW: bbox=265113 km2 > state=78438 km2 (scale factor=0.296). Flood area scaled from 7069.2 to 2091.5 km2.
-E33,Bihar,Samastipur,Bihar,2016-07-15,,94163,,,131041000,,,NO S1 DATA: no Sentinel-1 imagery for this event window
-E34,Bihar,Samastipur,Bihar,2020-06-01,177335.2,94163,73211.75,38874.61,131041000,54099463.0,0.412844,BBOX OVERFLOW: bbox=177335 km2 > state=94163 km2 (scale factor=0.531). Flood area scaled from 73211.7 to 38874.6 km2.
-E35,Bihar,Samastipur,Bihar,2021-06-01,177335.2,94163,34400.71,18266.39,131041000,25420238.0,0.193987,BBOX OVERFLOW: bbox=177335 km2 > state=94163 km2 (scale factor=0.531). Flood area scaled from 34400.7 to 18266.4 km2.
-E36,Bihar,Samastipur,Bihar,2022-05-17,177335.2,94163,73235.39,38887.16,131041000,54116935.0,0.412977,BBOX OVERFLOW: bbox=177335 km2 > state=94163 km2 (scale factor=0.531). Flood area scaled from 73235.4 to 38887.2 km2.
-E37,Bihar,Samastipur,Bihar,2023-06-25,177335.2,94163,58930.7,31291.54,131041000,43546555.0,0.332312,BBOX OVERFLOW: bbox=177335 km2 > state=94163 km2 (scale factor=0.531). Flood area scaled from 58930.7 to 31291.5 km2.
-E38,Bihar,Samastipur,Bihar,2025-10-03,177335.2,94163,100817.34,53532.87,131041000,74498484.0,0.568513,BBOX OVERFLOW: bbox=177335 km2 > state=94163 km2 (scale factor=0.531). Flood area scaled from 100817.3 to 53532.9 km2.
-E39,Chhattisgarh,Mahasamund,Chhattisgarh,2020-06-01,304461.8,135192,178835.73,79409.5,30982000,18198304.0,0.587383,BBOX OVERFLOW: bbox=304462 km2 > state=135192 km2 (scale factor=0.444). Flood area scaled from 178835.7 to 79409.5 km2.
-E40,Chhattisgarh,Mahasamund,Chhattisgarh,2021-06-01,304461.8,135192,75129.96,33360.41,30982000,7645216.0,0.246763,BBOX OVERFLOW: bbox=304462 km2 > state=135192 km2 (scale factor=0.444). Flood area scaled from 75130.0 to 33360.4 km2.
-E41,Chhattisgarh,Mahasamund,Chhattisgarh,2023-06-25,304461.8,135192,94404.03,41918.79,30982000,9606544.0,0.310069,BBOX OVERFLOW: bbox=304462 km2 > state=135192 km2 (scale factor=0.444). Flood area scaled from 94404.0 to 41918.8 km2.
-E42,Delhi,Delhi,Delhi,2023-06-25,4325.0,1484,1029.68,353.31,22277000,5303639.0,0.238077,BBOX OVERFLOW: bbox=4325 km2 > state=1484 km2 (scale factor=0.343). Flood area scaled from 1029.7 to 353.3 km2.
-E43,Goa,South Goa,Goa,2015-08-28,,3702,,,1593000,,,NO S1 DATA: no Sentinel-1 imagery for this event window
-E44,Goa,South Goa,Goa,2016-07-28,,3702,,,1593000,,,NO S1 DATA: no Sentinel-1 imagery for this event window
-E45,Goa,South Goa,Goa,2017-06-25,8554.7,3702,5705.73,2469.14,1593000,1062489.0,0.666973,BBOX OVERFLOW: bbox=8555 km2 > state=3702 km2 (scale factor=0.433). Flood area scaled from 5705.7 to 2469.1 km2.
-E46,Goa,South Goa,Goa,2021-06-01,8554.7,3702,4795.07,2075.05,1593000,892910.0,0.560521,BBOX OVERFLOW: bbox=8555 km2 > state=3702 km2 (scale factor=0.433). Flood area scaled from 4795.1 to 2075.0 km2.
-E47,Gujarat,Surendranagar,Gujarat,2016-08-01,330120.8,196024,10996.34,6529.57,73513000,2448721.0,0.03331,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 10996.3 to 6529.6 km2.
-E48,Gujarat,Surendranagar,Gujarat,2017-06-01,330120.8,196024,35956.39,21350.72,73513000,8006955.0,0.108919,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 35956.4 to 21350.7 km2.
-E49,Gujarat,Surendranagar,Gujarat,2018-06-22,330120.8,196024,125395.38,74459.12,73513000,27923689.0,0.379847,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 125395.4 to 74459.1 km2.
-E50,Gujarat,Surendranagar,Gujarat,2020-06-01,330120.8,196024,33317.22,19783.59,73513000,7419251.0,0.100924,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 33317.2 to 19783.6 km2.
-E51,Gujarat,Surendranagar,Gujarat,2021-06-01,330120.8,196024,65893.67,39127.32,73513000,14673543.0,0.199605,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 65893.7 to 39127.3 km2.
-E52,Gujarat,Surendranagar,Gujarat,2021-09-13,330120.8,196024,23298.31,13834.42,73513000,5188189.0,0.070575,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 23298.3 to 13834.4 km2.
-E53,Gujarat,Surendranagar,Gujarat,2022-05-17,330120.8,196024,175367.5,104132.3,73513000,39051738.0,0.531222,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 175367.5 to 104132.3 km2.
-E54,Gujarat,Surendranagar,Gujarat,2023-06-25,330120.8,196024,10225.13,6071.63,73513000,2276985.0,0.030974,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 10225.1 to 6071.6 km2.
-E55,Gujarat,Surendranagar,Gujarat,2024-08-26,330120.8,196024,149855.69,88983.53,73513000,33370638.0,0.453942,BBOX OVERFLOW: bbox=330121 km2 > state=196024 km2 (scale factor=0.594). Flood area scaled from 149855.7 to 88983.5 km2.
-E56,Haryana,Hisar,Haryana,2015-07-07,106588.1,44212,29.67,12.31,31057000,8644.0,0.000278,BBOX OVERFLOW: bbox=106588 km2 > state=44212 km2 (scale factor=0.415). Flood area scaled from 29.7 to 12.3 km2.
-E57,Haryana,Hisar,Haryana,2018-09-23,106588.1,44212,60063.45,24913.91,31057000,17500931.0,0.56351,BBOX OVERFLOW: bbox=106588 km2 > state=44212 km2 (scale factor=0.415). Flood area scaled from 60063.4 to 24913.9 km2.
-E58,Haryana,Hisar,Haryana,2023-06-26,106588.1,44212,21779.17,9033.85,31057000,6345885.0,0.20433,BBOX OVERFLOW: bbox=106588 km2 > state=44212 km2 (scale factor=0.415). Flood area scaled from 21779.2 to 9033.9 km2.
-E59,Himachal Pradesh,Kullu,Himachal Pradesh,2015-07-07,99688.9,55673,1523.33,850.73,7555000,115447.0,0.015281,BBOX OVERFLOW: bbox=99689 km2 > state=55673 km2 (scale factor=0.558). Flood area scaled from 1523.3 to 850.7 km2.
-E60,Himachal Pradesh,Kullu,Himachal Pradesh,2017-08-16,99688.9,55673,797.74,445.51,7555000,60457.0,0.008002,BBOX OVERFLOW: bbox=99689 km2 > state=55673 km2 (scale factor=0.558). Flood area scaled from 797.7 to 445.5 km2.
-E61,Himachal Pradesh,Kullu,Himachal Pradesh,2018-08-07,99688.9,55673,49784.4,27802.95,7555000,3772947.0,0.499397,BBOX OVERFLOW: bbox=99689 km2 > state=55673 km2 (scale factor=0.558). Flood area scaled from 49784.4 to 27803.0 km2.
-E62,Himachal Pradesh,Kullu,Himachal Pradesh,2019-07-14,99688.9,55673,32652.53,18235.36,7555000,2474596.0,0.327544,BBOX OVERFLOW: bbox=99689 km2 > state=55673 km2 (scale factor=0.558). Flood area scaled from 32652.5 to 18235.4 km2.
-E63,Himachal Pradesh,Kullu,Himachal Pradesh,2021-06-01,99688.9,55673,30177.59,16853.19,7555000,2287031.0,0.302718,BBOX OVERFLOW: bbox=99689 km2 > state=55673 km2 (scale factor=0.558). Flood area scaled from 30177.6 to 16853.2 km2.
-E64,Himachal Pradesh,Kullu,Himachal Pradesh,2022-05-17,99688.9,55673,34148.0,19070.53,7555000,2587931.0,0.342545,BBOX OVERFLOW: bbox=99689 km2 > state=55673 km2 (scale factor=0.558). Flood area scaled from 34148.0 to 19070.5 km2.
-E65,Himachal Pradesh,Kullu,Himachal Pradesh,2024-07-31,99688.9,55673,15004.24,8379.38,7555000,1137108.0,0.150511,BBOX OVERFLOW: bbox=99689 km2 > state=55673 km2 (scale factor=0.558). Flood area scaled from 15004.2 to 8379.4 km2.
-E66,Himachal Pradesh,Kullu,Himachal Pradesh,2025-06-20,99688.9,55673,31661.09,17681.68,7555000,2399459.0,0.317599,BBOX OVERFLOW: bbox=99689 km2 > state=55673 km2 (scale factor=0.558). Flood area scaled from 31661.1 to 17681.7 km2.
-E67,Jammu and Kashmir,Leh,Jammu and Kashmir,2015-03-20,292713.8,42241,109291.95,15771.73,13831000,5164147.0,0.373375,BBOX OVERFLOW: bbox=292714 km2 > state=42241 km2 (scale factor=0.144). Flood area scaled from 109291.9 to 15771.7 km2.
-E68,Jammu and Kashmir,Kishtwar,Jammu and Kashmir,2025-08-14,292713.8,42241,109074.94,15740.41,13831000,5153893.0,0.372633,BBOX OVERFLOW: bbox=292714 km2 > state=42241 km2 (scale factor=0.144). Flood area scaled from 109074.9 to 15740.4 km2.
-E69,Jharkhand,Ramgarh,Jharkhand,2017-06-04,176583.5,79716,47604.68,21490.43,40626000,10952256.0,0.269587,BBOX OVERFLOW: bbox=176584 km2 > state=79716 km2 (scale factor=0.451). Flood area scaled from 47604.7 to 21490.4 km2.
-E70,Jharkhand,Ramgarh,Jharkhand,2021-06-01,176583.5,79716,48858.88,22056.61,40626000,11240805.0,0.27669,BBOX OVERFLOW: bbox=176584 km2 > state=79716 km2 (scale factor=0.451). Flood area scaled from 48858.9 to 22056.6 km2.
-E71,Jharkhand,Ramgarh,Jharkhand,2022-08-01,176583.5,79716,37327.95,16851.15,40626000,8587921.0,0.21139,BBOX OVERFLOW: bbox=176584 km2 > state=79716 km2 (scale factor=0.451). Flood area scaled from 37327.9 to 16851.1 km2.
-E72,Karnataka,Vijayanagara,Karnataka,2019-07-14,369444.8,191791,258118.65,133997.9,68679000,47983700.0,0.698666,BBOX OVERFLOW: bbox=369445 km2 > state=191791 km2 (scale factor=0.519). Flood area scaled from 258118.6 to 133997.9 km2.
-E73,Karnataka,Vijayanagara,Karnataka,2020-06-01,369444.8,191791,17962.67,9325.01,68679000,3339222.0,0.048621,BBOX OVERFLOW: bbox=369445 km2 > state=191791 km2 (scale factor=0.519). Flood area scaled from 17962.7 to 9325.0 km2.
-E74,Karnataka,Vijayanagara,Karnataka,2020-10-01,369444.8,191791,13026.56,6762.52,68679000,2421609.0,0.03526,BBOX OVERFLOW: bbox=369445 km2 > state=191791 km2 (scale factor=0.519). Flood area scaled from 13026.6 to 6762.5 km2.
-E75,Karnataka,Vijayanagara,Karnataka,2021-06-01,369444.8,191791,152413.05,79122.64,68679000,28333256.0,0.412546,BBOX OVERFLOW: bbox=369445 km2 > state=191791 km2 (scale factor=0.519). Flood area scaled from 152413.0 to 79122.6 km2.
-E76,Karnataka,Vijayanagara,Karnataka,2023-06-25,369444.8,191791,103668.28,53817.62,68679000,19271710.0,0.280606,BBOX OVERFLOW: bbox=369445 km2 > state=191791 km2 (scale factor=0.519). Flood area scaled from 103668.3 to 53817.6 km2.
-E77,Kerala,Thrissur,Kerala,2019-07-14,152620.3,38852,98807.63,25153.11,36111000,23378562.0,0.647408,BBOX OVERFLOW: bbox=152620 km2 > state=38852 km2 (scale factor=0.255). Flood area scaled from 98807.6 to 25153.1 km2.
-E78,Kerala,Thrissur,Kerala,2020-06-01,152620.3,38852,24323.79,6192.02,36111000,5755175.0,0.159375,BBOX OVERFLOW: bbox=152620 km2 > state=38852 km2 (scale factor=0.255). Flood area scaled from 24323.8 to 6192.0 km2.
-E79,Kerala,Thrissur,Kerala,2021-06-01,152620.3,38852,13378.12,3405.62,36111000,3165356.0,0.087656,BBOX OVERFLOW: bbox=152620 km2 > state=38852 km2 (scale factor=0.255). Flood area scaled from 13378.1 to 3405.6 km2.
-E80,Kerala,Thrissur,Kerala,2021-10-11,152620.3,38852,75842.79,19307.03,36111000,17944923.0,0.496938,BBOX OVERFLOW: bbox=152620 km2 > state=38852 km2 (scale factor=0.255). Flood area scaled from 75842.8 to 19307.0 km2.
-E81,Madhya Pradesh,Sagar,Madhya Pradesh,2015-06-23,574495.7,308252,34243.04,18373.48,88985000,5303985.0,0.059605,BBOX OVERFLOW: bbox=574496 km2 > state=308252 km2 (scale factor=0.537). Flood area scaled from 34243.0 to 18373.5 km2.
-E82,Madhya Pradesh,Sagar,Madhya Pradesh,2016-07-09,574495.7,308252,7717.07,4140.68,88985000,1195315.0,0.013433,BBOX OVERFLOW: bbox=574496 km2 > state=308252 km2 (scale factor=0.537). Flood area scaled from 7717.1 to 4140.7 km2.
-E83,Madhya Pradesh,Sagar,Madhya Pradesh,2017-06-25,574495.7,308252,231687.33,124314.39,88985000,35886599.0,0.403288,BBOX OVERFLOW: bbox=574496 km2 > state=308252 km2 (scale factor=0.537). Flood area scaled from 231687.3 to 124314.4 km2.
-E84,Madhya Pradesh,Sagar,Madhya Pradesh,2018-08-02,574495.7,308252,242647.2,130195.03,88985000,37584199.0,0.422366,BBOX OVERFLOW: bbox=574496 km2 > state=308252 km2 (scale factor=0.537). Flood area scaled from 242647.2 to 130195.0 km2.
-E85,Madhya Pradesh,Sagar,Madhya Pradesh,2020-06-01,574495.7,308252,228714.71,122719.4,88985000,35426164.0,0.398114,BBOX OVERFLOW: bbox=574496 km2 > state=308252 km2 (scale factor=0.537). Flood area scaled from 228714.7 to 122719.4 km2.
-E86,Madhya Pradesh,Sagar,Madhya Pradesh,2022-05-17,574495.7,308252,154896.07,83111.2,88985000,23992220.0,0.269621,BBOX OVERFLOW: bbox=574496 km2 > state=308252 km2 (scale factor=0.537). Flood area scaled from 154896.1 to 83111.2 km2.
-E87,Madhya Pradesh,Sagar,Madhya Pradesh,2023-06-14,574495.7,308252,272998.16,146480.17,88985000,42285332.0,0.475196,BBOX OVERFLOW: bbox=574496 km2 > state=308252 km2 (scale factor=0.537). Flood area scaled from 272998.2 to 146480.2 km2.
-E88,Madhya Pradesh,Sagar,Madhya Pradesh,2025-09-15,574495.7,308252,177248.14,95104.44,88985000,27454385.0,0.308528,BBOX OVERFLOW: bbox=574496 km2 > state=308252 km2 (scale factor=0.537). Flood area scaled from 177248.1 to 95104.4 km2.
-E89,Maharashtra,Parbhani,Maharashtra,2015-06-19,,307713,,,128659000,,,NO S1 DATA: no Sentinel-1 imagery for this event window
-E90,Maharashtra,Parbhani,Maharashtra,2016-08-01,619573.9,307713,78727.14,39100.04,128659000,16348259.0,0.127067,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 78727.1 to 39100.0 km2.
-E91,Maharashtra,Parbhani,Maharashtra,2017-08-29,619573.9,307713,343881.71,170789.75,128659000,71409523.0,0.555029,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 343881.7 to 170789.7 km2.
-E92,Maharashtra,Parbhani,Maharashtra,2018-06-22,619573.9,307713,218023.8,108282.09,128659000,45274218.0,0.351893,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 218023.8 to 108282.1 km2.
-E93,Maharashtra,Parbhani,Maharashtra,2018-08-07,619573.9,307713,223004.15,110755.59,128659000,46308423.0,0.359931,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 223004.1 to 110755.6 km2.
-E94,Maharashtra,Parbhani,Maharashtra,2019-06-28,619573.9,307713,159497.83,79215.01,128659000,33120877.0,0.257431,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 159497.8 to 79215.0 km2.
-E95,Maharashtra,Parbhani,Maharashtra,2020-06-01,619573.9,307713,222409.91,110460.46,128659000,46185024.0,0.358972,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 222409.9 to 110460.5 km2.
-E96,Maharashtra,Parbhani,Maharashtra,2021-06-01,619573.9,307713,240121.27,119256.85,128659000,49862916.0,0.387559,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 240121.3 to 119256.9 km2.
-E97,Maharashtra,Parbhani,Maharashtra,2023-06-25,619573.9,307713,222862.9,110685.44,128659000,46279092.0,0.359703,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 222862.9 to 110685.4 km2.
-E98,Maharashtra,Parbhani,Maharashtra,2024-08-26,619573.9,307713,229706.67,114084.41,128659000,47700249.0,0.370749,BBOX OVERFLOW: bbox=619574 km2 > state=307713 km2 (scale factor=0.497). Flood area scaled from 229706.7 to 114084.4 km2.
-E99,Manipur,Imphal West,Manipur,2015-07-15,,22327,,,3289000,,,NO S1 DATA: no Sentinel-1 imagery for this event window
-E100,Manipur,Imphal West,Manipur,2017-06-04,38267.2,22327,15.14,8.83,3289000,1301.0,0.000396,BBOX OVERFLOW: bbox=38267 km2 > state=22327 km2 (scale factor=0.583). Flood area scaled from 15.1 to 8.8 km2.
-E101,Manipur,Imphal West,Manipur,2025-05-31,38267.2,22327,4930.17,2876.51,3289000,423740.0,0.128835,BBOX OVERFLOW: bbox=38267 km2 > state=22327 km2 (scale factor=0.583). Flood area scaled from 4930.2 to 2876.5 km2.
-E102,Meghalaya,West Khasi Hills,Meghalaya,2022-05-17,36683.2,22429,1059.36,647.72,3417000,98679.0,0.028879,BBOX OVERFLOW: bbox=36683 km2 > state=22429 km2 (scale factor=0.611). Flood area scaled from 1059.4 to 647.7 km2.
-E103,Meghalaya,West Khasi Hills,Meghalaya,2024-05-01,36683.2,22429,9347.03,5715.0,3417000,870666.0,0.254804,BBOX OVERFLOW: bbox=36683 km2 > state=22429 km2 (scale factor=0.611). Flood area scaled from 9347.0 to 5715.0 km2.
-E104,Meghalaya,West Khasi Hills,Meghalaya,2024-10-04,36683.2,22429,869.67,531.74,3417000,81009.0,0.023708,BBOX OVERFLOW: bbox=36683 km2 > state=22429 km2 (scale factor=0.611). Flood area scaled from 869.7 to 531.7 km2.
-E105,Meghalaya,West Khasi Hills,Meghalaya,2025-05-31,36683.2,22429,672.21,411.0,3417000,62615.0,0.018325,BBOX OVERFLOW: bbox=36683 km2 > state=22429 km2 (scale factor=0.611). Flood area scaled from 672.2 to 411.0 km2.
-E106,Mizoram,Serchhip,Mizoram,2025-05-31,35333.0,21081,13335.23,7956.31,1264000,477054.0,0.377416,BBOX OVERFLOW: bbox=35333 km2 > state=21081 km2 (scale factor=0.597). Flood area scaled from 13335.2 to 7956.3 km2.
-E107,Nagaland,Wokha,Nagaland,2016-04-22,42063.4,16579,10067.47,3968.02,2279000,545456.0,0.23934,BBOX OVERFLOW: bbox=42063 km2 > state=16579 km2 (scale factor=0.394). Flood area scaled from 10067.5 to 3968.0 km2.
-E108,Nagaland,Wokha,Nagaland,2017-06-04,42063.4,16579,22.56,8.89,2279000,1222.0,0.000536,BBOX OVERFLOW: bbox=42063 km2 > state=16579 km2 (scale factor=0.394). Flood area scaled from 22.6 to 8.9 km2.
-E109,Nagaland,Wokha,Nagaland,2018-08-07,42063.4,16579,24774.67,9764.76,2279000,1342293.0,0.588984,BBOX OVERFLOW: bbox=42063 km2 > state=16579 km2 (scale factor=0.394). Flood area scaled from 24774.7 to 9764.8 km2.
-E110,Nagaland,Wokha,Nagaland,2022-05-17,42063.4,16579,9711.89,3827.87,2279000,526191.0,0.230887,BBOX OVERFLOW: bbox=42063 km2 > state=16579 km2 (scale factor=0.394). Flood area scaled from 9711.9 to 3827.9 km2.
-E111,Nagaland,Wokha,Nagaland,2025-05-31,42063.4,16579,377.7,148.87,2279000,20464.0,0.008979,BBOX OVERFLOW: bbox=42063 km2 > state=16579 km2 (scale factor=0.394). Flood area scaled from 377.7 to 148.9 km2.
-E112,Odisha,Ganjam,Odisha,2015-07-15,338569.7,155707,68931.28,31701.25,46953000,9559422.0,0.203596,BBOX OVERFLOW: bbox=338570 km2 > state=155707 km2 (scale factor=0.460). Flood area scaled from 68931.3 to 31701.3 km2.
-E113,Odisha,Ganjam,Odisha,2018-07-20,338569.7,155707,109417.73,50320.83,46953000,15174101.0,0.323176,BBOX OVERFLOW: bbox=338570 km2 > state=155707 km2 (scale factor=0.460). Flood area scaled from 109417.7 to 50320.8 km2.
-E114,Odisha,Ganjam,Odisha,2019-07-14,338569.7,155707,24160.43,11111.3,46953000,3350580.0,0.07136,BBOX OVERFLOW: bbox=338570 km2 > state=155707 km2 (scale factor=0.460). Flood area scaled from 24160.4 to 11111.3 km2.
-E115,Odisha,Ganjam,Odisha,2020-06-01,338569.7,155707,122702.48,56430.44,46953000,17016436.0,0.362414,BBOX OVERFLOW: bbox=338570 km2 > state=155707 km2 (scale factor=0.460). Flood area scaled from 122702.5 to 56430.4 km2.
-E116,Punjab,Jalandhar,Punjab,2015-07-07,95050.4,50362,7626.51,4040.87,31188000,2502413.0,0.080236,BBOX OVERFLOW: bbox=95050 km2 > state=50362 km2 (scale factor=0.530). Flood area scaled from 7626.5 to 4040.9 km2.
-E117,Punjab,Jalandhar,Punjab,2018-09-23,95050.4,50362,54697.57,28981.24,31188000,17947397.0,0.575458,BBOX OVERFLOW: bbox=95050 km2 > state=50362 km2 (scale factor=0.530). Flood area scaled from 54697.6 to 28981.2 km2.
-E118,Punjab,Jalandhar,Punjab,2019-07-14,95050.4,50362,36564.79,19373.67,31188000,11997659.0,0.384688,BBOX OVERFLOW: bbox=95050 km2 > state=50362 km2 (scale factor=0.530). Flood area scaled from 36564.8 to 19373.7 km2.
-E119,Punjab,Jalandhar,Punjab,2023-06-25,95050.4,50362,9439.48,5001.46,31188000,3097286.0,0.09931,BBOX OVERFLOW: bbox=95050 km2 > state=50362 km2 (scale factor=0.530). Flood area scaled from 9439.5 to 5001.5 km2.
-E120,Punjab,Jalandhar,Punjab,2025-08-15,95050.4,50362,32284.32,17105.69,31188000,10593148.0,0.339655,BBOX OVERFLOW: bbox=95050 km2 > state=50362 km2 (scale factor=0.530). Flood area scaled from 32284.3 to 17105.7 km2.
-E121,Rajasthan,Nagaur,Rajasthan,2015-07-07,698029.2,342239,171860.39,84261.99,83060000,20450040.0,0.246208,BBOX OVERFLOW: bbox=698029 km2 > state=342239 km2 (scale factor=0.490). Flood area scaled from 171860.4 to 84262.0 km2.
-E122,Rajasthan,Nagaur,Rajasthan,2017-06-01,698029.2,342239,408613.51,200340.45,83060000,48621805.0,0.585382,BBOX OVERFLOW: bbox=698029 km2 > state=342239 km2 (scale factor=0.490). Flood area scaled from 408613.5 to 200340.5 km2.
-E123,Rajasthan,Nagaur,Rajasthan,2018-07-26,698029.2,342239,263391.54,129139.1,83060000,31341529.0,0.377336,BBOX OVERFLOW: bbox=698029 km2 > state=342239 km2 (scale factor=0.490). Flood area scaled from 263391.5 to 129139.1 km2.
-E124,Rajasthan,Nagaur,Rajasthan,2019-07-14,698029.2,342239,228018.46,111795.92,83060000,27132410.0,0.32666,BBOX OVERFLOW: bbox=698029 km2 > state=342239 km2 (scale factor=0.490). Flood area scaled from 228018.5 to 111795.9 km2.
-E125,Sikkim,Mangan,Sikkim,2020-05-24,9827.0,7096,8076.71,5832.12,703000,577787.0,0.821888,BBOX OVERFLOW: bbox=9827 km2 > state=7096 km2 (scale factor=0.722). Flood area scaled from 8076.7 to 5832.1 km2.
-E126,Sikkim,Mangan,Sikkim,2023-06-14,9827.0,7096,8889.68,6419.16,703000,635945.0,0.904616,BBOX OVERFLOW: bbox=9827 km2 > state=7096 km2 (scale factor=0.722). Flood area scaled from 8889.7 to 6419.2 km2.
-E127,Sikkim,Mangan,Sikkim,2025-05-31,9827.0,7096,585.25,422.6,703000,41867.0,0.059555,BBOX OVERFLOW: bbox=9827 km2 > state=7096 km2 (scale factor=0.722). Flood area scaled from 585.2 to 422.6 km2.
-E128,Tamil Nadu,Karur,Tamil Nadu,2015-05-17,272871.7,130058,6344.57,3023.99,77394000,1799495.0,0.023251,BBOX OVERFLOW: bbox=272872 km2 > state=130058 km2 (scale factor=0.477). Flood area scaled from 6344.6 to 3024.0 km2.
-E129,Tamil Nadu,Karur,Tamil Nadu,2016-07-09,272871.7,130058,85281.15,40647.29,77394000,24188103.0,0.312532,BBOX OVERFLOW: bbox=272872 km2 > state=130058 km2 (scale factor=0.477). Flood area scaled from 85281.2 to 40647.3 km2.
-E130,Tamil Nadu,Karur,Tamil Nadu,2017-10-30,272871.7,130058,67789.11,32310.11,77394000,19226873.0,0.248428,BBOX OVERFLOW: bbox=272872 km2 > state=130058 km2 (scale factor=0.477). Flood area scaled from 67789.1 to 32310.1 km2.
-E131,Tamil Nadu,Karur,Tamil Nadu,2019-06-28,272871.7,130058,1582.44,754.24,77394000,448825.0,0.005799,BBOX OVERFLOW: bbox=272872 km2 > state=130058 km2 (scale factor=0.477). Flood area scaled from 1582.4 to 754.2 km2.
-E132,Tamil Nadu,Karur,Tamil Nadu,2019-10-19,272871.7,130058,220586.39,105137.4,77394000,62564425.0,0.808389,BBOX OVERFLOW: bbox=272872 km2 > state=130058 km2 (scale factor=0.477). Flood area scaled from 220586.4 to 105137.4 km2.
-E133,Tamil Nadu,Karur,Tamil Nadu,2021-11-06,272871.7,130058,65615.97,31274.33,77394000,18610511.0,0.240465,BBOX OVERFLOW: bbox=272872 km2 > state=130058 km2 (scale factor=0.477). Flood area scaled from 65616.0 to 31274.3 km2.
-E134,Tamil Nadu,Karur,Tamil Nadu,2023-12-18,272871.7,130058,6841.7,3260.94,77394000,1940495.0,0.025073,BBOX OVERFLOW: bbox=272872 km2 > state=130058 km2 (scale factor=0.477). Flood area scaled from 6841.7 to 3260.9 km2.
-E135,Telangana,Jangaon,Telangana,2023-07-27,192283.4,112077,34300.97,19993.15,38499000,6867745.0,0.178388,BBOX OVERFLOW: bbox=192283 km2 > state=112077 km2 (scale factor=0.583). Flood area scaled from 34301.0 to 19993.2 km2.
-E136,Tripura,Khowai,Tripura,2018-05-17,19856.1,10486,10676.47,5638.24,4232000,2275512.0,0.537692,BBOX OVERFLOW: bbox=19856 km2 > state=10486 km2 (scale factor=0.528). Flood area scaled from 10676.5 to 5638.2 km2.
-E137,Tripura,Khowai,Tripura,2021-06-01,19856.1,10486,88.09,46.52,4232000,18775.0,0.004437,BBOX OVERFLOW: bbox=19856 km2 > state=10486 km2 (scale factor=0.528). Flood area scaled from 88.1 to 46.5 km2.
-E138,Tripura,Khowai,Tripura,2024-08-19,19856.1,10486,197.35,104.22,4232000,42062.0,0.009939,BBOX OVERFLOW: bbox=19856 km2 > state=10486 km2 (scale factor=0.528). Flood area scaled from 197.3 to 104.2 km2.
-E139,Tripura,Khowai,Tripura,2025-05-31,19856.1,10486,821.48,433.82,4232000,175085.0,0.041372,BBOX OVERFLOW: bbox=19856 km2 > state=10486 km2 (scale factor=0.528). Flood area scaled from 821.5 to 433.8 km2.
-E140,Uttar Pradesh,Sitapur,Uttar Pradesh,2015-05-17,541592.4,240928,907.16,403.55,241265000,404114.0,0.001675,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 907.2 to 403.5 km2.
-E141,Uttar Pradesh,Sitapur,Uttar Pradesh,2015-07-07,541592.4,240928,831.83,370.04,241265000,370558.0,0.001536,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 831.8 to 370.0 km2.
-E142,Uttar Pradesh,Sitapur,Uttar Pradesh,2015-08-28,541592.4,240928,581.71,258.78,241265000,259138.0,0.001074,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 581.7 to 258.8 km2.
-E143,Uttar Pradesh,Sitapur,Uttar Pradesh,2016-07-15,541592.4,240928,1907.11,848.38,241265000,849566.0,0.003521,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 1907.1 to 848.4 km2.
-E144,Uttar Pradesh,Sitapur,Uttar Pradesh,2017-07-01,541592.4,240928,157607.67,70111.95,241265000,70210015.0,0.291008,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 157607.7 to 70111.9 km2.
-E145,Uttar Pradesh,Sitapur,Uttar Pradesh,2018-05-29,541592.4,240928,262807.86,116910.37,241265000,117073899.0,0.48525,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 262807.9 to 116910.4 km2.
-E146,Uttar Pradesh,Sitapur,Uttar Pradesh,2018-07-26,541592.4,240928,89565.94,39843.51,241265000,39899240.0,0.165375,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 89565.9 to 39843.5 km2.
-E147,Uttar Pradesh,Sitapur,Uttar Pradesh,2019-07-14,541592.4,240928,132390.16,58893.91,241265000,58976289.0,0.244446,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 132390.2 to 58893.9 km2.
-E148,Uttar Pradesh,Sitapur,Uttar Pradesh,2020-05-10,541592.4,240928,189295.95,84208.51,241265000,84326300.0,0.349517,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 189295.9 to 84208.5 km2.
-E149,Uttar Pradesh,Sitapur,Uttar Pradesh,2021-06-01,541592.4,240928,164689.09,73262.13,241265000,73364602.0,0.304083,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 164689.1 to 73262.1 km2.
-E150,Uttar Pradesh,Sitapur,Uttar Pradesh,2022-09-18,541592.4,240928,226735.99,100863.76,241265000,101004841.0,0.418647,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 226736.0 to 100863.8 km2.
-E151,Uttar Pradesh,Sitapur,Uttar Pradesh,2024-07-09,541592.4,240928,131890.98,58671.85,241265000,58753916.0,0.243524,BBOX OVERFLOW: bbox=541592 km2 > state=240928 km2 (scale factor=0.445). Flood area scaled from 131891.0 to 58671.8 km2.
-E152,Uttarakhand,Chamoli,Uttarakhand,2015-07-07,89540.1,53483,41691.87,24902.89,11913000,5546962.0,0.465623,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 41691.9 to 24902.9 km2.
-E153,Uttarakhand,Chamoli,Uttarakhand,2015-08-28,89540.1,53483,11445.34,6836.4,11913000,1522764.0,0.127824,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 11445.3 to 6836.4 km2.
-E154,Uttarakhand,Chamoli,Uttarakhand,2017-08-16,89540.1,53483,64565.0,38565.2,11913000,8590154.0,0.721074,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 64565.0 to 38565.2 km2.
-E155,Uttarakhand,Chamoli,Uttarakhand,2019-07-14,89540.1,53483,36049.43,21532.62,11913000,4796254.0,0.402607,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 36049.4 to 21532.6 km2.
-E156,Uttarakhand,Chamoli,Uttarakhand,2021-06-01,89540.1,53483,16366.64,9775.92,11913000,2177525.0,0.182786,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 16366.6 to 9775.9 km2.
-E157,Uttarakhand,Chamoli,Uttarakhand,2022-08-01,89540.1,53483,39230.21,23432.52,11913000,5219446.0,0.43813,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 39230.2 to 23432.5 km2.
-E158,Uttarakhand,Chamoli,Uttarakhand,2023-06-25,89540.1,53483,37038.41,22123.34,11913000,4927834.0,0.413652,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 37038.4 to 22123.3 km2.
-E159,Uttarakhand,Chamoli,Uttarakhand,2023-12-18,89540.1,53483,20814.42,12432.62,11913000,2769288.0,0.232459,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 20814.4 to 12432.6 km2.
-E160,Uttarakhand,Chamoli,Uttarakhand,2025-06-20,89540.1,53483,39946.23,23860.2,11913000,5314710.0,0.446127,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 39946.2 to 23860.2 km2.
-E161,Uttarakhand,Chamoli,Uttarakhand,2025-09-15,89540.1,53483,41091.57,24544.32,11913000,5467093.0,0.458918,BBOX OVERFLOW: bbox=89540 km2 > state=53483 km2 (scale factor=0.597). Flood area scaled from 41091.6 to 24544.3 km2.
-E162,West Bengal,Birbhum,West Bengal,2015-06-23,262327.6,88752,30929.05,10464.07,100202000,11814056.0,0.117902,BBOX OVERFLOW: bbox=262328 km2 > state=88752 km2 (scale factor=0.338). Flood area scaled from 30929.0 to 10464.1 km2.
-E163,West Bengal,Birbhum,West Bengal,2017-06-01,262327.6,88752,105504.83,35694.93,100202000,40299976.0,0.402187,BBOX OVERFLOW: bbox=262328 km2 > state=88752 km2 (scale factor=0.338). Flood area scaled from 105504.8 to 35694.9 km2.
-E164,West Bengal,Birbhum,West Bengal,2018-08-02,262327.6,88752,45686.23,15456.8,100202000,17450897.0,0.174157,BBOX OVERFLOW: bbox=262328 km2 > state=88752 km2 (scale factor=0.338). Flood area scaled from 45686.2 to 15456.8 km2.
-E165,West Bengal,Birbhum,West Bengal,2019-07-14,262327.6,88752,18204.57,6159.06,100202000,6953651.0,0.069396,BBOX OVERFLOW: bbox=262328 km2 > state=88752 km2 (scale factor=0.338). Flood area scaled from 18204.6 to 6159.1 km2.
-E166,West Bengal,Birbhum,West Bengal,2020-06-01,262327.6,88752,83266.85,28171.27,100202000,31805675.0,0.317416,BBOX OVERFLOW: bbox=262328 km2 > state=88752 km2 (scale factor=0.338). Flood area scaled from 83266.9 to 28171.3 km2.
-E167,West Bengal,Birbhum,West Bengal,2021-06-01,262327.6,88752,74952.74,25358.39,100202000,28629908.0,0.285722,BBOX OVERFLOW: bbox=262328 km2 > state=88752 km2 (scale factor=0.338). Flood area scaled from 74952.7 to 25358.4 km2.
-E168,West Bengal,Birbhum,West Bengal,2025-10-03,262327.6,88752,116432.83,39392.15,100202000,44474177.0,0.443845,BBOX OVERFLOW: bbox=262328 km2 > state=88752 km2 (scale factor=0.338). Flood area scaled from 116432.8 to 39392.1 km2.
+event_id,state,district,canonical_state,start_date,bbox_area_km2,state_area_km2,district_km2,raw_flood_area_km2,adjusted_flood_area_km2,flood_ratio,combined_source,region_total_population,population_exposed,exposure_rate,warnings
+E01,Kerala,Thrissur,Kerala,2018-08-08,,38852,2961.8,28.86,28.86,0.0097,S1(cloud),36111000,26824.0,0.0097,
+E02,Bihar,Darbhanga,Bihar,2019-07-10,,94163,2293.7,595.97,595.97,0.2598,SITS,131041000,829376.0,0.2598,
+E03,Assam,Morigaon,Assam,2020-05-25,,78438,1556.5,1.36,1.36,0.0009,NDWI,36493000,633.0,0.0009,
+E04,Telangana,Hyderabad,Telangana,2020-10-13,,112077,178.6,1.61,1.61,0.009,NDWI,38499000,553.0,0.009,
+E05,Maharashtra,Raigad,Maharashtra,2021-07-22,,307713,6912.8,0.0,0.0,0.0,NDWI,128659000,0.0,0.0,ZERO FLOOD AREA after combine
+E06,Uttarakhand,Chamoli,Uttarakhand,2021-02-07,,53483,7838.3,1705.98,1705.98,0.2176,SITS,11913000,379996.0,0.2176,
+E07,Uttar Pradesh,Bahraich,Uttar Pradesh,2021-08-10,,240928,3157.8,55.21,55.21,0.0175,NDWI,241265000,55287.0,0.0175,
+E08,Assam,Cachar,Assam,2022-06-15,,78438,3806.3,226.51,226.51,0.0595,SITS,36493000,105383.0,0.0595,
+E09,Karnataka,Bengaluru,Karnataka,2022-09-05,,191791,2187.3,14.71,14.71,0.0067,NDWI,68679000,5268.0,0.0067,
+E10,Odisha,Balasore,Odisha,2022-09-16,,155707,3697.1,1399.19,1399.19,0.3785,SITS,46953000,421922.0,0.3785,
+E100,Manipur,Imphal West,Manipur,2017-06-04,,22327,489.0,,,,none,3289000,,,NO COMBINED FLOOD: source=none
+E101,Manipur,Imphal West,Manipur,2025-05-31,,22327,489.0,51.61,51.61,0.1055,SITS,3289000,7603.0,0.1055,
+E102,Meghalaya,West Khasi Hills,Meghalaya,2022-05-17,,22429,5255.6,0.36,0.36,0.0001,NDWI,3417000,55.0,0.0001,
+E103,Meghalaya,West Khasi Hills,Meghalaya,2024-05-01,,22429,5255.6,0.15,0.15,0.0,NDWI,3417000,23.0,0.0,
+E104,Meghalaya,West Khasi Hills,Meghalaya,2024-10-04,,22429,5255.6,1.42,1.42,0.0003,NDWI,3417000,216.0,0.0003,
+E105,Meghalaya,West Khasi Hills,Meghalaya,2025-05-31,,22429,5255.6,4.43,4.43,0.0008,NDWI,3417000,675.0,0.0008,
+E106,Mizoram,Serchhip,Mizoram,2025-05-31,,21081,1362.0,2.04,2.04,0.0015,NDWI,1264000,122.0,0.0015,
+E107,Nagaland,Wokha,Nagaland,2016-04-22,,16579,1629.5,,,,none,2279000,,,NO COMBINED FLOOD: source=none
+E108,Nagaland,Wokha,Nagaland,2017-06-04,,16579,1629.5,,,,none,2279000,,,NO COMBINED FLOOD: source=none
+E109,Nagaland,Wokha,Nagaland,2018-08-07,,16579,1629.5,0.42,0.42,0.0003,S1(cloud),2279000,58.0,0.0003,
+E11,Himachal Pradesh,Mandi,Himachal Pradesh,2023-07-08,,55673,3951.3,1.61,1.61,0.0004,NDWI,7555000,218.0,0.0004,
+E110,Nagaland,Wokha,Nagaland,2022-05-17,,16579,1629.5,1.35,1.35,0.0008,NDWI,2279000,186.0,0.0008,
+E111,Nagaland,Wokha,Nagaland,2025-05-31,,16579,1629.5,,,,none,2279000,,,NO COMBINED FLOOD: source=none
+E112,Odisha,Ganjam,Odisha,2015-07-15,,155707,8088.5,0.14,0.14,0.0,S1(cloud),46953000,42.0,0.0,
+E113,Odisha,Ganjam,Odisha,2018-07-20,,155707,8088.5,0.7,0.7,0.0001,S1(cloud),46953000,211.0,0.0001,
+E114,Odisha,Ganjam,Odisha,2019-07-14,,155707,8088.5,0.46,0.46,0.0001,NDWI,46953000,139.0,0.0001,
+E115,Odisha,Ganjam,Odisha,2020-06-01,,155707,8088.5,2439.58,2439.58,0.3016,SITS,46953000,735648.0,0.3016,
+E116,Punjab,Jalandhar,Punjab,2015-07-07,,50362,2605.1,,,,none,31188000,,,NO COMBINED FLOOD: source=none
+E117,Punjab,Jalandhar,Punjab,2018-09-23,,50362,2605.1,1.24,1.24,0.0005,NDWI,31188000,768.0,0.0005,
+E118,Punjab,Jalandhar,Punjab,2019-07-14,,50362,2605.1,1102.64,1102.64,0.4233,SITS,31188000,682839.0,0.4233,
+E119,Punjab,Jalandhar,Punjab,2023-06-25,,50362,2605.1,1736.29,1736.29,0.6665,SITS,31188000,1075243.0,0.6665,
+E12,Delhi,North West Delhi,Delhi,2023-07-10,,1484,1504.3,308.02,308.02,0.2048,SITS,22277000,4623829.0,0.2048,
+E120,Punjab,Jalandhar,Punjab,2025-08-15,,50362,2605.1,205.21,205.21,0.0788,SITS,31188000,127082.0,0.0788,
+E121,Rajasthan,Nagaur,Rajasthan,2015-07-07,,342239,17676.9,,,,none,83060000,,,NO COMBINED FLOOD: source=none
+E122,Rajasthan,Nagaur,Rajasthan,2017-06-01,,342239,17676.9,0.47,0.47,0.0,NDWI,83060000,114.0,0.0,
+E123,Rajasthan,Nagaur,Rajasthan,2018-07-26,,342239,17676.9,4.11,4.11,0.0002,NDWI,83060000,997.0,0.0002,
+E124,Rajasthan,Nagaur,Rajasthan,2019-07-14,,342239,17676.9,5037.67,5037.67,0.285,SITS,83060000,1222622.0,0.285,
+E125,Sikkim,Mangan,Sikkim,2020-05-24,,7096,4247.0,1.61,1.61,0.0004,NDWI(no-S1),703000,160.0,0.0004,
+E126,Sikkim,Mangan,Sikkim,2023-06-14,,7096,4247.0,411.65,411.65,0.0969,SITS,703000,40782.0,0.0969,
+E127,Sikkim,Mangan,Sikkim,2025-05-31,,7096,4247.0,680.76,680.76,0.1603,SITS,703000,67443.0,0.1603,
+E128,Tamil Nadu,Karur,Tamil Nadu,2015-05-17,,130058,2900.7,,,,none,77394000,,,NO COMBINED FLOOD: source=none
+E129,Tamil Nadu,Karur,Tamil Nadu,2016-07-09,,130058,2900.7,67.08,67.08,0.0231,S1(cloud),77394000,39917.0,0.0231,
+E13,Andhra Pradesh,Krishna,Andhra Pradesh,2016-07-09,,162975,8431.7,35.52,35.52,0.0042,S1(cloud),53586000,11679.0,0.0042,
+E130,Tamil Nadu,Karur,Tamil Nadu,2017-10-30,,130058,2900.7,6.22,6.22,0.0021,S1(cloud),77394000,3701.0,0.0021,
+E131,Tamil Nadu,Karur,Tamil Nadu,2019-06-28,,130058,2900.7,1.14,1.14,0.0004,NDWI,77394000,678.0,0.0004,
+E132,Tamil Nadu,Karur,Tamil Nadu,2019-10-19,,130058,2900.7,0.04,0.04,0.0,NDWI,77394000,24.0,0.0,
+E133,Tamil Nadu,Karur,Tamil Nadu,2021-11-06,,130058,2900.7,11.68,11.68,0.004,NDWI,77394000,6950.0,0.004,
+E134,Tamil Nadu,Karur,Tamil Nadu,2023-12-18,,130058,2900.7,0.25,0.25,0.0001,NDWI,77394000,149.0,0.0001,
+E135,Telangana,Jangaon,Telangana,2023-07-27,,112077,12850.1,103.61,103.61,0.0081,NDWI,38499000,35591.0,0.0081,
+E136,Tripura,Khowai,Tripura,2018-05-17,,10486,3040.0,2.75,2.75,0.0009,S1(cloud),4232000,1110.0,0.0009,
+E137,Tripura,Khowai,Tripura,2021-06-01,,10486,3040.0,0.03,0.03,0.0,S1(cloud),4232000,12.0,0.0,
+E138,Tripura,Khowai,Tripura,2024-08-19,,10486,3040.0,0.16,0.16,0.0001,S1(cloud),4232000,65.0,0.0001,
+E139,Tripura,Khowai,Tripura,2025-05-31,,10486,3040.0,1044.89,1044.89,0.3437,SITS,4232000,421703.0,0.3437,
+E14,Andhra Pradesh,Krishna,Andhra Pradesh,2017-08-16,,162975,8431.7,203.53,203.53,0.0241,S1(cloud),53586000,66920.0,0.0241,
+E140,Uttar Pradesh,Sitapur,Uttar Pradesh,2015-05-17,,240928,2544.2,6.82,6.82,0.0027,S1(cloud),241265000,6830.0,0.0027,
+E141,Uttar Pradesh,Sitapur,Uttar Pradesh,2015-07-07,,240928,2544.2,3.12,3.12,0.0012,S1(cloud),241265000,3124.0,0.0012,
+E142,Uttar Pradesh,Sitapur,Uttar Pradesh,2015-08-28,,240928,2544.2,,,,none,241265000,,,NO COMBINED FLOOD: source=none
+E143,Uttar Pradesh,Sitapur,Uttar Pradesh,2016-07-15,,240928,2544.2,,,,none,241265000,,,NO COMBINED FLOOD: source=none
+E144,Uttar Pradesh,Sitapur,Uttar Pradesh,2017-07-01,,240928,2544.2,8.45,8.45,0.0033,S1(cloud),241265000,8462.0,0.0033,
+E145,Uttar Pradesh,Sitapur,Uttar Pradesh,2018-05-29,,240928,2544.2,1.48,1.48,0.0006,NDWI,241265000,1482.0,0.0006,
+E146,Uttar Pradesh,Sitapur,Uttar Pradesh,2018-07-26,,240928,2544.2,49.9,49.9,0.0196,S1(cloud),241265000,49970.0,0.0196,
+E147,Uttar Pradesh,Sitapur,Uttar Pradesh,2019-07-14,,240928,2544.2,1365.61,1365.61,0.5368,SITS,241265000,1367520.0,0.5368,
+E148,Uttar Pradesh,Sitapur,Uttar Pradesh,2020-05-10,,240928,2544.2,452.2,452.2,0.1777,SITS,241265000,452833.0,0.1777,
+E149,Uttar Pradesh,Sitapur,Uttar Pradesh,2021-06-01,,240928,2544.2,1.29,1.29,0.0005,NDWI,241265000,1292.0,0.0005,
+E15,Andhra Pradesh,Krishna,Andhra Pradesh,2020-10-01,,162975,8431.7,62.26,62.26,0.0074,SITS,53586000,20471.0,0.0074,
+E150,Uttar Pradesh,Sitapur,Uttar Pradesh,2022-09-18,,240928,2544.2,516.1,516.1,0.2029,SITS,241265000,516822.0,0.2029,
+E151,Uttar Pradesh,Sitapur,Uttar Pradesh,2024-07-09,,240928,2544.2,231.42,231.42,0.091,SITS,241265000,231744.0,0.091,
+E152,Uttarakhand,Chamoli,Uttarakhand,2015-07-07,,53483,7838.3,46.58,46.58,0.0059,S1(cloud),11913000,10375.0,0.0059,
+E153,Uttarakhand,Chamoli,Uttarakhand,2015-08-28,,53483,7838.3,4.01,4.01,0.0005,S1(cloud),11913000,893.0,0.0005,
+E154,Uttarakhand,Chamoli,Uttarakhand,2017-08-16,,53483,7838.3,4.05,4.05,0.0005,S1(cloud),11913000,902.0,0.0005,
+E155,Uttarakhand,Chamoli,Uttarakhand,2019-07-14,,53483,7838.3,455.48,455.48,0.0581,SITS,11913000,101455.0,0.0581,
+E156,Uttarakhand,Chamoli,Uttarakhand,2021-06-01,,53483,7838.3,0.77,0.77,0.0001,NDWI,11913000,172.0,0.0001,
+E157,Uttarakhand,Chamoli,Uttarakhand,2022-08-01,,53483,7838.3,2.62,2.62,0.0003,NDWI,11913000,584.0,0.0003,
+E158,Uttarakhand,Chamoli,Uttarakhand,2023-06-25,,53483,7838.3,0.39,0.39,0.0,NDWI,11913000,87.0,0.0,
+E159,Uttarakhand,Chamoli,Uttarakhand,2023-12-18,,53483,7838.3,1443.43,1443.43,0.1842,SITS,11913000,321515.0,0.1842,
+E16,Andhra Pradesh,Krishna,Andhra Pradesh,2021-10-11,,162975,8431.7,76.93,76.93,0.0091,NDWI,53586000,25294.0,0.0091,
+E160,Uttarakhand,Chamoli,Uttarakhand,2025-06-20,,53483,7838.3,10.57,10.57,0.0013,S1(cloud),11913000,2354.0,0.0013,
+E161,Uttarakhand,Chamoli,Uttarakhand,2025-09-15,,53483,7838.3,1855.08,1855.08,0.2367,SITS,11913000,413207.0,0.2367,
+E162,West Bengal,Birbhum,West Bengal,2015-06-23,,88752,4566.0,,,,none,100202000,,,NO COMBINED FLOOD: source=none
+E163,West Bengal,Birbhum,West Bengal,2017-06-01,,88752,4566.0,28.28,28.28,0.0062,NDWI,100202000,31928.0,0.0062,
+E164,West Bengal,Birbhum,West Bengal,2018-08-02,,88752,4566.0,0.02,0.02,0.0,S1(cloud),100202000,23.0,0.0,
+E165,West Bengal,Birbhum,West Bengal,2019-07-14,,88752,4566.0,51.83,51.83,0.0114,NDWI,100202000,58517.0,0.0114,
+E166,West Bengal,Birbhum,West Bengal,2020-06-01,,88752,4566.0,19.73,19.73,0.0043,NDWI,100202000,22275.0,0.0043,
+E167,West Bengal,Birbhum,West Bengal,2021-06-01,,88752,4566.0,763.08,763.08,0.1671,SITS,100202000,861526.0,0.1671,
+E168,West Bengal,Birbhum,West Bengal,2025-10-03,,88752,4566.0,648.4,648.4,0.142,SITS,100202000,732051.0,0.142,
+E17,Andhra Pradesh,Krishna,Andhra Pradesh,2024-07-09,,162975,8431.7,561.97,561.97,0.0666,SITS,53586000,184775.0,0.0666,
+E18,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2015-07-07,,83743,6676.5,1.14,1.14,0.0002,S1(cloud),1594000,22.0,0.0002,
+E19,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2016-04-22,,83743,6676.5,5.91,5.91,0.0009,S1(cloud),1594000,112.0,0.0009,
+E20,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2016-06-25,,83743,6676.5,,,,none,1594000,,,NO COMBINED FLOOD: source=none
+E21,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2020-06-01,,83743,6676.5,0.31,0.31,0.0,NDWI,1594000,6.0,0.0,
+E22,Arunachal Pradesh,Upper Subansiri,Arunachal Pradesh,2025-05-31,,83743,6676.5,1.54,1.54,0.0002,NDWI,1594000,29.0,0.0002,
+E23,Assam,Hojai,Assam,2015-08-13,,78438,3997.4,,,,none,36493000,,,NO COMBINED FLOOD: source=none
+E24,Assam,Hojai,Assam,2016-04-22,,78438,3997.4,,,,none,36493000,,,NO COMBINED FLOOD: source=none
+E25,Assam,Hojai,Assam,2016-06-25,,78438,3997.4,,,,none,36493000,,,NO COMBINED FLOOD: source=none
+E26,Assam,Hojai,Assam,2017-06-04,,78438,3997.4,18.93,18.93,0.0047,S1(cloud),36493000,8807.0,0.0047,
+E27,Assam,Hojai,Assam,2018-06-22,,78438,3997.4,124.81,124.81,0.0312,S1(cloud),36493000,58067.0,0.0312,
+E28,Assam,Hojai,Assam,2021-07-01,,78438,3997.4,47.51,47.51,0.0119,SITS,36493000,22104.0,0.0119,
+E29,Assam,Hojai,Assam,2022-05-17,,78438,3997.4,1383.22,1383.22,0.346,SITS,36493000,643538.0,0.346,
+E30,Assam,Hojai,Assam,2023-06-14,,78438,3997.4,502.99,502.99,0.1258,SITS,36493000,234014.0,0.1258,
+E31,Assam,Hojai,Assam,2024-05-01,,78438,3997.4,29.18,29.18,0.0073,NDWI,36493000,13576.0,0.0073,
+E32,Assam,Hojai,Assam,2025-05-31,,78438,3997.4,2094.28,2094.28,0.5239,SITS,36493000,974356.0,0.5239,
+E33,Bihar,Samastipur,Bihar,2016-07-15,,94163,2911.5,,,,none,131041000,,,NO COMBINED FLOOD: source=none
+E34,Bihar,Samastipur,Bihar,2020-06-01,,94163,2911.5,347.75,347.75,0.1194,SITS,131041000,483943.0,0.1194,
+E35,Bihar,Samastipur,Bihar,2021-06-01,,94163,2911.5,36.45,36.45,0.0125,NDWI,131041000,50725.0,0.0125,
+E36,Bihar,Samastipur,Bihar,2022-05-17,,94163,2911.5,26.39,26.39,0.0091,NDWI,131041000,36725.0,0.0091,
+E37,Bihar,Samastipur,Bihar,2023-06-25,,94163,2911.5,80.69,80.69,0.0277,SITS,131041000,112291.0,0.0277,
+E38,Bihar,Samastipur,Bihar,2025-10-03,,94163,2911.5,1083.8,1083.8,0.3722,SITS,131041000,1508259.0,0.3722,
+E39,Chhattisgarh,Mahasamund,Chhattisgarh,2020-06-01,,135192,4766.8,12.91,12.91,0.0027,NDWI,30982000,2959.0,0.0027,
+E40,Chhattisgarh,Mahasamund,Chhattisgarh,2021-06-01,,135192,4766.8,5.89,5.89,0.0012,NDWI,30982000,1350.0,0.0012,
+E41,Chhattisgarh,Mahasamund,Chhattisgarh,2023-06-25,,135192,4766.8,56.79,56.79,0.0119,NDWI,30982000,13015.0,0.0119,
+E42,Delhi,Delhi,Delhi,2023-06-25,,1484,1504.3,734.82,734.82,0.4885,SITS,22277000,11030718.0,0.4885,
+E43,Goa,South Goa,Goa,2015-08-28,,3702,1992.4,,,,none,1593000,,,NO COMBINED FLOOD: source=none
+E44,Goa,South Goa,Goa,2016-07-28,,3702,1992.4,,,,none,1593000,,,NO COMBINED FLOOD: source=none
+E45,Goa,South Goa,Goa,2017-06-25,,3702,1992.4,1.09,1.09,0.0005,S1(cloud),1593000,469.0,0.0005,
+E46,Goa,South Goa,Goa,2021-06-01,,3702,1992.4,1.25,1.25,0.0006,NDWI,1593000,538.0,0.0006,
+E47,Gujarat,Surendranagar,Gujarat,2016-08-01,,196024,10480.7,,,,none,73513000,,,NO COMBINED FLOOD: source=none
+E48,Gujarat,Surendranagar,Gujarat,2017-06-01,,196024,10480.7,19.72,19.72,0.0019,NDWI,73513000,7395.0,0.0019,
+E49,Gujarat,Surendranagar,Gujarat,2018-06-22,,196024,10480.7,1.26,1.26,0.0001,S1(cloud),73513000,473.0,0.0001,
+E50,Gujarat,Surendranagar,Gujarat,2020-06-01,,196024,10480.7,2487.91,2487.91,0.2374,SITS,73513000,933017.0,0.2374,
+E51,Gujarat,Surendranagar,Gujarat,2021-06-01,,196024,10480.7,1621.2,1621.2,0.1547,SITS,73513000,607983.0,0.1547,
+E52,Gujarat,Surendranagar,Gujarat,2021-09-13,,196024,10480.7,3942.81,3942.81,0.3762,SITS,73513000,1478634.0,0.3762,
+E53,Gujarat,Surendranagar,Gujarat,2022-05-17,,196024,10480.7,3571.3,3571.3,0.3408,SITS,73513000,1339310.0,0.3408,
+E54,Gujarat,Surendranagar,Gujarat,2023-06-25,,196024,10480.7,0.0,0.0,0.0,NDWI(no-S1),73513000,0.0,0.0,ZERO FLOOD AREA after combine
+E55,Gujarat,Surendranagar,Gujarat,2024-08-26,,196024,10480.7,2482.18,2482.18,0.2368,SITS,73513000,930868.0,0.2368,
+E56,Haryana,Hisar,Haryana,2015-07-07,,44212,4174.8,,,,none,31057000,,,NO COMBINED FLOOD: source=none
+E57,Haryana,Hisar,Haryana,2018-09-23,,44212,4174.8,1579.01,1579.01,0.3782,SITS,31057000,1109186.0,0.3782,
+E58,Haryana,Hisar,Haryana,2023-06-26,,44212,4174.8,706.97,706.97,0.1693,SITS,31057000,496616.0,0.1693,
+E59,Himachal Pradesh,Kullu,Himachal Pradesh,2015-07-07,,55673,5506.0,0.71,0.71,0.0001,S1(cloud),7555000,96.0,0.0001,
+E60,Himachal Pradesh,Kullu,Himachal Pradesh,2017-08-16,,55673,5506.0,0.83,0.83,0.0002,S1(cloud),7555000,113.0,0.0002,
+E61,Himachal Pradesh,Kullu,Himachal Pradesh,2018-08-07,,55673,5506.0,10.61,10.61,0.0019,S1(cloud),7555000,1440.0,0.0019,
+E62,Himachal Pradesh,Kullu,Himachal Pradesh,2019-07-14,,55673,5506.0,2.38,2.38,0.0004,NDWI,7555000,323.0,0.0004,
+E63,Himachal Pradesh,Kullu,Himachal Pradesh,2021-06-01,,55673,5506.0,2.03,2.03,0.0004,NDWI,7555000,275.0,0.0004,
+E64,Himachal Pradesh,Kullu,Himachal Pradesh,2022-05-17,,55673,5506.0,1.19,1.19,0.0002,NDWI,7555000,161.0,0.0002,
+E65,Himachal Pradesh,Kullu,Himachal Pradesh,2024-07-31,,55673,5506.0,73.73,73.73,0.0134,SITS,7555000,10005.0,0.0134,
+E66,Himachal Pradesh,Kullu,Himachal Pradesh,2025-06-20,,55673,5506.0,4.04,4.04,0.0007,NDWI,7555000,548.0,0.0007,
+E67,Jammu and Kashmir,72811,Jammu and Kashmir,2015-03-20,,42241,45603.1,38.5,38.5,0.0008,S1(cloud),13831000,12606.0,0.0008,
+E68,Jammu and Kashmir,Kishtwar,Jammu and Kashmir,2025-08-14,,42241,45603.1,3112.96,3112.96,0.0683,SITS,13831000,1019279.0,0.0683,
+E69,Jharkhand,Ramgarh,Jharkhand,2017-06-04,,79716,6175.1,4627.25,4627.25,0.7493,SITS,40626000,2358205.0,0.7493,
+E70,Jharkhand,Ramgarh,Jharkhand,2021-06-01,,79716,6175.1,24.03,24.03,0.0039,NDWI,40626000,12247.0,0.0039,
+E71,Jharkhand,Ramgarh,Jharkhand,2022-08-01,,79716,6175.1,148.28,148.28,0.024,SITS,40626000,75569.0,0.024,
+E72,Karnataka,Vijayanagara,Karnataka,2019-07-14,,191791,8455.4,8.3,8.3,0.001,NDWI,68679000,2972.0,0.001,
+E73,Karnataka,Vijayanagara,Karnataka,2020-06-01,,191791,8455.4,9.13,9.13,0.0011,NDWI,68679000,3269.0,0.0011,
+E74,Karnataka,Vijayanagara,Karnataka,2020-10-01,,191791,8455.4,2448.18,2448.18,0.2895,SITS,68679000,876676.0,0.2895,
+E75,Karnataka,Vijayanagara,Karnataka,2021-06-01,,191791,8455.4,19.72,19.72,0.0023,NDWI,68679000,7062.0,0.0023,
+E76,Karnataka,Vijayanagara,Karnataka,2023-06-25,,191791,8455.4,0.61,0.61,0.0001,NDWI,68679000,218.0,0.0001,
+E77,Kerala,Thrissur,Kerala,2019-07-14,,38852,2961.8,19.7,19.7,0.0067,S1(cloud),36111000,18310.0,0.0067,
+E78,Kerala,Thrissur,Kerala,2020-06-01,,38852,2961.8,316.21,316.21,0.1068,SITS,36111000,293901.0,0.1068,
+E79,Kerala,Thrissur,Kerala,2021-06-01,,38852,2961.8,290.82,290.82,0.0982,SITS,36111000,270303.0,0.0982,
+E80,Kerala,Thrissur,Kerala,2021-10-11,,38852,2961.8,680.35,680.35,0.2297,SITS,36111000,632351.0,0.2297,
+E81,Madhya Pradesh,Sagar,Madhya Pradesh,2015-06-23,,308252,10275.8,,,,none,88985000,,,NO COMBINED FLOOD: source=none
+E82,Madhya Pradesh,Sagar,Madhya Pradesh,2016-07-09,,308252,10275.8,,,,none,88985000,,,NO COMBINED FLOOD: source=none
+E83,Madhya Pradesh,Sagar,Madhya Pradesh,2017-06-25,,308252,10275.8,15.09,15.09,0.0015,S1(cloud),88985000,4356.0,0.0015,
+E84,Madhya Pradesh,Sagar,Madhya Pradesh,2018-08-02,,308252,10275.8,6.33,6.33,0.0006,S1(cloud),88985000,1827.0,0.0006,
+E85,Madhya Pradesh,Sagar,Madhya Pradesh,2020-06-01,,308252,10275.8,7428.51,7428.51,0.7229,SITS,88985000,2144434.0,0.7229,
+E86,Madhya Pradesh,Sagar,Madhya Pradesh,2022-05-17,,308252,10275.8,6955.42,6955.42,0.6769,SITS,88985000,2007864.0,0.6769,
+E87,Madhya Pradesh,Sagar,Madhya Pradesh,2023-06-14,,308252,10275.8,6183.32,6183.32,0.6017,SITS,88985000,1784977.0,0.6017,
+E88,Madhya Pradesh,Sagar,Madhya Pradesh,2025-09-15,,308252,10275.8,502.58,502.58,0.0489,SITS,88985000,145083.0,0.0489,
+E89,Maharashtra,Parbhani,Maharashtra,2015-06-19,,307713,6347.3,,,,none,128659000,,,NO COMBINED FLOOD: source=none
+E90,Maharashtra,Parbhani,Maharashtra,2016-08-01,,307713,6347.3,,,,none,128659000,,,NO COMBINED FLOOD: source=none
+E91,Maharashtra,Parbhani,Maharashtra,2017-08-29,,307713,6347.3,5.76,5.76,0.0009,S1(cloud),128659000,2408.0,0.0009,
+E92,Maharashtra,Parbhani,Maharashtra,2018-06-22,,307713,6347.3,6.33,6.33,0.001,S1(cloud),128659000,2647.0,0.001,
+E93,Maharashtra,Parbhani,Maharashtra,2018-08-07,,307713,6347.3,,,,none,128659000,,,NO COMBINED FLOOD: source=none
+E94,Maharashtra,Parbhani,Maharashtra,2019-06-28,,307713,6347.3,4.76,4.76,0.0007,S1(cloud),128659000,1990.0,0.0007,
+E95,Maharashtra,Parbhani,Maharashtra,2020-06-01,,307713,6347.3,2639.46,2639.46,0.4158,SITS,128659000,1103594.0,0.4158,
+E96,Maharashtra,Parbhani,Maharashtra,2021-06-01,,307713,6347.3,653.72,653.72,0.103,SITS,128659000,273329.0,0.103,
+E97,Maharashtra,Parbhani,Maharashtra,2023-06-25,,307713,6347.3,19.02,19.02,0.003,S1(cloud),128659000,7953.0,0.003,
+E98,Maharashtra,Parbhani,Maharashtra,2024-08-26,,307713,6347.3,0.23,0.23,0.0,NDWI,128659000,96.0,0.0,
+E99,Manipur,Imphal West,Manipur,2015-07-15,,22327,489.0,,,,none,3289000,,,NO COMBINED FLOOD: source=none

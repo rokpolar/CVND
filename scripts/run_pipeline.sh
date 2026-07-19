@@ -29,6 +29,7 @@ setup_environment
 
 SKIP_GEE="${SKIP_GEE:-0}"
 SKIP_ARTICLES="${SKIP_ARTICLES:-0}"
+LEGACY_DI="${LEGACY_DI:-0}"
 
 STEPS=(
   "src/build_covariates.py"
@@ -38,10 +39,16 @@ if [[ "$SKIP_GEE" != "1" ]]; then
   STEPS+=(
     "src/test_gee.py"
     "src/satellite.py"
+    "src/merge_results.py"
     "src/compute_population.py"
   )
 else
-  echo "NOTE: SKIP_GEE=1 — skipping GEE steps (CP-04 to CP-06)"
+  echo "NOTE: SKIP_GEE=1 — skipping GEE satellite pull"
+  # Still rebuild severity from existing flood_combined / flood_extent artifacts
+  if [[ -f "$ROOT/data/flood_extent.csv" && -d "$ROOT/data/sits_scores" ]]; then
+    STEPS+=("src/merge_results.py")
+  fi
+  STEPS+=("src/compute_population.py")
 fi
 
 STEPS+=("src/compute_pss.py")
@@ -52,9 +59,16 @@ else
   echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT API collection (CP-08)"
 fi
 
+STEPS+=("src/compute_mss.py")
+
+if [[ "$LEGACY_DI" == "1" ]]; then
+  echo "NOTE: LEGACY_DI=1 — running demoted Min-Max DI (not primary)"
+  STEPS+=("src/compute_di.py")
+else
+  echo "NOTE: LEGACY_DI=0 — skipping legacy DI; primary metric is expected_coverage log_ratio"
+fi
+
 STEPS+=(
-  "src/compute_mss.py"
-  "src/compute_di.py"
   "src/compute_expected_coverage.py"
   "src/visualize.py"
 )

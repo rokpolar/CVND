@@ -9,15 +9,26 @@ Primary model (no GDELT volume offset):
         monsoon_flag
     )
 
-Discrepancy (continuous):
+Discrepancy (continuous, primary):
     log_ratio = ln( (y + 0.5) / (mu_hat + 0.5) )
+
+Hybrid labels:
+    under_flag     = log_ratio < 0          # absolute under-coverage
+    over_flag      = log_ratio > 0
+    severity_tier  = tertile low/mid/high   # severe-neglect exploration pool (P33/P67)
+
+Deaths (option A; #20):
+    Keep rows with missing EM-DAT deaths.
+    deaths_missing = 1 if total_deaths was NA, else 0
+    log1p_deaths   = log1p(fillna(total_deaths, 0))
+    Both enter the NegBin so "unknown" is not treated as confirmed zero without a flag.
 
 Notes:
 - Respects data/events_quarantine.csv (#17).
 - Does not impute missing article counts as zero.
 - Interim outcome: mss_results.total_articles (fixed 0–14 window not yet
   re-extracted; treated as GDELT-monitored volume proxy).
-- Legacy Min-Max DI is not used here.
+- Legacy Min-Max DI is not primary (opt-in via LEGACY_DI=1 in run_pipeline.sh).
 """
 
 from __future__ import annotations
@@ -146,7 +157,9 @@ def design_matrix(df: pd.DataFrame, severity_col: str, include_deaths: bool) -> 
     X = pd.DataFrame(index=df.index)
     X["log1p_severity"] = np.log1p(df[severity_col].astype(float))
     if include_deaths:
+        # Option A: filled zeros + missingness flag (do not drop rows)
         X["log1p_deaths"] = np.log1p(df["total_deaths"].astype(float))
+        X["deaths_missing"] = df["deaths_missing"].astype(float)
     X["monsoon_flag"] = df["monsoon_flag"].astype(float)
     year_dummies = pd.get_dummies(df["onset_year"], prefix="year", drop_first=True)
     X = pd.concat([X, year_dummies.astype(float)], axis=1)
@@ -190,12 +203,14 @@ def choose_severity_proxy(df: pd.DataFrame, include_deaths: bool) -> str:
     return best
 
 
-def percentile_tier(resid: pd.Series) -> pd.Series:
-    """Exploratory tertile buckets on log_ratio (not statistical significance).
+def severity_tier_tertile(resid: pd.Series) -> pd.Series:
+    """Exploratory tertile buckets on log_ratio (severe-neglect pool, not significance).
 
-    - low  = bottom tertile  (≤ 33rd percentile) — expanded under-covered pool
+    - low  = bottom tertile  (≤ 33rd percentile) — severe under-coverage exploration pool
     - high = top tertile     (≥ 67th percentile)
     - mid  = middle tertile
+
+    Binary under/over uses under_flag / over_flag (log_ratio <> 0), not these tiers.
     """
     lo = resid.quantile(1.0 / 3.0)
     hi = resid.quantile(2.0 / 3.0)
@@ -203,6 +218,10 @@ def percentile_tier(resid: pd.Series) -> pd.Series:
         np.where(resid <= lo, "low", np.where(resid >= hi, "high", "mid")),
         index=resid.index,
     )
+
+
+# Back-compat alias
+percentile_tier = severity_tier_tertile
 
 
 def income_cluster_robust(df: pd.DataFrame) -> dict:
@@ -292,6 +311,15 @@ def write_markdown_report(
     under = out.nsmallest(15, "log_ratio")
     over = out.nlargest(15, "log_ratio")
 
+    n_under = int(out["under_flag"].sum())
+    n_over = int(out["over_flag"].sum())
+    under_by_income = (
+        out.groupby("income_group")["under_flag"]
+        .agg(n_under="sum", n="count", share="mean")
+        .reindex(["High", "Middle", "Low"])
+        .reset_index()
+    )
+
     income_rows = []
     for t in income_summary["terms"]:
         income_rows.append(
@@ -314,6 +342,13 @@ def write_markdown_report(
 
 Generated: `{generated}`
 
+## Analysis standard (hybrid)
+
+- **Primary metric:** continuous `log_ratio = ln((y+0.5)/(μ̂+0.5))` rankings
+- **Binary under-coverage:** `under_flag` when `log_ratio < 0` (observed &lt; expected)
+- **Severe-neglect exploration pool:** `severity_tier == low` (bottom tertile ≤ P33)
+- **Legacy Min-Max DI:** not primary (opt-in via `LEGACY_DI=1` only)
+
 ## Summary
 
 | Item | Value |
@@ -324,21 +359,31 @@ Generated: `{generated}`
 | Media window (design) | onset + {MEDIA_WINDOW_DAYS} days |
 | Outcome (interim) | `mss_results.total_articles` as `n_articles_0_14` proxy |
 | Severity proxy (AIC) | `{severity_col}` |
-| Deaths included | {include_deaths} |
+| Flood area source | `flood_combined.combined_km2` (district-level; via severity_raw) |
+| Deaths handling | Option A: `log1p(deaths)` with `fillna(0)` + `deaths_missing` flag (rows kept) |
+| Deaths missing (flag=1) | {int(out['deaths_missing'].sum()) if 'deaths_missing' in out.columns else 'n/a'} / {len(out)} |
 | N events | {len(out)} |
 | NegBin AIC | {float(result.aic):.1f} |
 | NegBin log-likelihood | {float(result.llf):.1f} |
-| Exploratory tiers | Tertiles on `log_ratio` (low ≤ P33, high ≥ P67; not significance tests) |
+| under_flag (log_ratio &lt; 0) | {n_under} ({n_under / len(out):.1%}) |
+| over_flag (log_ratio &gt; 0) | {n_over} ({n_over / len(out):.1%}) |
+| severity_tier | Tertiles (low ≤ P33, high ≥ P67; exploratory only) |
 
-Legacy Min-Max DI is demoted; see `data/di_results.csv` for continuity only.
+## Absolute under-coverage (`under_flag`)
 
-## Exploratory tertile pool
+{_md_table(
+    under_by_income,
+    ["income_group", "n_under", "n", "share"],
+    {"n_under": "{:.0f}", "n": "{:.0f}", "share": "{:.1%}"},
+)}
+
+## Severe-neglect exploration pool (`severity_tier`)
 
 | Tier | Meaning | n |
 | --- | --- | --- |
-| low | Bottom tertile (≤ 33rd pct) — under-covered pool | {(out['tier'] == 'low').sum()} |
-| mid | Middle tertile | {(out['tier'] == 'mid').sum()} |
-| high | Top tertile (≥ 67th pct) — over-covered pool | {(out['tier'] == 'high').sum()} |
+| low | Bottom tertile (≤ 33rd pct) — severe under-coverage pool | {(out['severity_tier'] == 'low').sum()} |
+| mid | Middle tertile | {(out['severity_tier'] == 'mid').sum()} |
+| high | Top tertile (≥ 67th pct) — over-coverage pool | {(out['severity_tier'] == 'high').sum()} |
 
 ## Model coefficients (cluster-robust)
 
@@ -369,7 +414,7 @@ R² = {income_summary["r2"]:.4f}
 
 {_md_table(
     under,
-    ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "tier"],
+    ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "under_flag", "severity_tier"],
     {"observed": "{:.0f}", "expected": "{:.1f}", "log_ratio": "{:.4f}"},
 )}
 
@@ -377,7 +422,7 @@ R² = {income_summary["r2"]:.4f}
 
 {_md_table(
     over,
-    ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "tier"],
+    ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "under_flag", "severity_tier"],
     {"observed": "{:.0f}", "expected": "{:.1f}", "log_ratio": "{:.4f}"},
 )}
 
@@ -395,9 +440,9 @@ R² = {income_summary["r2"]:.4f}
 
 ## Output files
 
-- `data/expected_coverage.csv`
+- `data/expected_coverage.csv` (primary)
 - `data/state_expected_coverage.csv`
-- `data/di_results.csv` (legacy)
+- `data/di_results.csv` (legacy; only if `LEGACY_DI=1`)
 - `data/events_quarantine.csv`
 - `{path}`
 """
@@ -417,16 +462,16 @@ def main() -> None:
 
     df = build_analysis_frame()
 
-    death_coverage = df["total_deaths"].notna().mean()
-    include_deaths = death_coverage >= 0.5
-    if include_deaths:
-        # For rows still missing deaths after match, drop (no zero-impute)
-        before = len(df)
-        df = df.dropna(subset=["total_deaths"]).copy()
-        print(f"Deaths included; dropped {before - len(df)} rows still missing deaths")
-    else:
-        print(f"Death coverage {death_coverage:.0%} < 50% — omitting log1p(deaths) "
-              f"from primary model")
+    # Option A: keep missing-death rows; flag missingness; fill deaths with 0 for log1p
+    n_miss_deaths = int(df["total_deaths"].isna().sum())
+    df["deaths_missing"] = df["total_deaths"].isna().astype(int)
+    df["total_deaths"] = df["total_deaths"].fillna(0.0)
+    include_deaths = True
+    print(
+        f"Deaths handling (option A): keep all rows; "
+        f"deaths_missing=1 for {n_miss_deaths}/{len(df)} events; "
+        f"log1p_deaths uses fillna(0)"
+    )
 
     severity_col = choose_severity_proxy(df, include_deaths=include_deaths)
     y = df["n_articles_0_14"].astype(float)
@@ -453,6 +498,7 @@ def main() -> None:
             "population_exposed",
             "adjusted_flood_area_km2",
             "total_deaths",
+            "deaths_missing",
         ]
     ].copy()
     out["severity_proxy"] = severity_col
@@ -461,26 +507,65 @@ def main() -> None:
     out["log_ratio"] = log_ratio
     out["pearson_resid"] = pearson
     out["deviance_resid"] = result.resid_deviance
-    out["tier"] = percentile_tier(out["log_ratio"])
+    out["under_flag"] = out["log_ratio"] < 0
+    out["over_flag"] = out["log_ratio"] > 0
+    out["severity_tier"] = severity_tier_tertile(out["log_ratio"])
     out["rank_undercovered"] = out["log_ratio"].rank(method="average", ascending=True).astype(int)
 
+    # Severe tertile low should sit inside absolute under-coverage
+    low_mask = out["severity_tier"] == "low"
+    if low_mask.any() and not bool(out.loc[low_mask, "under_flag"].all()):
+        raise AssertionError(
+            "severity_tier==low is not a subset of under_flag (log_ratio<0); check tier cutpoints"
+        )
+
     out = out.sort_values("log_ratio")
-    tier_counts = out["tier"].value_counts()
+    tier_counts = out["severity_tier"].value_counts()
+    n_under = int(out["under_flag"].sum())
+    n_over = int(out["over_flag"].sum())
     print(
-        "\nExploratory tertile tiers on log_ratio "
-        f"(low≤P33, high≥P67): {tier_counts.to_dict()}"
+        f"\nHybrid labels: under_flag={n_under} ({n_under / len(out):.1%}), "
+        f"over_flag={n_over} ({n_over / len(out):.1%})"
+    )
+    print(
+        "severity_tier tertiles (low≤P33, high≥P67; exploratory): "
+        f"{tier_counts.to_dict()}"
+    )
+    print(
+        "under_flag by income:\n"
+        + out.groupby("income_group")["under_flag"]
+        .agg(n_under="sum", n="count", share="mean")
+        .to_string()
     )
 
     print("\nMost UNDER-covered (lowest log_ratio):")
     print(
         out.head(15)[
-            ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "tier"]
+            [
+                "event_id",
+                "state",
+                "income_group",
+                "observed",
+                "expected",
+                "log_ratio",
+                "under_flag",
+                "severity_tier",
+            ]
         ].to_string(index=False)
     )
     print("\nMost OVER-covered (highest log_ratio):")
     print(
         out.tail(15)[
-            ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "tier"]
+            [
+                "event_id",
+                "state",
+                "income_group",
+                "observed",
+                "expected",
+                "log_ratio",
+                "under_flag",
+                "severity_tier",
+            ]
         ].to_string(index=False)
     )
 

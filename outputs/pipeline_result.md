@@ -1,6 +1,13 @@
 # CVND Pipeline Results — Expected Coverage
 
-Generated: `2026-07-18 23:03:29`
+Generated: `2026-07-19 02:28:57`
+
+## Analysis standard (hybrid)
+
+- **Primary metric:** continuous `log_ratio = ln((y+0.5)/(μ̂+0.5))` rankings
+- **Binary under-coverage:** `under_flag` when `log_ratio < 0` (observed &lt; expected)
+- **Severe-neglect exploration pool:** `severity_tier == low` (bottom tertile ≤ P33)
+- **Legacy Min-Max DI:** not primary (opt-in via `LEGACY_DI=1` only)
 
 ## Summary
 
@@ -12,52 +19,63 @@ Generated: `2026-07-18 23:03:29`
 | Media window (design) | onset + 14 days |
 | Outcome (interim) | `mss_results.total_articles` as `n_articles_0_14` proxy |
 | Severity proxy (AIC) | `population_exposed` |
-| Deaths included | True |
-| N events | 133 |
-| NegBin AIC | 2458.2 |
-| NegBin log-likelihood | -1215.1 |
-| Exploratory tiers | Tertiles on `log_ratio` (low ≤ P33, high ≥ P67; not significance tests) |
+| Flood area source | `flood_combined.combined_km2` (district-level; via severity_raw) |
+| Deaths handling | Option A: `log1p(deaths)` with `fillna(0)` + `deaths_missing` flag (rows kept) |
+| Deaths missing (flag=1) | 24 / 138 |
+| N events | 138 |
+| NegBin AIC | 2563.3 |
+| NegBin log-likelihood | -1266.6 |
+| under_flag (log_ratio &lt; 0) | 83 (60.1%) |
+| over_flag (log_ratio &gt; 0) | 55 (39.9%) |
+| severity_tier | Tertiles (low ≤ P33, high ≥ P67; exploratory only) |
 
-Legacy Min-Max DI is demoted; see `data/di_results.csv` for continuity only.
+## Absolute under-coverage (`under_flag`)
 
-## Exploratory tertile pool
+| income_group | n_under | n | share |
+| --- | --- | --- | --- |
+| High | 11 | 29 | 37.9% |
+| Middle | 11 | 26 | 42.3% |
+| Low | 61 | 83 | 73.5% |
+
+## Severe-neglect exploration pool (`severity_tier`)
 
 | Tier | Meaning | n |
 | --- | --- | --- |
-| low | Bottom tertile (≤ 33rd pct) — under-covered pool | 45 |
-| mid | Middle tertile | 43 |
-| high | Top tertile (≥ 67th pct) — over-covered pool | 45 |
+| low | Bottom tertile (≤ 33rd pct) — severe under-coverage pool | 46 |
+| mid | Middle tertile | 46 |
+| high | Top tertile (≥ 67th pct) — over-coverage pool | 46 |
 
 ## Model coefficients (cluster-robust)
 
 ```
               Results: Generalized linear model
 ==============================================================
-Model:              GLM              AIC:            2458.2111
-Link Function:      Log              BIC:            -433.8006
-Dependent Variable: n_articles_0_14  Log-Likelihood: -1215.1  
-Date:               2026-07-18 23:03 LL-Null:        -1286.6  
-No. Observations:   133              Deviance:       148.15   
-Df Model:           13               Pearson chi2:   154.     
-Df Residuals:       119              Scale:          1.0000   
+Model:              GLM              AIC:            2563.2665
+Link Function:      Log              BIC:            -449.1278
+Dependent Variable: n_articles_0_14  Log-Likelihood: -1266.6  
+Date:               2026-07-19 02:28 LL-Null:        -1312.8  
+No. Observations:   138              Deviance:       156.92   
+Df Model:           14               Pearson chi2:   148.     
+Df Residuals:       123              Scale:          1.0000   
 Method:             IRLS                                      
 --------------------------------------------------------------
-                Coef.  Std.Err.    z    P>|z|   [0.025  0.975]
+                 Coef.  Std.Err.    z    P>|z|   [0.025 0.975]
 --------------------------------------------------------------
-const           3.1687   0.6587  4.8105 0.0000  1.8777  4.4598
-log1p_severity  0.2378   0.0447  5.3161 0.0000  0.1501  0.3255
-log1p_deaths    0.2491   0.0771  3.2301 0.0012  0.0979  0.4002
-monsoon_flag    0.4252   0.3037  1.4000 0.1615 -0.1701  1.0205
-year_2016       0.7847   0.2999  2.6161 0.0089  0.1968  1.3725
-year_2017       0.3806   0.3509  1.0846 0.2781 -0.3071  1.0683
-year_2018      -0.3626   0.4345 -0.8345 0.4040 -1.2143  0.4890
-year_2019      -0.2528   0.4063 -0.6222 0.5338 -1.0491  0.5435
-year_2020      -0.5088   0.3537 -1.4385 0.1503 -1.2021  0.1844
-year_2021      -0.6596   0.2673 -2.4679 0.0136 -1.1835 -0.1358
-year_2022      -0.6378   0.5589 -1.1412 0.2538 -1.7333  0.4577
-year_2023       0.2478   0.3391  0.7309 0.4648 -0.4168  0.9124
-year_2024      -0.3295   0.4192 -0.7861 0.4318 -1.1511  0.4921
-year_2025      -0.5757   0.3976 -1.4479 0.1476 -1.3551  0.2036
+const            5.4732   0.6411  8.5372 0.0000  4.2167 6.7298
+log1p_severity   0.0855   0.0337  2.5389 0.0111  0.0195 0.1515
+log1p_deaths     0.3234   0.0710  4.5558 0.0000  0.1843 0.4626
+deaths_missing   1.2203   0.4285  2.8482 0.0044  0.3806 2.0601
+monsoon_flag     0.2390   0.2840  0.8414 0.4001 -0.3177 0.7957
+year_2016        1.3411   0.5821  2.3038 0.0212  0.2002 2.4820
+year_2017        0.7351   0.3735  1.9683 0.0490  0.0031 1.4671
+year_2018        0.4283   0.4839  0.8852 0.3760 -0.5200 1.3767
+year_2019        0.3606   0.5650  0.6383 0.5233 -0.7467 1.4679
+year_2020       -0.4241   0.4788 -0.8858 0.3757 -1.3625 0.5143
+year_2021        0.0430   0.4682  0.0918 0.9268 -0.8746 0.9606
+year_2022       -0.6156   0.5085 -1.2106 0.2260 -1.6122 0.3810
+year_2023        0.4272   0.4754  0.8986 0.3689 -0.5045 1.3589
+year_2024        0.0697   0.4770  0.1462 0.8838 -0.8651 1.0045
+year_2025       -0.3850   0.5688 -0.6769 0.4984 -1.4999 0.7298
 ==============================================================
 
 ```
@@ -66,9 +84,9 @@ year_2025      -0.5757   0.3976 -1.4479 0.1476 -1.3551  0.2036
 
 | income_group | mean | median | std | n |
 | --- | --- | --- | --- | --- |
-| High | -0.0092 | 0.0599 | 0.6522 | 31 |
-| Middle | 0.1127 | 0.1098 | 0.7315 | 24 |
-| Low | -0.6985 | -0.5928 | 1.0769 | 78 |
+| High | 0.1367 | 0.3195 | 0.7970 | 29 |
+| Middle | 0.0982 | 0.1419 | 0.7071 | 26 |
+| Low | -0.8981 | -0.5878 | 1.3579 | 83 |
 
 ## Income contrast (cluster-robust OLS on log_ratio)
 
@@ -76,86 +94,86 @@ Reference category = first dummy dropped by `get_dummies` (alphabetical; typical
 
 | Term | Coef | 95% CI | p | CI covers 0 |
 | --- | --- | --- | --- | --- |
-| Low | -0.6893 | [-1.2060, -0.1726] | 0.0089 | False |
-| Middle | 0.1219 | [-0.4365, 0.6803] | 0.6687 | True |
+| Low | -1.0348 | [-1.7875, -0.2821] | 0.0071 | False |
+| Middle | -0.0385 | [-0.6705, 0.5935] | 0.9050 | True |
 
 **Verdict:** Detectable income gradient in this GDELT-monitored system (at least one CI excludes 0).  
-R² = 0.1359
+R² = 0.1586
 
 ## Most under-covered (lowest log_ratio)
 
-| event_id | state | income_group | observed | expected | log_ratio | tier |
-| --- | --- | --- | --- | --- | --- | --- |
-| E127 | Sikkim | Low | 2 | 447.2 | -5.1878 | low |
-| E18 | Arunachal Pradesh | Low | 33 | 1151.8 | -3.5380 | low |
-| E20 | Arunachal Pradesh | Low | 172 | 3444.3 | -2.9942 | low |
-| E21 | Arunachal Pradesh | Low | 186 | 2877.9 | -2.7366 | low |
-| E107 | Nagaland | Low | 309 | 2509.5 | -2.0931 | low |
-| E69 | Jharkhand | Low | 536 | 4078.7 | -2.0286 | low |
-| E103 | Meghalaya | Low | 170 | 1165.5 | -1.9226 | low |
-| E106 | Mizoram | Low | 124 | 797.5 | -1.8579 | low |
-| E104 | Meghalaya | Low | 81 | 501.4 | -1.8178 | low |
-| E71 | Jharkhand | Low | 399 | 2412.8 | -1.7985 | low |
-| E70 | Jharkhand | Low | 951 | 5311.1 | -1.7196 | low |
-| E22 | Arunachal Pradesh | Low | 155 | 745.8 | -1.5685 | low |
-| E19 | Arunachal Pradesh | Low | 435 | 2010.1 | -1.5297 | low |
-| E105 | Meghalaya | Low | 109 | 492.1 | -1.5038 | low |
-| E135 | Telangana | High | 1002 | 4344.8 | -1.4666 | low |
+| event_id | state | income_group | observed | expected | log_ratio | under_flag | severity_tier |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E126 | Sikkim | Low | 2 | 3894.5 | -7.3512 | True | low |
+| E127 | Sikkim | Low | 2 | 1495.9 | -6.3945 | True | low |
+| E18 | Arunachal Pradesh | Low | 33 | 1134.6 | -3.5230 | True | low |
+| E28 | Assam | Low | 120 | 2516.8 | -3.0393 | True | low |
+| E21 | Arunachal Pradesh | Low | 186 | 2697.9 | -2.6720 | True | low |
+| E104 | Meghalaya | Low | 81 | 991.9 | -2.4995 | True | low |
+| E159 | Uttarakhand | Low | 327 | 3658.7 | -2.4135 | True | low |
+| E10 | Odisha | Low | 173 | 1676.2 | -2.2684 | True | low |
+| E105 | Meghalaya | Low | 109 | 1009.3 | -2.2215 | True | low |
+| E19 | Arunachal Pradesh | Low | 435 | 3536.1 | -2.0944 | True | low |
+| E153 | Uttarakhand | Low | 233 | 1832.7 | -2.0606 | True | low |
+| E69 | Jharkhand | Low | 536 | 4151.3 | -2.0462 | True | low |
+| E70 | Jharkhand | Low | 951 | 7149.4 | -2.0168 | True | low |
+| E106 | Mizoram | Low | 124 | 872.4 | -1.9476 | True | low |
+| E103 | Meghalaya | Low | 170 | 1180.2 | -1.9351 | True | low |
 
 ## Most over-covered (highest log_ratio)
 
-| event_id | state | income_group | observed | expected | log_ratio | tier |
-| --- | --- | --- | --- | --- | --- | --- |
-| E120 | Punjab | Middle | 13938 | 2574.9 | 1.6887 | high |
-| E01 | Kerala | Middle | 34918 | 6828.4 | 1.6319 | high |
-| E100 | Manipur | Low | 1936 | 475.6 | 1.4030 | high |
-| E94 | Maharashtra | High | 39317 | 11375.9 | 1.2401 | high |
-| E143 | Uttar Pradesh | Low | 24116 | 8145.8 | 1.0853 | high |
-| E42 | Delhi | High | 33940 | 11501.6 | 1.0821 | high |
-| E92 | Maharashtra | High | 11788 | 4501.0 | 0.9627 | high |
-| E133 | Tamil Nadu | Middle | 3065 | 1292.1 | 0.8635 | high |
-| E04 | Telangana | High | 887 | 380.4 | 0.8460 | high |
-| E138 | Tripura | Low | 1690 | 747.8 | 0.8150 | high |
-| E29 | Assam | Low | 4831 | 2222.4 | 0.7763 | high |
-| E80 | Kerala | Middle | 3445 | 1635.5 | 0.7448 | high |
-| E25 | Assam | Low | 5822 | 2831.1 | 0.7209 | high |
-| E95 | Maharashtra | High | 19382 | 9558.4 | 0.7069 | high |
-| E81 | Madhya Pradesh | Low | 12032 | 5952.5 | 0.7037 | high |
+| event_id | state | income_group | observed | expected | log_ratio | under_flag | severity_tier |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E120 | Punjab | Middle | 13938 | 2030.6 | 1.9261 | False | high |
+| E05 | Maharashtra | High | 4504 | 1070.1 | 1.4368 | False | high |
+| E01 | Kerala | Middle | 34918 | 8313.0 | 1.4351 | False | high |
+| E94 | Maharashtra | High | 39317 | 9549.8 | 1.4151 | False | high |
+| E92 | Maharashtra | High | 11788 | 3289.5 | 1.2762 | False | high |
+| E134 | Tamil Nadu | Middle | 3361 | 1217.3 | 1.0154 | False | high |
+| E91 | Maharashtra | High | 7701 | 2948.2 | 0.9601 | False | high |
+| E95 | Maharashtra | High | 19382 | 7505.6 | 0.9487 | False | high |
+| E133 | Tamil Nadu | Middle | 3065 | 1272.1 | 0.8792 | False | high |
+| E148 | Uttar Pradesh | Low | 11906 | 5476.7 | 0.7765 | False | high |
+| E140 | Uttar Pradesh | Low | 3681 | 1717.1 | 0.7624 | False | high |
+| E98 | Maharashtra | High | 2766 | 1375.9 | 0.6981 | False | high |
+| E97 | Maharashtra | High | 20891 | 10711.1 | 0.6680 | False | high |
+| E130 | Tamil Nadu | Middle | 5189 | 2725.9 | 0.6436 | False | high |
+| E73 | Karnataka | High | 8391 | 4562.9 | 0.6092 | False | high |
 
 ## State-level mean log_ratio
 
 | state | income_group | mean_log_ratio | median_log_ratio | n_events |
 | --- | --- | --- | --- | --- |
-| Sikkim | Low | -5.1878 | -5.1878 | 1 |
-| Arunachal Pradesh | Low | -2.4734 | -2.7366 | 5 |
-| Mizoram | Low | -1.8579 | -1.8579 | 1 |
-| Jharkhand | Low | -1.8489 | -1.7985 | 3 |
-| Meghalaya | Low | -1.6443 | -1.6608 | 4 |
-| Odisha | Low | -1.2580 | -1.2741 | 3 |
-| Chhattisgarh | Low | -1.0746 | -1.0945 | 3 |
-| Nagaland | Low | -1.0263 | -0.9053 | 5 |
-| Uttarakhand | Low | -0.8131 | -0.8871 | 7 |
-| Rajasthan | Low | -0.7800 | -0.6695 | 4 |
-| West Bengal | Middle | -0.5669 | -0.4301 | 7 |
-| Bihar | Low | -0.4511 | -0.4049 | 6 |
-| Goa | High | -0.4156 | -0.4156 | 2 |
-| Gujarat | High | -0.3460 | -0.2793 | 9 |
-| Telangana | High | -0.3103 | -0.3103 | 2 |
-| Haryana | High | -0.2787 | 0.1220 | 3 |
-| Himachal Pradesh | Low | -0.2689 | -0.3095 | 8 |
-| Tripura | Low | -0.2233 | -0.3089 | 4 |
-| Assam | Low | -0.1819 | -0.3011 | 9 |
-| Karnataka | High | 0.1886 | 0.2118 | 5 |
-| Uttar Pradesh | Low | 0.2348 | 0.1584 | 8 |
-| Andhra Pradesh | Middle | 0.2506 | 0.2506 | 2 |
-| Punjab | Middle | 0.2768 | 0.1423 | 5 |
-| Madhya Pradesh | Low | 0.3370 | 0.5389 | 4 |
-| Maharashtra | High | 0.3435 | 0.0946 | 9 |
-| Tamil Nadu | Middle | 0.3723 | 0.5483 | 5 |
-| Kerala | Middle | 0.5853 | 0.3228 | 5 |
-| Jammu and Kashmir | Low | 0.6980 | 0.6980 | 1 |
-| Manipur | Low | 0.7301 | 0.7301 | 2 |
-| Delhi | High | 1.0821 | 1.0821 | 1 |
+| Sikkim | Low | -6.8728 | -6.8728 | 2 |
+| Arunachal Pradesh | Low | -2.4735 | -2.3832 | 4 |
+| Meghalaya | Low | -2.1230 | -2.0783 | 4 |
+| Mizoram | Low | -1.9476 | -1.9476 | 1 |
+| Jharkhand | Low | -1.8251 | -2.0168 | 3 |
+| Nagaland | Low | -1.3862 | -1.3862 | 2 |
+| Odisha | Low | -1.1396 | -1.2351 | 5 |
+| Tripura | Low | -0.9824 | -1.2795 | 4 |
+| Uttarakhand | Low | -0.9138 | -0.8747 | 11 |
+| Chhattisgarh | Low | -0.8332 | -0.8249 | 3 |
+| Haryana | High | -0.8247 | -0.8247 | 2 |
+| Telangana | High | -0.7907 | -0.7907 | 2 |
+| Assam | Low | -0.7591 | -0.5610 | 7 |
+| Goa | High | -0.7424 | -0.7424 | 2 |
+| Rajasthan | Low | -0.5967 | -0.9397 | 3 |
+| Manipur | Low | -0.4132 | -0.4132 | 1 |
+| Himachal Pradesh | Low | -0.3841 | -0.3244 | 9 |
+| West Bengal | Middle | -0.3606 | -0.3949 | 6 |
+| Bihar | Low | -0.2995 | -0.2736 | 6 |
+| Gujarat | High | -0.2109 | -0.2022 | 8 |
+| Madhya Pradesh | Low | -0.1607 | -0.3186 | 6 |
+| Andhra Pradesh | Middle | -0.0645 | 0.2428 | 5 |
+| Punjab | Middle | 0.1164 | -0.4110 | 4 |
+| Kerala | Middle | 0.2811 | 0.1825 | 5 |
+| Uttar Pradesh | Low | 0.2871 | 0.3418 | 11 |
+| Karnataka | High | 0.3514 | 0.5298 | 6 |
+| Tamil Nadu | Middle | 0.5280 | 0.5055 | 6 |
+| Delhi | High | 0.5348 | 0.5348 | 1 |
+| Jammu and Kashmir | Low | 0.5398 | 0.5398 | 1 |
+| Maharashtra | High | 0.9653 | 0.9544 | 8 |
 
 ## Figures
 
@@ -163,15 +181,15 @@ R² = 0.1359
 - [log_ratio residual histogram](plot6_log_ratio_histogram.png)
 - [Coverage imbalance ranking (extremes)](plot7_log_ratio_ranking.png)
 - [log_ratio by income group](plot8_log_ratio_by_income.png)
-- [Legacy: PSS vs MSS scatter](plot1_pss_vs_mss_scatter.png)
-- [Legacy: DI by income group](plot2_di_by_income_group.png)
-- [Legacy: DI per event](plot3_di_per_event.png)
-- [Legacy: Spatial DI map](plot4_spatial_di_map.png)
+- [LEGACY (not primary): PSS vs MSS scatter](plot1_pss_vs_mss_scatter.png)
+- [LEGACY (not primary): DI by income group](plot2_di_by_income_group.png)
+- [LEGACY (not primary): DI per event](plot3_di_per_event.png)
+- [LEGACY (not primary): Spatial DI map](plot4_spatial_di_map.png)
 
 ## Output files
 
-- `data/expected_coverage.csv`
+- `data/expected_coverage.csv` (primary)
 - `data/state_expected_coverage.csv`
-- `data/di_results.csv` (legacy)
+- `data/di_results.csv` (legacy; only if `LEGACY_DI=1`)
 - `data/events_quarantine.csv`
 - `outputs/pipeline_result.md`

@@ -143,7 +143,7 @@ def plot_pss_mss_scatter():
 
     ax.set_xlabel('Physical Severity Score (PSS)', labelpad=8)
     ax.set_ylabel('Media Salience Score (MSS)', labelpad=8)
-    ax.set_title('Actual Flood Damage vs Media Coverage\n'
+    ax.set_title('LEGACY (not primary): Flood Damage vs Media Coverage\n'
                  'Points above diagonal = overcovered; below = undercovered')
     ax.legend(framealpha=0.9)
     ax.set_xlim(left=-0.02)
@@ -192,7 +192,7 @@ def plot_di_by_income():
 
     ax.set_xlabel('Income Group', labelpad=8)
     ax.set_ylabel('Mean Discrepancy Index (DI)', labelpad=8)
-    ax.set_title('Media Coverage Bias by Economic Group\n'
+    ax.set_title('LEGACY (not primary): DI by Economic Group\n'
                  'Positive DI = over-reported; negative DI = under-reported')
     ax.grid(axis='y', alpha=0.3, zorder=0)
     plt.tight_layout()
@@ -230,7 +230,7 @@ def plot_di_per_event():
                 va='center', fontsize=8.5)
 
     ax.set_xlabel('Discrepancy Index (DI)', labelpad=8)
-    ax.set_title('Discrepancy Index per Flood Event\n'
+    ax.set_title('LEGACY (not primary): Discrepancy Index per Flood Event\n'
                  'Red = under-reported  |  Green = over-reported')
 
     red_patch   = mpatches.Patch(color='#e74c3c', label='Under-reported (DI < 0)')
@@ -301,7 +301,7 @@ def plot_spatial_di_map():
             except:
                 pass
 
-    ax.set_title('Spatial Distribution of Discrepancy Index\n'
+    ax.set_title('LEGACY (not primary): Spatial Distribution of DI\n'
                  'Red = under-reported  |  Green = over-reported\n'
                  'Gray = no event in dataset',
                  pad=12)
@@ -362,7 +362,8 @@ def plot_log_ratio_histogram():
     ax.set_xlabel('log_ratio = ln((y+0.5)/(μ̂+0.5))', labelpad=8)
     ax.set_ylabel('Number of events', labelpad=8)
     ax.set_title('Residual Distribution (log ratio)\n'
-                 'Negative = under-covered vs model; positive = over-covered')
+                 'Primary continuous metric; under_flag = log_ratio<0; '
+                 'severity_tier low = bottom tertile')
     ax.grid(axis='y', alpha=0.3)
     plt.tight_layout()
     out = 'outputs/plot6_log_ratio_histogram.png'
@@ -388,7 +389,8 @@ def plot_log_ratio_ranking():
     ax.axvline(0, color='black', linestyle='--', linewidth=0.9, alpha=0.5)
     ax.set_xlabel('log_ratio', labelpad=8)
     ax.set_title('Coverage Imbalance Ranking (extremes)\n'
-                 'Red = under-covered  |  Green = over-covered\n'
+                 'Primary = continuous log_ratio; under = log_ratio<0; '
+                 'red tail ≈ severity_tier low (tertile)\n'
                  'Not ground-truth media bias — GDELT vs sparse severity model')
     ax.grid(axis='x', alpha=0.3, zorder=0)
     plt.tight_layout()
@@ -424,9 +426,10 @@ def plot_log_ratio_by_income():
     ax.set_xlabel('Income Group', labelpad=8)
     ax.set_ylabel('Mean log_ratio', labelpad=8)
     ax.set_title('log_ratio by Income Group\n'
-                 'Inference uses cluster-robust SE by state in '
-                 'compute_expected_coverage.py\n'
-                 'If income CIs cover 0 → no detectable gradient')
+                 'Primary = continuous log_ratio; under_flag = log_ratio<0; '
+                 'severity_tier low = bottom tertile\n'
+                 'Cluster-robust SE by state in compute_expected_coverage.py; '
+                 'CI covering 0 → no detectable gradient')
     ax.grid(axis='y', alpha=0.3, zorder=0)
     plt.tight_layout()
     out = 'outputs/plot8_log_ratio_by_income.png'
@@ -478,10 +481,10 @@ def refresh_pipeline_result_figures(md_path='outputs/pipeline_result.md'):
         ('plot6_log_ratio_histogram.png', 'log_ratio residual histogram'),
         ('plot7_log_ratio_ranking.png', 'Coverage imbalance ranking (extremes)'),
         ('plot8_log_ratio_by_income.png', 'log_ratio by income group'),
-        ('plot1_pss_vs_mss_scatter.png', 'Legacy: PSS vs MSS scatter'),
-        ('plot2_di_by_income_group.png', 'Legacy: DI by income group'),
-        ('plot3_di_per_event.png', 'Legacy: DI per event'),
-        ('plot4_spatial_di_map.png', 'Legacy: Spatial DI map'),
+        ('plot1_pss_vs_mss_scatter.png', 'LEGACY (not primary): PSS vs MSS scatter'),
+        ('plot2_di_by_income_group.png', 'LEGACY (not primary): DI by income group'),
+        ('plot3_di_per_event.png', 'LEGACY (not primary): DI per event'),
+        ('plot4_spatial_di_map.png', 'LEGACY (not primary): Spatial DI map'),
     ]:
         if os.path.exists(os.path.join('outputs', fname)):
             plot_links.append(f'- [{label}]({fname})')
