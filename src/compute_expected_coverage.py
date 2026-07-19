@@ -5,9 +5,11 @@ Primary model (no GDELT volume offset):
     n_articles ~ NegBin(
         log1p(physical_severity),   # pop_exposed OR flood_area via AIC
         log1p(total_deaths),
-        C(onset_year),
-        monsoon_flag
+        C(onset_year)
     )
+
+Branch note (feat/expected-coverage-no-monsoon):
+    monsoon_flag is retained as a metadata column but is NOT a NegBin regressor.
 
 Discrepancy (continuous, primary):
     log_ratio = ln( (y + 0.5) / (mu_hat + 0.5) )
@@ -158,7 +160,8 @@ def design_matrix(df: pd.DataFrame, severity_col: str, include_deaths: bool) -> 
     if include_deaths:
         # Option C: fill missing deaths with 0; do not add deaths_missing flag
         X["log1p_deaths"] = np.log1p(df["total_deaths"].astype(float))
-    X["monsoon_flag"] = df["monsoon_flag"].astype(float)
+    # monsoon_flag excluded from NegBin (sensitivity: feat/expected-coverage-no-monsoon)
+    # deaths_missing excluded from NegBin (option C; metadata only)
     year_dummies = pd.get_dummies(df["onset_year"], prefix="year", drop_first=True)
     X = pd.concat([X, year_dummies.astype(float)], axis=1)
     return sm.add_constant(X, has_constant="add")
@@ -353,6 +356,7 @@ Generated: `{generated}`
 | --- | --- |
 | Primary metric | `log_ratio = ln((y+0.5)/(μ̂+0.5))` |
 | Model | Sparse Negative-Binomial (cluster-robust SE by state) |
+| Monsoon flag | **Excluded** from NegBin (metadata only; sensitivity branch) |
 | GDELT volume offset | **None** (primary) |
 | Media window (design) | onset + {MEDIA_WINDOW_DAYS} days |
 | Outcome (interim) | `mss_results.total_articles` as `n_articles_0_14` proxy |
@@ -456,7 +460,7 @@ def main() -> None:
     print("=" * 60)
     print(f"Media window (design): onset + {MEDIA_WINDOW_DAYS}d "
           "(interim outcome = total_articles from MSS)")
-    print("Primary model: NO GDELT volume offset")
+    print("Primary model: NO GDELT volume offset; monsoon_flag EXCLUDED from NegBin")
 
     df = build_analysis_frame()
 
