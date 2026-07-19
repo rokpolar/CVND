@@ -14,17 +14,22 @@ print("=" * 55)
 print("CP-07: COMPUTE PHYSICAL SEVERITY SCORE (PSS)")
 print("=" * 55)
 print(f"\nEvents loaded: {len(df)}")
+print("Normalization: MinMax(log1p(x)) for area and population")
 
-# ── Normalize area and population to [0, 1] ───────────────────────────────────
+# ── log1p then MinMax to [0, 1] ───────────────────────────────────────────────
+# Raw MinMax compresses most events near 0 after district-scale floods;
+# log1p reduces right-skew before scaling.
 scaler = MinMaxScaler()
-df['area_norm'] = scaler.fit_transform(df[['affected_area_km2']]).round(4)
-df['pop_norm']  = scaler.fit_transform(df[['population_exposed']]).round(4)
+df['area_log'] = np.log1p(df['affected_area_km2'].astype(float))
+df['pop_log'] = np.log1p(df['population_exposed'].astype(float))
+df['area_norm'] = scaler.fit_transform(df[['area_log']]).round(4)
+df['pop_norm'] = scaler.fit_transform(df[['pop_log']]).round(4)
 
-print("\nNormalized values:")
-print(df[['event_id', 'state', 'affected_area_km2', 'area_norm',
-          'population_exposed', 'pop_norm']].to_string(index=False))
+print("\nNormalized values (after log1p + MinMax):")
+print(df[['event_id', 'state', 'affected_area_km2', 'area_log', 'area_norm',
+          'population_exposed', 'pop_log', 'pop_norm']].to_string(index=False))
 
-# ── PSS with primary weights (0.6 area, 0.4 population) ──────────────────────
+# ── PSS with primary weights ─────────────────────────────────────────────────
 W_AREA = 0.5
 W_POP  = 0.5
 
