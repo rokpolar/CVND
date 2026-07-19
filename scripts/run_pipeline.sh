@@ -27,8 +27,8 @@ setup_environment() {
 
 setup_environment
 
-SKIP_GEE="${SKIP_GEE:-0}"
-SKIP_ARTICLES="${SKIP_ARTICLES:-0}"
+SKIP_GEE="${SKIP_GEE:-1}"
+SKIP_ARTICLES="${SKIP_ARTICLES:-1}"
 LEGACY_DI="${LEGACY_DI:-0}"
 
 STEPS=(
