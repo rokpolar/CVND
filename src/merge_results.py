@@ -33,6 +33,7 @@ PX_KM2 = (10 / 1000) ** 2           # 1e-4 km2 per pixel
 FLOOD_MIN_PX = 205                  # a patch is an "NDWI flood" patch if >= 5% (205/4096) is new water
 MIN_POS = 20                        # need this many NDWI-flood (and non-flood) patches to calibrate
 J_MIN = 0.15                        # min Youden's J (TPR-FPR) for SITS to be considered reliable
+OVER_CAP_RATIO = 0.40               # SITS covering > this frac of the district = over-capture -> fall back
 DISTRICT_CSV = 'data/district_area.csv'   # event_id,district_km2  (from district_area.py)
 
 
@@ -129,8 +130,25 @@ def main():
             sits_area = float((scores > thr).sum()) * PATCH_KM2
             ndwi_area = float(ndwi_flood.sum()) * PX_KM2    # NDWI from district-tiled patches
             optical = True
+            # --- previous logic (no over-capture guard) -------------------------------
+            # if method == 'ndwi-calib':                    # SITS separates well -> trust AI
+            #     combined, source = sits_area, 'SITS'
+            # else:                                         # SITS unreliable -> optical NDWI
+            #     combined, source = ndwi_area, 'NDWI'
+            # --------------------------------------------------------------------------
             if method == 'ndwi-calib':                      # SITS separates well -> trust AI
                 combined, source = sits_area, 'SITS'
+                # guard: SITS can still blow up (chronic-wet / seasonal change read as flood).
+                # If it floods an implausible fraction of the district, drop it and fall back
+                # to NDWI (optical, same clear scenes), then S1 (radar).
+                dk = da.get(ev)
+                if dk and dk > 0 and sits_area / dk > OVER_CAP_RATIO:
+                    if ndwi_area is not None and ndwi_area / dk <= OVER_CAP_RATIO:
+                        combined, source = ndwi_area, 'NDWI(sits-overcap)'
+                    elif s1_area is not None and pd.notna(s1_area):
+                        combined, source = float(s1_area), 'S1(sits-overcap)'
+                    else:
+                        combined, source = ndwi_area, 'NDWI(sits-overcap)'
             else:                                           # SITS unreliable -> optical NDWI
                 combined, source = ndwi_area, 'NDWI'
         else:
