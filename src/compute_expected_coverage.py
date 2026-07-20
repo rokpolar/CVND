@@ -33,6 +33,7 @@ Notes:
 
 from __future__ import annotations
 
+import json
 import os
 import warnings
 
@@ -45,6 +46,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 QUARANTINE_PATH = "data/events_quarantine.csv"
 EMDAT_PATH = "data/emdat_raw.xlsx"
+MSS_WEIGHT_META_PATH = "data/mss_weight_sensitivity.json"
 MEDIA_WINDOW_DAYS = 14
 MONSOON_MONTHS = {6, 7, 8, 9}
 
@@ -288,6 +290,58 @@ def _md_table(df: pd.DataFrame, cols: list[str], float_cols: dict[str, str] | No
     return "\n".join(lines)
 
 
+def format_mss_weight_section() -> str:
+    """Legacy MSS weight sensitivity block (from compute_mss.py / EWM)."""
+    if not os.path.exists(MSS_WEIGHT_META_PATH):
+        return ""
+
+    with open(MSS_WEIGHT_META_PATH, encoding="utf-8") as f:
+        meta = json.load(f)
+
+    feats = meta.get("features", ["S_vol", "S_sov", "S_TTFR", "S_CD"])
+    w = meta.get("weights", {})
+    sens = meta.get("sensitivity_vs_fixed", {})
+    n_events = meta.get("n_events", "n/a")
+
+    def _row(label: str, key: str) -> str:
+        vals = w.get(key, [])
+        if len(vals) != len(feats):
+            return ""
+        cells = " | ".join(f"{v:.4f}" for v in vals)
+        return f"| {label} | {cells} |"
+
+    weight_rows = "\n".join(
+        r for r in [_row("Fixed (primary)", "fixed"), _row("EWM", "ewm"), _row("PCA loadings", "pca")]
+        if r
+    )
+
+    ewm = sens.get("ewm", {})
+    pca = sens.get("pca", {})
+    pca_ev = meta.get("pca_explained_variance")
+    pca_ev_str = f"{pca_ev:.4f}" if pca_ev is not None else "n/a"
+
+    return f"""## Legacy MSS weight sensitivity (CP-09)
+
+Primary `MSS` in `data/mss_results.csv` uses **fixed** weights (0.3/0.3/0.2/0.2).
+Entropy Weight Method (EWM) and PCA loadings are computed on the same scaled
+components for sensitivity only (`MSS_ewm`, `MSS_pca` columns).
+
+| Scheme | {' | '.join(feats)} |
+| --- | {' | '.join('---' for _ in feats)} |
+{weight_rows}
+
+| vs fixed MSS | Pearson r | max rank shift | mean rank shift |
+| --- | --- | --- | --- |
+| EWM | {ewm.get('pearson_r', float('nan')):.4f} | {ewm.get('max_rank_shift', float('nan')):.0f} | {ewm.get('mean_rank_shift', float('nan')):.2f} |
+| PCA | {pca.get('pearson_r', float('nan')):.4f} | {pca.get('max_rank_shift', float('nan')):.0f} | {pca.get('mean_rank_shift', float('nan')):.2f} |
+
+- MSS events: {n_events}
+- PCA PC1 explained variance: {pca_ev_str}
+- Primary coverage metric remains NegBin `log_ratio` (not MSS).
+
+"""
+
+
 def write_markdown_report(
     out: pd.DataFrame,
     state_agg: pd.DataFrame,
@@ -369,7 +423,7 @@ Generated: `{generated}`
 | over_flag (log_ratio &gt; 0) | {n_over} ({n_over / len(out):.1%}) |
 | severity_tier | Tertiles (low ≤ P33, high ≥ P67; exploratory only) |
 
-## Absolute under-coverage (`under_flag`)
+{format_mss_weight_section()}## Absolute under-coverage (`under_flag`)
 
 {_md_table(
     under_by_income,

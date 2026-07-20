@@ -1,6 +1,6 @@
 # CVND Pipeline Results — Expected Coverage
 
-Generated: `2026-07-20 11:48:10`
+Generated: `2026-07-20 11:59:57`
 
 ## Analysis standard (hybrid)
 
@@ -29,6 +29,27 @@ Generated: `2026-07-20 11:48:10`
 | over_flag (log_ratio &gt; 0) | 50 (37.9%) |
 | severity_tier | Tertiles (low ≤ P33, high ≥ P67; exploratory only) |
 
+## Legacy MSS weight sensitivity (CP-09)
+
+Primary `MSS` in `data/mss_results.csv` uses **fixed** weights (0.3/0.3/0.2/0.2).
+Entropy Weight Method (EWM) and PCA loadings are computed on the same scaled
+components for sensitivity only (`MSS_ewm`, `MSS_pca` columns).
+
+| Scheme | S_vol | S_sov | S_TTFR | S_CD |
+| --- | --- | --- | --- | --- |
+| Fixed (primary) | 0.3000 | 0.3000 | 0.2000 | 0.2000 |
+| EWM | 0.0356 | 0.6364 | 0.0169 | 0.3111 |
+| PCA loadings | 0.2619 | 0.2314 | 0.0623 | 0.4443 |
+
+| vs fixed MSS | Pearson r | max rank shift | mean rank shift |
+| --- | --- | --- | --- |
+| EWM | 0.9413 | 48 | 4.65 |
+| PCA | 0.9465 | 46 | 7.68 |
+
+- MSS events: 167
+- PCA PC1 explained variance: 0.5936
+- Primary coverage metric remains NegBin `log_ratio` (not MSS).
+
 ## Absolute under-coverage (`under_flag`)
 
 | income_group | n_under | n | share |
@@ -53,7 +74,7 @@ Generated: `2026-07-20 11:48:10`
 Model:              GLM              AIC:            2459.4780
 Link Function:      Log              BIC:            -431.7218
 Dependent Variable: n_articles_0_14  Log-Likelihood: -1216.7  
-Date:               2026-07-20 11:48 LL-Null:        -1259.3  
+Date:               2026-07-20 11:59 LL-Null:        -1259.3  
 No. Observations:   132              Deviance:       149.33   
 Df Model:           12               Pearson chi2:   153.     
 Df Residuals:       119              Scale:          1.0000   

@@ -1,10 +1,63 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
 import os
 import json
 import warnings
 warnings.filterwarnings('ignore')
+
+MSS_WEIGHT_META_PATH = "data/mss_weight_sensitivity.json"
+MSS_FEATURES = ['S_vol', 'S_sov', 'S_TTFR', 'S_CD']
+W_FIXED = np.array([0.3, 0.3, 0.2, 0.2])
+
+
+def entropy_weights(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    """Shannon entropy weight method (EWM) for positive indicators in [0, 1]."""
+    X = np.asarray(X, dtype=float)
+    n, _m = X.shape
+    if n < 2:
+        return np.ones(_m) / _m
+
+    col_sum = X.sum(axis=0)
+    zero_cols = col_sum <= eps
+    P = np.zeros_like(X)
+    for j in range(X.shape[1]):
+        if zero_cols[j]:
+            P[:, j] = 1.0 / n
+        else:
+            P[:, j] = X[:, j] / col_sum[j]
+
+    P = np.clip(P, eps, None)
+    k = 1.0 / np.log(n)
+    entropy = -k * np.sum(P * np.log(P), axis=0)
+    diversity = 1.0 - entropy
+    if diversity.sum() <= eps:
+        return np.ones(_m) / _m
+    diversity[zero_cols] = 0.0
+    if diversity.sum() <= eps:
+        return np.ones(_m) / _m
+    return diversity / diversity.sum()
+
+
+def pca_loadings_weights(X: np.ndarray) -> tuple[np.ndarray, float]:
+    """First-component absolute loadings, normalized to sum to 1."""
+    pca = PCA(n_components=1, random_state=42)
+    pca.fit(X)
+    loadings = np.abs(pca.components_[0])
+    weights = loadings / loadings.sum()
+    return weights, float(pca.explained_variance_ratio_[0])
+
+
+def weighted_mss(frame: pd.DataFrame, weights: np.ndarray) -> pd.Series:
+    return (frame[MSS_FEATURES].values @ weights).round(4)
+
+
+def rank_shift(base: pd.Series, alt: pd.Series) -> tuple[float, float]:
+    rb = base.rank(ascending=False, method='average')
+    ra = alt.rank(ascending=False, method='average')
+    diff = (rb - ra).abs()
+    return float(diff.max()), float(diff.mean())
 
 print("=" * 60)
 print("CP-09: COMPUTE MEDIA SALIENCE SCORE (MSS)")
@@ -129,24 +182,64 @@ df['S_TTFR']     = df['S_TTFR_g03']  # primary
 # Use coverage_days as CD_e (all days with ≥1 article)
 df['S_CD'] = scaler.fit_transform(df[['coverage_days']]).round(4)
 
-# ── Step 5: Compute MSS with your weights ─────────────────────────────────────
+# ── Step 5: Compute MSS (fixed weights primary) + EWM/PCA sensitivity ────────
 # MSS = w_vol·S_vol + w_sov·S_sov + w_TTFR·S_TTFR + w_CD·S_CD
-# w_vol=0.3, w_sov=0.3, w_TTFR=0.2, w_CD=0.2
+# Primary: w_vol=0.3, w_sov=0.3, w_TTFR=0.2, w_CD=0.2
 
-W_VOL  = 0.3
-W_SOV  = 0.3
-W_TTFR = 0.2
-W_CD   = 0.2
+W_VOL, W_SOV, W_TTFR, W_CD = W_FIXED
+df['MSS'] = weighted_mss(df, W_FIXED)
 
-df['MSS'] = (
-    W_VOL  * df['S_vol']  +
-    W_SOV  * df['S_sov']  +
-    W_TTFR * df['S_TTFR'] +
-    W_CD   * df['S_CD']
-).round(4)
+print("\n[Step 5] Weight sensitivity — fixed vs Entropy (EWM) vs PCA loadings...")
+X = df[MSS_FEATURES].values
+w_ewm = entropy_weights(X)
+w_pca, pca_ev = pca_loadings_weights(X)
+
+df['MSS_ewm'] = weighted_mss(df, w_ewm)
+df['MSS_pca'] = weighted_mss(df, w_pca)
+
+print("  Fixed weights : "
+      f"S_vol={W_VOL:.4f}, S_sov={W_SOV:.4f}, S_TTFR={W_TTFR:.4f}, S_CD={W_CD:.4f}")
+print("  EWM weights   : "
+      f"S_vol={w_ewm[0]:.4f}, S_sov={w_ewm[1]:.4f}, S_TTFR={w_ewm[2]:.4f}, S_CD={w_ewm[3]:.4f}")
+print("  PCA weights   : "
+      f"S_vol={w_pca[0]:.4f}, S_sov={w_pca[1]:.4f}, S_TTFR={w_pca[2]:.4f}, S_CD={w_pca[3]:.4f} "
+      f"(PC1 EV={pca_ev:.4f})")
+
+for label, col in [('EWM', 'MSS_ewm'), ('PCA', 'MSS_pca')]:
+    corr = df['MSS'].corr(df[col])
+    max_s, mean_s = rank_shift(df['MSS'], df[col])
+    print(f"  vs {label:3s}: Pearson r={corr:.4f}, max rank shift={max_s:.0f}, mean rank shift={mean_s:.2f}")
+
+weight_meta = {
+    "primary": "fixed",
+    "features": MSS_FEATURES,
+    "weights": {
+        "fixed": W_FIXED.tolist(),
+        "ewm": w_ewm.tolist(),
+        "pca": w_pca.tolist(),
+    },
+    "pca_explained_variance": pca_ev,
+    "sensitivity_vs_fixed": {
+        "ewm": {
+            "pearson_r": float(df['MSS'].corr(df['MSS_ewm'])),
+            "max_rank_shift": float(rank_shift(df['MSS'], df['MSS_ewm'])[0]),
+            "mean_rank_shift": float(rank_shift(df['MSS'], df['MSS_ewm'])[1]),
+        },
+        "pca": {
+            "pearson_r": float(df['MSS'].corr(df['MSS_pca'])),
+            "max_rank_shift": float(rank_shift(df['MSS'], df['MSS_pca'])[0]),
+            "mean_rank_shift": float(rank_shift(df['MSS'], df['MSS_pca'])[1]),
+        },
+    },
+    "n_events": int(len(df)),
+}
+os.makedirs("data", exist_ok=True)
+with open(MSS_WEIGHT_META_PATH, "w", encoding="utf-8") as f:
+    json.dump(weight_meta, f, indent=2)
+print(f"  SAVED: {MSS_WEIGHT_META_PATH}")
 
 # ── Step 6: Sensitivity analysis on γ ────────────────────────────────────────
-print("\n[Step 5] Sensitivity analysis on γ (TTFR decay constant)...")
+print("\n[Step 6] Sensitivity analysis on γ (TTFR decay constant)...")
 for g_label, g_col in [('γ=0.1', 'S_TTFR_g01'),
                         ('γ=0.3', 'S_TTFR_g03'),
                         ('γ=0.5', 'S_TTFR_g05')]:
@@ -165,7 +258,7 @@ print("=" * 60)
 result = df[['event_id', 'state', 'income_group',
              'total_articles', 'indic_articles', 'en_articles',
              'indic_share', 'coverage_days', 't_first_days',
-             'S_vol', 'S_sov', 'S_TTFR', 'S_CD', 'MSS']].copy()
+             'S_vol', 'S_sov', 'S_TTFR', 'S_CD', 'MSS', 'MSS_ewm', 'MSS_pca']].copy()
 
 print(result.sort_values('MSS', ascending=False).to_string(index=False))
 
