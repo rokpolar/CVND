@@ -1,5 +1,5 @@
 {
-  "primary": "fixed",
+  "primary": "ahp",
   "features": [
     "S_vol",
     "S_sov",
@@ -7,37 +7,49 @@
     "S_CD"
   ],
   "weights": {
-    "fixed": [
-      0.3,
-      0.3,
+    "ahp": [
+      0.375,
+      0.375,
+      0.125,
+      0.125
+    ],
+    "entropy": [
+      0.03562234759937489,
+      0.6363882540630993,
+      0.016903736000790353,
+      0.3110856623367355
+    ],
+    "equal": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+    ],
+    "vol_heavy": [
+      0.4,
+      0.4,
+      0.1,
+      0.1
+    ],
+    "time_heavy": [
       0.2,
-      0.2
-    ],
-    "ewm": [
-      0.035626062335272705,
-      0.6363503362475558,
-      0.016905498740170572,
-      0.3111181026770009
-    ],
-    "pca": [
-      0.2618975612047571,
-      0.2314246902845666,
-      0.06233657979207041,
-      0.44434116871860585
+      0.2,
+      0.3,
+      0.3
     ]
   },
-  "pca_explained_variance": 0.5936107257486725,
-  "sensitivity_vs_fixed": {
-    "ewm": {
-      "pearson_r": 0.9413287871469266,
-      "max_rank_shift": 48.0,
-      "mean_rank_shift": 4.6467065868263475
-    },
-    "pca": {
-      "pearson_r": 0.9465090845831216,
-      "max_rank_shift": 46.0,
-      "mean_rank_shift": 7.676646706586826
+  "ahp_cr": 0.0,
+  "ahp_lambda_max": 4.0,
+  "sensitivity_vs_primary": {
+    "entropy": {
+      "pearson_r": 0.9381216005232704,
+      "max_rank_shift": 65.5,
+      "mean_rank_shift": 8.688622754491018
     }
+  },
+  "rank_stability": {
+    "max_rank_shift_all_configs": 67,
+    "n_unstable_events": 112
   },
   "n_events": 167
 }
