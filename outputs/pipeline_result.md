@@ -1,13 +1,12 @@
 # CVND Pipeline Results — Expected Coverage
 
-Generated: `2026-07-20 00:53:14`
+Generated: `2026-07-20 01:07:38`
 
 ## Analysis standard (hybrid)
 
 - **Primary metric:** continuous `log_ratio = ln((y+0.5)/(μ̂+0.5))` rankings
 - **Binary under-coverage:** `under_flag` when `log_ratio < 0` (observed &lt; expected)
 - **Severe-neglect exploration pool:** `severity_tier == low` (bottom tertile ≤ P33)
-- **Legacy Min-Max DI:** not primary (opt-in via `LEGACY_DI=1` only)
 
 ## Summary
 
@@ -54,7 +53,7 @@ Generated: `2026-07-20 00:53:14`
 Model:              GLM              AIC:            2573.2640
 Link Function:      Log              BIC:            -457.6638
 Dependent Variable: n_articles_0_14  Log-Likelihood: -1273.6  
-Date:               2026-07-20 00:53 LL-Null:        -1309.5  
+Date:               2026-07-20 01:07 LL-Null:        -1309.5  
 No. Observations:   138              Deviance:       158.24   
 Df Model:           12               Pearson chi2:   156.     
 Df Residuals:       125              Scale:          1.0000   
@@ -180,15 +179,10 @@ R² = 0.1224
 - [log_ratio residual histogram](plot6_log_ratio_histogram.png)
 - [Coverage imbalance ranking (extremes)](plot7_log_ratio_ranking.png)
 - [log_ratio by income group](plot8_log_ratio_by_income.png)
-- [LEGACY (not primary): PSS vs MSS scatter](plot1_pss_vs_mss_scatter.png)
-- [LEGACY (not primary): DI by income group](plot2_di_by_income_group.png)
-- [LEGACY (not primary): DI per event](plot3_di_per_event.png)
-- [LEGACY (not primary): Spatial DI map](plot4_spatial_di_map.png)
 
 ## Output files
 
 - `data/expected_coverage.csv` (primary)
 - `data/state_expected_coverage.csv`
-- `data/di_results.csv` (legacy; only if `LEGACY_DI=1`)
 - `data/events_quarantine.csv`
 - `outputs/pipeline_result.md`

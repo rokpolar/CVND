@@ -29,7 +29,6 @@ setup_environment
 
 SKIP_GEE="${SKIP_GEE:-1}"
 SKIP_ARTICLES="${SKIP_ARTICLES:-1}"
-LEGACY_DI="${LEGACY_DI:-0}"
 
 STEPS=(
   "src/build_covariates.py"
@@ -60,13 +59,6 @@ else
 fi
 
 STEPS+=("src/compute_mss.py")
-
-if [[ "$LEGACY_DI" == "1" ]]; then
-  echo "NOTE: LEGACY_DI=1 — running demoted Min-Max DI (not primary)"
-  STEPS+=("src/compute_di.py")
-else
-  echo "NOTE: LEGACY_DI=0 — skipping legacy DI; primary metric is expected_coverage log_ratio"
-fi
 
 STEPS+=(
   "src/compute_expected_coverage.py"

@@ -29,7 +29,6 @@ Notes:
 - Does not impute missing article counts as zero.
 - Interim outcome: mss_results.total_articles (fixed 0–14 window not yet
   re-extracted; treated as GDELT-monitored volume proxy).
-- Legacy Min-Max DI is not primary (opt-in via LEGACY_DI=1 in run_pipeline.sh).
 """
 
 from __future__ import annotations
@@ -348,7 +347,6 @@ Generated: `{generated}`
 - **Primary metric:** continuous `log_ratio = ln((y+0.5)/(μ̂+0.5))` rankings
 - **Binary under-coverage:** `under_flag` when `log_ratio < 0` (observed &lt; expected)
 - **Severe-neglect exploration pool:** `severity_tier == low` (bottom tertile ≤ P33)
-- **Legacy Min-Max DI:** not primary (opt-in via `LEGACY_DI=1` only)
 
 ## Summary
 
@@ -444,7 +442,6 @@ R² = {income_summary["r2"]:.4f}
 
 - `data/expected_coverage.csv` (primary)
 - `data/state_expected_coverage.csv`
-- `data/di_results.csv` (legacy; only if `LEGACY_DI=1`)
 - `data/events_quarantine.csv`
 - `{path}`
 """
