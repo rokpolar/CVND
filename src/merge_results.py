@@ -40,6 +40,8 @@ PX_KM2 = (10 / 1000) ** 2           # 1e-4 km2 per pixel
 FLOOD_MIN_PX = 205                  # a patch is an "NDWI flood" patch if >= 5% (205/4096) is new water
 MIN_POS = 20                        # need this many NDWI-flood (and non-flood) patches to calibrate
 J_MIN = 0.15                        # min Youden's J (SITS-NDWI agreement) to use the SITS+NDWI fusion
+CLOUD_MAX_PCT = 60                  # flood-date cloud over the district > this -> optical too blind, use S1
+POST_CLOUD_CSV = 'data/post_cloud.csv'    # event_id,cloud_pct  (from post_cloud.py)
 DISTRICT_CSV = 'data/district_area.csv'   # event_id,district_km2  (from district_area.py)
 
 
@@ -104,6 +106,14 @@ def main():
     else:
         print(f"WARN: {TRACK_A_CSV} missing -> no S1 / cloud routing (re-run Track A)")
 
+    # flood-date cloud fraction over the district (from post_cloud.py); optional
+    pcloud = {}
+    if os.path.exists(POST_CLOUD_CSV):
+        dfc = pd.read_csv(POST_CLOUD_CSV)
+        pcloud = dict(zip(dfc['event_id'], dfc['cloud_pct']))
+    else:
+        print(f"WARN: {POST_CLOUD_CSV} missing -> no cloud-fraction routing (run post_cloud.py)")
+
     # district area (for flood_ratio); optional
     da = {}
     if os.path.exists(DISTRICT_CSV):
@@ -151,6 +161,15 @@ def main():
                     combined, source = ndwi_full, 'SITS+NDWI(restored)'
             else:                           # gate failed -> SITS flags unreliable, use plain NDWI
                 combined, source = ndwi_full, 'NDWI'
+            # Cloud-fraction routing: patches only cover the CLEAR part of the district.
+            # If the flood-date S2 composite was mostly cloud (> CLOUD_MAX_PCT of the
+            # district unseen), the optical number misses most of the ground -> radar.
+            cl = pcloud.get(ev)
+            if cl is not None and cl >= CLOUD_MAX_PCT:
+                if s1_area is not None and pd.notna(s1_area):
+                    combined, source = float(s1_area), f'S1(cloud>{CLOUD_MAX_PCT})'
+                else:                       # too cloudy for optical AND no radar -> unmeasurable
+                    combined, source = None, 'none'
         else:
             # 0 SITS patches = flood date too clouded for optical -> trust radar first.
             # (Track A's cloud-median can still report an NDWI, but with SITS blind it is
@@ -158,9 +177,11 @@ def main():
             thr, method, sits_area = None, 'no-sits', None
             ndwi_area = float(s2_area) if pd.notna(s2_area) else None   # Track A NDWI, if any
             optical = False
+            cl = pcloud.get(ev)
+            too_cloudy = cl is not None and cl >= CLOUD_MAX_PCT
             if s1_area is not None and pd.notna(s1_area):    # cloud-blind -> radar
                 combined, source = float(s1_area), 'S1(cloud)'
-            elif ndwi_area is not None:                      # no S1 -> best optical guess
+            elif ndwi_area is not None and not too_cloudy:   # no S1, but optical mostly saw it
                 combined, source = ndwi_area, 'NDWI(no-S1)'
                 optical = optical_ok
             else:
@@ -177,6 +198,7 @@ def main():
             'ndwi_flood_km2': round(ndwi_area, 2) if ndwi_area is not None else None,   # full-district NDWI
             's1_flood_km2': round(float(s1_area), 2) if (s1_area is not None and pd.notna(s1_area)) else None,
             'optical_available': optical,
+            'cloud_pct': pcloud.get(ev),                    # flood-date cloud over district (QA)
             'combined_km2': round(combined, 2) if combined is not None else None,
             'district_km2': round(float(dist_km2), 1) if dist_km2 else None,
             'flood_ratio': ratio,
