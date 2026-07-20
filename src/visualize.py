@@ -250,7 +250,7 @@ def plot_coverage_map():
     for _, row in matched.iterrows():
         centroid = row.geometry.centroid
         ax.annotate(
-            f"{row['name']}\n{row['mean_log_ratio']:+.3f} (n={int(row['n_events'])})",
+            row['name'],
             xy=(centroid.x, centroid.y),
             fontsize=5.5, ha='center', va='center',
             fontweight='bold', color='#111',

@@ -1,6 +1,6 @@
 # CVND Pipeline Results — Expected Coverage
 
-Generated: `2026-07-20 14:49:31`
+Generated: `2026-07-20 14:57:09`
 
 ## Analysis standard (hybrid)
 
@@ -75,7 +75,7 @@ scaled components for robustness (`MSS_entropy` column).
 Model:              GLM              AIC:            -234.8026
 Link Function:      Identity         BIC:            -579.9818
 Dependent Variable: MSS              Log-Likelihood: 130.40   
-Date:               2026-07-20 14:49 LL-Null:        69.930   
+Date:               2026-07-20 14:57 LL-Null:        69.930   
 No. Observations:   132              Deviance:       1.0716   
 Df Model:           12               Pearson chi2:   1.07     
 Df Residuals:       119              Scale:          0.0090050
