@@ -1,41 +1,41 @@
 event_id,state,income_group,observed,expected,log_ratio,under_flag,severity_tier,rank_undercovered,bar_label,bar_color
-E127,Sikkim,Low,0.125,0.3372066996307791,-0.9918791869257328,True,low,1,Sikkim (E127),under
-E160,Uttarakhand,Low,0.2383,0.3778075822342906,-0.4606997390918118,True,low,2,Uttarakhand (E160),under
-E18,Arunachal Pradesh,Low,0.2295,0.3547563383635485,-0.4353743624586254,True,low,3,Arunachal Pradesh (E18),under
-E19,Arunachal Pradesh,Low,0.3383,0.5208296347810566,-0.4313863468983347,True,low,4,Arunachal Pradesh (E19),under
-E135,Telangana,High,0.3787,0.5277716217311391,-0.3318447521701343,True,low,5,Telangana (E135),under
-E28,Assam,Low,0.2839,0.3951987805328568,-0.3306676472210589,True,low,6,Assam (E28),under
-E104,Meghalaya,Low,0.2668,0.3688837231900488,-0.3238784760610741,True,low,7,Meghalaya (E104),under
-E102,Meghalaya,Low,0.3664,0.4977332047924551,-0.3062665694606894,True,low,8,Meghalaya (E102),under
-E123,Rajasthan,Low,0.3784,0.5061720585276626,-0.2908581169943171,True,low,9,Rajasthan (E123),under
-E69,Jharkhand,Low,0.3482,0.4649347027757826,-0.2890478550560876,True,low,10,Jharkhand (E69),under
-E159,Uttarakhand,Low,0.3267,0.4288194487584885,-0.2719207731803615,True,low,11,Uttarakhand (E159),under
-E155,Uttarakhand,Low,0.4814,0.6185352654663197,-0.250609635901153,True,low,12,Uttarakhand (E155),under
-E61,Himachal Pradesh,Low,0.3932,0.5042885080531507,-0.2487741409936745,True,low,13,Himachal Pradesh (E61),under
-E136,Tripura,Low,0.3308,0.418592812486174,-0.2353212916883646,True,low,14,Tripura (E136),under
-E103,Meghalaya,Low,0.3184,0.4004443033690405,-0.2292019055256554,True,low,15,Meghalaya (E103),under
-E66,Himachal Pradesh,Low,0.281,0.3519392496484948,-0.2250321961526496,True,low,16,Himachal Pradesh (E66),under
-E71,Jharkhand,Low,0.3475,0.426864289664344,-0.20564798557748,True,low,17,Jharkhand (E71),under
-E70,Jharkhand,Low,0.4461,0.5471597556405604,-0.2041562809072468,True,low,18,Jharkhand (E70),under
-E132,Tamil Nadu,Middle,0.4128,0.5042841020829992,-0.2001326522305497,True,low,19,Tamil Nadu (E132),under
-E15,Andhra Pradesh,Middle,0.4399,0.5338253474718794,-0.1934813035333341,True,low,20,Andhra Pradesh (E15),under
-E72,Karnataka,High,0.7067,0.6013779093984999,0.1613579315597489,False,high,113,Karnataka (E72),over
-E148,Uttar Pradesh,Low,0.6444,0.5430828413333537,0.1710288347534173,False,high,114,Uttar Pradesh (E148),over
-E53,Gujarat,High,0.6333,0.5322690560805956,0.1737651708343223,False,high,115,Gujarat (E53),over
-E140,Uttar Pradesh,Low,0.4557,0.3793793541707962,0.1832539241677796,False,high,116,Uttar Pradesh (E140),over
-E86,Madhya Pradesh,Low,0.6408,0.5320119085048157,0.1860196169575469,False,high,117,Madhya Pradesh (E86),over
-E83,Madhya Pradesh,Low,0.5212,0.4326682301294368,0.18612337236716,False,high,118,Madhya Pradesh (E83),over
-E97,Maharashtra,High,0.7361,0.5987395747667944,0.2065080804583963,False,high,119,Maharashtra (E97),over
-E145,Uttar Pradesh,Low,0.4454,0.3586041101864667,0.2166994038755026,False,high,120,Uttar Pradesh (E145),over
-E13,Andhra Pradesh,Middle,0.665,0.5340694690186127,0.2192242589647299,False,high,121,Andhra Pradesh (E13),over
-E95,Maharashtra,High,0.72,0.5703169030333081,0.2330225889449457,False,high,122,Maharashtra (E95),over
-E92,Maharashtra,High,0.5838,0.4621520696044748,0.2336193877916643,False,high,123,Maharashtra (E92),over
-E05,Maharashtra,High,0.4715,0.3577679406819178,0.2759671310925313,False,high,124,Maharashtra (E05),over
-E42,Delhi,High,0.8797,0.6454810904657478,0.3095437822488223,False,high,125,Delhi (E42),over
-E06,Uttarakhand,Low,0.4678,0.3328845986374482,0.3401583592992998,False,high,126,Uttarakhand (E06),over
-E65,Himachal Pradesh,Low,0.4476,0.3109352558226065,0.364217096719105,False,high,127,Himachal Pradesh (E65),over
-E112,Odisha,Low,0.4366,0.289349408055418,0.4112659350353814,False,high,128,Odisha (E112),over
-E01,Kerala,Middle,0.8501,0.556231271837178,0.4241076864432018,False,high,129,Kerala (E01),over
-E88,Madhya Pradesh,Low,0.3819,0.2441106621677483,0.4473893862625206,False,high,130,Madhya Pradesh (E88),over
-E94,Maharashtra,High,0.9504,0.594255587722781,0.4695103891448808,False,high,131,Maharashtra (E94),over
-E120,Punjab,Middle,0.6272,0.3567682013832334,0.5640583652886417,False,high,132,Punjab (E120),over
+E127,Sikkim,Low,2.0,1615.5914110727313,-6.471475071864953,True,low,1,Sikkim (E127),under
+E18,Arunachal Pradesh,Low,33.0,1214.3796859399272,-3.590854888122681,True,low,2,Arunachal Pradesh (E18),under
+E104,Meghalaya,Low,81.0,1601.4906465159197,-2.978399268735179,True,low,3,Meghalaya (E104),under
+E28,Assam,Low,120.0,2175.4043782109875,-2.8935499102427027,True,low,4,Assam (E28),under
+E19,Arunachal Pradesh,Low,435.0,6229.4583102788165,-2.660630123697501,True,low,5,Arunachal Pradesh (E19),under
+E105,Meghalaya,Low,109.0,1538.050079672871,-2.642671195949361,True,low,6,Meghalaya (E105),under
+E103,Meghalaya,Low,170.0,2001.96391409665,-2.4633983616304307,True,low,7,Meghalaya (E103),under
+E159,Uttarakhand,Low,327.0,3273.4875263108256,-2.302275892925127,True,low,8,Uttarakhand (E159),under
+E106,Mizoram,Low,124.0,1170.6888408038665,-2.24146889925473,True,low,9,Mizoram (E106),under
+E136,Tripura,Low,360.0,2870.206450410706,-2.074821471707617,True,low,10,Tripura (E136),under
+E102,Meghalaya,Low,340.0,2683.8640823299247,-2.06478401245671,True,low,11,Meghalaya (E102),under
+E10,Odisha,Low,173.0,1245.646037464115,-1.9716332981198912,True,low,12,Odisha (E10),under
+E69,Jharkhand,Low,536.0,3728.870214335272,-1.938928092969716,True,low,13,Jharkhand (E69),under
+E135,Telangana,High,1002.0,6711.273722959601,-1.9013663760857091,True,low,14,Telangana (E135),under
+E70,Jharkhand,Low,951.0,5783.118065389581,-1.80474504196735,True,low,15,Jharkhand (E70),under
+E22,Arunachal Pradesh,Low,155.0,933.88791512311,-1.793245947069572,True,low,16,Arunachal Pradesh (E22),under
+E123,Rajasthan,Low,1024.0,6065.9155073908505,-1.778563215980195,True,low,17,Rajasthan (E123),under
+E153,Uttarakhand,Low,233.0,1308.8642869483974,-1.7241149441625594,True,low,18,Uttarakhand (E153),under
+E155,Uttarakhand,Low,2580.0,12079.497638475776,-1.5435678184095891,True,low,19,Uttarakhand (E155),under
+E57,Haryana,High,746.0,3248.9742057838416,-1.4708528624205426,True,low,20,Haryana (E57),under
+E72,Karnataka,High,18118.0,10348.241332502292,0.5600686138013222,False,high,113,Karnataka (E72),over
+E91,Maharashtra,High,7701.0,4314.363474817404,0.5793494307190461,False,high,114,Maharashtra (E91),over
+E144,Uttar Pradesh,Low,16660.0,9190.222641608332,0.5948460815449301,False,high,115,Uttar Pradesh (E144),over
+E96,Maharashtra,High,4766.0,2547.389283885259,0.6263469983499926,False,high,116,Maharashtra (E96),over
+E148,Uttar Pradesh,Low,11906.0,6300.743928152343,0.6363374066617745,False,high,117,Uttar Pradesh (E148),over
+E78,Kerala,Middle,8045.0,4181.990273954388,0.654206100455302,False,high,118,Kerala (E78),over
+E140,Uttar Pradesh,Low,3681.0,1812.775835069463,0.7081852147310203,False,high,119,Uttar Pradesh (E140),over
+E97,Maharashtra,High,20891.0,10133.571456993905,0.723439219439888,False,high,120,Maharashtra (E97),over
+E53,Gujarat,High,7654.0,3664.300426196832,0.736519830304906,False,high,121,Gujarat (E53),over
+E42,Delhi,High,33940.0,15444.942181363036,0.7872950361984928,False,high,122,Delhi (E42),over
+E86,Madhya Pradesh,Low,8173.0,3655.81467084146,0.8044414941160122,False,high,123,Madhya Pradesh (E86),over
+E95,Maharashtra,High,19382.0,8054.3607855388145,0.8780948636185036,False,high,124,Maharashtra (E95),over
+E112,Odisha,Low,1999.0,805.0404387546098,0.9091390236343824,False,high,125,Odisha (E112),over
+E05,Maharashtra,High,4504.0,1552.2928626327684,1.0650217406970464,False,high,126,Maharashtra (E05),over
+E92,Maharashtra,High,11788.0,3980.698583234647,1.0855415544663929,False,high,127,Maharashtra (E92),over
+E65,Himachal Pradesh,Low,2726.0,895.2858343728083,1.1130726540994986,False,high,128,Himachal Pradesh (E65),over
+E06,Uttarakhand,Low,4378.0,1240.3350693133011,1.260921604029576,False,high,129,Uttarakhand (E06),over
+E94,Maharashtra,High,39317.0,9704.607568449304,1.3990174120056469,False,high,130,Maharashtra (E94),over
+E01,Kerala,Middle,34918.0,8216.138986017746,1.4468555317490732,False,high,131,Kerala (E01),over
+E120,Punjab,Middle,13938.0,1923.1439812469016,1.980433501336068,False,high,132,Punjab (E120),over

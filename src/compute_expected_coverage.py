@@ -1,19 +1,16 @@
 """
-compute_expected_coverage.py  —  Gaussian expected coverage on AHP MSS
+compute_expected_coverage.py  —  Sparse Negative-Binomial expected coverage
 
 Primary model (no GDELT volume offset):
-    MSS ~ Gaussian(
-        physical_severity,            # PSS (linear) OR log1p(raw proxy) via AIC
+    n_articles ~ NegBin(
+        log1p(physical_severity),   # pop_exposed OR flood_area via AIC
         log1p(total_deaths),
         C(onset_year)
     )
     cluster-robust SE by state
 
-Branch note (feat/expected-coverage-no-monsoon):
-    monsoon_flag is retained as a metadata column but is NOT a regressor.
-
 Discrepancy (continuous, primary):
-    log_ratio = ln( (y + eps) / (mu_hat + eps) ), eps = 1e-4
+    log_ratio = ln( (y + 0.5) / (mu_hat + 0.5) )
 
 Hybrid labels:
     under_flag     = log_ratio < 0          # absolute under-coverage
@@ -22,15 +19,14 @@ Hybrid labels:
 
 Deaths (option C):
     Keep rows with missing EM-DAT deaths.
-    log1p_deaths = log1p(fillna(total_deaths, 0)) enters the GLM.
+    log1p_deaths = log1p(fillna(total_deaths, 0)) enters NegBin.
     deaths_missing is kept as metadata only (not a regressor).
 
 Notes:
 - Respects data/events_quarantine.csv (#17).
-- Outcome: `MSS` from `data/mss_results.csv` (AHP-weighted primary score).
-- Physical severity: `PSS` from `data/pss_results.csv` competes with raw
-  `population_exposed` / `adjusted_flood_area_km2` via AIC (no double-counting).
-- `total_articles` retained as metadata only (`n_articles_0_14` column).
+- Does not impute missing article counts as zero.
+- Outcome: `mss_results.total_articles` as `n_articles_0_14` proxy.
+- `MSS` / `PSS` retained as metadata when available.
 """
 
 from __future__ import annotations
@@ -51,13 +47,7 @@ EMDAT_PATH = "data/emdat_raw.xlsx"
 MSS_WEIGHT_META_PATH = "data/mss_weight_sensitivity.json"
 PSS_RESULTS_PATH = "data/pss_results.csv"
 MEDIA_WINDOW_DAYS = 14
-
-SEVERITY_PROXY_LABELS = {
-    "PSS": "PSS (linear)",
-    "population_exposed": "log1p(population_exposed)",
-    "adjusted_flood_area_km2": "log1p(flood_area_km2)",
-}
-LOG_RATIO_EPS = 1e-4
+LOG_RATIO_EPS = 0.5
 MONSOON_MONTHS = {6, 7, 8, 9}
 
 
@@ -122,9 +112,13 @@ def build_analysis_frame() -> pd.DataFrame:
     sev = pd.read_csv("data/severity_raw.csv")[
         ["event_id", "adjusted_flood_area_km2", "population_exposed"]
     ]
-    mss = pd.read_csv("data/mss_results.csv")[
-        ["event_id", "total_articles", "en_articles", "MSS", "MSS_entropy"]
-    ]
+    mss = pd.read_csv("data/mss_results.csv")
+    mss_cols = ["event_id", "total_articles", "en_articles"]
+    for optional in ("MSS", "MSS_entropy"):
+        if optional in mss.columns:
+            mss_cols.append(optional)
+    mss = mss[mss_cols]
+
     pss = pd.read_csv(PSS_RESULTS_PATH)[["event_id", "PSS"]]
 
     df = (
@@ -137,7 +131,7 @@ def build_analysis_frame() -> pd.DataFrame:
     df["onset_month"] = df["onset_date"].dt.month.astype(int)
     df["monsoon_flag"] = df["onset_month"].isin(MONSOON_MONTHS).astype(int)
     df["media_window_days"] = MEDIA_WINDOW_DAYS
-    df["n_articles_0_14"] = df["total_articles"]  # metadata only
+    df["n_articles_0_14"] = df["total_articles"]
     df["total_deaths"] = attach_deaths_from_emdat(df)
 
     quarantine_ids = load_quarantine_ids()
@@ -153,15 +147,14 @@ def build_analysis_frame() -> pd.DataFrame:
     # Never impute missing media as zero
     df = df.dropna(
         subset=[
-            "MSS",
-            "PSS",
+            "n_articles_0_14",
             "population_exposed",
             "adjusted_flood_area_km2",
             "onset_year",
             "monsoon_flag",
         ]
     )
-    print(f"Dropped {before - len(df)} rows with missing MSS/PSS/severity "
+    print(f"Dropped {before - len(df)} rows with missing media/severity "
           f"(no zero-imputation)")
     print(f"Analysis rows: {len(df)}")
     return df.reset_index(drop=True)
@@ -169,45 +162,49 @@ def build_analysis_frame() -> pd.DataFrame:
 
 def design_matrix(df: pd.DataFrame, severity_col: str, include_deaths: bool) -> pd.DataFrame:
     X = pd.DataFrame(index=df.index)
-    if severity_col == "PSS":
-        # PSS is already MinMax(log1p) composite on [0, 1]; use linear term
-        X["severity"] = df["PSS"].astype(float)
-    else:
-        X["log1p_severity"] = np.log1p(df[severity_col].astype(float))
+    X["log1p_severity"] = np.log1p(df[severity_col].astype(float))
     if include_deaths:
         # Option C: fill missing deaths with 0; do not add deaths_missing flag
         X["log1p_deaths"] = np.log1p(df["total_deaths"].astype(float))
-    # monsoon_flag excluded (sensitivity: feat/expected-coverage-no-monsoon)
-    # deaths_missing excluded (option C; metadata only)
+    # monsoon_flag excluded from NegBin (metadata only)
+    # deaths_missing excluded from NegBin (option C; metadata only)
     year_dummies = pd.get_dummies(df["onset_year"], prefix="year", drop_first=True)
     X = pd.concat([X, year_dummies.astype(float)], axis=1)
     return sm.add_constant(X, has_constant="add")
 
 
-def fit_gaussian_glm(
+def fit_negbin(
     y: pd.Series,
     X: pd.DataFrame,
     groups: pd.Series,
 ) -> GLMResultsWrapper:
-    model = sm.GLM(y, X, family=sm.families.Gaussian())
+    # Estimate dispersion via NB2 MLE, then GLM with cluster-robust SE
+    nb = sm.NegativeBinomial(y, X).fit(disp=False, maxiter=200)
+    alpha = float(nb.params.get("alpha", 1.0))
+    if not np.isfinite(alpha) or alpha <= 0:
+        alpha = 1.0
+    model = sm.GLM(y, X, family=sm.families.NegativeBinomial(alpha=alpha))
     return model.fit(cov_type="cluster", cov_kwds={"groups": groups})
 
 
 def choose_severity_proxy(df: pd.DataFrame, include_deaths: bool) -> str:
-    y = df["MSS"].astype(float)
+    y = df["n_articles_0_14"].astype(float)
     groups = df["state"]
-    candidates = SEVERITY_PROXY_LABELS
+    candidates = {
+        "population_exposed": "log1p(population_exposed)",
+        "adjusted_flood_area_km2": "log1p(flood_area_km2)",
+    }
     scores = {}
     for col, label in candidates.items():
         X = design_matrix(df, col, include_deaths=include_deaths)
         try:
-            res = fit_gaussian_glm(y, X, groups)
+            res = fit_negbin(y, X, groups)
             scores[col] = (float(res.aic), label, res)
             print(f"  Candidate {label}: AIC={res.aic:.1f}")
         except Exception as exc:
             print(f"  Candidate {label}: FAILED ({exc})")
     if not scores:
-        raise RuntimeError("No Gaussian GLM specification converged")
+        raise RuntimeError("No NegBin specification converged")
     best = min(scores, key=lambda k: scores[k][0])
     print(f"Selected severity proxy: {scores[best][1]} (lowest AIC)")
     return best
@@ -418,20 +415,19 @@ Generated: `{generated}`
 | Item | Value |
 | --- | --- |
 | Primary metric | `log_ratio = ln((y+{LOG_RATIO_EPS:g})/(μ̂+{LOG_RATIO_EPS:g}))` |
-| Model | Gaussian GLM (cluster-robust SE by state) |
-| Monsoon flag | **Excluded** from GLM (metadata only; sensitivity branch) |
+| Model | Sparse Negative-Binomial (cluster-robust SE by state) |
+| Monsoon flag | **Excluded** from NegBin (metadata only) |
 | GDELT volume offset | **None** (primary) |
 | Media window (design) | onset + {MEDIA_WINDOW_DAYS} days |
-| Outcome | `MSS` from `mss_results.csv` (AHP-weighted primary score) |
-| Article counts | `total_articles` retained as metadata (`n_articles_0_14`) |
-| Severity proxy (AIC) | `{SEVERITY_PROXY_LABELS.get(severity_col, severity_col)}` (`{severity_col}`) |
-| PSS definition | 0.5×MinMax(log1p area) + 0.5×MinMax(log1p pop) from `pss_results.csv` |
+| Outcome | `mss_results.total_articles` as `n_articles_0_14` proxy |
+| MSS / PSS | Retained as metadata when available |
+| Severity proxy (AIC) | `{severity_col}` |
 | Flood area source | `flood_combined.combined_km2` (district-level; via severity_raw) |
-| Deaths handling | Option C: `log1p(deaths)` with `fillna(0)`; `deaths_missing` metadata only (not in GLM) |
+| Deaths handling | Option C: `log1p(deaths)` with `fillna(0)`; `deaths_missing` metadata only (not in NegBin) |
 | Deaths missing (metadata) | {int(out['deaths_missing'].sum()) if 'deaths_missing' in out.columns else 'n/a'} / {len(out)} |
 | N events | {len(out)} |
-| GLM AIC | {float(result.aic):.1f} |
-| GLM log-likelihood | {float(result.llf):.1f} |
+| NegBin AIC | {float(result.aic):.1f} |
+| NegBin log-likelihood | {float(result.llf):.1f} |
 | under_flag (log_ratio &lt; 0) | {n_under} ({n_under / len(out):.1%}) |
 | over_flag (log_ratio &gt; 0) | {n_over} ({n_over / len(out):.1%}) |
 | severity_tier | Tertiles (low ≤ P33, high ≥ P67; exploratory only) |
@@ -482,7 +478,7 @@ R² = {income_summary["r2"]:.4f}
 {_md_table(
     under,
     ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "under_flag", "severity_tier"],
-    {"observed": "{:.4f}", "expected": "{:.4f}", "log_ratio": "{:.4f}"},
+    {"observed": "{:.0f}", "expected": "{:.1f}", "log_ratio": "{:.4f}"},
 )}
 
 ## Most over-covered (highest log_ratio)
@@ -490,7 +486,7 @@ R² = {income_summary["r2"]:.4f}
 {_md_table(
     over,
     ["event_id", "state", "income_group", "observed", "expected", "log_ratio", "under_flag", "severity_tier"],
-    {"observed": "{:.4f}", "expected": "{:.4f}", "log_ratio": "{:.4f}"},
+    {"observed": "{:.0f}", "expected": "{:.1f}", "log_ratio": "{:.4f}"},
 )}
 
 ## State-level mean log_ratio
@@ -520,11 +516,11 @@ R² = {income_summary["r2"]:.4f}
 
 def main() -> None:
     print("=" * 60)
-    print("EXPECTED COVERAGE — Gaussian GLM on AHP MSS")
+    print("EXPECTED COVERAGE — sparse Negative-Binomial")
     print("=" * 60)
-    print(f"Media window (design): onset + {MEDIA_WINDOW_DAYS}d")
-    print(f"Primary outcome: MSS (AHP-weighted); log_ratio eps={LOG_RATIO_EPS:g}")
-    print("Primary model: NO GDELT volume offset; monsoon_flag EXCLUDED from GLM")
+    print(f"Media window (design): onset + {MEDIA_WINDOW_DAYS}d "
+          "(interim outcome = total_articles from MSS)")
+    print("Primary model: NO GDELT volume offset; monsoon_flag EXCLUDED from NegBin")
 
     df = build_analysis_frame()
 
@@ -537,40 +533,41 @@ def main() -> None:
         f"Deaths handling (option C): keep all rows; "
         f"log1p_deaths uses fillna(0); "
         f"deaths_missing metadata only ({n_miss_deaths}/{len(df)} events); "
-        f"flag NOT in GLM"
+        f"flag NOT in NegBin"
     )
 
     severity_col = choose_severity_proxy(df, include_deaths=include_deaths)
-    y = df["MSS"].astype(float)
+    y = df["n_articles_0_14"].astype(float)
     X = design_matrix(df, severity_col, include_deaths=include_deaths)
-    result = fit_gaussian_glm(y, X, df["state"])
+    result = fit_negbin(y, X, df["state"])
 
-    print("\n[Primary Gaussian GLM / cluster-robust by state]")
+    print("\n[Primary NegBin / GLM cluster-robust by state]")
     print(result.summary2())
 
     mu = np.asarray(result.fittedvalues, dtype=float)
-    mu = np.clip(mu, LOG_RATIO_EPS, None)
+    mu = np.clip(mu, 1e-8, None)
     log_ratio = np.log((y.values + LOG_RATIO_EPS) / (mu + LOG_RATIO_EPS))
-    scale = float(getattr(result, "scale", 1.0))
-    pearson = (y.values - mu) / np.sqrt(scale + 1e-12)
+    pearson = (y.values - mu) / np.sqrt(mu + result.scale * mu ** 2 + 1e-12)
 
-    out = df[
-        [
-            "event_id",
-            "state",
-            "income_group",
-            "onset_year",
-            "monsoon_flag",
-            "MSS",
-            "MSS_entropy",
-            "n_articles_0_14",
-            "PSS",
-            "population_exposed",
-            "adjusted_flood_area_km2",
-            "total_deaths",
-            "deaths_missing",
-        ]
-    ].copy()
+    out_cols = [
+        "event_id",
+        "state",
+        "income_group",
+        "onset_year",
+        "monsoon_flag",
+        "n_articles_0_14",
+        "population_exposed",
+        "adjusted_flood_area_km2",
+        "total_deaths",
+        "deaths_missing",
+    ]
+    if "PSS" in df.columns:
+        out_cols.insert(out_cols.index("population_exposed"), "PSS")
+    for optional in ("MSS", "MSS_entropy"):
+        if optional in df.columns:
+            out_cols.insert(out_cols.index("n_articles_0_14") + 1, optional)
+
+    out = df[out_cols].copy()
     out["severity_proxy"] = severity_col
     out["observed"] = y.values
     out["expected"] = mu

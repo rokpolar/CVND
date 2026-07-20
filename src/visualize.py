@@ -54,10 +54,10 @@ def plot_observed_vs_expected():
 
     lim = max(df['expected'].max(), df['observed'].max()) * 1.05
     ax.plot([0, lim], [0, lim], 'k--', alpha=0.35, linewidth=1.2, label='y = expected')
-    ax.set_xlabel('Expected MSS (μ̂)', labelpad=8)
-    ax.set_ylabel('Observed MSS (y)', labelpad=8)
-    ax.set_title('Calibration: Observed vs Expected MSS\n'
-                 'AHP-weighted media severity vs Gaussian severity model')
+    ax.set_xlabel('Expected articles (μ̂)', labelpad=8)
+    ax.set_ylabel('Observed articles (y)', labelpad=8)
+    ax.set_title('Calibration: Observed vs Expected Coverage\n'
+                 'NegBin expected articles from physical severity')
     ax.legend(framealpha=0.9)
     ax.set_xlim(0, lim)
     ax.set_ylim(0, lim)
@@ -86,7 +86,7 @@ def plot_log_ratio_histogram():
     fig, ax = plt.subplots(figsize=(9, 5.5))
     ax.hist(df['log_ratio'], bins=bins, color='#5c6bc0', edgecolor='white', alpha=0.9)
     ax.axvline(0, color='black', linestyle='--', linewidth=1.0, alpha=0.6)
-    ax.set_xlabel('log_ratio = ln((y+1e-4)/(μ̂+1e-4))', labelpad=8)
+    ax.set_xlabel('log_ratio = ln((y+0.5)/(μ̂+0.5))', labelpad=8)
     ax.set_ylabel('Number of events', labelpad=8)
     ax.set_title('Residual Distribution (log ratio)\n'
                  'Continuous metric; under_flag = log_ratio<0; '
