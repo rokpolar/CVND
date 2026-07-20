@@ -54,10 +54,10 @@ def plot_observed_vs_expected():
 
     lim = max(df['expected'].max(), df['observed'].max()) * 1.05
     ax.plot([0, lim], [0, lim], 'k--', alpha=0.35, linewidth=1.2, label='y = expected')
-    ax.set_xlabel('Expected article count (μ̂)', labelpad=8)
-    ax.set_ylabel('Observed article count (y)', labelpad=8)
-    ax.set_title('Calibration: Observed vs Expected Coverage\n'
-                 'GDELT-monitored counts vs sparse NegBin severity model')
+    ax.set_xlabel('Expected MSS (μ̂)', labelpad=8)
+    ax.set_ylabel('Observed MSS (y)', labelpad=8)
+    ax.set_title('Calibration: Observed vs Expected MSS\n'
+                 'AHP-weighted media severity vs Gaussian severity model')
     ax.legend(framealpha=0.9)
     ax.set_xlim(0, lim)
     ax.set_ylim(0, lim)
@@ -86,7 +86,7 @@ def plot_log_ratio_histogram():
     fig, ax = plt.subplots(figsize=(9, 5.5))
     ax.hist(df['log_ratio'], bins=bins, color='#5c6bc0', edgecolor='white', alpha=0.9)
     ax.axvline(0, color='black', linestyle='--', linewidth=1.0, alpha=0.6)
-    ax.set_xlabel('log_ratio = ln((y+0.5)/(μ̂+0.5))', labelpad=8)
+    ax.set_xlabel('log_ratio = ln((y+1e-4)/(μ̂+1e-4))', labelpad=8)
     ax.set_ylabel('Number of events', labelpad=8)
     ax.set_title('Residual Distribution (log ratio)\n'
                  'Continuous metric; under_flag = log_ratio<0; '
@@ -175,6 +175,103 @@ def plot_log_ratio_by_income():
     print(f"  SAVED: {out}")
 
 
+def plot_coverage_map():
+    """Plot 9: Choropleth map of mean log_ratio by state on India map."""
+    if not os.path.exists(EXPECTED_COVERAGE_PATH):
+        print("  SKIP Plot 9: waiting for expected_coverage.csv")
+        return
+
+    import geopandas as gpd
+    from matplotlib.colors import TwoSlopeNorm
+
+    df = pd.read_csv(EXPECTED_COVERAGE_PATH)
+    state_agg = (
+        df.groupby('state')['log_ratio']
+        .agg(mean_log_ratio='mean', n_events='count')
+        .reset_index()
+    )
+
+    shapefile_url = (
+        'https://naciscdn.org/naturalearth/10m/cultural/'
+        'ne_10m_admin_1_states_provinces.zip'
+    )
+    cache_path = 'data/ne_india_states.gpkg'
+    if os.path.exists(cache_path):
+        gdf = gpd.read_file(cache_path)
+    else:
+        world = gpd.read_file(shapefile_url)
+        gdf = world[world['admin'] == 'India'][['name', 'geometry']].copy()
+        os.makedirs('data', exist_ok=True)
+        gdf.to_file(cache_path, driver='GPKG')
+
+    gdf = gdf.merge(state_agg, left_on='name', right_on='state', how='left')
+
+    from matplotlib.colors import LinearSegmentedColormap
+
+    vmax = max(abs(state_agg['mean_log_ratio'].min()),
+               abs(state_agg['mean_log_ratio'].max()), 0.01)
+    norm = TwoSlopeNorm(vmin=-vmax, vcenter=0, vmax=vmax)
+
+    dramatic_cmap = LinearSegmentedColormap.from_list('dramatic', [
+        (0.0,  '#7a3300'),
+        (0.15, '#b34700'),
+        (0.35, '#e06600'),
+        (0.5,  '#f5f5dc'),
+        (0.65, '#1b8a1b'),
+        (0.85, '#0a5f0a'),
+        (1.0,  '#003300'),
+    ])
+
+    fig, ax = plt.subplots(figsize=(10, 12))
+    fig.set_facecolor('#ffffff')
+    ax.set_facecolor('#ffffff')
+
+    gdf.plot(
+        column='mean_log_ratio',
+        cmap=dramatic_cmap,
+        norm=norm,
+        linewidth=0.8,
+        edgecolor='#e0e0e0',
+        ax=ax,
+        legend=False,
+        missing_kwds={'color': '#f0f0f0', 'edgecolor': '#aaa',
+                      'hatch': '////', 'label': 'No data'},
+    )
+
+    sm = plt.cm.ScalarMappable(cmap=dramatic_cmap, norm=norm)
+    sm.set_array([])
+    cbar = fig.colorbar(sm, ax=ax, fraction=0.025, pad=0.02, shrink=0.7)
+    cbar.set_label('Mean log_ratio\n(red = under-covered, green = over-covered)',
+                   fontsize=10, color='black')
+    cbar.ax.yaxis.set_tick_params(color='black')
+    plt.setp(cbar.ax.yaxis.get_ticklabels(), color='black')
+
+    matched = gdf.dropna(subset=['mean_log_ratio'])
+    for _, row in matched.iterrows():
+        centroid = row.geometry.centroid
+        ax.annotate(
+            f"{row['name']}\n{row['mean_log_ratio']:+.3f} (n={int(row['n_events'])})",
+            xy=(centroid.x, centroid.y),
+            fontsize=5.5, ha='center', va='center',
+            fontweight='bold', color='#111',
+            bbox=dict(boxstyle='round,pad=0.15', fc='white', alpha=0.85, lw=0),
+        )
+
+    ax.set_title('Coverage Imbalance by State\n'
+                 'Mean log_ratio: red = under-covered, green = over-covered',
+                 fontsize=14, fontweight='bold', color='black')
+    ax.set_axis_off()
+    plt.tight_layout()
+
+    map_csv = state_agg.sort_values('mean_log_ratio')
+    _save_plot_csv('outputs/plot9_coverage_map.csv', map_csv)
+
+    out = 'outputs/plot9_coverage_map.png'
+    plt.savefig(out, dpi=200, bbox_inches='tight')
+    plt.close()
+    print(f"  SAVED: {out}")
+
+
 def refresh_pipeline_result_figures(md_path='outputs/pipeline_result.md'):
     """Insert / replace the Figures section after plots are written."""
     plot_links = []
@@ -183,6 +280,7 @@ def refresh_pipeline_result_figures(md_path='outputs/pipeline_result.md'):
         ('plot6_log_ratio_histogram.png', 'log_ratio residual histogram'),
         ('plot7_log_ratio_ranking.png', 'Coverage imbalance ranking (extremes)'),
         ('plot8_log_ratio_by_income.png', 'log_ratio by income group'),
+        ('plot9_coverage_map.png', 'Coverage imbalance choropleth map'),
     ]:
         if os.path.exists(os.path.join('outputs', fname)):
             plot_links.append(f'- [{label}]({fname})')
@@ -240,6 +338,9 @@ if __name__ == '__main__':
 
     print("\nPlot 8: log_ratio by income")
     plot_log_ratio_by_income()
+
+    print("\nPlot 9: Coverage map")
+    plot_coverage_map()
 
     print("\nRefreshing markdown report figure links")
     refresh_pipeline_result_figures()
