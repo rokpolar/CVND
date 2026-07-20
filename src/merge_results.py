@@ -6,15 +6,22 @@ Inputs:
   data/flood_extent.csv          (Track A: area_s1_km2, area_s2_km2, s2_post_images) -- re-run Track A first
 
 Per event:
-  1. SITS flood area: threshold chosen by
-       (a) NDWI-calibration  -- if enough NDWI-flood patches AND they separate in SITS
-       (b) Otsu              -- fallback (few NDWI positives but bimodal scores)
-       (c) low-confidence    -- neither works (e.g. chronic/already-wet: SITS can't separate)
-  2. NDWI flood area: from the patches (ndwi_flood pixels)
-  3. Cloud routing:  optical available (S2 saw the flood) -> use optical (SITS if reliable else NDWI)
-                     cloud-blind                          -> use S1 (radar, Track A)
-     Events with 0 SITS patches (fully clouded on the flood date -> no .npz) are NOT dropped:
-     they are pulled in from Track A and routed to S1 (or Track A NDWI if no S1).
+  1. SITS is patch-level (a 0.4096 km2 tile is flagged whole even if only a sliver is water),
+     so (#flagged * PATCH_KM2) is a DETECTION extent, not a water area (measured: tiles are
+     ~0.8% water at the median -> using it as area over-counts ~100x).
+     => SITS LOCATES flood tiles; a quality gate (Youden's J = SITS-NDWI agreement, not
+        external validation) decides whether the fusion is used:
+        (a) ndwi-calib  -- J>=0.15: SITS+NDWI fusion (SITS locates, NDWI quantifies)
+        (b) otsu/low-conf -- SITS flags unreliable -> whole-district NDWI instead
+  2. Flood AREA always comes from pixel-level NDWI (real water):
+        SITS+NDWI  -> NDWI water *inside* SITS-flagged tiles (gated)
+        NDWI       -> NDWI water over the whole district
+     Restore rule: if gating cut the water by >half AND S1 (radar) independently shows the
+     larger extent is real, restore full-district NDWI (guards against SITS missing tiles).
+  3. Cloud routing:  optical available (SITS kept clear patches) -> SITS+NDWI or NDWI
+                     cloud-blind (0 SITS patches)                -> S1 (radar, Track A)
+     Events with 0 SITS patches (fully clouded on the flood date) are pulled from Track A
+     and routed to S1 (or Track A NDWI if no S1) -- not dropped.
 
 Output: data/flood_combined.csv
 Run:    python src/merge_results.py     (numpy + pandas only; no model / GEE)
@@ -32,8 +39,7 @@ PATCH_KM2 = (64 * 10 / 1000) ** 2   # 0.4096 km2 per patch
 PX_KM2 = (10 / 1000) ** 2           # 1e-4 km2 per pixel
 FLOOD_MIN_PX = 205                  # a patch is an "NDWI flood" patch if >= 5% (205/4096) is new water
 MIN_POS = 20                        # need this many NDWI-flood (and non-flood) patches to calibrate
-J_MIN = 0.15                        # min Youden's J (TPR-FPR) for SITS to be considered reliable
-OVER_CAP_RATIO = 0.40               # SITS covering > this frac of the district = over-capture -> fall back
+J_MIN = 0.15                        # min Youden's J (SITS-NDWI agreement) to use the SITS+NDWI fusion
 DISTRICT_CSV = 'data/district_area.csv'   # event_id,district_km2  (from district_area.py)
 
 
@@ -124,33 +130,27 @@ def main():
 
         if has_sits:
             # SITS kept clear patches (KEEP_VALID>=70%) -> optical DID see the flood.
-            # (Track A's own s2 columns can disagree; the patches are the ground truth here.)
             scores, ndwi_flood = d['scores'], d['ndwi_flood']
             thr, method = sits_threshold(scores, ndwi_flood)
-            sits_area = float((scores > thr).sum()) * PATCH_KM2
-            ndwi_area = float(ndwi_flood.sum()) * PX_KM2    # NDWI from district-tiled patches
+            flagged = scores > thr
+            # SITS tile extent is NOT a water area (tiles are ~0.8% water at the median);
+            # SITS locates, pixel-level NDWI quantifies (gated). Kept for reference only.
+            sits_detect = float(flagged.sum()) * PATCH_KM2          # flagged-tile extent
+            ndwi_full = float(ndwi_flood.sum()) * PX_KM2            # all new-flood water in district
+            ndwi_gated = float(ndwi_flood[flagged].sum()) * PX_KM2  # water inside SITS-flagged tiles
+            sits_area, ndwi_area = sits_detect, ndwi_full
             optical = True
-            # --- previous logic (no over-capture guard) -------------------------------
-            # if method == 'ndwi-calib':                    # SITS separates well -> trust AI
-            #     combined, source = sits_area, 'SITS'
-            # else:                                         # SITS unreliable -> optical NDWI
-            #     combined, source = ndwi_area, 'NDWI'
-            # --------------------------------------------------------------------------
-            if method == 'ndwi-calib':                      # SITS separates well -> trust AI
-                combined, source = sits_area, 'SITS'
-                # guard: SITS can still blow up (chronic-wet / seasonal change read as flood).
-                # If it floods an implausible fraction of the district, drop it and fall back
-                # to NDWI (optical, same clear scenes), then S1 (radar).
-                dk = da.get(ev)
-                if dk and dk > 0 and sits_area / dk > OVER_CAP_RATIO:
-                    if ndwi_area is not None and ndwi_area / dk <= OVER_CAP_RATIO:
-                        combined, source = ndwi_area, 'NDWI(sits-overcap)'
-                    elif s1_area is not None and pd.notna(s1_area):
-                        combined, source = float(s1_area), 'S1(sits-overcap)'
-                    else:
-                        combined, source = ndwi_area, 'NDWI(sits-overcap)'
-            else:                                           # SITS unreliable -> optical NDWI
-                combined, source = ndwi_area, 'NDWI'
+            if method == 'ndwi-calib':      # quality gate passed -> SITS+NDWI fusion
+                combined, source = ndwi_gated, 'SITS+NDWI'
+                # SITS can also MISS flood tiles -> gating then under-counts. If gating cut the
+                # water by >half AND radar (S1) independently confirms the larger extent
+                # (so the trimmed water is real, not noise), restore the full-district NDWI.
+                s1v = float(s1_area) if (s1_area is not None and pd.notna(s1_area)) else None
+                if (ndwi_full > 0 and ndwi_gated < 0.5 * ndwi_full
+                        and s1v is not None and s1v >= ndwi_full):
+                    combined, source = ndwi_full, 'SITS+NDWI(restored)'
+            else:                           # gate failed -> SITS flags unreliable, use plain NDWI
+                combined, source = ndwi_full, 'NDWI'
         else:
             # 0 SITS patches = flood date too clouded for optical -> trust radar first.
             # (Track A's cloud-median can still report an NDWI, but with SITS blind it is
@@ -171,10 +171,10 @@ def main():
                  if (combined is not None and dist_km2 and dist_km2 > 0) else None)
         rows.append({
             'event_id': ev,
-            'sits_flood_km2': round(sits_area, 2) if sits_area is not None else None,
+            'sits_detect_km2': round(sits_area, 2) if sits_area is not None else None,  # SITS tile extent (NOT area)
             'sits_threshold': round(thr, 3) if thr is not None else None,
             'sits_method': method,
-            'ndwi_flood_km2': round(ndwi_area, 2) if ndwi_area is not None else None,
+            'ndwi_flood_km2': round(ndwi_area, 2) if ndwi_area is not None else None,   # full-district NDWI
             's1_flood_km2': round(float(s1_area), 2) if (s1_area is not None and pd.notna(s1_area)) else None,
             'optical_available': optical,
             'combined_km2': round(combined, 2) if combined is not None else None,
@@ -184,7 +184,7 @@ def main():
         })
         _s = f"{sits_area:6.1f}" if sits_area is not None else "   -  "
         _c = f"{combined:6.1f}" if combined is not None else "   -  "
-        print(f"  {ev}: sits={_s} ({method:9s}) ndwi={ndwi_area}  "
+        print(f"  {ev}: sits_detect={_s} ({method:9s}) ndwi_full={ndwi_area}  "
               f"s1={s1_area}  -> combined={_c} ({source})")
 
     if rows:
