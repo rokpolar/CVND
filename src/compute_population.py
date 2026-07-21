@@ -1,15 +1,17 @@
 """
-compute_population.py
+compute_population.py — PRIMARY population/severity builder for the pipeline.
 
 Build data/severity_raw.csv from district-level flood_combined results.
+
+(Do not confuse with src/archive/population.py — legacy WorldPop GEE overlay.)
 
 Primary input (preferred):
     data/flood_combined.csv  — combined_km2, district_km2, flood_ratio, combined_source
     data/events.csv          — state, district, start_date
     data/population.csv      — state population (2025)
 
-Fallback (legacy):
-    data/flood_area_results.csv with bbox overflow scaling
+Fallback (legacy, archived):
+    data/archive/flood_area_results.csv with bbox overflow scaling
 
 Method (primary):
     adjusted_flood_area_km2 = combined_km2   (already district-scoped; no bbox scale)
@@ -188,7 +190,7 @@ def bbox_area_km2(minlon, minlat, maxlon, maxlat):
 
 def from_legacy_flood_area(pop_lookup: dict) -> pd.DataFrame:
     """Legacy bbox-scaled path (only if flood_combined.csv missing)."""
-    flood = pd.read_csv("data/flood_area_results.csv")
+    flood = pd.read_csv("data/archive/flood_area_results.csv")
     rows = []
     for _, r in flood.iterrows():
         canonical = resolve(r["state"], STATE_AREA_KM2.keys())
@@ -272,12 +274,12 @@ def main():
     if os.path.exists("data/flood_combined.csv"):
         print("Using PRIMARY input: data/flood_combined.csv (district-level)")
         out = from_flood_combined(pop_lookup)
-    elif os.path.exists("data/flood_area_results.csv"):
-        print("WARNING: flood_combined.csv missing — legacy flood_area_results.csv")
+    elif os.path.exists("data/archive/flood_area_results.csv"):
+        print("WARNING: flood_combined.csv missing — legacy data/archive/flood_area_results.csv")
         out = from_legacy_flood_area(pop_lookup)
     else:
         raise FileNotFoundError(
-            "Need data/flood_combined.csv or data/flood_area_results.csv"
+            "Need data/flood_combined.csv or data/archive/flood_area_results.csv"
         )
 
     os.makedirs("data", exist_ok=True)
