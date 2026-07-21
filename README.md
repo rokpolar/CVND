@@ -1,14 +1,14 @@
 # CVND
 
-**Coverage vs Need Discrepancy** — a research pipeline that measures whether Indian
+ A research pipeline that measures whether Indian
 flood disasters receive media attention proportional to their physical severity.
 
 ## What this project is
 
 When floods hit, some events dominate the news while equally (or more) severe
-disasters elsewhere get little coverage. CVND builds an event-level dataset of
-floods in India and compares **what happened on the ground** with **how much the
-media reported**, so under- and over-coverage can be quantified rather than guessed.
+disasters elsewhere get little coverage. CVND builds an analaysis of
+floods in India and compares what happened on the ground(Satellite vision) with how much the
+media reported(Media coverage), so under- and over-coverage can be quantified rather than guessed.
 
 The pipeline has four linked pieces:
 
@@ -16,12 +16,10 @@ The pipeline has four linked pieces:
    (SITS + NDWI/SAR fallback) combined with exposed population. Area and
    population are `log1p`-transformed, MinMax-scaled, then averaged (0.5 / 0.5).
 2. **Media Salience Score (MSS)** — multilingual GDELT coverage aggregated into
-   volume, share-of-voice, time-to-first-report, and coverage duration (AHP weights;
-   Entropy weights kept for sensitivity).
+   volume, share-of-voice, time-to-first-report, and coverage duration (AHP weights kept for sensitivity).
 3. **Expected coverage** — a sparse Negative Binomial model predicts how many
-   articles a disaster *should* attract given severity, deaths, and onset year
-   (cluster-robust SE by state). This replaces naïve Min-Max discrepancy scores
-   that outliers can distort.
+   articles a disaster should attract given severity, deaths, and onset year
+   . This replaces naïve Min-Max discrepancy scores that outliers can distort.
 4. **Discrepancy Index (`log_ratio`)** — continuous residual
    \(\ln((y+0.5)/(\hat\mu+0.5))\).  
    `log_ratio < 0` → under-covered; `log_ratio > 0` → over-covered.
@@ -85,10 +83,6 @@ SKIP_GEE=0 ./scripts/run_pipeline.sh
 # Reinstall deps then cached scoring
 SETUP_DEPS=1 ./scripts/run_pipeline.sh
 ```
-
-Windows: use Git Bash / WSL, or run the same `src/*.py` steps with
-`venv\Scripts\python.exe`. The runner picks `venv/bin/python` or
-`venv/Scripts/python.exe` automatically.
 
 ### Cached vs full rebuild
 
