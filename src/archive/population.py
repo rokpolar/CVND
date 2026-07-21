@@ -1,3 +1,11 @@
+"""
+LEGACY — WorldPop GEE population overlay.
+
+Not used by scripts/run_pipeline.sh. Primary path is ../compute_population.py
+(state-density × flood_combined footprint → data/severity_raw.csv).
+
+Kept under src/archive/ for historical reproducibility.
+"""
 import ee
 import pandas as pd
 import os
@@ -5,6 +13,9 @@ import warnings
 import json
 warnings.filterwarnings('ignore')
 
+# gee_config lives one level up when this file is under src/archive/
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from gee_config import initialize_gee
 
 initialize_gee()
