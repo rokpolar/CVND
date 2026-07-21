@@ -41,6 +41,7 @@ FLOOD_MIN_PX = 205                  # a patch is an "NDWI flood" patch if >= 5% 
 MIN_POS = 20                        # need this many NDWI-flood (and non-flood) patches to calibrate
 J_MIN = 0.15                        # min Youden's J (SITS-NDWI agreement) to use the SITS+NDWI fusion
 CLOUD_MAX_PCT = 60                  # flood-date cloud over the district > this -> optical too blind, use S1
+                                    # (docs historically said 30%; code threshold is 60)
 POST_CLOUD_CSV = 'data/post_cloud.csv'    # event_id,cloud_pct  (from post_cloud.py)
 DISTRICT_CSV = 'data/district_area.csv'   # event_id,district_km2  (from district_area.py)
 
