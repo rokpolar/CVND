@@ -7,7 +7,7 @@ print("PROCESSING BIGQUERY MULTILINGUAL GDELT DATA")
 print("=" * 55)
 
 # ── Load BigQuery result ──────────────────────────────────────────────────────
-with open('data/gdelt_bigquery_lang.json', 'r') as f:
+with open('data/archive/gdelt_bigquery_lang.json', 'r') as f:
     data = json.load(f)
 
 df = pd.DataFrame(data)
