@@ -1,4 +1,4 @@
-event_id,state,income_group,onset_year,monsoon_flag,n_articles_0_14,MSS_entropy,MSS,PSS,population_exposed,adjusted_flood_area_km2,total_deaths,deaths_missing,severity_proxy,observed,expected,log_ratio,pearson_resid,deviance_resid,under_flag,over_flag,severity_tier,rank_undercovered
+event_id,state,income_group,onset_year,monsoon_flag,n_articles_0_14,MSS_entropy,MSS,PSS,population_exposed,affected_area_km2,total_deaths,deaths_missing,severity_proxy,observed,expected,log_ratio,pearson_resid,deviance_resid,under_flag,over_flag,severity_tier,rank_undercovered
 E127,Sikkim,Low,2025,0,2.0,0.0169,0.125,0.4666,918.0,9.27,50.0,0,population_exposed,2.0,1615.5914110727313,-6.471475071864953,-0.9984531055883301,-3.6257156261941685,True,False,low,1
 E18,Arunachal Pradesh,Low,2015,1,33.0,0.0468,0.2295,0.1701,22.0,1.14,25.0,0,population_exposed,33.0,1214.3796859399272,-3.590854888122681,-0.972425335336469,-2.513710893264354,True,False,low,2
 E104,Meghalaya,Low,2024,0,81.0,0.056,0.2668,0.2747,216.0,1.42,15.0,0,population_exposed,81.0,1601.4906465159195,-2.978399268735179,-0.9491258415778323,-2.213511883783467,True,False,low,3
