@@ -18,7 +18,7 @@ from gee_config import initialize_gee
 initialize_gee()
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# satellite.py — CVND Flood Detection Pipeline
+# satellite.py — CVND Flood Detection Pipeline (optional; SKIP_GEE=1 by default)
 # ───────────────────────────────────────────────────────────────────────────────
 # Track A — Otsu bi-temporal (S1 + S2) baseline
 #   Output: data/flood_extent.csv
@@ -26,7 +26,9 @@ initialize_gee()
 # Track B — SITS-Extreme-VAE data preparation
 #   Output: data/sits_patches/<event_id>.h5
 #   Next:   Upload to Google Drive → run sits_inference.ipynb on Colab GPU
-#           → Download sits_vae_results.csv → merge into compute_pss.py
+#           → place score NPZs in data/sits_scores/
+#           → merge_results.py → flood_combined.csv → compute_population.py
+#           (NOT sits_vae_results.csv → compute_pss.py — that handoff is retired)
 #
 # Citation: Fang & Azizpour (WACV 2025) — MIT license
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -896,8 +898,8 @@ if __name__ == '__main__':
         print(f"\nNext steps:")
         print(f"  1. Upload data/sits_patches/ to Google Drive")
         print(f"  2. Run sits_inference.ipynb on Colab (T4 GPU)")
-        print(f"  3. Download sits_vae_results.csv → place in data/")
-        print(f"  4. compute_pss.py will auto-merge both tracks")
+        print(f"  3. Place score NPZs in data/sits_scores/")
+        print(f"  4. Run merge_results.py → compute_population.py → compute_pss.py")
 
     # ── Summary ───────────────────────────────────────────────────────────────
     print("\n" + "=" * 65)
