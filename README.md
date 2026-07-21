@@ -106,15 +106,6 @@ Column `n_articles_0_14` in expected-coverage outputs is a **proxy alias** for
 `mss_results.total_articles` (design window onset+14d; counts are not guaranteed
 day-filtered).
 
-## Legacy archives
-
-Unused modules and orphan CSVs live under:
-
-- [`src/archive/`](src/archive/README.md) — e.g. `population.py` (WorldPop), `build_covariates.py`, `news.py`
-- [`data/archive/`](data/archive/README.md) — e.g. `state_covariates.csv`, `rainfall.csv`, `pi_results.csv`
-
-Pipeline population path is **`compute_population.py`**, not archived `population.py`.
-
 ## Shared config
 
 Canonical paths and constants: [`src/cvnd_paths.py`](src/cvnd_paths.py)
