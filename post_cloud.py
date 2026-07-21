@@ -7,7 +7,7 @@ stat per event -- no pixel downloads, so the whole run is quick (like district_a
 
 Output: data/post_cloud.csv  (event_id, post_images, clear_pct, cloud_pct)
   clear_pct = % of district the post composite actually saw
-  cloud_pct = 100 - clear_pct  -> merge routing: cloud_pct > 30 => S1
+  cloud_pct = 100 - clear_pct  -> merge routing: cloud_pct >= CLOUD_MAX_PCT (60) => S1
 
 Run: python post_cloud.py            # all events (resumes: skips ones already in CSV)
      python post_cloud.py E01 E02    # subset
