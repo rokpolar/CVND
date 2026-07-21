@@ -25,7 +25,9 @@ Deaths (option C):
 Notes:
 - Respects data/events_quarantine.csv (#17).
 - Does not impute missing article counts as zero.
-- Outcome: `mss_results.total_articles` as `n_articles_0_14` proxy.
+- Outcome: `mss_results.total_articles` (design window onset+14d; column alias
+  `n_articles_0_14` is a proxy name — counts are not guaranteed day-filtered).
+- Flood area column standardized as `affected_area_km2` (= adjusted_flood_area_km2).
 - `MSS` / `PSS` retained as metadata when available.
 """
 
@@ -33,6 +35,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import warnings
 
 import numpy as np
@@ -42,13 +45,24 @@ from statsmodels.genmod.generalized_linear_model import GLMResultsWrapper
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-QUARANTINE_PATH = "data/events_quarantine.csv"
-EMDAT_PATH = "data/emdat_raw.xlsx"
-MSS_WEIGHT_META_PATH = "data/mss_weight_sensitivity.json"
-PSS_RESULTS_PATH = "data/pss_results.csv"
-MEDIA_WINDOW_DAYS = 14
-LOG_RATIO_EPS = 0.5
-MONSOON_MONTHS = {6, 7, 8, 9}
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from cvnd_paths import (  # noqa: E402
+    EMDAT as EMDAT_PATH,
+    EVENTS,
+    EVENTS_QUARANTINE as QUARANTINE_PATH,
+    EXPECTED_COVERAGE,
+    FIGURES,
+    LOG_RATIO_EPS,
+    MEDIA_WINDOW_DAYS,
+    MONSOON_MONTHS,
+    MSS_RESULTS,
+    MSS_WEIGHT_META as MSS_WEIGHT_META_PATH,
+    PIPELINE_RESULT_MD,
+    PSS_RESULTS as PSS_RESULTS_PATH,
+    SEVERITY_RAW,
+    STATE_EXPECTED_COVERAGE,
+)
 
 
 def load_quarantine_ids(path: str = QUARANTINE_PATH) -> set[str]:
@@ -108,11 +122,12 @@ def attach_deaths_from_emdat(events: pd.DataFrame) -> pd.Series:
 
 
 def build_analysis_frame() -> pd.DataFrame:
-    events = pd.read_csv("data/events.csv")
-    sev = pd.read_csv("data/severity_raw.csv")[
+    events = pd.read_csv(EVENTS)
+    sev = pd.read_csv(SEVERITY_RAW)[
         ["event_id", "adjusted_flood_area_km2", "population_exposed"]
     ]
-    mss = pd.read_csv("data/mss_results.csv")
+    sev = sev.rename(columns={"adjusted_flood_area_km2": "affected_area_km2"})
+    mss = pd.read_csv(MSS_RESULTS)
     mss_cols = ["event_id", "total_articles", "en_articles"]
     for optional in ("MSS", "MSS_entropy"):
         if optional in mss.columns:
@@ -131,6 +146,7 @@ def build_analysis_frame() -> pd.DataFrame:
     df["onset_month"] = df["onset_date"].dt.month.astype(int)
     df["monsoon_flag"] = df["onset_month"].isin(MONSOON_MONTHS).astype(int)
     df["media_window_days"] = MEDIA_WINDOW_DAYS
+    # Proxy name kept for CSV stability; value = MSS total_articles (not day-filtered)
     df["n_articles_0_14"] = df["total_articles"]
     df["total_deaths"] = attach_deaths_from_emdat(df)
 
@@ -149,7 +165,7 @@ def build_analysis_frame() -> pd.DataFrame:
         subset=[
             "n_articles_0_14",
             "population_exposed",
-            "adjusted_flood_area_km2",
+            "affected_area_km2",
             "onset_year",
             "monsoon_flag",
         ]
@@ -192,7 +208,7 @@ def choose_severity_proxy(df: pd.DataFrame, include_deaths: bool) -> str:
     groups = df["state"]
     candidates = {
         "population_exposed": "log1p(population_exposed)",
-        "adjusted_flood_area_km2": "log1p(flood_area_km2)",
+        "affected_area_km2": "log1p(affected_area_km2)",
     }
     scores = {}
     for col, label in candidates.items():
@@ -329,7 +345,7 @@ def format_mss_weight_section() -> str:
 
     entropy = sens.get("entropy", sens.get("ewm", {}))
 
-    return f"""## MSS weight sensitivity (CP-09)
+    return f"""## MSS weight sensitivity
 
 Primary `MSS` in `data/mss_results.csv` uses **AHP-derived** weights
 (Saaty 1980; CR = {ahp_cr_str}). Entropy weighting is computed on the same
@@ -357,9 +373,10 @@ def write_markdown_report(
     severity_col: str,
     include_deaths: bool,
     income_summary: dict,
-    path: str = "outputs/pipeline_result.md",
+    path: str | os.PathLike | None = None,
 ) -> str:
     """Write final expected-coverage results to a markdown file."""
+    path = str(path or PIPELINE_RESULT_MD)
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     generated = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -390,12 +407,7 @@ def write_markdown_report(
         )
 
     plot_links = []
-    for fname, label in [
-        ("plot5_observed_vs_expected.png", "Observed vs expected calibration"),
-        ("plot6_log_ratio_histogram.png", "log_ratio residual histogram"),
-        ("plot7_log_ratio_ranking.png", "Coverage imbalance ranking (extremes)"),
-        ("plot8_log_ratio_by_income.png", "log_ratio by income group"),
-    ]:
+    for fname, label in FIGURES:
         p = os.path.join("outputs", fname)
         if os.path.exists(p):
             plot_links.append(f"- [{label}]({fname})")
@@ -419,10 +431,10 @@ Generated: `{generated}`
 | Monsoon flag | **Excluded** from NegBin (metadata only) |
 | GDELT volume offset | **None** (primary) |
 | Media window (design) | onset + {MEDIA_WINDOW_DAYS} days |
-| Outcome | `mss_results.total_articles` as `n_articles_0_14` proxy |
+| Outcome | `mss_results.total_articles` (alias `n_articles_0_14`; design window onset+{MEDIA_WINDOW_DAYS}d, not day-filtered) |
 | MSS / PSS | Retained as metadata when available |
 | Severity proxy (AIC) | `{severity_col}` |
-| Flood area source | `flood_combined.combined_km2` (district-level; via severity_raw) |
+| Flood area source | `affected_area_km2` (= `severity_raw.adjusted_flood_area_km2` / flood_combined) |
 | Deaths handling | Option C: `log1p(deaths)` with `fillna(0)`; `deaths_missing` metadata only (not in NegBin) |
 | Deaths missing (metadata) | {int(out['deaths_missing'].sum()) if 'deaths_missing' in out.columns else 'n/a'} / {len(out)} |
 | N events | {len(out)} |
@@ -503,9 +515,9 @@ R² = {income_summary["r2"]:.4f}
 
 ## Output files
 
-- `data/expected_coverage.csv` (primary)
-- `data/state_expected_coverage.csv`
-- `data/events_quarantine.csv`
+- `{EXPECTED_COVERAGE}` (primary)
+- `{STATE_EXPECTED_COVERAGE}`
+- `{QUARANTINE_PATH}`
 - `{path}`
 """
 
@@ -519,7 +531,7 @@ def main() -> None:
     print("EXPECTED COVERAGE — sparse Negative-Binomial")
     print("=" * 60)
     print(f"Media window (design): onset + {MEDIA_WINDOW_DAYS}d "
-          "(interim outcome = total_articles from MSS)")
+          "(outcome = total_articles from MSS; n_articles_0_14 is a proxy alias)")
     print("Primary model: NO GDELT volume offset; monsoon_flag EXCLUDED from NegBin")
 
     df = build_analysis_frame()
@@ -557,7 +569,7 @@ def main() -> None:
         "monsoon_flag",
         "n_articles_0_14",
         "population_exposed",
-        "adjusted_flood_area_km2",
+        "affected_area_km2",
         "total_deaths",
         "deaths_missing",
     ]
@@ -650,11 +662,11 @@ def main() -> None:
         .sort_values("mean_log_ratio")
     )
 
-    os.makedirs("data", exist_ok=True)
-    out.to_csv("data/expected_coverage.csv", index=False)
-    state_agg.to_csv("data/state_expected_coverage.csv", index=False)
-    print(f"\nSAVED: data/expected_coverage.csv ({len(out)} events)")
-    print(f"SAVED: data/state_expected_coverage.csv ({len(state_agg)} states)")
+    EXPECTED_COVERAGE.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(EXPECTED_COVERAGE, index=False)
+    state_agg.to_csv(STATE_EXPECTED_COVERAGE, index=False)
+    print(f"\nSAVED: {EXPECTED_COVERAGE} ({len(out)} events)")
+    print(f"SAVED: {STATE_EXPECTED_COVERAGE} ({len(state_agg)} states)")
 
     md_path = write_markdown_report(
         out=out,
@@ -663,7 +675,7 @@ def main() -> None:
         severity_col=severity_col,
         include_deaths=include_deaths,
         income_summary=income_summary,
-        path="outputs/pipeline_result.md",
+        path=str(PIPELINE_RESULT_MD),
     )
     print(f"SAVED: {md_path}")
     print("\nEXPECTED COVERAGE COMPLETE")
