@@ -1,3 +1,9 @@
+"""
+LEGACY / OPTIONAL — GDELT Doc API collector.
+
+Primary MSS reads data/gdelt_bq_part*.json via src/compute_mss.py.
+This script does not feed the current scoring path.
+"""
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
@@ -152,12 +158,14 @@ def save_checkpoint(completed):
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     print("=" * 60)
-    print("CP-08: GDELT NEWS COLLECTION (168 events)")
-    print("=" * 60)
-    print("Checkpointing enabled — safe to interrupt and resume\n")
 
     events     = pd.read_csv('data/events.csv')
     total      = len(events)
+    print(f"GDELT NEWS COLLECTION ({total} events) — OPTIONAL / LEGACY")
+    print("=" * 60)
+    print("Primary MSS reads gdelt_bq_part*.json, not this script's output")
+    print("Checkpointing enabled — safe to interrupt and resume\n")
+
     completed  = load_checkpoint()   # dict: event_id -> result dict
     results    = list(completed.values())
     done_ids   = set(completed.keys())
