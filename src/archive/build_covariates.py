@@ -1,3 +1,9 @@
+"""
+LEGACY — state-level covariates table.
+
+Wrote data/state_covariates.csv (now under data/archive/).
+Unused by PSS / MSS / NegBin expected coverage.
+"""
 import pandas as pd
 import os
 
