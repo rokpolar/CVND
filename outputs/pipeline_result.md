@@ -1,6 +1,6 @@
 # CVND Pipeline Results — Expected Coverage
 
-Generated: `2026-07-20 15:40:18`
+Generated: `2026-07-21 22:16:23`
 
 ## Analysis standard (hybrid)
 
@@ -17,10 +17,10 @@ Generated: `2026-07-20 15:40:18`
 | Monsoon flag | **Excluded** from NegBin (metadata only) |
 | GDELT volume offset | **None** (primary) |
 | Media window (design) | onset + 14 days |
-| Outcome | `mss_results.total_articles` as `n_articles_0_14` proxy |
+| Outcome | `mss_results.total_articles` (alias `n_articles_0_14`; design window onset+14d, not day-filtered) |
 | MSS / PSS | Retained as metadata when available |
 | Severity proxy (AIC) | `population_exposed` |
-| Flood area source | `flood_combined.combined_km2` (district-level; via severity_raw) |
+| Flood area source | `affected_area_km2` (= `severity_raw.adjusted_flood_area_km2` / flood_combined) |
 | Deaths handling | Option C: `log1p(deaths)` with `fillna(0)`; `deaths_missing` metadata only (not in NegBin) |
 | Deaths missing (metadata) | 23 / 132 |
 | N events | 132 |
@@ -30,7 +30,7 @@ Generated: `2026-07-20 15:40:18`
 | over_flag (log_ratio &gt; 0) | 50 (37.9%) |
 | severity_tier | Tertiles (low ≤ P33, high ≥ P67; exploratory only) |
 
-## MSS weight sensitivity (CP-09)
+## MSS weight sensitivity
 
 Primary `MSS` in `data/mss_results.csv` uses **AHP-derived** weights
 (Saaty 1980; CR = 0.0000). Entropy weighting is computed on the same
@@ -74,7 +74,7 @@ scaled components for robustness (`MSS_entropy` column).
 Model:              GLM              AIC:            2459.4780
 Link Function:      Log              BIC:            -431.7218
 Dependent Variable: n_articles_0_14  Log-Likelihood: -1216.7  
-Date:               2026-07-20 15:40 LL-Null:        -1259.3  
+Date:               2026-07-21 22:16 LL-Null:        -1259.3  
 No. Observations:   132              Deviance:       149.33   
 Df Model:           12               Pearson chi2:   153.     
 Df Residuals:       119              Scale:          1.0000   
@@ -195,6 +195,7 @@ R² = 0.1044
 
 ## Figures
 
+- [PSS vs MSS scatter](plot1_pss_vs_mss_scatter.png)
 - [Observed vs expected calibration](plot5_observed_vs_expected.png)
 - [log_ratio residual histogram](plot6_log_ratio_histogram.png)
 - [Coverage imbalance ranking (extremes)](plot7_log_ratio_ranking.png)
@@ -203,7 +204,7 @@ R² = 0.1044
 
 ## Output files
 
-- `data/expected_coverage.csv` (primary)
-- `data/state_expected_coverage.csv`
-- `data/events_quarantine.csv`
-- `outputs/pipeline_result.md`
+- `/Users/rokpolar/Documents/CU_CDI/CVND/data/expected_coverage.csv` (primary)
+- `/Users/rokpolar/Documents/CU_CDI/CVND/data/state_expected_coverage.csv`
+- `/Users/rokpolar/Documents/CU_CDI/CVND/data/events_quarantine.csv`
+- `/Users/rokpolar/Documents/CU_CDI/CVND/outputs/pipeline_result.md`
