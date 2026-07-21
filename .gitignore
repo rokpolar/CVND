@@ -4,7 +4,10 @@ __pycache__/
 *.pyc
 .envgit 
 .env
+.DS_Store
 # large generated SITS patch files (h5) + SITS outputs
 data/sits_patches/
 data/sits_vae_results.csv
 data/e02_sits_map.png
+# Natural Earth cache (downloadable)
+data/ne_india_states.gpkg
