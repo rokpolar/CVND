@@ -16,10 +16,10 @@ OUTPUTS = ROOT / "outputs"
 ARCHIVE_SRC = ROOT / "src" / "archive"
 ARCHIVE_DATA = DATA / "archive"
 
-# ── Canonical data paths ──────────────────────────────────────────────────────
+#  Canonical data paths 
 EVENTS = DATA / "events.csv"
 EVENTS_QUARANTINE = DATA / "events_quarantine.csv"
-EMDAT = DATA / "emdat_raw.xlsx"
+EMDAT = DATA / "emdat_raw.csv"
 SEVERITY_RAW = DATA / "severity_raw.csv"
 FLOOD_COMBINED = DATA / "flood_combined.csv"
 FLOOD_EXTENT = DATA / "flood_extent.csv"
@@ -34,7 +34,7 @@ MSS_RANK_STABILITY = DATA / "mss_rank_stability.csv"
 PIPELINE_RESULT_MD = OUTPUTS / "pipeline_result.md"
 NE_INDIA_STATES = DATA / "ne_india_states.gpkg"
 
-# ── Model / score constants ───────────────────────────────────────────────────
+# Model / score constants
 LOG_RATIO_EPS = 0.5
 MEDIA_WINDOW_DAYS = 14  # design window; article counts are not guaranteed filtered to it
 MONSOON_MONTHS = frozenset({6, 7, 8, 9})
@@ -46,7 +46,7 @@ PSS_W_POP = 0.5
 # Merge cloud routing (flood-date district cloud %)
 CLOUD_MAX_PCT = 60
 
-# ── Plot palette (vivid; red = under-covered, green = over-covered) ───────────
+# Plot palette (vivid; red = under-covered, green = over-covered)
 COLOR_UNDER = "#FF0000"
 COLOR_MID = "#FFE600"
 COLOR_OVER = "#00FF00"

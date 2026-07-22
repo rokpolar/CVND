@@ -260,16 +260,16 @@ if __name__ == '__main__':
     print("BUILD EVENTS CSV FROM EM-DAT")
     print("=" * 60)
 
-    EMDAT_PATH   = 'data/emdat_raw.xlsx'
+    EMDAT_PATH   = 'data/emdat_raw.csv'
     EXISTING_CSV = 'data/events_base12.csv'
     OUTPUT_CSV   = 'data/events.csv'
 
     if not os.path.exists(EMDAT_PATH):
         print(f"ERROR: {EMDAT_PATH} not found.")
-        print("Download from emdat.be and save as data/emdat_raw.xlsx")
+        print("Export EM-DAT Data sheet to data/emdat_raw.csv")
         exit(1)
 
-    raw = pd.read_excel(EMDAT_PATH, header=0)
+    raw = pd.read_csv(EMDAT_PATH)
     print(f"\nEM-DAT raw: {raw.shape[0]} records, {raw.shape[1]} columns")
 
     # ── Step 1: Filter to flood events with Sentinel-1 coverage ──────────────

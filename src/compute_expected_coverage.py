@@ -82,7 +82,7 @@ def attach_deaths_from_emdat(events: pd.DataFrame) -> pd.Series:
         print(f"WARNING: {EMDAT_PATH} missing — total_deaths unavailable")
         return deaths
 
-    raw = pd.read_excel(EMDAT_PATH)
+    raw = pd.read_csv(EMDAT_PATH)
     raw = raw[raw["Disaster Type"].astype(str).str.lower() == "flood"].copy()
     raw = raw[(raw["Start Year"] >= 2015) & (raw["Start Year"] <= 2026)].copy()
 
