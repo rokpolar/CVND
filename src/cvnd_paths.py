@@ -1,7 +1,7 @@
 """Shared paths and constants for the CVND primary analysis stack.
 
 Primary DAG (cached / default runner):
-    severity_raw → PSS → MSS (gdelt_bq_part*.json) → NegBin expected coverage → visualize
+    severity_raw → PSS → MSS (gdelt_bq.json) → NegBin expected coverage → visualize
 
 Legacy / optional scripts live under src/archive/ and data/archive/.
 """
@@ -24,6 +24,7 @@ SEVERITY_RAW = DATA / "severity_raw.csv"
 FLOOD_COMBINED = DATA / "flood_combined.csv"
 FLOOD_EXTENT = DATA / "flood_extent.csv"
 POPULATION = DATA / "population.csv"
+GDELT_BQ = DATA / "gdelt_bq.json"
 PSS_RESULTS = DATA / "pss_results.csv"
 MSS_RESULTS = DATA / "mss_results.csv"
 EXPECTED_COVERAGE = DATA / "expected_coverage.csv"
