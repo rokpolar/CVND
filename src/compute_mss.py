@@ -1,7 +1,7 @@
 """
 compute_mss.py — Media Salience Score (MSS)
 
-Primary input: data/gdelt_bq_part*.json (BigQuery export parts).
+Primary input: data/gdelt_bq.json (BigQuery export).
 Does NOT read news.py / raw_gdelt.csv — that path is optional/legacy
 (see src/archive/news.py).
 
@@ -24,8 +24,8 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cvnd_paths import (  # noqa: E402
-    DATA,
     EVENTS,
+    GDELT_BQ,
     MSS_RANK_STABILITY as MSS_RANK_STABILITY_PATH,
     MSS_RESULTS,
     MSS_WEIGHT_META as MSS_WEIGHT_META_PATH,
@@ -34,7 +34,6 @@ from cvnd_paths import (  # noqa: E402
 
 MSS_FEATURES = ["S_vol", "S_sov", "S_TTFR", "S_CD"]
 AHP_LABELS = MSS_FEATURES
-GDELT_BQ_PARTS = [DATA / f"gdelt_bq_part{i}.json" for i in range(1, 7)]
 
 # Pairwise judgments (Saaty 1–9): see module doc in Step 5 below.
 AHP_MATRIX = np.array([
@@ -153,28 +152,23 @@ def main() -> None:
     print("COMPUTE MEDIA SALIENCE SCORE (MSS)")
     print("=" * 60)
 
-    # ── Step 1: Load BigQuery JSON parts ─────────────────────────────────────────
-    print("\n[Step 1] Loading BigQuery JSON files...")
+    # ── Step 1: Load BigQuery JSON ───────────────────────────────────────────────
+    print("\n[Step 1] Loading BigQuery JSON...")
 
-    parts = []
-    for fpath in GDELT_BQ_PARTS:
-        fname = str(fpath)
-        if os.path.exists(fname):
-            with open(fname, "r") as f:
-                data = json.load(f)
-            df_part = pd.DataFrame(data)
-            print(f"  {fname}: {len(df_part)} rows")
-            parts.append(df_part)
-        else:
-            print(f"  MISSING: {fname}")
+    gdelt_path = str(GDELT_BQ)
+    if not os.path.exists(gdelt_path):
+        raise FileNotFoundError(f"Missing GDELT export: {gdelt_path}")
 
-    raw = pd.concat(parts, ignore_index=True)
+    with open(gdelt_path, "r") as f:
+        data = json.load(f)
+    raw = pd.DataFrame(data)
+    print(f"  {gdelt_path}: {len(raw)} rows")
     raw["article_count"] = raw["article_count"].astype(int)
     raw["coverage_days"] = raw["coverage_days"].astype(int)
     raw["first_article_date"] = pd.to_datetime(raw["first_article_date"])
     raw["last_article_date"] = pd.to_datetime(raw["last_article_date"])
 
-    print(f"\nTotal rows after merge: {len(raw)}")
+    print(f"\nTotal rows: {len(raw)}")
     print(f"Events covered: {raw['event_id'].nunique()}")
     print(f"Languages found: {sorted(raw['source_lang'].dropna().unique())}")
 
