@@ -372,15 +372,23 @@ def plot_coverage_map():
 
     gdf = gdf.merge(state_agg, left_on="name", right_on="state", how="left")
 
-    vmax = max(
-        abs(state_agg["mean_log_ratio"].min()),
-        abs(state_agg["mean_log_ratio"].max()),
-        0.01,
-    )
+    # Cap scale so one extreme state (e.g. Sikkim ≈ -6.5) does not wash
+    # typical under/over states toward yellow; values beyond vmax still clip
+    # to full red/green.
+    abs_vals = state_agg["mean_log_ratio"].abs()
+    vmax = float(np.percentile(abs_vals, 90))
+    vmax = max(vmax, 0.75)
     norm = TwoSlopeNorm(vmin=-vmax, vcenter=0, vmax=vmax)
-    # Same red–amber–green stops as plot1 (red = under, green = over)
+    # High-contrast red ↔ green (near-white neutral; no amber mid)
     log_ratio_cmap = LinearSegmentedColormap.from_list(
-        "vivid_log_ratio", LOG_RATIO_CMAP_STOPS
+        "plot9_red_green",
+        [
+            (0.0, "#8B0000"),
+            (0.25, "#FF0000"),
+            (0.5, "#F7F7F7"),
+            (0.75, "#00C853"),
+            (1.0, "#006400"),
+        ],
     )
 
     fig, ax = plt.subplots(figsize=(10, 12))
@@ -391,8 +399,8 @@ def plot_coverage_map():
         column="mean_log_ratio",
         cmap=log_ratio_cmap,
         norm=norm,
-        linewidth=0.8,
-        edgecolor="#e0e0e0",
+        linewidth=0.6,
+        edgecolor="#333333",
         ax=ax,
         legend=False,
         missing_kwds={
