@@ -6,7 +6,7 @@ Scripts here are **not** on the primary analysis path
 | Script | Role |
 | --- | --- |
 | `population.py` | Legacy WorldPop GEE overlay; pipeline uses `../compute_population.py` |
-| `news.py` | GDELT Doc API collector; primary MSS reads `data/gdelt_bq_part*.json` |
+| `news.py` | GDELT Doc API collector; primary MSS reads `data/gdelt_bq.json` |
 | `process_bigquery.py` | Early BigQuery JSON processor (12-event era) |
 | `build_covariates.py` | Wrote `state_covariates.csv` (unused by scoring/models) |
 | `rainfall.py` | Event rainfall (unused downstream) |
