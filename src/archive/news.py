@@ -1,7 +1,7 @@
 """
 LEGACY / OPTIONAL — GDELT Doc API collector.
 
-Primary MSS reads data/gdelt_bq_part*.json via src/compute_mss.py.
+Primary MSS reads data/gdelt_bq.json via src/compute_mss.py.
 This script does not feed the current scoring path.
 """
 import requests
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     total      = len(events)
     print(f"GDELT NEWS COLLECTION ({total} events) — OPTIONAL / LEGACY")
     print("=" * 60)
-    print("Primary MSS reads gdelt_bq_part*.json, not this script's output")
+    print("Primary MSS reads gdelt_bq.json, not this script's output")
     print("Checkpointing enabled — safe to interrupt and resume\n")
 
     completed  = load_checkpoint()   # dict: event_id -> result dict
