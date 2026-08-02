@@ -1,23 +1,11 @@
 """
 compute_population.py — PRIMARY population/severity builder for the pipeline.
-
 Build data/severity_raw.csv from district-level flood_combined results.
 
-(Do not confuse with src/archive/population.py — legacy WorldPop GEE overlay.)
-
-Primary input (preferred):
-    data/flood_combined.csv  — combined_km2, district_km2, flood_ratio, combined_source
-    data/events.csv          — state, district, start_date
-    data/population.csv      — state population (2025)
-
-Fallback (legacy, archived):
-    data/archive/flood_area_results.csv with bbox overflow scaling
-
-Method (primary):
-    adjusted_flood_area_km2 = combined_km2   (already district-scoped; no bbox scale)
-    exposure_rate           = flood_ratio    (= combined_km2 / district_km2)
-    population_exposed      = (combined_km2 / state_area) * state_population
-        (uniform state density applied only to the measured flood footprint)
+Primary input:
+    data/flood_combined.csv
+    data/events.csv
+    data/population.csv
 
 Output:
     data/severity_raw.csv
