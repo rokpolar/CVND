@@ -68,10 +68,10 @@ STEPS+=("src/compute_pss.py")
 
 if [[ "$SKIP_ARTICLES" != "1" ]]; then
   echo "NOTE: SKIP_ARTICLES=0 — running archived GDELT Doc API collector"
-  echo "      Primary MSS still reads data/gdelt_bq_part*.json (not news.py output)"
+  echo "      Primary MSS still reads data/gdelt_bq.json (not news.py output)"
   STEPS+=("src/archive/news.py")
 else
-  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT Doc API (MSS uses gdelt_bq_part*.json)"
+  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT Doc API (MSS uses gdelt_bq.json)"
 fi
 
 STEPS+=(
