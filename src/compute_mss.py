@@ -1,7 +1,7 @@
 """
 compute_mss.py — Media Salience Score (MSS)
 
-Primary input: data/gdelt_bq.json (BigQuery export).
+Primary input: data/raw/gdelt_bq.json (BigQuery export).
 Does NOT read news.py / raw_gdelt.csv — that path is optional/legacy
 (see src/archive/news.py).
 
@@ -23,14 +23,7 @@ warnings.filterwarnings("ignore")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cvnd_paths import (  # noqa: E402
-    EVENTS,
-    GDELT_BQ,
-    MSS_RANK_STABILITY as MSS_RANK_STABILITY_PATH,
-    MSS_RESULTS,
-    MSS_WEIGHT_META as MSS_WEIGHT_META_PATH,
-    MSS_WEIGHT_PROVENANCE as MSS_WEIGHT_PROVENANCE_PATH,
-)
+from cvnd_layout import data_path  # noqa: E402
 
 MSS_FEATURES = ["S_vol", "S_sov", "S_TTFR", "S_CD"]
 AHP_LABELS = MSS_FEATURES
@@ -155,8 +148,8 @@ def main() -> None:
     # ── Step 1: Load BigQuery JSON ───────────────────────────────────────────────
     print("\n[Step 1] Loading BigQuery JSON...")
 
-    gdelt_path = str(GDELT_BQ)
-    if not os.path.exists(gdelt_path):
+    gdelt_path = data_path("gdelt_bq")
+    if not gdelt_path.exists():
         raise FileNotFoundError(f"Missing GDELT export: {gdelt_path}")
 
     with open(gdelt_path, "r") as f:
@@ -214,7 +207,7 @@ def main() -> None:
 
     # ── Step 3: Event onset dates ─────────────────────────────────────────────────
     print("\n[Step 3] Loading event onset dates...")
-    events = pd.read_csv(EVENTS)[
+    events = pd.read_csv(data_path("events"))[
         ["event_id", "state", "start_date", "income_group"]
     ]
     events["onset_date"] = pd.to_datetime(events["start_date"])
@@ -388,10 +381,15 @@ def main() -> None:
         },
         "n_events": int(len(df)),
     }
-    MSS_RESULTS.parent.mkdir(parents=True, exist_ok=True)
-    with open(MSS_WEIGHT_META_PATH, "w", encoding="utf-8") as f:
+    mss_results_path = data_path("mss_results")
+    weight_meta_path = data_path("mss_weight_meta")
+    weight_provenance_path = data_path("mss_weight_provenance")
+    rank_stability_path = data_path("mss_rank_stability")
+
+    mss_results_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(weight_meta_path, "w", encoding="utf-8") as f:
         json.dump(weight_meta, f, indent=2)
-    print(f"\n  SAVED: {MSS_WEIGHT_META_PATH}")
+    print(f"\n  SAVED: {weight_meta_path}")
 
     # ── Step 9: Summary ───────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
@@ -479,13 +477,13 @@ def main() -> None:
             "CR": None,
         },
     ])
-    weight_record.to_csv(MSS_WEIGHT_PROVENANCE_PATH, index=False)
-    rank_df.to_csv(MSS_RANK_STABILITY_PATH, index=False)
-    result.to_csv(MSS_RESULTS, index=False)
+    weight_record.to_csv(weight_provenance_path, index=False)
+    rank_df.to_csv(rank_stability_path, index=False)
+    result.to_csv(mss_results_path, index=False)
 
-    print(f"\nSAVED: {MSS_RESULTS}")
-    print(f"SAVED: {MSS_WEIGHT_PROVENANCE_PATH}  (cite this in paper appendix)")
-    print(f"SAVED: {MSS_RANK_STABILITY_PATH}")
+    print(f"\nSAVED: {mss_results_path}")
+    print(f"SAVED: {weight_provenance_path}  (cite this in paper appendix)")
+    print(f"SAVED: {rank_stability_path}")
     print("\nMSS COMPLETE — next: compute_expected_coverage.py")
 
 

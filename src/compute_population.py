@@ -1,14 +1,15 @@
 """
 compute_population.py — PRIMARY population/severity builder for the pipeline.
-Build data/severity_raw.csv from district-level flood_combined results.
+Build data/intermediate/severity_raw.csv from district-level flood_combined results.
 
 Primary input:
-    data/flood_combined.csv
-    data/events.csv
-    data/population.csv
+    data/intermediate/flood_combined.csv
+    data/raw/events.csv
+    data/raw/population.csv
+    data/raw/state_area.csv
 
 Output:
-    data/severity_raw.csv
+    data/intermediate/severity_raw.csv
 """
 
 from __future__ import annotations
@@ -16,25 +17,14 @@ from __future__ import annotations
 import difflib
 import math
 import os
+import sys
 
 import numpy as np
 import pandas as pd
 
-STATE_AREA_KM2 = {
-    "Rajasthan": 342239, "Madhya Pradesh": 308252, "Maharashtra": 307713,
-    "Uttar Pradesh": 240928, "Gujarat": 196024, "Karnataka": 191791,
-    "Andhra Pradesh": 162975, "Odisha": 155707, "Chhattisgarh": 135192,
-    "Tamil Nadu": 130058, "Telangana": 112077, "Bihar": 94163,
-    "West Bengal": 88752, "Arunachal Pradesh": 83743, "Jharkhand": 79716,
-    "Assam": 78438, "Himachal Pradesh": 55673, "Uttarakhand": 53483,
-    "Punjab": 50362, "Haryana": 44212, "Kerala": 38852,
-    "Meghalaya": 22429, "Manipur": 22327, "Mizoram": 21081,
-    "Nagaland": 16579, "Tripura": 10486, "Sikkim": 7096, "Goa": 3702,
-    "Jammu and Kashmir": 42241, "Ladakh": 59146,
-    "Delhi": 1484, "Puducherry": 479, "Chandigarh": 114,
-    "Dadra & Nagar Haveli and Daman & Diu": 603,
-    "Andaman & Nicobar Islands": 8249, "Lakshadweep": 32,
-}
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from cvnd_layout import data_path  # noqa: E402
 
 STATE_ALIASES = {
     "jammu and kashmir": "Jammu and Kashmir",
@@ -63,12 +53,19 @@ def parse_pop(v):
     return int(str(v).replace(",", "").strip())
 
 
-def load_pop_lookup():
-    pop_raw = pd.read_csv("data/population.csv")
-    known = list(STATE_AREA_KM2.keys())
+def load_state_area() -> dict[str, int]:
+    area_raw = pd.read_csv(data_path("state_area"))
+    lookup = {}
+    for _, row in area_raw.iterrows():
+        lookup[str(row["state"])] = int(row["area_km2"])
+    return lookup
+
+
+def load_pop_lookup(known_states) -> dict[str, int]:
+    pop_raw = pd.read_csv(data_path("population"))
     pop_lookup = {}
     for _, row in pop_raw.iterrows():
-        canonical = resolve(str(row["State/UT"]), known)
+        canonical = resolve(str(row["State/UT"]), known_states)
         if canonical:
             pop_lookup[canonical] = parse_pop(row["Population (2025)"])
         else:
@@ -76,19 +73,22 @@ def load_pop_lookup():
     return pop_lookup
 
 
-def from_flood_combined(pop_lookup: dict) -> pd.DataFrame:
+def from_flood_combined(
+    pop_lookup: dict[str, int], state_area: dict[str, int]
+) -> pd.DataFrame:
     """Primary path: district-level combined flood areas."""
-    combined = pd.read_csv("data/flood_combined.csv")
-    events = pd.read_csv("data/events.csv")[
+    combined = pd.read_csv(data_path("flood_combined"))
+    events = pd.read_csv(data_path("events"))[
         ["event_id", "state", "district", "start_date"]
     ]
     df = combined.merge(events, on="event_id", how="left")
+    known = state_area.keys()
 
     rows = []
     for _, r in df.iterrows():
-        canonical = resolve(r.get("state"), STATE_AREA_KM2.keys())
+        canonical = resolve(r.get("state"), known)
         state_pop = pop_lookup.get(canonical)
-        state_area = STATE_AREA_KM2.get(canonical)
+        area_km2 = state_area.get(canonical)
         warnings = []
 
         combined_km2 = r.get("combined_km2")
@@ -108,7 +108,7 @@ def from_flood_combined(pop_lookup: dict) -> pd.DataFrame:
                 "canonical_state": canonical,
                 "start_date": r.get("start_date", ""),
                 "bbox_area_km2": None,
-                "state_area_km2": state_area,
+                "state_area_km2": area_km2,
                 "district_km2": None if pd.isna(district_km2) else round(float(district_km2), 1),
                 "raw_flood_area_km2": None,
                 "adjusted_flood_area_km2": None,
@@ -127,21 +127,19 @@ def from_flood_combined(pop_lookup: dict) -> pd.DataFrame:
         if not pd.isna(flood_ratio):
             flood_ratio = float(min(max(flood_ratio, 0.0), 1.0))
 
-        if state_area and state_pop:
-            # Density applied only over measured footprint (district-scoped area)
-            exposed = round((flood_km2 / state_area) * state_pop)
-            # Prefer district flood_ratio as exposure_rate when available
+        if area_km2 and state_pop:
+            exposed = round((flood_km2 / area_km2) * state_pop)
             exposure_rate = (
                 round(flood_ratio, 6)
                 if flood_ratio is not None and not pd.isna(flood_ratio)
-                else round(min(flood_km2 / state_area, 1.0), 6)
+                else round(min(flood_km2 / area_km2, 1.0), 6)
             )
         else:
             exposed = None
             exposure_rate = None
             if not state_pop:
                 warnings.append(f"NO POPULATION DATA for '{canonical}'")
-            if not state_area:
+            if not area_km2:
                 warnings.append(f"NO AREA DATA for '{canonical}'")
 
         if flood_km2 == 0:
@@ -154,7 +152,7 @@ def from_flood_combined(pop_lookup: dict) -> pd.DataFrame:
             "canonical_state": canonical,
             "start_date": r.get("start_date", ""),
             "bbox_area_km2": None,
-            "state_area_km2": state_area,
+            "state_area_km2": area_km2,
             "district_km2": None if pd.isna(district_km2) else round(float(district_km2), 1),
             "raw_flood_area_km2": round(flood_km2, 2),
             "adjusted_flood_area_km2": round(flood_km2, 2),
@@ -176,14 +174,17 @@ def bbox_area_km2(minlon, minlat, maxlon, maxlat):
     return lat_km * lon_km
 
 
-def from_legacy_flood_area(pop_lookup: dict) -> pd.DataFrame:
+def from_legacy_flood_area(
+    pop_lookup: dict[str, int], state_area: dict[str, int]
+) -> pd.DataFrame:
     """Legacy bbox-scaled path (only if flood_combined.csv missing)."""
-    flood = pd.read_csv("data/archive/flood_area_results.csv")
+    flood = pd.read_csv(data_path("flood_area_results"))
+    known = state_area.keys()
     rows = []
     for _, r in flood.iterrows():
-        canonical = resolve(r["state"], STATE_AREA_KM2.keys())
+        canonical = resolve(r["state"], known)
         state_pop = pop_lookup.get(canonical)
-        state_area = STATE_AREA_KM2.get(canonical)
+        area_km2 = state_area.get(canonical)
         raw_flood = r.get("flood_area_km2")
         warnings = []
 
@@ -197,7 +198,7 @@ def from_legacy_flood_area(pop_lookup: dict) -> pd.DataFrame:
                 "event_id": r["event_id"], "state": r["state"],
                 "district": r.get("district", ""), "canonical_state": canonical,
                 "start_date": r.get("start_date", ""),
-                "bbox_area_km2": None, "state_area_km2": state_area,
+                "bbox_area_km2": None, "state_area_km2": area_km2,
                 "district_km2": None,
                 "raw_flood_area_km2": None, "adjusted_flood_area_km2": None,
                 "flood_ratio": None, "combined_source": "legacy",
@@ -217,18 +218,18 @@ def from_legacy_flood_area(pop_lookup: dict) -> pd.DataFrame:
             bb_area = None
             warnings.append("BBOX COLUMNS MISSING OR INVALID")
 
-        if bb_area and state_area and bb_area > state_area * 1.05:
-            scale_factor = state_area / bb_area
+        if bb_area and area_km2 and bb_area > area_km2 * 1.05:
+            scale_factor = area_km2 / bb_area
             adjusted_flood = raw_flood * scale_factor
             warnings.append(
-                f"BBOX OVERFLOW: bbox={bb_area:.0f} km2 > state={state_area} km2 "
+                f"BBOX OVERFLOW: bbox={bb_area:.0f} km2 > state={area_km2} km2 "
                 f"(scale factor={scale_factor:.3f})."
             )
         else:
             adjusted_flood = raw_flood
 
-        if state_area and state_pop:
-            fraction = min(adjusted_flood / state_area, 1.0)
+        if area_km2 and state_pop:
+            fraction = min(adjusted_flood / area_km2, 1.0)
             exposed = round(fraction * state_pop)
             exposure_rate = round(fraction, 6)
         else:
@@ -240,7 +241,7 @@ def from_legacy_flood_area(pop_lookup: dict) -> pd.DataFrame:
             "district": r.get("district", ""), "canonical_state": canonical,
             "start_date": r.get("start_date", ""),
             "bbox_area_km2": round(bb_area, 1) if bb_area else None,
-            "state_area_km2": state_area,
+            "state_area_km2": area_km2,
             "district_km2": None,
             "raw_flood_area_km2": round(raw_flood, 2),
             "adjusted_flood_area_km2": round(adjusted_flood, 2),
@@ -257,25 +258,29 @@ def main():
     print("COMPUTE POPULATION / SEVERITY RAW")
     print("=" * 60)
 
-    pop_lookup = load_pop_lookup()
+    state_area = load_state_area()
+    pop_lookup = load_pop_lookup(state_area.keys())
+    combined_path = data_path("flood_combined")
+    legacy_path = data_path("flood_area_results")
 
-    if os.path.exists("data/flood_combined.csv"):
-        print("Using PRIMARY input: data/flood_combined.csv (district-level)")
-        out = from_flood_combined(pop_lookup)
-    elif os.path.exists("data/archive/flood_area_results.csv"):
-        print("WARNING: flood_combined.csv missing — legacy data/archive/flood_area_results.csv")
-        out = from_legacy_flood_area(pop_lookup)
+    if combined_path.exists():
+        print(f"Using PRIMARY input: {combined_path} (district-level)")
+        out = from_flood_combined(pop_lookup, state_area)
+    elif legacy_path.exists():
+        print(f"WARNING: {combined_path.name} missing — legacy {legacy_path}")
+        out = from_legacy_flood_area(pop_lookup, state_area)
     else:
         raise FileNotFoundError(
-            "Need data/flood_combined.csv or data/archive/flood_area_results.csv"
+            f"Need {combined_path} or {legacy_path}"
         )
 
-    os.makedirs("data", exist_ok=True)
-    out.to_csv("data/severity_raw.csv", index=False)
+    out_path = data_path("severity_raw")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(out_path, index=False)
 
     n_ok = out["adjusted_flood_area_km2"].notna().sum()
     n_null = out["adjusted_flood_area_km2"].isna().sum()
-    print(f"\nSAVED: data/severity_raw.csv — {len(out)} events")
+    print(f"\nSAVED: {out_path} — {len(out)} events")
     print(f"  with flood area : {n_ok}")
     print(f"  missing flood   : {n_null}")
     if "combined_source" in out.columns:

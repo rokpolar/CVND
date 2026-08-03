@@ -20,22 +20,16 @@ warnings.filterwarnings("ignore")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cvnd_paths import (  # noqa: E402
+from cvnd_config import (  # noqa: E402
     COLOR_OVER,
     COLOR_UNDER,
     COLORS_INCOME,
-    EVENTS,
-    EXPECTED_COVERAGE,
     FIGURES,
     INCOME_ORDER,
     LOG_RATIO_CMAP_STOPS,
     LOG_RATIO_EPS,
-    MSS_RESULTS,
-    NE_INDIA_STATES,
-    OUTPUTS,
-    PIPELINE_RESULT_MD,
-    PSS_RESULTS,
 )
+from cvnd_layout import OUTPUTS, data_path, output_path  # noqa: E402
 
 os.makedirs(OUTPUTS, exist_ok=True)
 plt.rcParams.update({
@@ -46,9 +40,9 @@ plt.rcParams.update({
     "figure.dpi": 150,
 })
 
-EXPECTED_COVERAGE_PATH = str(EXPECTED_COVERAGE)
-PSS_RESULTS_PATH = str(PSS_RESULTS)
-MSS_RESULTS_PATH = str(MSS_RESULTS)
+EXPECTED_COVERAGE_PATH = str(data_path("expected_coverage"))
+PSS_RESULTS_PATH = str(data_path("pss_results"))
+MSS_RESULTS_PATH = str(data_path("mss_results"))
 COLORS = COLORS_INCOME
 
 
@@ -72,7 +66,7 @@ def plot_pss_mss_scatter():
         how="inner",
     )
     if "income_group" not in df.columns:
-        events = pd.read_csv(EVENTS)[["event_id", "income_group"]]
+        events = pd.read_csv(data_path("events"))[["event_id", "income_group"]]
         df = df.merge(events, on="event_id")
 
     if os.path.exists(EXPECTED_COVERAGE_PATH):
@@ -361,13 +355,13 @@ def plot_coverage_map():
         "https://naciscdn.org/naturalearth/10m/cultural/"
         "ne_10m_admin_1_states_provinces.zip"
     )
-    cache_path = str(NE_INDIA_STATES)
+    cache_path = str(data_path("ne_india_states"))
     if os.path.exists(cache_path):
         gdf = gpd.read_file(cache_path)
     else:
         world = gpd.read_file(shapefile_url)
         gdf = world[world["admin"] == "India"][["name", "geometry"]].copy()
-        NE_INDIA_STATES.parent.mkdir(parents=True, exist_ok=True)
+        data_path("ne_india_states").parent.mkdir(parents=True, exist_ok=True)
         gdf.to_file(cache_path, driver="GPKG")
 
     gdf = gdf.merge(state_agg, left_on="name", right_on="state", how="left")
@@ -449,7 +443,7 @@ def plot_coverage_map():
 
 def refresh_pipeline_result_figures(md_path: str | None = None):
     """Insert / replace the Figures section after plots are written."""
-    md_path = md_path or str(PIPELINE_RESULT_MD)
+    md_path = md_path or str(output_path("pipeline_result"))
     plot_links = []
     for fname, label in FIGURES:
         if os.path.exists(os.path.join(str(OUTPUTS), fname)):
@@ -493,9 +487,9 @@ if __name__ == "__main__":
 
     available = [
         f for f in [
-            str(PSS_RESULTS),
-            str(MSS_RESULTS),
-            str(EXPECTED_COVERAGE),
+            str(data_path("pss_results")),
+            str(data_path("mss_results")),
+            str(data_path("expected_coverage")),
         ]
         if os.path.exists(f)
     ]
@@ -533,5 +527,6 @@ if __name__ == "__main__":
         print(f"  outputs/{f}")
     for f in saved_csv:
         print(f"  outputs/{f}")
-    if os.path.exists(PIPELINE_RESULT_MD):
-        print(f"  {PIPELINE_RESULT_MD}")
+    pipeline_md = output_path("pipeline_result")
+    if pipeline_md.exists():
+        print(f"  {pipeline_md}")

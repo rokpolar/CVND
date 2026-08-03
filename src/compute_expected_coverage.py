@@ -23,7 +23,7 @@ Deaths (option C):
     deaths_missing is kept as metadata only (not a regressor).
 
 Notes:
-- Respects data/events_quarantine.csv (#17).
+- Respects data/raw/events_quarantine.csv (#17).
 - Does not impute missing article counts as zero.
 - Outcome: `mss_results.total_articles` (design window onset+14d; column alias
   `n_articles_0_14` is a proxy name — counts are not guaranteed day-filtered).
@@ -47,42 +47,35 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cvnd_paths import (  # noqa: E402
-    EMDAT as EMDAT_PATH,
-    EVENTS,
-    EVENTS_QUARANTINE as QUARANTINE_PATH,
-    EXPECTED_COVERAGE,
+from cvnd_config import (  # noqa: E402
     FIGURES,
     LOG_RATIO_EPS,
     MEDIA_WINDOW_DAYS,
     MONSOON_MONTHS,
-    MSS_RESULTS,
-    MSS_WEIGHT_META as MSS_WEIGHT_META_PATH,
-    PIPELINE_RESULT_MD,
-    PSS_RESULTS as PSS_RESULTS_PATH,
-    SEVERITY_RAW,
-    STATE_EXPECTED_COVERAGE,
 )
+from cvnd_layout import data_path, output_path  # noqa: E402
 
 
-def load_quarantine_ids(path: str = QUARANTINE_PATH) -> set[str]:
-    if not os.path.exists(path):
-        print(f"WARNING: {path} not found — no events quarantined")
+def load_quarantine_ids(path: os.PathLike | str | None = None) -> set[str]:
+    quarantine_path = path or data_path("events_quarantine")
+    if not os.path.exists(quarantine_path):
+        print(f"WARNING: {quarantine_path} not found — no events quarantined")
         return set()
-    qdf = pd.read_csv(path)
+    qdf = pd.read_csv(quarantine_path)
     ids = set(qdf.loc[qdf["status"] == "quarantine", "event_id"].astype(str))
-    print(f"Quarantine list: {len(ids)} events from {path}")
+    print(f"Quarantine list: {len(ids)} events from {quarantine_path}")
     return ids
 
 
 def attach_deaths_from_emdat(events: pd.DataFrame) -> pd.Series:
     """Best-effort match of EM-DAT Total Deaths onto location-events."""
     deaths = pd.Series(np.nan, index=events.index, dtype=float)
-    if not os.path.exists(EMDAT_PATH):
-        print(f"WARNING: {EMDAT_PATH} missing — total_deaths unavailable")
+    emdat_path = data_path("emdat")
+    if not emdat_path.exists():
+        print(f"WARNING: {emdat_path} missing — total_deaths unavailable")
         return deaths
 
-    raw = pd.read_csv(EMDAT_PATH)
+    raw = pd.read_csv(emdat_path)
     raw = raw[raw["Disaster Type"].astype(str).str.lower() == "flood"].copy()
     raw = raw[(raw["Start Year"] >= 2015) & (raw["Start Year"] <= 2026)].copy()
 
@@ -122,19 +115,19 @@ def attach_deaths_from_emdat(events: pd.DataFrame) -> pd.Series:
 
 
 def build_analysis_frame() -> pd.DataFrame:
-    events = pd.read_csv(EVENTS)
-    sev = pd.read_csv(SEVERITY_RAW)[
+    events = pd.read_csv(data_path("events"))
+    sev = pd.read_csv(data_path("severity_raw"))[
         ["event_id", "adjusted_flood_area_km2", "population_exposed"]
     ]
     sev = sev.rename(columns={"adjusted_flood_area_km2": "affected_area_km2"})
-    mss = pd.read_csv(MSS_RESULTS)
+    mss = pd.read_csv(data_path("mss_results"))
     mss_cols = ["event_id", "total_articles", "en_articles"]
     for optional in ("MSS", "MSS_entropy"):
         if optional in mss.columns:
             mss_cols.append(optional)
     mss = mss[mss_cols]
 
-    pss = pd.read_csv(PSS_RESULTS_PATH)[["event_id", "PSS"]]
+    pss = pd.read_csv(data_path("pss_results"))[["event_id", "PSS"]]
 
     df = (
         events.merge(sev, on="event_id", how="left")
@@ -313,10 +306,11 @@ def _md_table(df: pd.DataFrame, cols: list[str], float_cols: dict[str, str] | No
 
 def format_mss_weight_section() -> str:
     """MSS weight sensitivity block (from compute_mss.py / AHP primary)."""
-    if not os.path.exists(MSS_WEIGHT_META_PATH):
+    meta_path = data_path("mss_weight_meta")
+    if not meta_path.exists():
         return ""
 
-    with open(MSS_WEIGHT_META_PATH, encoding="utf-8") as f:
+    with open(meta_path, encoding="utf-8") as f:
         meta = json.load(f)
 
     feats = meta.get("features", ["S_vol", "S_sov", "S_TTFR", "S_CD"])
@@ -347,7 +341,7 @@ def format_mss_weight_section() -> str:
 
     return f"""## MSS weight sensitivity
 
-Primary `MSS` in `data/mss_results.csv` uses **AHP-derived** weights
+Primary `MSS` in `data/results/mss_results.csv` uses **AHP-derived** weights
 (Saaty 1980; CR = {ahp_cr_str}). Entropy weighting is computed on the same
 scaled components for robustness (`MSS_entropy` column).
 
@@ -360,8 +354,8 @@ scaled components for robustness (`MSS_entropy` column).
 | Entropy | {entropy.get('pearson_r', float('nan')):.4f} | {entropy.get('max_rank_shift', float('nan')):.0f} | {entropy.get('mean_rank_shift', float('nan')):.2f} |
 
 - MSS events: {n_events}
-- Weight provenance: `data/mss_weight_provenance.csv`
-- Rank stability: `data/mss_rank_stability.csv`
+- Weight provenance: `data/results/mss_weight_provenance.csv`
+- Rank stability: `data/results/mss_rank_stability.csv`
 
 """
 
@@ -376,7 +370,7 @@ def write_markdown_report(
     path: str | os.PathLike | None = None,
 ) -> str:
     """Write final expected-coverage results to a markdown file."""
-    path = str(path or PIPELINE_RESULT_MD)
+    path = str(path or output_path("pipeline_result"))
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     generated = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -515,9 +509,9 @@ R² = {income_summary["r2"]:.4f}
 
 ## Output files
 
-- `{EXPECTED_COVERAGE}` (primary)
-- `{STATE_EXPECTED_COVERAGE}`
-- `{QUARANTINE_PATH}`
+- `{data_path("expected_coverage")}` (primary)
+- `{data_path("state_expected_coverage")}`
+- `{data_path("events_quarantine")}`
 - `{path}`
 """
 
@@ -662,11 +656,13 @@ def main() -> None:
         .sort_values("mean_log_ratio")
     )
 
-    EXPECTED_COVERAGE.parent.mkdir(parents=True, exist_ok=True)
-    out.to_csv(EXPECTED_COVERAGE, index=False)
-    state_agg.to_csv(STATE_EXPECTED_COVERAGE, index=False)
-    print(f"\nSAVED: {EXPECTED_COVERAGE} ({len(out)} events)")
-    print(f"SAVED: {STATE_EXPECTED_COVERAGE} ({len(state_agg)} states)")
+    expected_path = data_path("expected_coverage")
+    state_expected_path = data_path("state_expected_coverage")
+    expected_path.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(expected_path, index=False)
+    state_agg.to_csv(state_expected_path, index=False)
+    print(f"\nSAVED: {expected_path} ({len(out)} events)")
+    print(f"SAVED: {state_expected_path} ({len(state_agg)} states)")
 
     md_path = write_markdown_report(
         out=out,
@@ -675,7 +671,7 @@ def main() -> None:
         severity_col=severity_col,
         include_deaths=include_deaths,
         income_summary=income_summary,
-        path=str(PIPELINE_RESULT_MD),
+        path=str(output_path("pipeline_result")),
     )
     print(f"SAVED: {md_path}")
     print("\nEXPECTED COVERAGE COMPLETE")

@@ -58,7 +58,7 @@ if [[ "$SKIP_GEE" != "1" ]]; then
 else
   echo "NOTE: SKIP_GEE=1 — skipping GEE satellite pull (using cached flood artifacts)"
   # Still rebuild severity from existing flood_combined / flood_extent artifacts
-  if [[ -f "$ROOT/data/flood_extent.csv" && -d "$ROOT/data/sits_scores" ]]; then
+  if [[ -f "$ROOT/data/cache/flood_extent.csv" && -d "$ROOT/data/cache/sits_scores" ]]; then
     STEPS+=("src/merge_results.py")
   fi
   STEPS+=("src/compute_population.py")
@@ -68,10 +68,10 @@ STEPS+=("src/compute_pss.py")
 
 if [[ "$SKIP_ARTICLES" != "1" ]]; then
   echo "NOTE: SKIP_ARTICLES=0 — running archived GDELT Doc API collector"
-  echo "      Primary MSS still reads data/gdelt_bq.json (not news.py output)"
+  echo "      Primary MSS still reads data/raw/gdelt_bq.json (not news.py output)"
   STEPS+=("src/archive/news.py")
 else
-  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT Doc API (MSS uses gdelt_bq.json)"
+  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT Doc API (MSS uses data/raw/gdelt_bq.json)"
 fi
 
 STEPS+=(

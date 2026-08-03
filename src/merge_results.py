@@ -23,27 +23,31 @@ Per event:
      Events with 0 SITS patches (fully clouded on the flood date) are pulled from Track A
      and routed to S1 (or Track A NDWI if no S1) -- not dropped.
 
-Output: data/flood_combined.csv
+Output: data/intermediate/flood_combined.csv
 Run:    python src/merge_results.py     (numpy + pandas only; no model / GEE)
 """
-import os
 import glob
+import os
+import sys
+
 import numpy as np
 import pandas as pd
 
-SCORES_DIR = 'data/sits_scores'
-TRACK_A_CSV = 'data/flood_extent.csv'
-OUT_CSV = 'data/flood_combined.csv'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from cvnd_config import CLOUD_MAX_PCT  # noqa: E402
+from cvnd_layout import data_path  # noqa: E402
+
+SCORES_DIR = str(data_path("sits_scores"))
+TRACK_A_CSV = str(data_path("flood_extent"))
+OUT_CSV = str(data_path("flood_combined"))
 
 PATCH_KM2 = (64 * 10 / 1000) ** 2   # 0.4096 km2 per patch
 PX_KM2 = (10 / 1000) ** 2           # 1e-4 km2 per pixel
 FLOOD_MIN_PX = 205                  # a patch is an "NDWI flood" patch if >= 5% (205/4096) is new water
 MIN_POS = 20                        # need this many NDWI-flood (and non-flood) patches to calibrate
 J_MIN = 0.15                        # min Youden's J (SITS-NDWI agreement) to use the SITS+NDWI fusion
-CLOUD_MAX_PCT = 60                  # flood-date cloud over the district > this -> optical too blind, use S1
-                                    # (docs historically said 30%; code threshold is 60)
-POST_CLOUD_CSV = 'data/post_cloud.csv'    # event_id,cloud_pct  (from post_cloud.py)
-DISTRICT_CSV = 'data/district_area.csv'   # event_id,district_km2  (from district_area.py)
+POST_CLOUD_CSV = str(data_path("post_cloud"))
+DISTRICT_CSV = str(data_path("district_area"))
 
 
 def _otsu(x):

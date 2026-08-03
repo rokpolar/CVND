@@ -46,12 +46,12 @@ earthengine authenticate
 ## Primary analysis DAG
 
 ```text
-data/flood_combined.csv (+ events, population)
-        → compute_population.py → severity_raw.csv
-        → compute_pss.py        → pss_results.csv
-data/gdelt_bq.json
-        → compute_mss.py        → mss_results.csv
-        → compute_expected_coverage.py  → expected_coverage.csv + log_ratio
+data/raw/ + data/intermediate/flood_combined.csv
+        → compute_population.py → intermediate/severity_raw.csv
+        → compute_pss.py        → results/pss_results.csv
+data/raw/gdelt_bq.json
+        → compute_mss.py        → results/mss_results.csv
+        → compute_expected_coverage.py  → results/expected_coverage.csv + log_ratio
         → visualize.py          → outputs/plot{1,5–9}_*.png
 ```
 
@@ -71,7 +71,7 @@ Default (**cached** rebuild — skips GEE and GDELT Doc API):
 | Flag | Default | Meaning |
 | --- | --- | --- |
 | `SKIP_GEE` | `1` | Skip `satellite.py`; use cached `flood_extent` / `sits_scores` / `flood_combined` |
-| `SKIP_ARTICLES` | `1` | Skip archived Doc API collector; **MSS always reads `gdelt_bq.json`** |
+| `SKIP_ARTICLES` | `1` | Skip archived Doc API collector; **MSS always reads `data/raw/gdelt_bq.json`** |
 | `SETUP_DEPS` | `0` | Set to `1` to reinstall `requirements.txt` into `venv/` |
 
 Examples:
@@ -88,17 +88,17 @@ SETUP_DEPS=1 ./scripts/run_pipeline.sh
 
 | Mode | Needs | Notes |
 | --- | --- | --- |
-| Cached (`SKIP_GEE=1`) | `data/flood_combined.csv` or (`flood_extent.csv` + `sits_scores/`), `gdelt_bq.json` | Default; no network GEE/GDELT Doc |
+| Cached (`SKIP_GEE=1`) | `data/intermediate/flood_combined.csv` or (`data/cache/flood_extent.csv` + `data/cache/sits_scores/`), `data/raw/gdelt_bq.json` | Default; no network GEE/GDELT Doc |
 | Full GEE (`SKIP_GEE=0`) | EE credentials, district AOIs | Writes flood extent / sits patches; Colab inference → `sits_scores/` |
 
 SITS scores are produced outside the runner (Colab notebook after Track B patches),
-then `merge_results.py` builds `flood_combined.csv`.
+then `merge_results.py` builds `data/intermediate/flood_combined.csv`.
 
 ## Media data truth
 
 | Stage | Status |
 | --- | --- |
-| `data/gdelt_bq.json` → `compute_mss.py` | **Primary** |
+| `data/raw/gdelt_bq.json` → `compute_mss.py` | **Primary** |
 | `src/archive/news.py` (Doc API → `raw_gdelt.csv`) | Optional / legacy; does not feed current MSS |
 | `src/archive/process_bigquery.py` | Orphan (early 12-event era) |
 
@@ -108,8 +108,9 @@ day-filtered).
 
 ## Shared config
 
-Canonical paths and constants: [`src/cvnd_paths.py`](src/cvnd_paths.py)
-(`LOG_RATIO_EPS`, PSS weights, plot palette, figure list).
+Paths: [`src/cvnd_layout.py`](src/cvnd_layout.py) (`data_path(key)` registry).  
+Constants: [`src/cvnd_config.py`](src/cvnd_config.py) (`LOG_RATIO_EPS`, PSS weights, plot palette).  
+Data catalog: [`data/README.md`](data/README.md).
 
 ## Figures
 

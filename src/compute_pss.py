@@ -2,7 +2,7 @@
 compute_pss.py — Physical Severity Score (PSS)
 
 Primary path:
-    data/severity_raw.csv → data/pss_results.csv
+    data/intermediate/severity_raw.csv → data/results/pss_results.csv
 
 PSS = 0.5 * MinMax(log1p(affected_area_km2))
     + 0.5 * MinMax(log1p(population_exposed))
@@ -25,17 +25,12 @@ warnings.filterwarnings("ignore")
 # Allow `python src/compute_pss.py` from repo root
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cvnd_paths import (  # noqa: E402
-    EVENTS,
-    PSS_RESULTS,
-    PSS_W_AREA,
-    PSS_W_POP,
-    SEVERITY_RAW,
-)
+from cvnd_config import PSS_W_AREA, PSS_W_POP  # noqa: E402
+from cvnd_layout import data_path  # noqa: E402
 
 
 def main() -> None:
-    df = pd.read_csv(SEVERITY_RAW)
+    df = pd.read_csv(data_path("severity_raw"))
     df["affected_area_km2"] = df["adjusted_flood_area_km2"]
     df = df.dropna(subset=["affected_area_km2", "population_exposed"])
 
@@ -132,16 +127,17 @@ def main() -> None:
     print(f"PSS mean  : {pss_df['PSS'].mean():.4f}")
     print(f"PSS median: {pss_df['PSS'].median():.4f}")
 
-    events = pd.read_csv(EVENTS)[["event_id", "income_group"]]
+    events = pd.read_csv(data_path("events"))[["event_id", "income_group"]]
     pss_df = pss_df.merge(events, on="event_id")
     print("\nMean PSS by income group:")
     print(pss_df.groupby("income_group")["PSS"].mean().round(4).to_string())
     print("\nThis is a preview — if Low-income PSS >= High-income PSS,")
     print("any MSS gap found later is strong evidence of reporting bias.")
 
-    PSS_RESULTS.parent.mkdir(parents=True, exist_ok=True)
-    pss_df.to_csv(PSS_RESULTS, index=False)
-    print(f"\nSAVED: {PSS_RESULTS}")
+    out_path = data_path("pss_results")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    pss_df.to_csv(out_path, index=False)
+    print(f"\nSAVED: {out_path}")
     print("\nPSS COMPLETE — next: compute_mss.py")
 
 
