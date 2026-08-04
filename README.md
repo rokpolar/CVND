@@ -12,21 +12,14 @@ media reported(Media coverage), so under- and over-coverage can be quantified ra
 
 The pipeline has four linked pieces:
 
-1. **Physical Severity Score (PSS)** — flood extent from Sentinel-1/2 imagery
-   (SITS + NDWI/SAR fallback) combined with exposed population. Area and
-   population are `log1p`-transformed, MinMax-scaled, then averaged (0.5 / 0.5).
-2. **Media Salience Score (MSS)** — multilingual GDELT coverage aggregated into
-   volume, share-of-voice, time-to-first-report, and coverage duration (AHP weights kept for sensitivity).
-3. **Expected coverage** — a sparse Negative Binomial model predicts how many
-   articles a disaster should attract given severity, deaths, and onset year
-   . This replaces naïve Min-Max discrepancy scores that outliers can distort.
-4. **Discrepancy Index (`log_ratio`)** — continuous residual
-   \(\ln((y+0.5)/(\hat\mu+0.5))\).  
-   `log_ratio < 0` → under-covered; `log_ratio > 0` → over-covered.
-
-Primary unit of analysis is the **flood event** (not a continuous location panel).
-Outputs live in `data/` (scores, expected coverage) and `outputs/` (figures +
-`pipeline_result.md`).
+1. **Physical Severity Score (PSS)**
+   flood extent from Sentinel-1/2 imagery (SITS + NDWI/SAR fallback) combined with exposed population. 
+3. **Media Salience Score (MSS)**
+   multilingual GDELT coverage aggregated into volume, share-of-voice, time-to-first-report, and coverage duration (AHP weights kept for sensitivity).
+5. **Expected coverage**
+   A sparse Negative Binomial model predicts how many articles a disaster should attract given severity, deaths, and onset year. This replaces naïve Min-Max discrepancy scores that outliers can distort.
+7. **Discrepancy Index (`log_ratio`)**
+   continuous residual \(\ln((y+a)/(\hat\mu+0.5))\). `log_ratio < 0` → under-covered; `log_ratio > 0` → over-covered.
 
 ## First-time setup
 
@@ -42,23 +35,6 @@ Optional Earth Engine auth (only when `SKIP_GEE=0`):
 ```bash
 earthengine authenticate
 ```
-
-## Primary analysis DAG
-
-```text
-data/raw/ + data/intermediate/flood_combined.csv
-        → compute_population.py → intermediate/severity_raw.csv
-        → compute_pss.py        → results/pss_results.csv
-data/raw/gdelt_bq.json
-        → compute_mss.py        → results/mss_results.csv
-        → compute_expected_coverage.py  → results/expected_coverage.csv + log_ratio
-        → visualize.py          → outputs/plot{1,5–9}_*.png
-```
-
-**Primary model:** sparse Negative Binomial on article counts  
-`log_ratio = ln((y + 0.5) / (μ̂ + 0.5))`  
-PSS uses equal weights `0.5/0.5` after `MinMax(log1p(·))`.  
-MSS primary weights are AHP (Entropy/Equal for sensitivity only).
 
 ## Run pipeline
 
