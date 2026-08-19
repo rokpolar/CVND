@@ -288,7 +288,7 @@ print("-" * 50)
 errors = []
 
 # Check 1: All states from events.csv are covered
-events_df = pd.read_csv('data/events.csv')
+events_df = pd.read_csv('data/raw/events.csv')
 event_states = set(events_df['state'].unique())
 covariate_states = set(df['state'].unique())
 missing = event_states - covariate_states

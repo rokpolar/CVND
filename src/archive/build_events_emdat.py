@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import re
-import os
+from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -260,13 +260,13 @@ if __name__ == '__main__':
     print("BUILD EVENTS CSV FROM EM-DAT")
     print("=" * 60)
 
-    EMDAT_PATH   = 'data/emdat_raw.csv'
-    EXISTING_CSV = 'data/events_base12.csv'
-    OUTPUT_CSV   = 'data/events.csv'
+    ROOT = Path(__file__).resolve().parents[2]
+    EMDAT_PATH = ROOT / 'data' / 'raw' / 'emdat_raw.csv'
+    EVENTS_PATH = ROOT / 'data' / 'raw' / 'events.csv'
 
-    if not os.path.exists(EMDAT_PATH):
+    if not EMDAT_PATH.exists():
         print(f"ERROR: {EMDAT_PATH} not found.")
-        print("Export EM-DAT Data sheet to data/emdat_raw.csv")
+        print("Export the EM-DAT data sheet to data/raw/emdat_raw.csv")
         exit(1)
 
     raw = pd.read_csv(EMDAT_PATH)
@@ -276,7 +276,7 @@ if __name__ == '__main__':
     raw = raw[raw['Disaster Type'].str.lower() == 'flood'].copy()
     raw = raw[raw['Start Year'] >= 2015].copy()
     raw = raw[raw['Start Year'] <= 2026].copy()
-    print(f"After filter (flood, 2015-2024): {len(raw)} records")
+    print(f"After filter (flood, 2015-2026): {len(raw)} records")
 
     # ── Step 2: Explode multi-state records into one row per state ────────────
     exploded_rows = []
@@ -360,12 +360,30 @@ if __name__ == '__main__':
     deduped_df = pd.DataFrame(deduped)
     print(f"After deduplication (30-day merge window): {len(deduped_df)} events")
 
-    # ── Step 4: Load existing 12 events, merge, assign event IDs ─────────────
-    existing = pd.read_csv(EXISTING_CSV)
-    existing_keys = set(
-        zip(existing['state'], existing['start_date'])
-    )
-    print(f"\nExisting events: {len(existing)}")
+    # ── Step 4: Load manual seed rows from the canonical event registry ───────
+    if not EVENTS_PATH.exists():
+        print(f"ERROR: canonical event registry not found: {EVENTS_PATH}")
+        exit(1)
+
+    registry = pd.read_csv(EVENTS_PATH)
+    required_columns = {
+        'event_id', 'state', 'district', 'disaster_type', 'start_date',
+        'end_date', 'lat', 'lon', 'bbox', 'income_group', 'event_source',
+        'source_record_id',
+    }
+    missing_columns = required_columns - set(registry.columns)
+    if missing_columns:
+        print(f"ERROR: events.csv is missing columns: {sorted(missing_columns)}")
+        exit(1)
+
+    # Only rows explicitly marked as manual_seed are retained as fixed seeds.
+    # All derived rows can therefore be regenerated from EM-DAT without a
+    # second, hidden seed-file input.
+    existing = registry[registry['event_source'] == 'manual_seed'].copy()
+    if existing.empty:
+        print("ERROR: events.csv contains no manual_seed rows")
+        exit(1)
+    print(f"\nManual seed events loaded from events.csv: {len(existing)}")
 
     # Flag which EM-DAT rows overlap with existing events
     # Match: same state AND start date within 14 days
@@ -377,7 +395,7 @@ if __name__ == '__main__':
     for _, row in deduped_df.iterrows():
         state     = row['state']
         start_dt  = row['start_dt']
-        # Check if this state+date already exists in the 12 events
+        # Check if this state+date already exists in the manual seed rows
         match = existing[
             (existing['state'] == state) &
             (abs(existing['start_dt'] - start_dt).dt.days <= 14)
@@ -388,12 +406,17 @@ if __name__ == '__main__':
         new_rows.append(row)
 
     new_df = pd.DataFrame(new_rows)
-    print(f"EM-DAT events overlapping existing 12: {duplicates_of_existing} (skipped)")
+    print(f"EM-DAT events overlapping manual seeds: {duplicates_of_existing} (skipped)")
     print(f"New events to add: {len(new_df)}")
 
     # ── Step 5: Assign event IDs and build final merged CSV ───────────────────
-    # Keep existing IDs (E01-E12), new ones start from E13
-    next_id = 13
+    # Continue after the largest numeric suffix already present in the seed
+    # registry.  This keeps ID assignment data-driven.
+    numeric_ids = pd.to_numeric(
+        existing['event_id'].astype(str).str.extract(r'(\d+)$', expand=False),
+        errors='coerce',
+    )
+    next_id = int(numeric_ids.max()) + 1 if numeric_ids.notna().any() else 1
     new_event_ids = []
     for _ in range(len(new_df)):
         new_event_ids.append(f'E{next_id:02d}')
@@ -401,6 +424,8 @@ if __name__ == '__main__':
 
     new_df = new_df.copy()
     new_df['event_id'] = new_event_ids
+    new_df['event_source'] = 'emdat_derived'
+    new_df['source_record_id'] = new_df['emdat_disno']
 
     # Build lat/lon from bbox center for new events
     def bbox_center_lat(bbox):
@@ -414,9 +439,10 @@ if __name__ == '__main__':
     new_df['lat'] = new_df['bbox'].apply(bbox_center_lat)
     new_df['lon'] = new_df['bbox'].apply(bbox_center_lon)
 
-    # Final columns matching existing events.csv schema
+    # Final columns matching the canonical events.csv schema
     final_cols = ['event_id', 'state', 'district', 'disaster_type',
-                  'start_date', 'end_date', 'lat', 'lon', 'bbox', 'income_group']
+                  'start_date', 'end_date', 'lat', 'lon', 'bbox',
+                  'income_group', 'event_source', 'source_record_id']
 
     existing_clean = existing[final_cols].copy()
     new_clean      = new_df[final_cols].copy()
@@ -470,12 +496,13 @@ if __name__ == '__main__':
         print("Fix before proceeding.")
     else:
         merged = merged.drop(columns=['start_dt', 'end_dt', 'year'], errors='ignore')
-        merged.to_csv(OUTPUT_CSV, index=False)
-        print(f"\nSAVED: {OUTPUT_CSV} ({len(merged)} events)")
+        EVENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        merged.to_csv(EVENTS_PATH, index=False)
+        print(f"\nSAVED: {EVENTS_PATH} ({len(merged)} events)")
 
         # Preview new events
-        print(f"\nNew events added (E13 onwards) — first 15:")
-        print(merged[merged['event_id'] >= 'E13'].head(15)[
+        print("\nNew EM-DAT-derived events — first 15:")
+        print(merged[merged['event_source'] == 'emdat_derived'].head(15)[
             ['event_id', 'state', 'district', 'start_date', 'income_group']
         ].to_string(index=False))
 
