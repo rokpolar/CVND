@@ -1,0 +1,10 @@
+event_id,status,reason
+E08,quarantine,Nested inside E29 Assam 2022 season window
+E12,quarantine,Nested inside E42 Delhi 2023 season window
+E67,quarantine,Invalid district code 72811
+E30,quarantine,Missing Sentinel severity
+E33,quarantine,Missing Sentinel severity
+E43,quarantine,Missing Sentinel severity
+E44,quarantine,Missing Sentinel severity
+E89,quarantine,Missing Sentinel severity
+E99,quarantine,Missing Sentinel severity

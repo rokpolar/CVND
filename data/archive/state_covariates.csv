@@ -1,0 +1,31 @@
+state,gsdp_per_capita,political_alignment,press_language,distance_delhi_km,population_density,literacy_rate,press_lang_english
+Kerala,213000,0,Malayalam,2100,860,94.0,0
+Bihar,54000,1,Hindi,1000,1102,61.8,0
+Assam,95000,1,Assamese,1700,397,72.2,0
+Telangana,228000,0,Telugu,1500,312,72.8,0
+Maharashtra,198000,0,Marathi,1400,365,82.9,0
+Uttarakhand,170000,1,Hindi,400,189,78.8,0
+Uttar Pradesh,72000,1,Hindi,500,828,67.7,0
+Karnataka,289000,0,Kannada,1750,319,75.4,0
+Odisha,112000,0,Odia,1500,269,72.9,0
+Himachal Pradesh,187000,1,Hindi,480,123,82.8,0
+Delhi,390000,0,Hindi,0,11320,86.2,0
+Andhra Pradesh,147000,1,Telugu,1650,308,67.4,0
+Arunachal Pradesh,148000,1,English,2300,17,65.4,1
+Chhattisgarh,97000,1,Hindi,1100,189,70.3,0
+Goa,461000,1,Konkani,1900,394,88.7,0
+Gujarat,214000,1,Gujarati,950,308,78.0,0
+Haryana,211000,1,Hindi,160,573,75.6,0
+Jammu and Kashmir,101000,1,Urdu,580,124,67.2,0
+Jharkhand,72000,1,Hindi,1200,414,66.4,0
+Madhya Pradesh,89000,1,Hindi,780,236,69.3,0
+Manipur,71000,1,Meitei,2500,115,76.9,0
+Meghalaya,91000,0,English,2000,132,74.4,1
+Mizoram,130000,0,Mizo,2600,52,91.3,0
+Nagaland,78000,1,English,2400,119,79.6,1
+Punjab,162000,0,Punjabi,450,550,75.8,0
+Rajasthan,95000,1,Hindi,500,201,66.1,0
+Sikkim,295000,0,Nepali,2100,86,81.4,0
+Tamil Nadu,194000,0,Tamil,2200,555,80.1,0
+Tripura,95000,1,Bengali,2500,350,87.2,0
+West Bengal,114000,0,Bengali,1500,1029,76.3,0
