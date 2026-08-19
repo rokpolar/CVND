@@ -44,6 +44,9 @@ setup_environment() {
 
 setup_environment
 
+echo ">>> Validating canonical event registry"
+"$PYTHON" src/archive/build_events.py
+
 SKIP_GEE="${SKIP_GEE:-1}"
 SKIP_ARTICLES="${SKIP_ARTICLES:-1}"
 

@@ -70,9 +70,9 @@ flowchart LR
 | --- | --- |
 | 액터 | 연구자, EM-DAT |
 | 목적 | EM-DAT 홍수 레코드를 주·지구 단위 분석 이벤트로 변환 |
-| 사전조건 | `data/emdat_raw.csv` 존재 |
+| 사전조건 | `data/raw/emdat_raw.csv`, `data/raw/events.csv` 존재 |
 | 주 흐름 | 홍수·연도 필터 → 주 단위 분해 → 지구/bbox 할당 → 이벤트 ID 부여 |
-| 결과 | `data/events.csv` |
+| 결과 | `data/raw/events.csv` |
 | 구현 | `src/archive/build_events_emdat.py` (현재 캐시된 events 사용) |
 
 ### UC-02 위성 침수 탐지 (선택, `SKIP_GEE=0`)

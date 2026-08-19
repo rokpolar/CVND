@@ -21,6 +21,14 @@ The pipeline has four linked pieces:
 7. **Discrepancy Index (`log_ratio`)**
    continuous residual \(\ln((y+a)/(\hat\mu+0.5))\). `log_ratio < 0` → under-covered; `log_ratio > 0` → over-covered.
 
+## Event registry
+
+`data/raw/events.csv` is the single event registry consumed by the pipeline.
+Its `event_source` column records whether a row is a curated seed
+(`manual_seed`) or an EM-DAT-derived row; `source_record_id` stores the EM-DAT
+`DisNo.` when available. The archived event builders read this registry and do
+not embed a separate seed-event list.
+
 ## First-time setup
 
 ```bash

@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     CHECKPOINT = 'data/population_checkpoint.json'
 
-    events   = pd.read_csv('data/events.csv')
+    events   = pd.read_csv('data/raw/events.csv')
     flood_df = pd.read_csv('data/flood_extent.csv')
 
     # Load checkpoint
@@ -207,4 +207,4 @@ if __name__ == '__main__':
 
     df.to_csv('data/severity_raw.csv', index=False)
     print(f"\nSAVED: data/severity_raw.csv")
-    print("\nCP-06 COMPLETE — ready for CP-07") 
+    print("\nCP-06 COMPLETE — ready for CP-07")

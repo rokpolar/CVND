@@ -1,7 +1,7 @@
 # CVND 파이프라인 감사 — 방법론·코드 문제와 수정 후보
 
 작성: 2026-07-30 · 대상 커밋 상태: `data/`, `src/`, `outputs/` 현재 산출물 기준
-성격: **진단 문서. 코드는 수정하지 않았습니다.** 각 항목은 재현 가능한 근거 수치를 함께 적었습니다.
+성격: **진단 문서.** 초기 진단 시점의 상태와 이후 반영된 수정사항을 함께 기록합니다. 각 항목은 재현 가능한 근거 수치를 함께 적었습니다.
 
 ---
 
@@ -21,7 +21,7 @@
 | [10](#10) | `src/satellite.py` | 관측창·해상도 불일치(7d/14d, 30m/10m), median 합성으로 피크 희석 | 중간 | 면적 과소추정, 지역별 편향 |
 | [11](#11) | `compute_pss.py` / `compute_mss.py` | MinMax 정규화로 점수가 표본 의존 | 중간 | 이벤트 추가 시 모든 점수 변동 |
 | [12](#12) | 코드 버그 모음 | `result.scale` 오용, tie rank `astype(int)`, AssertionError 위험 등 | 중간~낮음 | 진단값 오류, 런타임 중단 위험 |
-| [13](#13) | 재현성 | `events_base12.csv` 부재, requirements 핀 없음, SITS 채점 코드 미포함 | 중간 | events.csv 재생성 불가 |
+| [13](#13) | 재현성 | requirements 핀 없음, SITS 채점 코드 미포함 | 중간 | 환경에 따라 결과 재현성 저하 |
 
 ---
 
@@ -365,14 +365,14 @@ deaths.loc[i] = float(hits.max())
 <a id="13"></a>
 ## 13. [중간] 재현성 결함
 
-- **`data/events_base12.csv` 부재** → `src/archive/build_events_emdat.py`가 `EXISTING_CSV`를 읽지 못해 즉시 실패합니다. 즉 **`events.csv`를 재생성할 수 없습니다.** 168개 이벤트의 출처가 코드로 추적되지 않습니다.
+- **해결됨 — 이벤트 시드 통합**: 수동 시드 행은 이제 `data/raw/events.csv` 안에서 `event_source=manual_seed`로 관리됩니다. `build_events_emdat.py`는 별도 `events_base12.csv`나 코드 내부 이벤트 리스트를 읽지 않고, 이 행들을 시드로 사용해 EM-DAT 파생 행을 재생성합니다. 파생 행에는 `source_record_id=DisNo.`를 남깁니다.
 - **BigQuery SQL 미포함** → `gdelt_bq.json`을 만든 질의(키워드, 언어, 창, 중복제거)를 검증·재실행할 수 없습니다.
 - **SITS 추론 노트북 미포함** → `sits_scores/*.npz`(scores, ndwi_flood)의 생성 로직이 리포 밖입니다.
 - **`requirements.txt` 버전 핀 없음**(17개 패키지 전부 무버전). `statsmodels`/`sklearn` 버전 차이로 결과가 바뀔 수 있습니다.
 - **문서-코드 불일치**: `MEDIA_WINDOW_DAYS=14`(실제 가변 창), `CLOUD_MAX_PCT` 문서 30 vs 코드 60, README의 "SITS + NDWI/SAR"(실제 SITS 관여 41/132), 보고서의 "Absolute under-coverage".
 - **`src/ingest/`, `src/flood/`, `src/indices/`** 에는 `__pycache__`만 남아 있고 소스가 없습니다(삭제된 모듈의 잔재).
 
-**수정 후보**: `events_base12.csv`를 복원하거나 `build_events_emdat.py`를 base12 의존 없이 재작성 · SQL과 노트북 커밋 · `pip freeze`로 핀 고정 · 문서 수치를 코드 상수로부터 생성(현재 `cvnd_paths`에 상수는 있으나 README는 수동).
+**남은 수정 후보**: SQL과 노트북 커밋 · `pip freeze`로 핀 고정 · 문서 수치를 코드 상수로부터 생성(현재 `cvnd_layout`에 상수는 있으나 README는 수동).
 
 ---
 

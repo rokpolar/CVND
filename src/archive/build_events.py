@@ -1,230 +1,117 @@
-import pandas as pd
-import os
+"""Validate the canonical event registry.
 
-events = [
-    {
-        "event_id": "E01",
-        "state": "Kerala",
-        "district": "Ernakulam",
-        "disaster_type": "flood",
-        "start_date": "2018-08-08",
-        "end_date": "2018-08-23",
-        "lat": 10.6,
-        "lon": 76.2,
-        "bbox": "74.8,8.4,77.6,12.8",
-        "income_group": "Middle"
-    },
-    {
-        "event_id": "E02",
-        "state": "Bihar",
-        "district": "Muzaffarpur",
-        "disaster_type": "flood",
-        "start_date": "2019-07-10",
-        "end_date": "2019-07-30",
-        "lat": 26.2,
-        "lon": 85.8,
-        "bbox": "84.0,25.0,87.5,27.5",
-        "income_group": "Low"
-    },
-    {
-        "event_id": "E03",
-        "state": "Assam",
-        "district": "Morigaon",
-        "disaster_type": "flood",
-        "start_date": "2020-05-25",
-        "end_date": "2020-06-10",
-        "lat": 26.3,
-        "lon": 92.3,
-        "bbox": "90.5,25.5,93.0,27.5",
-        "income_group": "Low"
-    },
-    {
-        "event_id": "E04",
-        "state": "Telangana",
-        "district": "Hyderabad",
-        "disaster_type": "flood",
-        "start_date": "2020-10-13",
-        "end_date": "2020-10-17",
-        "lat": 17.4,
-        "lon": 78.5,
-        "bbox": "78.0,17.0,79.2,17.8",
-        "income_group": "High"
-    },
-    {
-        "event_id": "E05",
-        "state": "Maharashtra",
-        "district": "Raigad",
-        "disaster_type": "flood",
-        "start_date": "2021-07-22",
-        "end_date": "2021-07-26",
-        "lat": 18.5,
-        "lon": 73.3,
-        "bbox": "72.8,17.8,74.0,19.0",
-        "income_group": "High"
-    },
-    {
-        "event_id": "E06",
-        "state": "Uttarakhand",
-        "district": "Chamoli",
-        "disaster_type": "flood",
-        "start_date": "2021-02-07",
-        "end_date": "2021-02-09",
-        "lat": 30.4,
-        "lon": 79.5,
-        "bbox": "79.0,30.0,80.5,31.0",
-        "income_group": "Low"
-    },
-    {
-        "event_id": "E07",
-        "state": "Uttar Pradesh",
-        "district": "Bahraich",
-        "disaster_type": "flood",
-        "start_date": "2021-08-10",
-        "end_date": "2021-08-28",
-        "lat": 27.6,
-        "lon": 81.6,
-        "bbox": "80.5,26.5,83.0,28.5",
-        "income_group": "Low"
-    },
-    {
-        "event_id": "E08",
-        "state": "Assam",
-        "district": "Silchar",
-        "disaster_type": "flood",
-        "start_date": "2022-06-15",
-        "end_date": "2022-07-05",
-        "lat": 24.8,
-        "lon": 92.8,
-        "bbox": "92.0,24.0,93.5,25.5",
-        "income_group": "Low"
-    },
-    {
-        "event_id": "E09",
-        "state": "Karnataka",
-        "district": "Bengaluru",
-        "disaster_type": "flood",
-        "start_date": "2022-09-05",
-        "end_date": "2022-09-07",
-        "lat": 12.9,
-        "lon": 77.6,
-        "bbox": "77.3,12.7,78.0,13.3",
-        "income_group": "High"
-    },
-    {
-        "event_id": "E10",
-        "state": "Odisha",
-        "district": "Balasore",
-        "disaster_type": "flood",
-        "start_date": "2022-09-16",
-        "end_date": "2022-09-22",
-        "lat": 21.5,
-        "lon": 86.9,
-        "bbox": "85.5,20.5,87.5,22.0",
-        "income_group": "Low"
-    },
-    {
-        "event_id": "E11",
-        "state": "Himachal Pradesh",
-        "district": "Mandi",
-        "disaster_type": "flood",
-        "start_date": "2023-07-08",
-        "end_date": "2023-07-16",
-        "lat": 31.7,
-        "lon": 76.9,
-        "bbox": "76.0,31.0,77.8,32.5",
-        "income_group": "Low"
-    },
-    {
-        "event_id": "E12",
-        "state": "Delhi",
-        "district": "Delhi",
-        "disaster_type": "flood",
-        "start_date": "2023-07-10",
-        "end_date": "2023-07-14",
-        "lat": 28.7,
-        "lon": 77.1,
-        "bbox": "76.8,28.4,77.6,28.9",
-        "income_group": "High"
-    },
-]
+The event registry is maintained in ``data/raw/events.csv``.  This module is
+kept as a compatibility entry point for the original event-builder command,
+but it no longer contains an embedded seed event list.
+"""
 
-df = pd.DataFrame(events)
+import csv
+import sys
+from collections import Counter
+from datetime import date
+from pathlib import Path
 
-# Validation checks before saving
-print("Running validation checks...")
-print("-" * 50)
 
-errors = []
+ROOT = Path(__file__).resolve().parents[2]
+EVENTS_PATH = ROOT / "data" / "raw" / "events.csv"
+REQUIRED_COLUMNS = {
+    "event_id",
+    "state",
+    "district",
+    "disaster_type",
+    "start_date",
+    "end_date",
+    "lat",
+    "lon",
+    "bbox",
+    "income_group",
+    "event_source",
+    "source_record_id",
+}
+VALID_INCOME_GROUPS = {"High", "Middle", "Low"}
+VALID_EVENT_SOURCES = {"manual_seed", "emdat_derived", "emdat_derived_legacy"}
 
-# Check 1: No duplicate event IDs
-dupes = df[df.duplicated('event_id')]
-if not dupes.empty:
-    errors.append(f"Duplicate event IDs: {dupes['event_id'].tolist()}")
-else:
-    print("  OK  No duplicate event IDs")
 
-# Check 2: Dates are valid and end >= start
-df['start_date'] = pd.to_datetime(df['start_date'])
-df['end_date'] = pd.to_datetime(df['end_date'])
-bad_dates = df[df['end_date'] < df['start_date']]
-if not bad_dates.empty:
-    errors.append(f"end_date before start_date: {bad_dates['event_id'].tolist()}")
-else:
-    print("  OK  All end_dates >= start_dates")
+def parse_date(value: str) -> date:
+    return date.fromisoformat(value)
 
-# Check 3: BBox has exactly 4 values and is within India bounds
-def validate_bbox(bbox_str):
+
+def validate_bbox(value: str) -> bool:
     try:
-        parts = [float(x) for x in bbox_str.split(',')]
-        if len(parts) != 4:
-            return False
-        lon_min, lat_min, lon_max, lat_max = parts
-        # India rough bounds: lon 68-98, lat 6-38
-        if not (68 <= lon_min <= 98 and 68 <= lon_max <= 98):
-            return False
-        if not (6 <= lat_min <= 38 and 6 <= lat_max <= 38):
-            return False
-        if lon_min >= lon_max or lat_min >= lat_max:
-            return False
-        return True
-    except:
+        lon_min, lat_min, lon_max, lat_max = (float(part) for part in value.split(","))
+    except (TypeError, ValueError):
         return False
 
-bad_bbox = df[~df['bbox'].apply(validate_bbox)]
-if not bad_bbox.empty:
-    errors.append(f"Invalid bbox: {bad_bbox['event_id'].tolist()}")
-else:
-    print("  OK  All bounding boxes valid and within India bounds")
+    return (
+        68 <= lon_min <= 98
+        and 68 <= lon_max <= 98
+        and 6 <= lat_min <= 38
+        and 6 <= lat_max <= 38
+        and lon_min < lon_max
+        and lat_min < lat_max
+    )
 
-# Check 4: income_group only valid values
-valid_income = {'High', 'Middle', 'Low'}
-bad_income = df[~df['income_group'].isin(valid_income)]
-if not bad_income.empty:
-    errors.append(f"Invalid income_group: {bad_income[['event_id','income_group']].values.tolist()}")
-else:
-    print("  OK  All income_group values valid")
 
-# Check 5: Income group distribution
-income_counts = df['income_group'].value_counts()
-print(f"  OK  Income distribution: {income_counts.to_dict()}")
+def validate_events(rows: list[dict[str, str]]) -> list[str]:
+    errors: list[str] = []
+    event_ids = [row["event_id"] for row in rows]
 
-# Check 6: Date range of dataset
-print(f"  OK  Date range: {df['start_date'].min().date()} to {df['end_date'].max().date()}")
+    duplicates = [event_id for event_id, count in Counter(event_ids).items() if count > 1]
+    if duplicates:
+        errors.append(f"duplicate event_id values: {duplicates}")
 
-print("-" * 50)
+    for row in rows:
+        event_id = row["event_id"]
+        try:
+            if parse_date(row["end_date"]) < parse_date(row["start_date"]):
+                errors.append(f"{event_id}: end_date precedes start_date")
+        except ValueError:
+            errors.append(f"{event_id}: invalid ISO date")
 
-if errors:
-    print("VALIDATION FAILED:")
-    for e in errors:
-        print(f"  ERROR: {e}")
-else:
-    # Convert dates back to string for clean CSV storage
-    df['start_date'] = df['start_date'].dt.strftime('%Y-%m-%d')
-    df['end_date'] = df['end_date'].dt.strftime('%Y-%m-%d')
-    os.makedirs('data', exist_ok=True)
-    df.to_csv('data/events.csv', index=False)
-    print(f"SAVED: data/events.csv ({len(df)} events)")
-    print()
-    print(df[['event_id','state','district','start_date','end_date','income_group']].to_string(index=False))
-    print()
-    print("CP-02 COMPLETE — ready for CP-03")
+        if not validate_bbox(row["bbox"]):
+            errors.append(f"{event_id}: invalid India bounding box")
+
+        if row["income_group"] not in VALID_INCOME_GROUPS:
+            errors.append(f"{event_id}: invalid income_group {row['income_group']!r}")
+
+        if row["event_source"] not in VALID_EVENT_SOURCES:
+            errors.append(f"{event_id}: invalid event_source {row['event_source']!r}")
+
+    return errors
+
+
+def main() -> int:
+    if not EVENTS_PATH.exists():
+        print(f"ERROR: canonical event registry not found: {EVENTS_PATH}")
+        return 1
+
+    with EVENTS_PATH.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        columns = set(reader.fieldnames or [])
+        missing = REQUIRED_COLUMNS - columns
+        if missing:
+            print(f"ERROR: events.csv is missing columns: {sorted(missing)}")
+            return 1
+        rows = list(reader)
+
+    errors = validate_events(rows)
+
+    print("CANONICAL EVENT REGISTRY VALIDATION")
+    print(f"Path: {EVENTS_PATH}")
+    print(f"Rows: {len(rows)}")
+    print(f"Sources: {dict(Counter(row['event_source'] for row in rows))}")
+    print(f"Date range: {min(row['start_date'] for row in rows)} to "
+          f"{max(row['end_date'] for row in rows)}")
+
+    if errors:
+        print("VALIDATION FAILED:")
+        for error in errors:
+            print(f"  ERROR: {error}")
+        return 1
+
+    print("VALIDATION PASSED")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

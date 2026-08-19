@@ -10,7 +10,7 @@ Output: data/post_cloud.csv  (event_id, post_images, clear_pct, cloud_pct)
   cloud_pct = 100 - clear_pct  -> merge routing: cloud_pct >= CLOUD_MAX_PCT (60) => S1
 
 Run: python post_cloud.py            # all events (resumes: skips ones already in CSV)
-     python post_cloud.py E01 E02    # subset
+     python post_cloud.py EVENT_ID [EVENT_ID ...]    # subset
 """
 import sys
 import os
@@ -22,7 +22,7 @@ import satellite as sat   # importing runs initialize_gee()
 
 OUT = 'data/post_cloud.csv'
 
-events = pd.read_csv('data/events.csv')
+events = pd.read_csv('data/raw/events.csv')
 if sys.argv[1:]:
     events = events[events['event_id'].isin(sys.argv[1:])]
 

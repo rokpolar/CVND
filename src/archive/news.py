@@ -159,7 +159,7 @@ def save_checkpoint(completed):
 if __name__ == '__main__':
     print("=" * 60)
 
-    events     = pd.read_csv('data/events.csv')
+    events     = pd.read_csv('data/raw/events.csv')
     total      = len(events)
     print(f"GDELT NEWS COLLECTION ({total} events) — OPTIONAL / LEGACY")
     print("=" * 60)

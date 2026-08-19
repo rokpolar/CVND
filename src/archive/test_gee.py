@@ -32,15 +32,19 @@ except Exception as e:
     print(f"  FAIL  {e}")
     exit(1)
 
-# --- Test 3: Pull one real pre/post image pair for E01 (Kerala 2018) ---
-print("\n[Test 3] Fetching Sentinel-1 pre/post pair for E01 (Kerala 2018)...")
+# --- Test 3: Pull one real pre/post image pair from the canonical registry ---
+test_event = pd.read_csv('data/raw/events.csv').iloc[0]
+test_start = datetime.strptime(test_event['start_date'], '%Y-%m-%d')
+test_bbox = [float(value) for value in test_event['bbox'].split(',')]
+print(f"\n[Test 3] Fetching Sentinel-1 pre/post pair for {test_event['event_id']} "
+      f"({test_event['state']})...")
 try:
-    region = ee.Geometry.Rectangle([74.8, 8.4, 77.6, 12.8])
+    region = ee.Geometry.Rectangle(test_bbox)
 
-    pre_start  = ee.Date('2018-07-08')  # 30 days before event
-    pre_end    = ee.Date('2018-08-08')
-    post_start = ee.Date('2018-08-08')
-    post_end   = ee.Date('2018-08-15')  # 7 days after start
+    pre_start  = ee.Date((test_start - pd.Timedelta(days=30)).strftime('%Y-%m-%d'))
+    pre_end    = ee.Date(test_event['start_date'])
+    post_start = ee.Date(test_event['start_date'])
+    post_end   = ee.Date((test_start + pd.Timedelta(days=7)).strftime('%Y-%m-%d'))
 
     s1_filtered = (ee.ImageCollection('COPERNICUS/S1_GRD')
         .filter(ee.Filter.eq('instrumentMode', 'IW'))
@@ -55,10 +59,10 @@ try:
     print(f"  OK  Post-event images found: {post_count}")
 
     if pre_count == 0:
-        print("  WARN  No pre-event images — flood detection will fail for E01")
+        print(f"  WARN  No pre-event images — flood detection will fail for {test_event['event_id']}")
         print("        This may mean GEE access is approved but data catalog is restricted.")
     if post_count == 0:
-        print("  WARN  No post-event images — flood detection will fail for E01")
+        print(f"  WARN  No post-event images — flood detection will fail for {test_event['event_id']}")
 
 except Exception as e:
     print(f"  FAIL  {e}")

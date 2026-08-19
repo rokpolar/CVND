@@ -787,9 +787,9 @@ if __name__ == '__main__':
                         default='both',
                         help='Which track to run (default: both)')
     parser.add_argument('--events', nargs='*', default=None,
-                        help='Only run these event_ids (e.g. --events E02). Default: all')
+                        help='Only run these event_ids (e.g. --events EVENT_ID). Default: all')
     parser.add_argument('--reverse', action='store_true',
-                        help='Process events last-to-first (E168 -> E01)')
+                        help='Process events last-to-first (last event -> first event)')
     args = parser.parse_args()
 
     print("=" * 65)
@@ -797,7 +797,7 @@ if __name__ == '__main__':
     print(f"  Running: Track {args.track.upper()}")
     print("=" * 65)
 
-    events = pd.read_csv('data/events.csv')
+    events = pd.read_csv('data/raw/events.csv')
     if args.events:
         events = events[events['event_id'].isin(args.events)]
         print(f"  Filtered to events: {args.events}")

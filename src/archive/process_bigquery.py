@@ -129,19 +129,21 @@ os.makedirs('data', exist_ok=True)
 result.to_csv('data/gdelt_multilingual.csv', index=False)
 print(f"\nSAVED: data/gdelt_multilingual.csv")
 
-# ── Now update raw_gdelt.csv with BigQuery ground-truth counts for E01-E12 ───
+# ── Update raw GDELT rows that have BigQuery ground-truth counts ─────────────
 print("\n" + "=" * 55)
-print("UPDATING raw_gdelt.csv WITH BIGQUERY GROUND TRUTH (E01-E12)")
+print("UPDATING raw_gdelt.csv WITH AVAILABLE BIGQUERY GROUND TRUTH")
 print("=" * 55)
 
 gdelt = pd.read_csv('data/raw_gdelt.csv')
 print(f"Current raw_gdelt.csv: {len(gdelt)} events")
 
-# For E01-E12, replace article_count and avg_tone with BigQuery values
+# Replace values for every event present in both sources.  The intersection is
+# data-driven, so this processor does not depend on a particular event seed
+# list or event count.
 bq_map = result.set_index('event_id')[['total_article_count', 'weighted_avg_tone']]
 
 updated = 0
-for eid in ['E01','E02','E03','E04','E05','E06','E07','E08','E09','E10','E11','E12']:
+for eid in sorted(set(gdelt['event_id']) & set(bq_map.index)):
     if eid in bq_map.index:
         old_count = gdelt.loc[gdelt['event_id']==eid, 'article_count'].values[0]
         new_count = bq_map.loc[eid, 'total_article_count']
@@ -153,5 +155,6 @@ for eid in ['E01','E02','E03','E04','E05','E06','E07','E08','E09','E10','E11','E
 
 gdelt.to_csv('data/raw_gdelt.csv', index=False)
 print(f"\nUpdated {updated} events in raw_gdelt.csv")
-print("Remaining 156 events retain API-derived counts")
+print(f"Events without a BigQuery replacement retain their existing counts: "
+      f"{len(gdelt) - updated}")
 print("\nPROCESSING COMPLETE — ready for CP-09")

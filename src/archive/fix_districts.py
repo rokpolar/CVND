@@ -123,7 +123,7 @@ if __name__ == '__main__':
     print("Rate limit: 1 req/sec — estimated ~3.5 mins for 168 events\n")
 
     CHECKPOINT = 'data/district_fix_checkpoint.csv'
-    events_df  = pd.read_csv('data/events.csv')
+    events_df  = pd.read_csv('data/raw/events.csv')
 
     # Load checkpoint if exists (safe to interrupt and resume)
     if os.path.exists(CHECKPOINT):
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     )
     merge['district'] = merge['district_new'].fillna(merge['district'])
     merge = merge.drop(columns=['district_new'])
-    merge.to_csv('data/events.csv', index=False)
+    merge.to_csv('data/raw/events.csv', index=False)
 
-    print(f"\nSAVED: data/events.csv with verified districts")
+    print(f"\nSAVED: data/raw/events.csv with verified districts")
     print("\nCP-02c COMPLETE — districts verified via Nominatim")
