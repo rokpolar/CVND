@@ -27,9 +27,12 @@ REQUIRED_COLUMNS = {
     "income_group",
     "event_source",
     "source_record_id",
+    "aoi_level",
+    "date_precision",
+    "state_resolution_source",
 }
 VALID_INCOME_GROUPS = {"High", "Middle", "Low"}
-VALID_EVENT_SOURCES = {"manual_seed", "emdat_derived", "emdat_derived_legacy"}
+VALID_EVENT_SOURCES = {"emdat_official_state"}
 
 
 def parse_date(value: str) -> date:
@@ -76,6 +79,12 @@ def validate_events(rows: list[dict[str, str]]) -> list[str]:
 
         if row["event_source"] not in VALID_EVENT_SOURCES:
             errors.append(f"{event_id}: invalid event_source {row['event_source']!r}")
+
+        if not row["source_record_id"].strip():
+            errors.append(f"{event_id}: source_record_id is required")
+
+        if row["aoi_level"] != "state":
+            errors.append(f"{event_id}: aoi_level must be 'state'")
 
     return errors
 

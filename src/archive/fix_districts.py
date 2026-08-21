@@ -117,13 +117,13 @@ def state_matches(nominatim_state, expected_state):
 
 
 if __name__ == '__main__':
+    events_df = pd.read_csv('data/raw/events.csv')
     print("=" * 60)
     print("FIX DISTRICTS — Nominatim reverse geocoding")
     print("=" * 60)
-    print("Rate limit: 1 req/sec — estimated ~3.5 mins for 168 events\n")
+    print(f"Rate limit: 1 req/sec — about {len(events_df) / 60:.1f} minutes\n")
 
     CHECKPOINT = 'data/district_fix_checkpoint.csv'
-    events_df  = pd.read_csv('data/raw/events.csv')
 
     # Load checkpoint if exists (safe to interrupt and resume)
     if os.path.exists(CHECKPOINT):
@@ -202,14 +202,16 @@ if __name__ == '__main__':
     print(ok[['event_id','state','district_old',
               'district_new']].head(20).to_string(index=False))
 
-    # ── Apply to events.csv ───────────────────────────────────────────────────
+    # Keep this legacy geocoder as an audit only. The official registry is
+    # deterministically rebuilt from EM-DAT and must not be mutated here.
     merge = events_df.merge(
         results_df[['event_id','district_new']],
         on='event_id', how='left'
     )
     merge['district'] = merge['district_new'].fillna(merge['district'])
     merge = merge.drop(columns=['district_new'])
-    merge.to_csv('data/raw/events.csv', index=False)
+    output = 'data/archive/district_geocode_audit.csv'
+    merge.to_csv(output, index=False)
 
-    print(f"\nSAVED: data/raw/events.csv with verified districts")
+    print(f"\nSAVED: {output}; canonical events.csv was not modified")
     print("\nCP-02c COMPLETE — districts verified via Nominatim")

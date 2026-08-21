@@ -1,6 +1,6 @@
 """
 compute_population.py — PRIMARY population/severity builder for the pipeline.
-Build data/intermediate/severity_raw.csv from district-level flood_combined results.
+Build data/intermediate/severity_raw.csv from state-AOI flood results.
 
 Primary input:
     data/intermediate/flood_combined.csv
@@ -76,7 +76,7 @@ def load_pop_lookup(known_states) -> dict[str, int]:
 def from_flood_combined(
     pop_lookup: dict[str, int], state_area: dict[str, int]
 ) -> pd.DataFrame:
-    """Primary path: district-level combined flood areas."""
+    """Primary path: state-level combined flood areas."""
     combined = pd.read_csv(data_path("flood_combined"))
     events = pd.read_csv(data_path("events"))[
         ["event_id", "state", "district", "start_date"]
@@ -92,7 +92,7 @@ def from_flood_combined(
         warnings = []
 
         combined_km2 = r.get("combined_km2")
-        district_km2 = r.get("district_km2")
+        aoi_km2 = r.get("aoi_km2")
         flood_ratio = r.get("flood_ratio")
         source = r.get("combined_source", "")
 
@@ -109,7 +109,7 @@ def from_flood_combined(
                 "start_date": r.get("start_date", ""),
                 "bbox_area_km2": None,
                 "state_area_km2": area_km2,
-                "district_km2": None if pd.isna(district_km2) else round(float(district_km2), 1),
+                "aoi_km2": None if pd.isna(aoi_km2) else round(float(aoi_km2), 1),
                 "raw_flood_area_km2": None,
                 "adjusted_flood_area_km2": None,
                 "flood_ratio": None,
@@ -122,8 +122,8 @@ def from_flood_combined(
             continue
 
         flood_km2 = float(combined_km2)
-        if pd.isna(flood_ratio) and not pd.isna(district_km2) and float(district_km2) > 0:
-            flood_ratio = flood_km2 / float(district_km2)
+        if pd.isna(flood_ratio) and not pd.isna(aoi_km2) and float(aoi_km2) > 0:
+            flood_ratio = flood_km2 / float(aoi_km2)
         if not pd.isna(flood_ratio):
             flood_ratio = float(min(max(flood_ratio, 0.0), 1.0))
 
@@ -153,7 +153,7 @@ def from_flood_combined(
             "start_date": r.get("start_date", ""),
             "bbox_area_km2": None,
             "state_area_km2": area_km2,
-            "district_km2": None if pd.isna(district_km2) else round(float(district_km2), 1),
+            "aoi_km2": None if pd.isna(aoi_km2) else round(float(aoi_km2), 1),
             "raw_flood_area_km2": round(flood_km2, 2),
             "adjusted_flood_area_km2": round(flood_km2, 2),
             "flood_ratio": flood_ratio,
@@ -199,7 +199,7 @@ def from_legacy_flood_area(
                 "district": r.get("district", ""), "canonical_state": canonical,
                 "start_date": r.get("start_date", ""),
                 "bbox_area_km2": None, "state_area_km2": area_km2,
-                "district_km2": None,
+                "aoi_km2": None,
                 "raw_flood_area_km2": None, "adjusted_flood_area_km2": None,
                 "flood_ratio": None, "combined_source": "legacy",
                 "region_total_population": state_pop,
@@ -242,7 +242,7 @@ def from_legacy_flood_area(
             "start_date": r.get("start_date", ""),
             "bbox_area_km2": round(bb_area, 1) if bb_area else None,
             "state_area_km2": area_km2,
-            "district_km2": None,
+            "aoi_km2": None,
             "raw_flood_area_km2": round(raw_flood, 2),
             "adjusted_flood_area_km2": round(adjusted_flood, 2),
             "flood_ratio": None, "combined_source": "legacy",
@@ -264,7 +264,7 @@ def main():
     legacy_path = data_path("flood_area_results")
 
     if combined_path.exists():
-        print(f"Using PRIMARY input: {combined_path} (district-level)")
+        print(f"Using PRIMARY input: {combined_path} (state AOI)")
         out = from_flood_combined(pop_lookup, state_area)
     elif legacy_path.exists():
         print(f"WARNING: {combined_path.name} missing — legacy {legacy_path}")

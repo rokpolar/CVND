@@ -15,18 +15,19 @@ from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
 from gee_config import initialize_gee
+from cvnd_layout import data_path
 initialize_gee()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # satellite.py — CVND Flood Detection Pipeline (optional; SKIP_GEE=1 by default)
 # ───────────────────────────────────────────────────────────────────────────────
 # Track A — Otsu bi-temporal (S1 + S2) baseline
-#   Output: data/flood_extent.csv
+#   Output: data/cache/flood_extent.csv
 #
 # Track B — SITS-Extreme-VAE data preparation
-#   Output: data/sits_patches/<event_id>.h5
+#   Output: data/cache/sits_patches/<event_id>.h5
 #   Next:   Upload to Google Drive → run sits_inference.ipynb on Colab GPU
-#           → place score NPZs in data/sits_scores/
+#           → place score NPZs in data/cache/sits_scores/
 #           → merge_results.py → flood_combined.csv → compute_population.py
 #           (NOT sits_vae_results.csv → compute_pss.py — that handoff is retired)
 #
@@ -34,8 +35,11 @@ initialize_gee()
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ── Checkpoint paths ──────────────────────────────────────────────────────────
-CHECKPOINT_A    = 'data/satellite_checkpoint_a.json'
-CHECKPOINT_B    = 'data/satellite_checkpoint_b.json'
+CHECKPOINT_A    = str(data_path("satellite_checkpoint_a"))
+CHECKPOINT_B    = str(data_path("satellite_checkpoint_b"))
+FLOOD_EXTENT_CSV = str(data_path("flood_extent"))
+EVENTS_CSV = str(data_path("events"))
+SITS_INDEX_CSV = str(data_path("sits_patches_index"))
 
 # ── Track B config ────────────────────────────────────────────────────────────
 SITS_BANDS      = ['B4', 'B3', 'B2', 'B8']   # RGB (B4,B3,B2) for the model + B8 for NDWI
@@ -43,9 +47,9 @@ SITS_PATCH_SIZE = 64
 SITS_N_PRE      = 4          # baseline t1..t4 (same-season composites); t5 = event month
 SITS_NORM       = 10000.0
 SITS_CLOUD_MAX  = 80
-SITS_OUTPUT_DIR = 'data/sits_patches'
+SITS_OUTPUT_DIR = str(data_path("sits_patches"))
 
-# Tiling (whole-district) settings
+# Tiling (whole-state-AOI) settings
 SITS_BLOCK_PATCHES = 16     # download block = 16*64 = 1024 px/side (keeps NPY request small)
 SITS_KEEP_VALID    = 0.70   # keep a 64x64 tile only if >= this fraction is cloud/nodata-free in EVERY timestep
 
@@ -220,28 +224,33 @@ def get_masks(region):
 
 
 def get_region(row):
-    """Event AOI = the district polygon containing the event coordinate (FAO GAUL 2015 level-2).
+    """Event AOI = the named state/UT polygon (FAO GAUL 2015 level-1).
     Shared by Track A (bi-temporal) and Track B (SITS) so both use a consistent AOI.
-    (The old version used a loose bbox: state-sized, mostly area unrelated to the flood.)
-    Uses point-in-polygon instead of name matching to avoid mismatches (Bengaluru/Bangalore, etc.).
+    The canonical registry is state-level, so point-selected district polygons
+    would silently analyze only the district containing a state's bbox centre.
     """
-    lon = float(row['lon'])
-    lat = float(row['lat'])
-    pt  = ee.Geometry.Point([lon, lat])
-    return ee.FeatureCollection('FAO/GAUL/2015/level2').filterBounds(pt).geometry()
+    gaul_names = {
+        'Odisha': 'Orissa',
+    }
+    state = str(row['state'])
+    gaul_name = gaul_names.get(state, state)
+    return (ee.FeatureCollection('FAO/GAUL/2015/level1')
+            .filter(ee.Filter.eq('ADM0_NAME', 'India'))
+            .filter(ee.Filter.eq('ADM1_NAME', gaul_name))
+            .geometry())
 
 
 def detect_flood_baseline(row):
     """Track A: Otsu bi-temporal baseline (S1 SAR + S2 NDWI)."""
     event_id = row['event_id']
     state    = row['state']
-    print(f"\n  [Track A] [{event_id}] {state} / {row['district']} "
+    print(f"\n  [Track A] [{event_id}] {state} (state AOI) "
           f"({row['start_date']})")
 
     try:
-        # bbox   = [float(x) for x in row['bbox'].split(',')]   # (old) unused since AOI = district
+        # bbox   = [float(x) for x in row['bbox'].split(',')]   # old loose state bbox
         # region = ee.Geometry.Rectangle(bbox)                  # (old) loose bbox
-        region = get_region(row)                                # district polygon (shared with Track B)
+        region = get_region(row)                                # state AOI (shared with Track B)
 
         pre_start  = ee.Date(row['start_date']).advance(-30, 'day')
         pre_end    = ee.Date(row['start_date'])
@@ -371,7 +380,7 @@ def _monthly_composite_sits(s2, target_dt):
     return col.median(), n
 
 
-# ══ (OLD) center single-patch method — superseded by whole-district tiling. Kept for reference ══
+# ══ (OLD) center single-patch method — superseded by full-AOI tiling. Kept for reference ══
 _OLD_CENTER_PATCH_CODE = r'''
 def _extract_patch_sits(image, lat, lon):
     """Extract (10, 64, 64) float32 patch centred on (lat, lon)."""
@@ -418,7 +427,7 @@ def prepare_sits_patch(row):
 
     bbox     = [float(x) for x in row['bbox'].split(',')]
     # region   = ee.Geometry.Rectangle(bbox)   # (old) loose bbox
-    region   = get_region(row)                  # district polygon (shared with Track A)
+    region   = get_region(row)                  # state AOI (shared with Track A)
     s2       = _get_s2_sits(region)
     event_dt = datetime.strptime(start_str, '%Y-%m-%d')
     zeros    = np.zeros((len(SITS_BANDS), SITS_PATCH_SIZE, SITS_PATCH_SIZE),
@@ -486,7 +495,7 @@ def prepare_sits_patch(row):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# NEW: tile the whole district into 64x64 patches
+# Tile the whole state AOI into 64x64 patches
 #   - getDownloadURL(NPY) block download -> preserves pixel order (fixes toList reshape bug)
 #   - keep only tiles that are clear (cloud/nodata-free) in EVERY timestep (B is optical)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -518,7 +527,7 @@ def _append_h5(f, pre, post, coord):
 
 
 def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
-    """Tile region (district) into 64x64 tiles, download block by block, keep only
+    """Tile the state AOI into 64x64 tiles, download block by block, keep only
     tiles that are clear in every timestep, and append them to the open hdf5.
     Skips blocks already in done_blocks and records each finished block to blocks_ckpt
     (block-level resume). Returns the total number of patches in the hdf5."""
@@ -544,14 +553,14 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
         return ee.Geometry.Rectangle([minx + bj * dlon, maxy - pi * dlat,
                                       minx + pj * dlon, maxy - bi * dlat])
 
-    # only download blocks that actually intersect the district (skip bbox corners outside it)
+    # Only download blocks intersecting the state AOI (skip bbox corners outside it).
     feats = [ee.Feature(_blk_geom(bi, bj), {'i': i}) for i, (bi, bj) in enumerate(all_blocks)]
     inside = set(ee.FeatureCollection(feats).filterBounds(region)
                  .aggregate_array('i').getInfo())
     todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks)
             if i in inside and i not in done_blocks]
     print(f"    tiling: {npx}x{npy} tiles (@10m), "
-          f"{len(inside)}/{len(all_blocks)} blocks in district, {len(todo)} to download")
+          f"{len(inside)}/{len(all_blocks)} blocks in state AOI, {len(todo)} to download")
     bar = tqdm(todo, desc='    downloading', unit='blk')
     failed = 0
     for i, bi, bj in bar:
@@ -602,7 +611,7 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
 
 
 def _ndwi_water_frac(img, region):
-    """Fraction of the district's valid pixels with NDWI>0 (water). Lower = drier."""
+    """Fraction of the state AOI's valid pixels with NDWI>0 (water)."""
     water = img.normalizedDifference(['B3', 'B8']).gt(0)
     return water.reduceRegion(ee.Reducer.mean(), region, scale=100,
                               maxPixels=1e9, bestEffort=True).values().get(0)
@@ -702,13 +711,13 @@ def _pick_baseline(s2, region, event_dt, n_pre=SITS_N_PRE, n_years=3, min_clear=
 
 
 def prepare_sits_patch(row):
-    """Track B: tile the whole district into 64x64 patches and save the time series to hdf5.
+    """Track B: tile the state AOI and save the time series to HDF5.
     Each patch = (pre: 4x10x64x64, post: 1x10x64x64), coords=(row,col,lat,lon).
     Baseline t1..t4 = driest same-season composites (removes seasonal change), t5 = event."""
     event_id  = row['event_id']
     state     = row['state']
     start_str = row['start_date']
-    print(f"\n  [Track B] [{event_id}] {state} / {row['district']} — {start_str}")
+    print(f"\n  [Track B] [{event_id}] {state} (state AOI) — {start_str}")
 
     region   = get_region(row)
     s2       = _get_s2_sits(region)
@@ -732,7 +741,7 @@ def prepare_sits_patch(row):
     tags.append(f'post({post_n})')
     print("    timesteps: " + " | ".join(tags))
 
-    images = [im.clip(region) for im in images]   # outside district is masked -> tiles dropped
+    images = [im.clip(region) for im in images]   # outside the state AOI is masked
 
     os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
     out_path = os.path.join(SITS_OUTPUT_DIR, f'{event_id}.h5')
@@ -797,14 +806,16 @@ if __name__ == '__main__':
     print(f"  Running: Track {args.track.upper()}")
     print("=" * 65)
 
-    events = pd.read_csv('data/raw/events.csv')
+    events = pd.read_csv(EVENTS_CSV)
     if args.events:
         events = events[events['event_id'].isin(args.events)]
         print(f"  Filtered to events: {args.events}")
     if args.reverse:
         events = events.iloc[::-1]
         print("  Reverse order: last -> first")
-    os.makedirs('data', exist_ok=True)
+    for target in (CHECKPOINT_A, CHECKPOINT_B, FLOOD_EXTENT_CSV, SITS_INDEX_CSV):
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+    os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
 
     # ── Track A ───────────────────────────────────────────────────────────────
     if args.track in ('A', 'both'):
@@ -815,8 +826,8 @@ if __name__ == '__main__':
         completed_a = load_checkpoint(CHECKPOINT_A)
 
         # Seed with existing flood_extent.csv if checkpoint is empty
-        if not completed_a and os.path.exists('data/flood_extent.csv'):
-            existing = pd.read_csv('data/flood_extent.csv')
+        if not completed_a and os.path.exists(FLOOD_EXTENT_CSV):
+            existing = pd.read_csv(FLOOD_EXTENT_CSV)
             # Only seed if it has the new column schema
             if 'affected_area_km2' in existing.columns:
                 for _, r in existing.iterrows():
@@ -836,18 +847,18 @@ if __name__ == '__main__':
 
             if (len(done_a) + i) % 10 == 0:
                 pd.DataFrame(list(completed_a.values())).to_csv(
-                    'data/flood_extent.csv', index=False)
+                    FLOOD_EXTENT_CSV, index=False)
                 print(f"  >> Track A checkpoint: "
                       f"{len(done_a)+i}/{len(events)} done")
 
         df_a = pd.DataFrame(list(completed_a.values()))
         df_a = df_a.sort_values('event_id').reset_index(drop=True)
-        df_a.to_csv('data/flood_extent.csv', index=False)
+        df_a.to_csv(FLOOD_EXTENT_CSV, index=False)
 
         ok_a = df_a[df_a['baseline_status'].isin(['OK', 'ZERO_AREA',
                                                    'SKIPPED_NO_S1_IMAGERY'])]
         print(f"\nTrack A complete: {len(ok_a)}/{len(events)} events")
-        print(f"Saved: data/flood_extent.csv")
+        print(f"Saved: {FLOOD_EXTENT_CSV}")
         print(df_a[['event_id', 'state', 'affected_area_km2',
                      'area_s1_km2', 'area_s2_km2',
                      'baseline_status']].to_string(index=False))
@@ -890,15 +901,15 @@ if __name__ == '__main__':
 
         df_b = pd.DataFrame(list(completed_b.values()))
         df_b = df_b.sort_values('event_id').reset_index(drop=True)
-        df_b.to_csv('data/sits_patches_index.csv', index=False)
+        df_b.to_csv(SITS_INDEX_CSV, index=False)
 
         ok_b = df_b[df_b['status'] == 'OK']
         print(f"\nTrack B complete: {len(ok_b)}/{len(events)} patches")
-        print(f"Index: data/sits_patches_index.csv")
+        print(f"Index: {SITS_INDEX_CSV}")
         print(f"\nNext steps:")
-        print(f"  1. Upload data/sits_patches/ to Google Drive")
+        print(f"  1. Upload {SITS_OUTPUT_DIR}/ to Google Drive")
         print(f"  2. Run sits_inference.ipynb on Colab (T4 GPU)")
-        print(f"  3. Place score NPZs in data/sits_scores/")
+        print(f"  3. Place score NPZs in {data_path('sits_scores')}/")
         print(f"  4. Run merge_results.py → compute_population.py → compute_pss.py")
 
     # ── Summary ───────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 LOG_RATIO_EPS = 0.5
-MEDIA_WINDOW_DAYS = 14  # design window; article counts are not guaranteed filtered to it
+MEDIA_WINDOW_DAYS = 93  # collect_gdelt.py default: onset through onset+93 days
 MONSOON_MONTHS = frozenset({6, 7, 8, 9})
 
 PSS_W_AREA = 0.5

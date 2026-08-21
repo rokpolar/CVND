@@ -70,7 +70,7 @@ flowchart LR
 | --- | --- |
 | 액터 | 연구자, EM-DAT |
 | 목적 | EM-DAT 홍수 레코드를 주·지구 단위 분석 이벤트로 변환 |
-| 사전조건 | `data/raw/emdat_raw.csv`, `data/raw/events.csv` 존재 |
+| 사전조건 | `data/raw/EM-DAT-BASE.xlsx`, `data/raw/events.csv` 존재 |
 | 주 흐름 | 홍수·연도 필터 → 주 단위 분해 → 지구/bbox 할당 → 이벤트 ID 부여 |
 | 결과 | `data/raw/events.csv` |
 | 구현 | `src/archive/build_events_emdat.py` (현재 캐시된 events 사용) |
@@ -82,7 +82,7 @@ flowchart LR
 | 액터 | 연구자, Google Earth Engine, Colab |
 | 목적 | 이벤트별 침수 범위 산출 및 SITS 학습용 패치 생성 |
 | 사전조건 | GEE 인증, `.env`의 `GEE_PROJECT_ID` |
-| 주 흐름 | Track A(S1/S2 Otsu) → `flood_extent.csv`; Track B(패치) → Colab 추론 → `data/sits_scores/` |
+| 주 흐름 | Track A(S1/S2 Otsu) → `data/cache/flood_extent.csv`; Track B(state AOI 패치) → Colab 추론 → `data/cache/sits_scores/` |
 | 예외 | 구름 과다 시 광학 대신 레이더(S1) 경로 사용 |
 | 구현 | `src/satellite.py` |
 
@@ -124,10 +124,10 @@ flowchart LR
 | --- | --- |
 | 액터 | 연구자, GDELT BigQuery |
 | 목적 | 기사량·점유율·최초보도 지연·보도 지속일을 합성 |
-| 사전조건 | `data/gdelt_bq.json` |
-| 주 흐름 | 파트 병합 → 이벤트 집계 → 성분 정규화 → AHP 가중(Entropy는 민감도) |
-| 결과 | `data/mss_results.csv`, 가중치 메타/출처 파일 |
-| 구현 | `src/compute_mss.py` |
+| 사전조건 | 공식 `events.csv`, Google ADC(실행 시) |
+| 주 흐름 | EM-DAT 기간·주 기반 SQL 생성 → flood/location/language/domain 필터 → URL 중복 제거·겹치는 사건 배정 → MSS 집계 |
+| 결과 | `data/raw/gdelt_emdat_query.sql`, `data/raw/gdelt_bq.json`, MSS 결과 |
+| 구현 | `src/collect_gdelt.py`, `src/compute_mss.py` |
 
 ### UC-07 기대 보도량·불균형 산출
 
@@ -135,7 +135,7 @@ flowchart LR
 | --- | --- |
 | 액터 | 연구자, EM-DAT |
 | 목적 | 피해 규모로 기대 보도량을 추정하고 실제 보도량과의 격차 계산 |
-| 사전조건 | `severity_raw`, `pss_results`, `mss_results`, `emdat_raw` |
+| 사전조건 | `severity_raw`, `pss_results`, `mss_results`, `EM-DAT-BASE.xlsx` |
 | 주 흐름 | 분석 프레임 구성 → 사망자 매칭 → 심각도 대리변수 AIC 선택 → 음이항(NegBin) 적합 → `log_ratio` 산출 |
 | 결과 | `data/expected_coverage.csv`, `state_expected_coverage.csv`, `outputs/pipeline_result.md` |
 | 판정 | `log_ratio < 0` 과소보도 / `> 0` 과다보도 |
