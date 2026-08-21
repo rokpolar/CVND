@@ -43,8 +43,27 @@ class CollectGdeltTests(unittest.TestCase):
         self.assertEqual(windows[0]["location_terms"], ["odisha", "orissa", "puri"])
 
     def test_cli_default_uses_onset_plus_93_days(self):
-        self.assertEqual(collect_gdelt.parse_args([]).pre_days, 0)
-        self.assertEqual(collect_gdelt.parse_args([]).post_days, 93)
+        args = collect_gdelt.parse_args([])
+        self.assertEqual(args.pre_days, 0)
+        self.assertEqual(args.post_days, 93)
+        self.assertEqual(
+            collect_gdelt._csv_values(args.languages),
+            collect_gdelt.INDIA_MEDIA_LANGUAGES,
+        )
+        self.assertEqual(len(collect_gdelt.INDIA_MEDIA_LANGUAGES), 16)
+        self.assertIn("ara", collect_gdelt.INDIA_MEDIA_LANGUAGES)
+        self.assertIn("pus", collect_gdelt.INDIA_MEDIA_LANGUAGES)
+        self.assertNotIn("asm", collect_gdelt.INDIA_MEDIA_LANGUAGES)
+        self.assertNotIn("san", collect_gdelt.INDIA_MEDIA_LANGUAGES)
+
+    def test_all_language_override_removes_source_language_filter(self):
+        windows = collect_gdelt.prepare_event_windows(
+            self.events.iloc[:1], pre_days=0, post_days=93, include_district=True
+        )
+        sql = collect_gdelt.build_query(
+            windows, languages=collect_gdelt._csv_values("all")
+        )
+        self.assertNotIn("WHERE source_lang IN UNNEST", sql)
 
     def test_query_filters_and_prevents_overlapping_state_double_count(self):
         windows = collect_gdelt.prepare_event_windows(

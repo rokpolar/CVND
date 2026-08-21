@@ -19,6 +19,9 @@ Official references:
 - [GDELT partitioned BigQuery tables](https://blog.gdeltproject.org/announcing-partitioned-gdelt-bigquery-tables/)
 - [GDELT GKG BigQuery examples](https://blog.gdeltproject.org/google-bigquery-gkg-2-0-sample-queries/)
 - [GDELT GKG theme lookup](https://data.gdeltproject.org/api/v2/guides/LOOKUP-GKGTHEMES.TXT)
+- [GDELT Translingual 2.0 language coverage](https://blog.gdeltproject.org/gdelt-translingual-2-0-now-live-translates-everything-gdelt-monitors-in-109-languages-dialects/)
+- [Census of India C-16 mother-tongue categories](https://censusindia.gov.in/nada/index.php/catalog/10191)
+- [ISO 639-2 language code registry](https://www.loc.gov/standards/iso639-2/php/code_list.php)
 
 ## Default selection rule
 
@@ -36,7 +39,10 @@ keeps an article only when all of the following hold:
    component exactly matches the canonical state/UT, a documented state alias,
    or the state-linked district when available. This handles GKG names such as
    `Puri, Odisha, India` without accepting an unrelated foreign location.
-5. The exact GDELT `DocumentIdentifier` has not already been counted. Query
+5. Original source language belongs to the exact intersection of languages
+   individually enumerated by India's Census C-16 table and languages supported
+   by GDELT Translingual 2.0.
+6. The exact GDELT `DocumentIdentifier` has not already been counted. Query
    strings are retained because some publishers use them to distinguish real
    articles.
 
@@ -53,7 +59,7 @@ appropriate for a multi-state disaster.
 | `--topic-profile strict\|broad` | `strict` | `broad` also includes heavy rain, torrential rain, high water and monsoon themes; higher recall, lower precision |
 | `--pre-days N` | `0` | Include anticipatory coverage before onset |
 | `--post-days N` | `93` | Set the fixed post-onset observation window |
-| `--languages en,hin,tam` | all | Restrict original source-language codes |
+| `--languages en,hin,tam` | 16-language India Census × GDELT intersection | Override original source-language codes; use `all` to disable the filter |
 | `--include-domain DOMAIN` | none | Keep only listed source domains; repeatable |
 | `--exclude-domain DOMAIN` | none | Remove listed source domains; repeatable |
 | `--no-district-term` | off | Require state/UT matching only |
@@ -63,6 +69,16 @@ appropriate for a multi-state disaster.
 Historical GKG does not expose a dependable outlet-country field equivalent to
 the recent DOC API's `sourcecountry:` operator. For historical comparisons,
 use explicit domain allow/block lists and report them with the results.
+
+The default codes are `en`, `ara`, `ben`, `guj`, `hin`, `kan`, `mal`, `mar`,
+`nep`, `ori`, `pan`, `pus`, `snd`, `tam`, `tel`, and `urd`: English, Arabic,
+Bengali, Gujarati, Hindi, Kannada, Malayalam, Marathi, Nepali, Odia, Punjabi,
+Pashto, Sindhi, Tamil, Telugu, and Urdu. The scope is deliberately reproducible:
+languages must be named categories in the nationwide Census C-16 table and
+must also appear in GDELT's official Translingual 2.0 support list. Census
+languages not supported by GDELT are not included merely because a plausible
+three-letter code exists. Blank GKG `TranslationInfo` is classified as English
+under the GKG codebook.
 
 ## Commands
 
@@ -88,12 +104,13 @@ event-registry hash, BigQuery job ID, billed bytes, filters and retrieval time.
 
 ## Recommended sensitivity runs
 
-Use the strict all-language result as the primary MSS input. Run at least these
+Use the strict India-Census/GDELT-intersection result as the primary MSS input.
+Run at least these
 robustness checks separately instead of mixing them into the primary file:
 
 1. Strict themes, English only.
-2. Strict themes, English plus Indic languages.
-3. Broad themes, all languages.
+2. Broad themes, the same 16-language intersection.
+3. Strict themes, all GKG languages (`--languages all`).
 4. State-only location matching (`--no-district-term`).
 
 Compare event article-count ranks and zero-coverage rates across runs. Large

@@ -124,13 +124,16 @@ python src/collect_gdelt.py --estimate --overwrite
 GDELT_BILLING_PROJECT=your-project \
 python src/collect_gdelt.py --execute --overwrite
 
-# Examples: language subset, broader rain/monsoon recall, or domain exclusion.
+# Examples: language subset, all GKG languages, broader themes, or domain exclusion.
 python src/collect_gdelt.py --languages en,hin,tam --overwrite
+python src/collect_gdelt.py --languages all --overwrite
 python src/collect_gdelt.py --topic-profile broad --exclude-domain example.com --overwrite
 ```
 
 The default is a fixed onset-to-onset+93-day window (94 calendar dates,
 including onset) and strict flood themes.
+Source languages default to the 16-language intersection of India's nationwide
+Census C-16 categories and GDELT Translingual 2.0 support.
 Candidates must mention India plus the event state/UT (or its linked district).
 Exact GDELT document identifiers are assigned to only the nearest overlapping
 event within the same state, preventing duplicate coverage counts.
