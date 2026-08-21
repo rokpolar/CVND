@@ -124,6 +124,16 @@ python src/collect_gdelt.py --estimate --overwrite
 GDELT_BILLING_PROJECT=your-project \
 python src/collect_gdelt.py --execute --overwrite
 
+# Plan resumable batches capped below 1 TiB, execute one batch in each intended
+# billing period, then merge only after every batch is complete.
+GDELT_BILLING_PROJECT=your-project \
+python src/collect_gdelt.py --plan-batches --max-batch-tib 0.95 --overwrite
+
+GDELT_BILLING_PROJECT=your-project \
+python src/collect_gdelt.py --execute-batch B001
+
+python src/collect_gdelt.py --merge-batches --overwrite
+
 # Examples: language subset, all GKG languages, broader themes, or domain exclusion.
 python src/collect_gdelt.py --languages en,hin,tam --overwrite
 python src/collect_gdelt.py --languages all --overwrite
@@ -137,6 +147,10 @@ Census C-16 categories and GDELT Translingual 2.0 support.
 Candidates must mention India plus the event state/UT (or its linked district).
 Exact GDELT document identifiers are assigned to only the nearest overlapping
 event within the same state, preventing duplicate coverage counts.
+Batch planning preserves that rule by keeping overlapping windows from the
+same state together. BigQuery's `maximum_bytes_billed` guard enforces the
+planned per-batch ceiling at execution time, and completed batch files allow
+later runs to resume without repeating successful queries.
 See [`docs/gdelt_collection.md`](docs/gdelt_collection.md) for all selectors,
 assignment rules, limitations and recommended sensitivity runs.
 
