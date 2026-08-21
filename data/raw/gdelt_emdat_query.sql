@@ -216,7 +216,6 @@ gkg_raw AS (
     PARSE_TIMESTAMP('%Y%m%d%H%M%S', CAST(`DATE` AS STRING), 'UTC') AS published_at,
     DocumentIdentifier AS url,
     TRIM(DocumentIdentifier) AS normalized_url,
-    LOWER(COALESCE(SourceCommonName, '')) AS source_domain,
     LOWER(COALESCE(V2Locations, '')) AS locations_lower,
     CAST('' AS STRING) AS title_lower,
     CASE
@@ -270,9 +269,9 @@ candidate_matches AS (
     g.*,
     ABS(DATE_DIFF(DATE(g.published_at), e.onset_date, DAY)) AS onset_distance
   FROM event_windows e
-  JOIN g
+  JOIN gkg AS g
     ON DATE(g.published_at) BETWEEN e.query_start AND e.query_end
-   AND (
+  WHERE (
      EXISTS (
        SELECT 1
        FROM UNNEST(SPLIT(g.locations_lower, ';')) AS location_ref
