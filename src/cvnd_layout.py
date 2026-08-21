@@ -24,6 +24,7 @@ DATA_FILES: dict[str, str] = {
     "population": "raw/population.csv",
     "state_area": "raw/state_area.csv",
     "emdat": "raw/emdat_raw.csv",
+    "emdat_meta": "raw/emdat_raw.meta.json",
     "gdelt_bq": "raw/gdelt_bq.json",
     "events_quarantine": "raw/events_quarantine.csv",
     # cache
