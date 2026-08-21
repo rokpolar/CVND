@@ -1,8 +1,9 @@
 """
-LEGACY / OPTIONAL — GDELT Doc API collector.
+LEGACY / OPTIONAL — recent-only GDELT DOC API collector.
 
-Primary MSS reads data/gdelt_bq.json via src/compute_mss.py.
-This script does not feed the current scoring path.
+The official DOC API supports only a rolling recent window, so this script
+cannot reconstruct the historical EM-DAT sample. Primary collection uses
+``src/collect_gdelt.py`` and BigQuery; this script does not feed MSS.
 """
 import requests
 import pandas as pd

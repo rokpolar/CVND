@@ -17,12 +17,12 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 
 warnings.filterwarnings("ignore")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from cvnd_config import MEDIA_WINDOW_DAYS  # noqa: E402
 from cvnd_layout import data_path  # noqa: E402
 
 MSS_FEATURES = ["S_vol", "S_sov", "S_TTFR", "S_CD"]
@@ -35,6 +35,16 @@ AHP_MATRIX = np.array([
     [1/3, 1/3, 1,   1],
     [1/3, 1/3, 1,   1],
 ])
+
+
+def minmax_series(values: pd.Series) -> pd.Series:
+    """Scale a numeric series to [0, 1], returning zero for constants."""
+    numeric = pd.to_numeric(values, errors="coerce").astype(float)
+    low = numeric.min()
+    high = numeric.max()
+    if not np.isfinite(low) or not np.isfinite(high) or high <= low:
+        return pd.Series(0.0, index=values.index)
+    return (numeric - low) / (high - low)
 
 
 def compute_ahp_weights(matrix: np.ndarray, labels: list[str]) -> dict:
@@ -116,7 +126,11 @@ def print_entropy_weights(
     labels: list[str], weights: np.ndarray, X: np.ndarray
 ) -> None:
     """Print entropy weights with per-criterion entropy for transparency."""
-    P = np.clip(X / X.sum(axis=0), 1e-12, None)
+    col_sum = X.sum(axis=0)
+    safe_sum = np.where(col_sum > 1e-12, col_sum, 1.0)
+    P = X / safe_sum
+    P[:, col_sum <= 1e-12] = 1.0 / len(X)
+    P = np.clip(P, 1e-12, None)
     k = 1.0 / np.log(len(X))
     entropy = -k * (P * np.log(P)).sum(axis=0)
     print("\n  Entropy weights (data-driven):")
@@ -156,10 +170,18 @@ def main() -> None:
         data = json.load(f)
     raw = pd.DataFrame(data)
     print(f"  {gdelt_path}: {len(raw)} rows")
+    required = {
+        "event_id", "source_lang", "article_count", "coverage_days",
+        "first_article_date", "last_article_date",
+    }
+    missing = required - set(raw.columns)
+    if missing:
+        raise ValueError(f"GDELT input missing columns: {sorted(missing)}")
     raw["article_count"] = raw["article_count"].astype(int)
     raw["coverage_days"] = raw["coverage_days"].astype(int)
     raw["first_article_date"] = pd.to_datetime(raw["first_article_date"])
     raw["last_article_date"] = pd.to_datetime(raw["last_article_date"])
+    raw["source_lang"] = raw["source_lang"].replace({"eng": "en"})
 
     print(f"\nTotal rows: {len(raw)}")
     print(f"Events covered: {raw['event_id'].nunique()}")
@@ -168,7 +190,7 @@ def main() -> None:
     # ── Step 2: Aggregate per event ───────────────────────────────────────────────
     print("\n[Step 2] Aggregating per event...")
 
-    event_agg = raw.groupby(["event_id", "state"]).agg(
+    event_agg = raw.groupby("event_id").agg(
         total_articles=("article_count", "sum"),
         first_date=("first_article_date", "min"),
         last_date=("last_article_date", "max"),
@@ -197,8 +219,15 @@ def main() -> None:
         .rename(columns={"article_count": "en_articles"})
     )
 
-    df = event_agg.merge(indic_agg, on="event_id", how="left")
+    events = pd.read_csv(data_path("events"))[
+        ["event_id", "state", "start_date", "income_group"]
+    ]
+    events["onset_date"] = pd.to_datetime(events["start_date"])
+    df = events.merge(event_agg, on="event_id", how="left")
+    df = df.merge(indic_agg, on="event_id", how="left")
     df = df.merge(en_agg, on="event_id", how="left")
+    df["total_articles"] = df["total_articles"].fillna(0).astype(int)
+    df["coverage_days"] = df["coverage_days"].fillna(0).astype(int)
     df["indic_articles"] = df["indic_articles"].fillna(0).astype(int)
     df["en_articles"] = df["en_articles"].fillna(0).astype(int)
     df["indic_share"] = (
@@ -207,13 +236,8 @@ def main() -> None:
 
     # ── Step 3: Event onset dates ─────────────────────────────────────────────────
     print("\n[Step 3] Loading event onset dates...")
-    events = pd.read_csv(data_path("events"))[
-        ["event_id", "state", "start_date", "income_group"]
-    ]
-    events["onset_date"] = pd.to_datetime(events["start_date"])
-    df = df.merge(
-        events[["event_id", "onset_date", "income_group"]], on="event_id", how="left"
-    )
+    missing_input_events = int(df["first_date"].isna().sum())
+    print(f"  Events with zero matched articles: {missing_input_events}")
 
     # ── Step 4: Compute normalized components ─────────────────────────────────────
     print("\n[Step 4] Computing MSS components...")
@@ -230,22 +254,26 @@ def main() -> None:
         print("  Skewness <= 2 → using linear scaling for S_vol")
         df["vol_scaled"] = df["total_articles"].astype(float)
 
-    scaler = MinMaxScaler()
-    df["S_vol"] = scaler.fit_transform(df[["vol_scaled"]]).round(4)
-    df["S_sov"] = scaler.fit_transform(
-        (df["total_articles"] / N_total).values.reshape(-1, 1)
-    ).round(4)
+    df["S_vol"] = minmax_series(df["vol_scaled"]).round(4)
+    if N_total > 0:
+        df["S_sov"] = minmax_series(df["total_articles"] / N_total).round(4)
+    else:
+        df["S_sov"] = 0.0
 
     GAMMA = 0.3
     df["t_first_days"] = (
-        (df["first_date"] - df["onset_date"]).dt.days.clip(lower=0).fillna(14)
+        (df["first_date"] - df["onset_date"])
+        .dt.days.clip(lower=0)
+        .fillna(MEDIA_WINDOW_DAYS)
     )
     df["S_TTFR_g01"] = np.exp(-0.1 * df["t_first_days"]).round(4)
     df["S_TTFR_g03"] = np.exp(-GAMMA * df["t_first_days"]).round(4)
     df["S_TTFR_g05"] = np.exp(-0.5 * df["t_first_days"]).round(4)
+    zero_coverage = df["total_articles"] == 0
+    df.loc[zero_coverage, ["S_TTFR_g01", "S_TTFR_g03", "S_TTFR_g05"]] = 0.0
     df["S_TTFR"] = df["S_TTFR_g03"]
 
-    df["S_CD"] = scaler.fit_transform(df[["coverage_days"]]).round(4)
+    df["S_CD"] = minmax_series(df["coverage_days"]).round(4)
 
     # ── Step 5: AHP weights (primary) ─────────────────────────────────────────────
     print("\n[Step 5] Deriving weights via AHP (Saaty 1980)")
@@ -302,7 +330,7 @@ def main() -> None:
 
     rank_df = df[["event_id", "state"]].copy()
     for label, mss_vals in rank_configs.items():
-        rank_df[label] = mss_vals.rank(ascending=False).astype(int)
+        rank_df[label] = mss_vals.rank(ascending=False, method="min").astype(int)
 
     rank_cols = list(rank_configs.keys())
     rank_df["max_rank_shift"] = (

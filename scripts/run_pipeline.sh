@@ -44,6 +44,9 @@ setup_environment() {
 
 setup_environment
 
+echo ">>> Rebuilding canonical event registry from EM-DAT-BASE.xlsx"
+"$PYTHON" src/build_emdat_events.py
+
 echo ">>> Validating canonical event registry"
 "$PYTHON" src/archive/build_events.py
 
@@ -55,6 +58,8 @@ STEPS=()
 if [[ "$SKIP_GEE" != "1" ]]; then
   STEPS+=(
     "src/satellite.py"
+    "event_aoi_area.py"
+    "post_cloud.py"
     "src/merge_results.py"
     "src/compute_population.py"
   )
@@ -62,7 +67,15 @@ else
   echo "NOTE: SKIP_GEE=1 — skipping GEE satellite pull (using cached flood artifacts)"
   # Still rebuild severity from existing flood_combined / flood_extent artifacts
   if [[ -f "$ROOT/data/cache/flood_extent.csv" && -d "$ROOT/data/cache/sits_scores" ]]; then
+    if [[ ! -f "$ROOT/data/intermediate/event_aoi_area.csv" || ! -f "$ROOT/data/intermediate/post_cloud.csv" ]]; then
+      echo "ERROR: cached satellite data lacks state-AOI area/cloud files; run with SKIP_GEE=0." >&2
+      exit 1
+    fi
     STEPS+=("src/merge_results.py")
+  fi
+  if [[ ! -f "$ROOT/data/intermediate/flood_combined.csv" && ! -f "$ROOT/data/cache/flood_extent.csv" ]]; then
+    echo "ERROR: no satellite cache exists for the rebuilt registry; run with SKIP_GEE=0." >&2
+    exit 1
   fi
   STEPS+=("src/compute_population.py")
 fi
@@ -70,11 +83,18 @@ fi
 STEPS+=("src/compute_pss.py")
 
 if [[ "$SKIP_ARTICLES" != "1" ]]; then
-  echo "NOTE: SKIP_ARTICLES=0 — running archived GDELT Doc API collector"
-  echo "      Primary MSS still reads data/raw/gdelt_bq.json (not news.py output)"
-  STEPS+=("src/archive/news.py")
+  if [[ -z "${GDELT_BILLING_PROJECT:-}" ]]; then
+    echo "ERROR: SKIP_ARTICLES=0 requires GDELT_BILLING_PROJECT and Google ADC credentials." >&2
+    exit 1
+  fi
+  echo "NOTE: SKIP_ARTICLES=0 — querying historical GDELT GKG BigQuery"
+  "$PYTHON" src/collect_gdelt.py --execute --overwrite
 else
-  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT Doc API (MSS uses data/raw/gdelt_bq.json)"
+  echo "NOTE: SKIP_ARTICLES=1 — using existing data/raw/gdelt_bq.json"
+  if [[ ! -f "$ROOT/data/raw/gdelt_bq.json" ]]; then
+    echo "ERROR: data/raw/gdelt_bq.json is missing; run src/collect_gdelt.py --execute first." >&2
+    exit 1
+  fi
 fi
 
 STEPS+=(
