@@ -38,6 +38,28 @@ pip install -r requirements.txt
 cp .env.example .env              # set GEE_PROJECT_ID if using Earth Engine
 ```
 
+### EM-DAT API input
+
+Create an EM-DAT account at [public.emdat.be/register](https://public.emdat.be/register),
+then [sign in](https://public.emdat.be/login) and add the API key associated
+with your account to `.env` as `EMDAT_API_KEY`. The API can be explored in the
+official [GraphiQL interface](https://api.emdat.be/). Then run:
+
+```bash
+# Inspect the exact GraphQL query; no key or network request is used.
+python src/collect_emdat.py --dry-run
+
+# India flood records, 2015–2026. Replaces the existing canonical raw export.
+python src/collect_emdat.py --from-year 2015 --to-year 2026 \
+  --iso IND --classif 'nat-hyd-flo-*' --overwrite
+```
+
+The collector uses the official `https://api.emdat.be/v1` GraphQL endpoint,
+paginates in batches of 500, preserves the existing portal-export CSV schema,
+and records API/dataset versions, filters, retrieval time, and SHA-256 in
+`data/raw/emdat_raw.meta.json`. Omit `--overwrite` or choose a separate
+`--output` while validating a new extract.
+
 Optional Earth Engine auth (only when `SKIP_GEE=0`):
 
 ```bash
