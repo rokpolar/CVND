@@ -5,6 +5,7 @@ rasterio
 shapely
 geopandas
 pandas
+google-cloud-bigquery
 numpy
 h5py
 openpyxl

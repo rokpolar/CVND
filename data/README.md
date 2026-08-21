@@ -26,7 +26,9 @@ Tiered folders under `data/`. Primary pipeline scripts resolve paths via
 | `state_area.csv` | `state_area` | Survey of India area table (see `source` column) | `compute_population.py` |
 | `emdat_api_raw.csv` | `emdat_api_csv` | `collect_emdat.py` (optional API staging) | Manual comparison before promotion |
 | `emdat_api_raw.meta.json` | `emdat_meta` | `collect_emdat.py` provenance | Audit / reproducibility |
-| `gdelt_bq.json` | `gdelt_bq` | BigQuery export (manual) | `compute_mss.py` |
+| `gdelt_emdat_query.sql` | `gdelt_sql` | `collect_gdelt.py` | Reviewable historical GKG query |
+| `gdelt_bq.json` | `gdelt_bq` | `collect_gdelt.py --execute` | `compute_mss.py` |
+| `gdelt_bq.meta.json` | `gdelt_meta` | `collect_gdelt.py --execute` | Query provenance and cost audit |
 | `events_quarantine.csv` | `events_quarantine` | Manual QC | `compute_expected_coverage.py` |
 
 ### `cache/`

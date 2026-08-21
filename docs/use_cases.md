@@ -124,10 +124,10 @@ flowchart LR
 | --- | --- |
 | 액터 | 연구자, GDELT BigQuery |
 | 목적 | 기사량·점유율·최초보도 지연·보도 지속일을 합성 |
-| 사전조건 | `data/gdelt_bq.json` |
-| 주 흐름 | 파트 병합 → 이벤트 집계 → 성분 정규화 → AHP 가중(Entropy는 민감도) |
-| 결과 | `data/mss_results.csv`, 가중치 메타/출처 파일 |
-| 구현 | `src/compute_mss.py` |
+| 사전조건 | 공식 `events.csv`, Google ADC(실행 시) |
+| 주 흐름 | EM-DAT 기간·주 기반 SQL 생성 → flood/location/language/domain 필터 → URL 중복 제거·겹치는 사건 배정 → MSS 집계 |
+| 결과 | `data/raw/gdelt_emdat_query.sql`, `data/raw/gdelt_bq.json`, MSS 결과 |
+| 구현 | `src/collect_gdelt.py`, `src/compute_mss.py` |
 
 ### UC-07 기대 보도량·불균형 산출
 

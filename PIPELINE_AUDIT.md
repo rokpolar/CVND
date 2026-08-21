@@ -95,6 +95,10 @@ exposed = round((flood_km2 / state_area) * state_pop)
 
 **위치**: `data/gdelt_bq.json`(BigQuery 질의는 리포에 없음), `src/cvnd_paths.py:MEDIA_WINDOW_DAYS`, `compute_expected_coverage.py`
 
+**현재 상태 — 해결됨**: `collect_gdelt.py`가 모든 이벤트에 발생일부터
+발생일+93일까지의 고정 창을 적용합니다. 같은 주에서 창이 겹치면 정확한 GDELT
+문서 식별자를 발생일이 가장 가까운 이벤트 하나에만 배정합니다.
+
 **문제**
 문서·보고서는 일관되게 "design window onset+14d"라고 적지만, 실제 데이터의 창은 **`start_date − 3일` ~ `end_date + 14일`**입니다. `end_date`는 EM-DAT 병합으로 최대 167일까지 늘어나므로 창 길이가 이벤트마다 0일~184일로 다릅니다. 그런데 NegBin 모형에 노출(offset) 항이 없습니다.
 
@@ -108,7 +112,7 @@ exposed = round((flood_km2 / state_area) * state_pop)
 `y`가 "관측 기간이 길어서 많음"과 "주목을 많이 받아서 많음"을 구분하지 못합니다. 기간이 긴 사건은 기계적으로 과다보도로, 짧은 사건은 과소보도로 분류됩니다. 또한 같은 주·같은 해의 창이 겹치는 사건들(예: E29 2022-05-17~10-31과 E08 2022-06-15~07-05)은 기사를 이중계상합니다 — E08은 quarantine으로 막았지만 규칙화되어 있지 않습니다.
 
 **수정 후보**
-- **A (권장)**: 모든 이벤트에 **고정 창**(onset~onset+14d)으로 BigQuery를 재추출하고, `log(window_days)`를 GLM `offset`(또는 `exposure`)으로 투입. 고정 창이면 offset은 상수가 되어 불필요.
+- **A (채택)**: 모든 이벤트에 **고정 창**(현재 onset~onset+93d)으로 BigQuery를 재추출. 창 길이가 모든 이벤트에서 같으므로 GLM의 기간 offset은 상수가 되어 불필요.
 - **B**: 재추출이 불가하면 현 데이터에 `window_days = (last−first)+1`을 계산해 `sm.GLM(..., offset=np.log(window_days))`로 투입. 최소한 기간 교란은 제거됨.
 - **C**: y를 "일평균 기사수"로 바꾸고 Gamma/음이항 대신 준포아송 사용. 단 카운트 모형의 장점을 잃음.
 - 추가: 같은 주에서 창이 겹치는 이벤트 쌍을 자동 검출해 병합/제외하는 규칙을 코드화(현재 `events_quarantine.csv` 수작업).
@@ -370,10 +374,13 @@ deaths.loc[i] = float(hits.max())
 ## 13. [중간] 재현성 결함
 
 - **해결됨 — 공식 이벤트 단일화**: `data/raw/EM-DAT-BASE.xlsx`의 공식 레코드만 이벤트 원본으로 사용합니다. `build_emdat_events.py`는 각 `DisNo.`를 명시된 인도 주/UT별로 전개하며, 서로 다른 `DisNo.`를 합치거나 수동 시드를 추가하지 않습니다. 모든 레지스트리 행은 공식 `source_record_id`를 보존합니다.
-- **BigQuery SQL 미포함** → `gdelt_bq.json`을 만든 질의(키워드, 언어, 창, 중복제거)를 검증·재실행할 수 없습니다.
+- **해결됨 — GDELT SQL 재현성**: `collect_gdelt.py`가 공식 EM-DAT 이벤트에서
+  기간·flood theme·위치·언어·도메인·URL 중복 제거·겹치는 사건 배정 규칙을
+  포함한 `data/raw/gdelt_emdat_query.sql`을 생성하고 실행 메타데이터에 SQL 및
+  이벤트 레지스트리 SHA-256, BigQuery 작업 ID와 처리 바이트를 기록합니다.
 - **SITS 추론 노트북 미포함** → `sits_scores/*.npz`(scores, ndwi_flood)의 생성 로직이 리포 밖입니다.
 - **`requirements.txt` 버전 핀 없음**(17개 패키지 전부 무버전). `statsmodels`/`sklearn` 버전 차이로 결과가 바뀔 수 있습니다.
-- **문서-코드 불일치**: `MEDIA_WINDOW_DAYS=14`(실제 가변 창), `CLOUD_MAX_PCT` 문서 30 vs 코드 60, README의 "SITS + NDWI/SAR"(실제 SITS 관여 41/132), 보고서의 "Absolute under-coverage".
+- **남은 문서-코드 불일치**: `CLOUD_MAX_PCT` 문서 30 vs 코드 60, README의 "SITS + NDWI/SAR"(실제 SITS 관여 41/132), 보고서의 "Absolute under-coverage". 미디어 창은 `MEDIA_WINDOW_DAYS=93` 고정 창으로 해결했습니다.
 - **`src/ingest/`, `src/flood/`, `src/indices/`** 에는 `__pycache__`만 남아 있고 소스가 없습니다(삭제된 모듈의 잔재).
 
 **남은 수정 후보**: SQL과 노트북 커밋 · `pip freeze`로 핀 고정 · 문서 수치를 코드 상수로부터 생성(현재 `cvnd_layout`에 상수는 있으나 README는 수동).

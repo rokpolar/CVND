@@ -83,11 +83,18 @@ fi
 STEPS+=("src/compute_pss.py")
 
 if [[ "$SKIP_ARTICLES" != "1" ]]; then
-  echo "NOTE: SKIP_ARTICLES=0 — running archived GDELT Doc API collector"
-  echo "      Primary MSS still reads data/raw/gdelt_bq.json (not news.py output)"
-  STEPS+=("src/archive/news.py")
+  if [[ -z "${GDELT_BILLING_PROJECT:-}" ]]; then
+    echo "ERROR: SKIP_ARTICLES=0 requires GDELT_BILLING_PROJECT and Google ADC credentials." >&2
+    exit 1
+  fi
+  echo "NOTE: SKIP_ARTICLES=0 — querying historical GDELT GKG BigQuery"
+  "$PYTHON" src/collect_gdelt.py --execute --overwrite
 else
-  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT Doc API (MSS uses data/raw/gdelt_bq.json)"
+  echo "NOTE: SKIP_ARTICLES=1 — using existing data/raw/gdelt_bq.json"
+  if [[ ! -f "$ROOT/data/raw/gdelt_bq.json" ]]; then
+    echo "ERROR: data/raw/gdelt_bq.json is missing; run src/collect_gdelt.py --execute first." >&2
+    exit 1
+  fi
 fi
 
 STEPS+=(
