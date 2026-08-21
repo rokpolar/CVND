@@ -68,48 +68,22 @@ def load_quarantine_ids(path: os.PathLike | str | None = None) -> set[str]:
 
 
 def attach_deaths_from_emdat(events: pd.DataFrame) -> pd.Series:
-    """Best-effort match of EM-DAT Total Deaths onto location-events."""
+    """Attach official event-level deaths by exact EM-DAT ``DisNo.``."""
     deaths = pd.Series(np.nan, index=events.index, dtype=float)
-    emdat_path = data_path("emdat")
+    emdat_path = data_path("emdat_base")
     if not emdat_path.exists():
         print(f"WARNING: {emdat_path} missing — total_deaths unavailable")
         return deaths
 
-    raw = pd.read_csv(emdat_path)
-    raw = raw[raw["Disaster Type"].astype(str).str.lower() == "flood"].copy()
-    raw = raw[(raw["Start Year"] >= 2015) & (raw["Start Year"] <= 2026)].copy()
+    raw = pd.read_excel(emdat_path, sheet_name="EM-DAT Data")
+    death_by_disno = (
+        raw.assign(**{"DisNo.": raw["DisNo."].astype(str)})
+        .set_index("DisNo.")["Total Deaths"]
+    )
+    mapped = events["source_record_id"].astype(str).map(death_by_disno)
+    deaths.loc[:] = pd.to_numeric(mapped, errors="coerce")
 
-    def _make_date(y, m, d, default_day=1):
-        if pd.isna(y) or pd.isna(m):
-            return pd.NaT
-        day = int(d) if not pd.isna(d) else default_day
-        try:
-            return pd.Timestamp(int(y), int(m), day)
-        except ValueError:
-            return pd.NaT
-
-    raw["start_dt"] = [
-        _make_date(r["Start Year"], r["Start Month"], r["Start Day"])
-        for _, r in raw.iterrows()
-    ]
-    raw = raw.dropna(subset=["start_dt"])
-    loc = raw["Location"].fillna("").astype(str).str.lower()
-    admin = raw.get("Admin Units", pd.Series("", index=raw.index)).fillna("").astype(str).str.lower()
-
-    matched = 0
-    for i, row in events.iterrows():
-        state = str(row["state"]).lower()
-        onset = row["onset_date"]
-        mask = (
-            (loc.str.contains(state, regex=False) | admin.str.contains(state, regex=False))
-            & ((raw["start_dt"] - onset).abs().dt.days <= 45)
-        )
-        hits = raw.loc[mask, "Total Deaths"].dropna()
-        if len(hits):
-            deaths.loc[i] = float(hits.max())
-            matched += 1
-
-    print(f"EM-DAT deaths matched for {matched}/{len(events)} events "
+    print(f"EM-DAT deaths matched for {deaths.notna().sum()}/{len(events)} events "
           f"({deaths.notna().mean():.0%} coverage)")
     return deaths
 

@@ -1,4 +1,4 @@
-"""Quick throwaway: estimate download blocks per event (no download, just district bounds).
+"""Estimate download blocks per event (no download, state AOI bounds only).
 Run: python estimate_blocks.py            # all events
      python estimate_blocks.py EVENT_ID [EVENT_ID ...]     # only these
 """
@@ -8,8 +8,9 @@ import math
 import pandas as pd
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
 import satellite as sat   # importing runs initialize_gee()
+from cvnd_layout import data_path
 
-events = pd.read_csv('data/raw/events.csv')
+events = pd.read_csv(data_path("events"))
 if sys.argv[1:]:
     events = events[events['event_id'].isin(sys.argv[1:])]
 

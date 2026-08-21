@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Download EM-DAT records through the official GraphQL API.
 
-The API returns snake_case fields. This collector writes the same portal-export
-column names already consumed by CVND's archived event builder, so switching
-from a manual download to the API does not change downstream code.
+The API returns snake_case fields. This collector writes a portal-compatible
+staging CSV for comparison with the canonical official workbook. It never
+promotes or replaces ``EM-DAT-BASE.xlsx`` automatically.
 """
 
 from __future__ import annotations
@@ -361,7 +361,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--page-size", type=int, default=500)
     parser.add_argument("--timeout", type=float, default=60.0)
     parser.add_argument("--exclude-historic", action="store_true")
-    parser.add_argument("--output", type=Path, default=data_path("emdat"))
+    parser.add_argument("--output", type=Path, default=data_path("emdat_api_csv"))
     parser.add_argument("--metadata", type=Path, default=DEFAULT_METADATA)
     parser.add_argument("--overwrite", action="store_true", help="Allow replacing existing output files")
     parser.add_argument("--dry-run", action="store_true", help="Print the first query without contacting EM-DAT")
