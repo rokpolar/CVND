@@ -71,6 +71,13 @@ class CollectGdeltTests(unittest.TestCase):
         self.assertIn("TRIM(DocumentIdentifier) AS normalized_url", sql)
         self.assertNotIn("REGEXP_REPLACE(DocumentIdentifier", sql)
         self.assertIn("PARTITION BY normalized_url, state", sql)
+        self.assertIn("JOIN gkg AS g", sql)
+        self.assertNotIn("\n  JOIN g\n", sql)
+        self.assertIn(
+            "ON DATE(g.published_at) BETWEEN e.query_start AND e.query_end\n"
+            "  WHERE (",
+            sql,
+        )
         self.assertIn("ORDER BY onset_distance, onset_date, event_id, published_at, url", sql)
         self.assertIn("source_lang IN UNNEST(['en', 'hin'])", sql)
         self.assertIn("NOT IN UNNEST(['example.com'])", sql)
