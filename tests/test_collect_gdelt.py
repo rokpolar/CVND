@@ -1,4 +1,7 @@
+import hashlib
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -46,6 +49,7 @@ class CollectGdeltTests(unittest.TestCase):
         args = collect_gdelt.parse_args([])
         self.assertEqual(args.pre_days, 0)
         self.assertEqual(args.post_days, 93)
+        self.assertEqual(args.max_batch_tib, 0.95)
         self.assertEqual(
             collect_gdelt._csv_values(args.languages),
             collect_gdelt.INDIA_MEDIA_LANGUAGES,
@@ -123,6 +127,123 @@ class CollectGdeltTests(unittest.TestCase):
             collect_gdelt.coalesce_query_ranges(windows),
             [(pd.Timestamp("2020-06-10").date(), pd.Timestamp("2020-09-16").date())],
         )
+
+    def test_batch_plan_keeps_overlapping_same_state_events_together(self):
+        events = pd.concat(
+            [
+                self.events,
+                pd.DataFrame(
+                    [
+                        {
+                            "event_id": "E003",
+                            "state": "Assam",
+                            "district": "Assam",
+                            "start_date": "2021-06-01",
+                            "source_record_id": "2021-0001-IND",
+                            "event_source": "emdat_official_state",
+                        }
+                    ]
+                ),
+            ],
+            ignore_index=True,
+        )
+        windows = collect_gdelt.prepare_event_windows(
+            events, pre_days=0, post_days=93, include_district=True
+        )
+
+        batches = collect_gdelt.plan_query_batches(
+            windows,
+            max_bytes=100,
+            estimate_windows=lambda candidate: 45 * len(candidate),
+        )
+
+        self.assertEqual(len(batches), 2)
+        self.assertEqual(
+            [row["event_id"] for row in batches[0]["windows"]],
+            ["E001", "E002"],
+        )
+        self.assertEqual(
+            [row["event_id"] for row in batches[1]["windows"]],
+            ["E003"],
+        )
+        self.assertTrue(all(batch["estimated_bytes"] <= 100 for batch in batches))
+
+    def test_batch_plan_rejects_indivisible_group_over_limit(self):
+        windows = collect_gdelt.prepare_event_windows(
+            self.events, pre_days=0, post_days=93, include_district=True
+        )
+        with self.assertRaisesRegex(ValueError, "indivisible"):
+            collect_gdelt.plan_query_batches(
+                windows,
+                max_bytes=100,
+                estimate_windows=lambda candidate: 60 * len(candidate),
+            )
+
+    def test_merge_batches_writes_primary_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            events_path = root / "events.csv"
+            batch_dir = root / "batches"
+            output_path = root / "gdelt.json"
+            metadata_path = root / "gdelt.meta.json"
+            batch_dir.mkdir()
+            self.events.to_csv(events_path, index=False)
+
+            batches = []
+            for index, event_id in enumerate(("E001", "E002"), start=1):
+                batch_id = f"B{index:03d}"
+                output_name = f"{batch_id}.json"
+                row = {
+                    "event_id": event_id,
+                    "state": "Odisha",
+                    "source_record_id": f"2020-000{index}-IND",
+                    "source_lang": "und",
+                    "article_count": 0,
+                    "first_article_date": None,
+                    "last_article_date": None,
+                    "coverage_days": 0,
+                }
+                (batch_dir / output_name).write_text(
+                    json.dumps([row]), encoding="utf-8"
+                )
+                batches.append(
+                    {
+                        "batch_id": batch_id,
+                        "event_ids": [event_id],
+                        "output_file": output_name,
+                        "metadata_file": f"{batch_id}.meta.json",
+                    }
+                )
+            manifest = {
+                "version": 1,
+                "events_sha256": hashlib.sha256(events_path.read_bytes()).hexdigest(),
+                "query_options": {},
+                "batches": batches,
+            }
+            (batch_dir / "manifest.json").write_text(
+                json.dumps(manifest), encoding="utf-8"
+            )
+
+            result = collect_gdelt.main(
+                [
+                    "--events",
+                    str(events_path),
+                    "--batch-dir",
+                    str(batch_dir),
+                    "--output",
+                    str(output_path),
+                    "--metadata",
+                    str(metadata_path),
+                    "--merge-batches",
+                ]
+            )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(len(json.loads(output_path.read_text())), 2)
+            self.assertEqual(
+                json.loads(metadata_path.read_text())["collection_mode"],
+                "merged_batches",
+            )
 
     def test_validation_requires_every_event_including_zero_results(self):
         rows = [

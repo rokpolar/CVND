@@ -17,7 +17,7 @@ import sys
 import tempfile
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 import pandas as pd
 
@@ -25,6 +25,8 @@ from cvnd_layout import data_path
 
 
 GKG_TABLE = "gdelt-bq.gdeltv2.gkg_partitioned"
+TIB_BYTES = 1024 ** 4
+DEFAULT_BATCH_LIMIT_TIB = 0.95
 
 STRICT_FLOOD_THEMES = (
     "NATURAL_DISASTER_FLOOD",
@@ -185,6 +187,107 @@ def coalesce_query_ranges(windows: list[dict[str, Any]]) -> list[tuple[date, dat
         else:
             merged[-1] = (merged[-1][0], max(merged[-1][1], end))
     return merged
+
+
+def coupled_event_groups(
+    windows: list[dict[str, Any]],
+) -> list[list[dict[str, Any]]]:
+    """Keep overlapping windows from the same state in one atomic batch.
+
+    Their article assignment is coupled: splitting them would let one URL be
+    assigned independently in multiple batches. Different states remain
+    independent because the primary query intentionally permits a URL to count
+    once for every state it explicitly matches.
+    """
+    groups: list[list[dict[str, Any]]] = []
+    by_state: dict[str, list[dict[str, Any]]] = {}
+    for window in windows:
+        by_state.setdefault(window["state"], []).append(window)
+
+    for state_windows in by_state.values():
+        ordered = sorted(
+            state_windows,
+            key=lambda row: (row["query_start"], row["query_end"], row["event_id"]),
+        )
+        current = [ordered[0]]
+        current_end = ordered[0]["query_end"]
+        for window in ordered[1:]:
+            if window["query_start"] <= current_end:
+                current.append(window)
+                current_end = max(current_end, window["query_end"])
+            else:
+                groups.append(current)
+                current = [window]
+                current_end = window["query_end"]
+        groups.append(current)
+
+    return sorted(
+        groups,
+        key=lambda group: (
+            min(row["query_start"] for row in group),
+            min(row["event_id"] for row in group),
+        ),
+    )
+
+
+def plan_query_batches(
+    windows: list[dict[str, Any]],
+    *,
+    max_bytes: int,
+    estimate_windows: Callable[[list[dict[str, Any]]], int],
+) -> list[dict[str, Any]]:
+    """Pack chronological event groups under an exact dry-run byte ceiling."""
+    if max_bytes <= 0:
+        raise ValueError("max_bytes must be positive")
+
+    units = coupled_event_groups(windows)
+    batches: list[dict[str, Any]] = []
+    start = 0
+    while start < len(units):
+        low, high = 1, len(units) - start
+        best_count = 0
+        best_bytes = 0
+        cache: dict[int, int] = {}
+
+        while low <= high:
+            count = (low + high) // 2
+            candidate = [
+                row
+                for group in units[start : start + count]
+                for row in group
+            ]
+            if count not in cache:
+                cache[count] = int(estimate_windows(candidate))
+            estimated = cache[count]
+            if estimated <= max_bytes:
+                best_count = count
+                best_bytes = estimated
+                low = count + 1
+            else:
+                high = count - 1
+
+        if best_count == 0:
+            atomic_group = units[start]
+            estimated = int(estimate_windows(atomic_group))
+            event_ids = ", ".join(row["event_id"] for row in atomic_group)
+            raise ValueError(
+                "An indivisible same-state overlap group exceeds the batch limit: "
+                f"{event_ids} requires {estimated / TIB_BYTES:.3f} TiB"
+            )
+
+        batch_windows = [
+            row
+            for group in units[start : start + best_count]
+            for row in group
+        ]
+        batches.append(
+            {
+                "windows": sorted(batch_windows, key=lambda row: row["event_id"]),
+                "estimated_bytes": best_bytes,
+            }
+        )
+        start += best_count
+    return batches
 
 
 def build_query(
@@ -403,7 +506,12 @@ def _atomic_write(path: Path, content: str) -> None:
         raise
 
 
-def execute_query(sql: str, billing_project: str | None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def execute_query(
+    sql: str,
+    billing_project: str | None,
+    *,
+    maximum_bytes_billed: int | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     try:
         from google.cloud import bigquery
     except ImportError as exc:
@@ -412,7 +520,10 @@ def execute_query(sql: str, billing_project: str | None) -> tuple[list[dict[str,
         ) from exc
 
     client = bigquery.Client(project=billing_project)
-    job = client.query(sql)
+    job_config = bigquery.QueryJobConfig()
+    if maximum_bytes_billed is not None:
+        job_config.maximum_bytes_billed = maximum_bytes_billed
+    job = client.query(sql, job_config=job_config)
     rows = [
         {key: _json_ready(value) for key, value in dict(row.items()).items()}
         for row in job.result()
@@ -441,6 +552,114 @@ def estimate_query(sql: str, billing_project: str | None) -> tuple[int, str]:
     return int(job.total_bytes_processed or 0), client.project
 
 
+def _query_options(args: argparse.Namespace, languages: tuple[str, ...]) -> dict[str, Any]:
+    return {
+        "topic_profile": args.topic_profile,
+        "pre_days": args.pre_days,
+        "post_days": args.post_days,
+        "languages": list(languages),
+        "include_domains": list(args.include_domain),
+        "exclude_domains": list(args.exclude_domain),
+        "include_district_term": not args.no_district_term,
+        "title_fallback": args.title_fallback,
+    }
+
+
+def _build_query_for_args(
+    windows: list[dict[str, Any]],
+    args: argparse.Namespace,
+    languages: tuple[str, ...],
+) -> str:
+    return build_query(
+        windows,
+        topic_profile=args.topic_profile,
+        languages=languages,
+        include_domains=tuple(args.include_domain),
+        exclude_domains=tuple(args.exclude_domain),
+        title_fallback=args.title_fallback,
+    )
+
+
+def _load_batch_manifest(batch_dir: Path) -> dict[str, Any]:
+    manifest_path = batch_dir / "manifest.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(
+            f"Batch manifest not found: {manifest_path}; run --plan-batches first"
+        )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("version") != 1 or not manifest.get("batches"):
+        raise ValueError(f"Invalid batch manifest: {manifest_path}")
+    return manifest
+
+
+def _verify_manifest_events(manifest: dict[str, Any], events_path: Path) -> None:
+    current_hash = hashlib.sha256(events_path.read_bytes()).hexdigest()
+    if manifest.get("events_sha256") != current_hash:
+        raise ValueError(
+            "events.csv changed after batch planning; regenerate the plan with "
+            "--plan-batches --overwrite"
+        )
+
+
+def write_batch_plan(
+    batches: list[dict[str, Any]],
+    *,
+    args: argparse.Namespace,
+    languages: tuple[str, ...],
+    max_bytes: int,
+) -> dict[str, Any]:
+    manifest_path = args.batch_dir / "manifest.json"
+    targets = [manifest_path]
+    for index in range(1, len(batches) + 1):
+        batch_id = f"B{index:03d}"
+        targets.append(args.batch_dir / f"{batch_id}.sql")
+    existing = [path for path in targets if path.exists()]
+    if existing and not args.overwrite:
+        raise FileExistsError(
+            f"Batch plan output exists: {existing[0]}; pass --overwrite"
+        )
+
+    manifest_batches = []
+    for index, batch in enumerate(batches, start=1):
+        batch_id = f"B{index:03d}"
+        windows = batch["windows"]
+        sql = _build_query_for_args(windows, args, languages)
+        sql_name = f"{batch_id}.sql"
+        output_name = f"{batch_id}.json"
+        metadata_name = f"{batch_id}.meta.json"
+        _atomic_write(args.batch_dir / sql_name, sql)
+        manifest_batches.append(
+            {
+                "batch_id": batch_id,
+                "event_ids": [row["event_id"] for row in windows],
+                "event_count": len(windows),
+                "query_start": min(row["query_start"] for row in windows).isoformat(),
+                "query_end": max(row["query_end"] for row in windows).isoformat(),
+                "estimated_bytes": batch["estimated_bytes"],
+                "estimated_tib": round(batch["estimated_bytes"] / TIB_BYTES, 6),
+                "sql_file": sql_name,
+                "output_file": output_name,
+                "metadata_file": metadata_name,
+            }
+        )
+
+    manifest = {
+        "version": 1,
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "source_table": GKG_TABLE,
+        "events_sha256": hashlib.sha256(args.events.read_bytes()).hexdigest(),
+        "batch_limit_bytes": max_bytes,
+        "batch_limit_tib": round(max_bytes / TIB_BYTES, 6),
+        "query_options": _query_options(args, languages),
+        "batches": manifest_batches,
+    }
+    _atomic_write(
+        manifest_path,
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+    )
+    return manifest
+
+
 def _csv_values(values: str | None) -> tuple[str, ...]:
     if not values:
         return ()
@@ -455,6 +674,17 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--sql-output", type=Path, default=data_path("gdelt_sql"))
     parser.add_argument("--output", type=Path, default=data_path("gdelt_bq"))
     parser.add_argument("--metadata", type=Path, default=data_path("gdelt_meta"))
+    parser.add_argument(
+        "--batch-dir",
+        type=Path,
+        default=data_path("gdelt_bq").parent / "gdelt_batches",
+    )
+    parser.add_argument(
+        "--max-batch-tib",
+        type=float,
+        default=DEFAULT_BATCH_LIMIT_TIB,
+        help="Dry-run and execution ceiling per batch in TiB (default: 0.95)",
+    )
     parser.add_argument("--topic-profile", choices=("strict", "broad"), default="strict")
     parser.add_argument("--pre-days", type=int, default=0)
     parser.add_argument("--post-days", type=int, default=93)
@@ -478,6 +708,21 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--estimate", action="store_true", help="BigQuery dry run: validate SQL and estimate bytes")
     action.add_argument("--execute", action="store_true")
+    action.add_argument(
+        "--plan-batches",
+        action="store_true",
+        help="Dry-run chronological groups and write a resumable byte-capped plan",
+    )
+    action.add_argument(
+        "--execute-batch",
+        metavar="BATCH_ID",
+        help="Execute one planned batch, such as B001",
+    )
+    action.add_argument(
+        "--merge-batches",
+        action="store_true",
+        help="Merge all completed planned batches into the primary output",
+    )
     parser.add_argument("--billing-project", default=os.getenv("GDELT_BILLING_PROJECT"))
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -487,6 +732,12 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv)
     try:
+        if args.event_id and (
+            args.plan_batches or args.execute_batch or args.merge_batches
+        ):
+            raise ValueError(
+                "--event-id cannot be combined with batch planning, execution, or merge"
+            )
         events = pd.read_csv(args.events)
         if args.event_id:
             events = events[events["event_id"].isin(args.event_id)].copy()
@@ -501,19 +752,173 @@ def main(argv: Iterable[str] | None = None) -> int:
             include_district=not args.no_district_term,
         )
         languages = _csv_values(args.languages)
-        sql = build_query(
-            windows,
-            topic_profile=args.topic_profile,
-            languages=languages,
-            include_domains=tuple(args.include_domain),
-            exclude_domains=tuple(args.exclude_domain),
-            title_fallback=args.title_fallback,
-        )
 
         print(f"Events: {len(windows)}")
         print(f"Date range: {min(w['query_start'] for w in windows)} to {max(w['query_end'] for w in windows)}")
         print(f"Topic profile: {args.topic_profile}")
         print(f"Languages: {languages or 'all GKG source languages'}")
+
+        if args.plan_batches:
+            max_bytes = int(args.max_batch_tib * TIB_BYTES)
+            if max_bytes <= 0:
+                raise ValueError("--max-batch-tib must be positive")
+
+            def estimate_windows(candidate: list[dict[str, Any]]) -> int:
+                sql = _build_query_for_args(candidate, args, languages)
+                estimated, project = estimate_query(sql, args.billing_project)
+                print(
+                    f"  dry run {len(candidate):3d} events: "
+                    f"{estimated / TIB_BYTES:.3f} TiB ({project})"
+                )
+                return estimated
+
+            batches = plan_query_batches(
+                windows,
+                max_bytes=max_bytes,
+                estimate_windows=estimate_windows,
+            )
+            manifest = write_batch_plan(
+                batches,
+                args=args,
+                languages=languages,
+                max_bytes=max_bytes,
+            )
+            print(
+                f"Wrote {len(manifest['batches'])} batches under "
+                f"{args.max_batch_tib:.3f} TiB: {args.batch_dir / 'manifest.json'}"
+            )
+            for batch in manifest["batches"]:
+                print(
+                    f"  {batch['batch_id']}: {batch['event_count']} events, "
+                    f"{batch['estimated_tib']:.3f} TiB, "
+                    f"{batch['query_start']} to {batch['query_end']}"
+                )
+            return 0
+
+        if args.execute_batch:
+            manifest = _load_batch_manifest(args.batch_dir)
+            _verify_manifest_events(manifest, args.events)
+            batch = next(
+                (
+                    item
+                    for item in manifest["batches"]
+                    if item["batch_id"] == args.execute_batch
+                ),
+                None,
+            )
+            if batch is None:
+                available = ", ".join(item["batch_id"] for item in manifest["batches"])
+                raise ValueError(
+                    f"Unknown batch {args.execute_batch!r}; available: {available}"
+                )
+            output_path = args.batch_dir / batch["output_file"]
+            metadata_path = args.batch_dir / batch["metadata_file"]
+            if output_path.exists() and not args.overwrite:
+                print(f"Batch already complete; skipping: {output_path}")
+                return 0
+
+            sql_path = args.batch_dir / batch["sql_file"]
+            sql = sql_path.read_text(encoding="utf-8")
+            maximum_bytes_billed = int(manifest["batch_limit_bytes"])
+            rows, job_meta = execute_query(
+                sql,
+                args.billing_project,
+                maximum_bytes_billed=maximum_bytes_billed,
+            )
+            validate_output(rows, set(batch["event_ids"]))
+            _atomic_write(
+                output_path,
+                json.dumps(rows, ensure_ascii=False, indent=2) + "\n",
+            )
+            metadata = {
+                "retrieved_at_utc": datetime.now(timezone.utc).isoformat(),
+                "batch_id": batch["batch_id"],
+                "batch_limit_bytes": maximum_bytes_billed,
+                "estimated_bytes": batch["estimated_bytes"],
+                "event_ids": batch["event_ids"],
+                "result_rows": len(rows),
+                "sql_sha256": hashlib.sha256(sql.encode("utf-8")).hexdigest(),
+                **job_meta,
+            }
+            _atomic_write(
+                metadata_path,
+                json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+            )
+            print(f"Completed {batch['batch_id']}: {output_path}")
+            print(f"Wrote provenance: {metadata_path}")
+            return 0
+
+        if args.merge_batches:
+            manifest = _load_batch_manifest(args.batch_dir)
+            _verify_manifest_events(manifest, args.events)
+            missing = [
+                item["batch_id"]
+                for item in manifest["batches"]
+                if not (args.batch_dir / item["output_file"]).exists()
+            ]
+            if missing:
+                raise ValueError(
+                    "Cannot merge; incomplete batches: " + ", ".join(missing)
+                )
+            for target in (args.output, args.metadata):
+                if target.exists() and not args.overwrite:
+                    raise FileExistsError(f"Output exists: {target}; pass --overwrite")
+
+            rows: list[dict[str, Any]] = []
+            batch_metadata = []
+            expected_event_ids: set[str] = set()
+            for batch in manifest["batches"]:
+                rows.extend(
+                    json.loads(
+                        (args.batch_dir / batch["output_file"]).read_text(
+                            encoding="utf-8"
+                        )
+                    )
+                )
+                expected_event_ids.update(batch["event_ids"])
+                metadata_path = args.batch_dir / batch["metadata_file"]
+                if metadata_path.exists():
+                    batch_metadata.append(
+                        json.loads(metadata_path.read_text(encoding="utf-8"))
+                    )
+            validate_output(rows, expected_event_ids)
+            rows.sort(
+                key=lambda row: (
+                    str(row["event_id"]),
+                    -int(row["article_count"]),
+                    str(row["source_lang"]),
+                )
+            )
+            _atomic_write(
+                args.output,
+                json.dumps(rows, ensure_ascii=False, indent=2) + "\n",
+            )
+            merged_metadata = {
+                "retrieved_at_utc": datetime.now(timezone.utc).isoformat(),
+                "source_table": GKG_TABLE,
+                "collection_mode": "merged_batches",
+                "events_sha256": manifest["events_sha256"],
+                "event_count": len(expected_event_ids),
+                "result_rows": len(rows),
+                "batch_count": len(manifest["batches"]),
+                "query_options": manifest["query_options"],
+                "total_bytes_processed": sum(
+                    int(item.get("total_bytes_processed", 0))
+                    for item in batch_metadata
+                ),
+                "batch_job_ids": [
+                    item.get("job_id") for item in batch_metadata if item.get("job_id")
+                ],
+            }
+            _atomic_write(
+                args.metadata,
+                json.dumps(merged_metadata, ensure_ascii=False, indent=2) + "\n",
+            )
+            print(f"Merged {len(manifest['batches'])} batches: {args.output}")
+            print(f"Wrote provenance: {args.metadata}")
+            return 0
+
+        sql = _build_query_for_args(windows, args, languages)
         if args.dry_run:
             print(sql)
             return 0
@@ -554,14 +959,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             "sql_sha256": hashlib.sha256(sql.encode("utf-8")).hexdigest(),
             "event_count": len(windows),
             "result_rows": len(rows),
-            "topic_profile": args.topic_profile,
-            "pre_days": args.pre_days,
-            "post_days": args.post_days,
-            "languages": list(languages),
-            "include_domains": args.include_domain,
-            "exclude_domains": args.exclude_domain,
-            "include_district_term": not args.no_district_term,
-            "title_fallback": args.title_fallback,
+            **_query_options(args, languages),
             **job_meta,
         }
         _atomic_write(args.metadata, json.dumps(metadata, ensure_ascii=False, indent=2) + "\n")
