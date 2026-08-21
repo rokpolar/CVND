@@ -57,6 +57,29 @@ BROAD_FLOOD_THEMES = STRICT_FLOOD_THEMES + (
     "NATURAL_DISASTER_MONSOON_RAINS",
 )
 
+# Exact intersection of languages individually enumerated by India's 2011
+# Census C-16 mother-tongue table and languages supported by GDELT Translingual
+# 2.0. English enters GKG with blank TranslationInfo and is normalized to `en`;
+# translated sources use the ISO 639-2 codes below.
+INDIA_MEDIA_LANGUAGES = (
+    "en",
+    "ara",  # Arabic/Arbi
+    "ben",  # Bengali
+    "guj",  # Gujarati
+    "hin",  # Hindi
+    "kan",  # Kannada
+    "mal",  # Malayalam
+    "mar",  # Marathi
+    "nep",  # Nepali
+    "ori",  # Odia/Oriya
+    "pan",  # Punjabi
+    "pus",  # Afghani/Kabuli/Pashto
+    "snd",  # Sindhi
+    "tam",  # Tamil
+    "tel",  # Telugu
+    "urd",  # Urdu
+)
+
 STATE_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
     "Delhi": ("New Delhi", "NCT of Delhi"),
     "Jammu and Kashmir": ("Jammu & Kashmir", "Jammu Kashmir"),
@@ -421,6 +444,8 @@ def estimate_query(sql: str, billing_project: str | None) -> tuple[int, str]:
 def _csv_values(values: str | None) -> tuple[str, ...]:
     if not values:
         return ()
+    if values.strip().lower() == "all":
+        return ()
     return tuple(value.strip().lower() for value in values.split(",") if value.strip())
 
 
@@ -433,7 +458,14 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--topic-profile", choices=("strict", "broad"), default="strict")
     parser.add_argument("--pre-days", type=int, default=0)
     parser.add_argument("--post-days", type=int, default=93)
-    parser.add_argument("--languages", help="Comma-separated codes, e.g. en,hin,tam")
+    parser.add_argument(
+        "--languages",
+        default=",".join(INDIA_MEDIA_LANGUAGES),
+        help=(
+            "Comma-separated source-language codes; default is the exact "
+            "India Census x GDELT-supported intersection; use 'all' for no filter"
+        ),
+    )
     parser.add_argument("--include-domain", action="append", default=[])
     parser.add_argument("--exclude-domain", action="append", default=[])
     parser.add_argument("--event-id", action="append", default=[])

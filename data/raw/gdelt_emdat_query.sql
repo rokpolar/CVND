@@ -258,7 +258,7 @@ gkg_raw AS (
 gkg AS (
   SELECT *
   FROM gkg_raw
-
+  WHERE source_lang IN UNNEST(['en', 'ara', 'ben', 'guj', 'hin', 'kan', 'mal', 'mar', 'nep', 'ori', 'pan', 'pus', 'snd', 'tam', 'tel', 'urd'])
 ),
 candidate_matches AS (
   SELECT
