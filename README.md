@@ -84,7 +84,7 @@ Cached rebuild (only after caches have been regenerated for the current registry
 | Flag | Default | Meaning |
 | --- | --- | --- |
 | `SKIP_GEE` | `1` | Skip `satellite.py`; use cached `flood_extent` / `sits_scores` / `flood_combined` |
-| `SKIP_ARTICLES` | `1` | Skip archived Doc API collector; **MSS always reads `data/raw/gdelt_bq.json`** |
+| `SKIP_ARTICLES` | `1` | Reuse `gdelt_bq.json`; set `0` to execute the historical BigQuery collector |
 | `SETUP_DEPS` | `0` | Set to `1` to reinstall `requirements.txt` into `venv/` |
 
 Examples:
@@ -101,7 +101,7 @@ SETUP_DEPS=1 ./scripts/run_pipeline.sh
 
 | Mode | Needs | Notes |
 | --- | --- | --- |
-| Cached (`SKIP_GEE=1`) | `data/intermediate/flood_combined.csv` or (`data/cache/flood_extent.csv` + `data/cache/sits_scores/`), `data/raw/gdelt_bq.json` | Default; no network GEE/GDELT Doc |
+| Cached (`SKIP_GEE=1`) | `data/intermediate/flood_combined.csv` or satellite caches, `data/raw/gdelt_bq.json` | Default; no network GEE/GDELT |
 | Full GEE (`SKIP_GEE=0`) | EE credentials, state AOIs | Writes flood extent, AOI/cloud QA, and SITS patches; Colab inference → `sits_scores/` |
 
 SITS scores are produced outside the runner (Colab notebook after Track B patches),
@@ -109,15 +109,42 @@ then `merge_results.py` builds `data/intermediate/flood_combined.csv`.
 
 ## Media data truth
 
+Historical collection uses the partitioned GDELT 2.0 GKG BigQuery table. The
+DOC API is retained only for recent exploration because it searches a rolling
+three-month window and caps Article List results at 250 per request.
+
+```bash
+# Generate SQL for review; no credentials or query charge.
+python src/collect_gdelt.py --overwrite
+
+# Execute after: gcloud auth application-default login
+GDELT_BILLING_PROJECT=your-project \
+python src/collect_gdelt.py --estimate --overwrite
+
+GDELT_BILLING_PROJECT=your-project \
+python src/collect_gdelt.py --execute --overwrite
+
+# Examples: language subset, broader rain/monsoon recall, or domain exclusion.
+python src/collect_gdelt.py --languages en,hin,tam --overwrite
+python src/collect_gdelt.py --topic-profile broad --exclude-domain example.com --overwrite
+```
+
+The default is a fixed onset-to-onset+93-day window (94 calendar dates,
+including onset) and strict flood themes.
+Candidates must mention India plus the event state/UT (or its linked district).
+Exact GDELT document identifiers are assigned to only the nearest overlapping
+event within the same state, preventing duplicate coverage counts.
+See [`docs/gdelt_collection.md`](docs/gdelt_collection.md) for all selectors,
+assignment rules, limitations and recommended sensitivity runs.
+
 | Stage | Status |
 | --- | --- |
-| `data/raw/gdelt_bq.json` → `compute_mss.py` | **Primary** |
-| `src/archive/news.py` (Doc API → `raw_gdelt.csv`) | Optional / legacy; does not feed current MSS |
+| `collect_gdelt.py` → `gdelt_emdat_query.sql` / `gdelt_bq.json` | **Primary** |
+| `src/archive/news.py` (DOC API) | Recent exploratory legacy only |
 | `src/archive/process_bigquery.py` | Orphan (early 12-event era) |
 
-Column `n_articles_0_14` in expected-coverage outputs is a **proxy alias** for
-`mss_results.total_articles` (design window onset+14d; counts are not guaranteed
-day-filtered).
+Expected-coverage models use `n_articles_window`, the collector's fixed
+onset-through-onset+93-day article count.
 
 ## Shared config
 
