@@ -1,33 +1,35 @@
 # CVND
 
- A research pipeline that measures whether Indian
+A research pipeline that measures whether Indian
 flood disasters receive media attention proportional to their physical severity.
 
 ## What this project is
 
 When floods hit, some events dominate the news while equally (or more) severe
-disasters elsewhere get little coverage. CVND builds an analaysis of
-floods in India and compares what happened on the ground(Satellite vision) with how much the
-media reported(Media coverage), so under- and over-coverage can be quantified rather than guessed.
+disasters elsewhere get little coverage. CVND builds an analysis of floods in
+India and compares what happened on the ground (satellite vision) with how much
+the media reported (media coverage), so under- and over-coverage can be quantified rather than guessed.
 
 The pipeline has four linked pieces:
 
 1. **Physical Severity Score (PSS)**
    flood extent from Sentinel-1/2 imagery (SITS + NDWI/SAR fallback) combined with exposed population. 
-3. **Media Salience Score (MSS)**
+2. **Media Salience Score (MSS)**
    multilingual GDELT coverage aggregated into volume, share-of-voice, time-to-first-report, and coverage duration (AHP weights kept for sensitivity).
-5. **Expected coverage**
+3. **Expected coverage**
    A sparse Negative Binomial model predicts how many articles a disaster should attract given severity, deaths, and onset year. This replaces naïve Min-Max discrepancy scores that outliers can distort.
-7. **Discrepancy Index (`log_ratio`)**
+4. **Discrepancy Index (`log_ratio`)**
    continuous residual \(\ln((y+a)/(\hat\mu+0.5))\). `log_ratio < 0` → under-covered; `log_ratio > 0` → over-covered.
 
 ## Event registry
 
 `data/raw/events.csv` is the single event registry consumed by the pipeline.
-Its `event_source` column records whether a row is a curated seed
-(`manual_seed`) or an EM-DAT-derived row; `source_record_id` stores the EM-DAT
-`DisNo.` when available. The archived event builders read this registry and do
-not embed a separate seed-event list.
+`data/raw/EM-DAT-BASE.xlsx` is the byte-identical official portal export and the
+only event source. `src/build_emdat_events.py` expands each `DisNo.` into one row
+per explicitly identified Indian state/UT without merging different `DisNo.`
+records or adding manual seeds. `data/raw/EM-DAT.xlsx` preserves all 47 source
+columns alongside the derived state-event fields, while `events.csv` is the
+lean pipeline registry.
 
 ## First-time setup
 
@@ -49,16 +51,21 @@ official [GraphiQL interface](https://api.emdat.be/). Then run:
 # Inspect the exact GraphQL query; no key or network request is used.
 python src/collect_emdat.py --dry-run
 
-# India flood records, 2015–2026. Replaces the existing canonical raw export.
+# India flood records, 2015–2026. Writes a staging CSV for comparison.
 python src/collect_emdat.py --from-year 2015 --to-year 2026 \
   --iso IND --classif 'nat-hyd-flo-*' --overwrite
 ```
 
 The collector uses the official `https://api.emdat.be/v1` GraphQL endpoint,
-paginates in batches of 500, preserves the existing portal-export CSV schema,
-and records API/dataset versions, filters, retrieval time, and SHA-256 in
-`data/raw/emdat_raw.meta.json`. Omit `--overwrite` or choose a separate
-`--output` while validating a new extract.
+paginates in batches of 500 and writes `data/raw/emdat_api_raw.csv` plus query
+metadata. API output is staging data only; it does not replace
+`EM-DAT-BASE.xlsx` until it has been reviewed and explicitly promoted.
+
+Regenerate the state workbook inputs and canonical registry with:
+
+```bash
+python src/build_emdat_events.py
+```
 
 Optional Earth Engine auth (only when `SKIP_GEE=0`):
 
@@ -68,7 +75,7 @@ earthengine authenticate
 
 ## Run pipeline
 
-Default (**cached** rebuild — skips GEE and GDELT Doc API):
+Cached rebuild (only after caches have been regenerated for the current registry):
 
 ```bash
 ./scripts/run_pipeline.sh
@@ -95,7 +102,7 @@ SETUP_DEPS=1 ./scripts/run_pipeline.sh
 | Mode | Needs | Notes |
 | --- | --- | --- |
 | Cached (`SKIP_GEE=1`) | `data/intermediate/flood_combined.csv` or (`data/cache/flood_extent.csv` + `data/cache/sits_scores/`), `data/raw/gdelt_bq.json` | Default; no network GEE/GDELT Doc |
-| Full GEE (`SKIP_GEE=0`) | EE credentials, district AOIs | Writes flood extent / sits patches; Colab inference → `sits_scores/` |
+| Full GEE (`SKIP_GEE=0`) | EE credentials, state AOIs | Writes flood extent, AOI/cloud QA, and SITS patches; Colab inference → `sits_scores/` |
 
 SITS scores are produced outside the runner (Colab notebook after Track B patches),
 then `merge_results.py` builds `data/intermediate/flood_combined.csv`.

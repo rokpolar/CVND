@@ -23,19 +23,26 @@ DATA_FILES: dict[str, str] = {
     "events": "raw/events.csv",
     "population": "raw/population.csv",
     "state_area": "raw/state_area.csv",
-    "emdat": "raw/emdat_raw.csv",
-    "emdat_meta": "raw/emdat_raw.meta.json",
+    # Official EM-DAT workbook and its state-level derived workbook.
+    "emdat": "raw/EM-DAT-BASE.xlsx",
+    "emdat_base": "raw/EM-DAT-BASE.xlsx",
+    "emdat_state": "raw/EM-DAT.xlsx",
+    # API output is staging data until it is validated and promoted to BASE.
+    "emdat_api_csv": "raw/emdat_api_raw.csv",
+    "emdat_meta": "raw/emdat_api_raw.meta.json",
     "gdelt_bq": "raw/gdelt_bq.json",
     "events_quarantine": "raw/events_quarantine.csv",
     # cache
     "flood_extent": "cache/flood_extent.csv",
     "sits_scores": "cache/sits_scores",
+    "sits_patches": "cache/sits_patches",
+    "sits_patches_index": "cache/sits_patches_index.csv",
     "satellite_checkpoint_a": "cache/satellite_checkpoint_a.json",
     "satellite_checkpoint_b": "cache/satellite_checkpoint_b.json",
     "ne_india_states": "cache/ne_india_states.gpkg",
     # intermediate
     "flood_combined": "intermediate/flood_combined.csv",
-    "district_area": "intermediate/district_area.csv",
+    "event_aoi_area": "intermediate/event_aoi_area.csv",
     "post_cloud": "intermediate/post_cloud.csv",
     "severity_raw": "intermediate/severity_raw.csv",
     # results

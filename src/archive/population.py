@@ -15,6 +15,7 @@ warnings.filterwarnings('ignore')
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from gee_config import initialize_gee
+from cvnd_layout import ARCHIVE_DATA, data_path
 
 initialize_gee()
 
@@ -145,21 +146,22 @@ def compute_population_exposure(row, flood_df):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
+    events = pd.read_csv(data_path("events"))
     print("=" * 55)
-    print("CP-06: WORLDPOP POPULATION OVERLAY (168 events)")
+    print(f"CP-06: WORLDPOP POPULATION OVERLAY ({len(events)} events)")
     print("=" * 55)
 
-    CHECKPOINT = 'data/population_checkpoint.json'
+    CHECKPOINT = ARCHIVE_DATA / 'population_checkpoint.json'
 
-    events   = pd.read_csv('data/raw/events.csv')
-    flood_df = pd.read_csv('data/flood_extent.csv')
+    flood_df = pd.read_csv(data_path("flood_extent"))
 
     # Load checkpoint
     completed = load_checkpoint(CHECKPOINT) if os.path.exists(CHECKPOINT) else {}
 
     # Seed from existing severity_raw.csv if checkpoint empty
-    if not completed and os.path.exists('data/severity_raw.csv'):
-        existing = pd.read_csv('data/severity_raw.csv')
+    legacy_output = ARCHIVE_DATA / 'worldpop_severity_raw.csv'
+    if not completed and legacy_output.exists():
+        existing = pd.read_csv(legacy_output)
         for _, r in existing.iterrows():
             completed[r['event_id']] = r.to_dict()
         print(f"Seeded {len(completed)} events from existing severity_raw.csv")
@@ -182,7 +184,7 @@ if __name__ == '__main__':
 
         if (len(done_ids) + i) % 10 == 0:
             pd.DataFrame(list(completed.values())).to_csv(
-                'data/severity_raw.csv', index=False)
+                legacy_output, index=False)
             print(f"  >> Checkpoint: {len(done_ids)+i}/{len(events)} done")
 
     # Final save
@@ -205,6 +207,6 @@ if __name__ == '__main__':
     print(f"Skipped   : {len(skipped)}")
     print(f"Errors    : {len(errors)}")
 
-    df.to_csv('data/severity_raw.csv', index=False)
-    print(f"\nSAVED: data/severity_raw.csv")
+    df.to_csv(legacy_output, index=False)
+    print(f"\nSAVED: {legacy_output}")
     print("\nCP-06 COMPLETE — ready for CP-07")
