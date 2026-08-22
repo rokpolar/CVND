@@ -129,8 +129,20 @@ python src/collect_gdelt.py --execute --overwrite
 GDELT_BILLING_PROJECT=your-project \
 python src/collect_gdelt.py --plan-batches --max-batch-tib 0.95 --overwrite
 
+# Optional: richer GKG metadata, with a new dry-run plan because extra columns
+# increase bytes processed.
+python src/collect_gdelt.py --plan-batches \
+  --article-metadata-profile rich --overwrite
+
 GDELT_BILLING_PROJECT=your-project \
 python src/collect_gdelt.py --execute-batch B001
+
+# Download accessible article bodies from the GDELT URL metadata. The SQLite
+# file is both the output and the restart checkpoint.
+python src/download_articles.py \
+  data/raw/gdelt_batches/B001.articles.jsonl.gz \
+  --output data/raw/gdelt_batches/B001.articles.sqlite \
+  --delay 1.0
 
 python src/collect_gdelt.py --merge-batches --overwrite
 
@@ -151,12 +163,17 @@ Batch planning preserves that rule by keeping overlapping windows from the
 same state together. BigQuery's `maximum_bytes_billed` guard enforces the
 planned per-batch ceiling at execution time, and completed batch files allow
 later runs to resume without repeating successful queries.
+Each batch execution writes article-level GDELT URL metadata to compressed
+JSONL and derives the existing MSS summary locally. GDELT does not contain the
+full article body; `download_articles.py` follows the original URLs, respects
+robots.txt, and stores accessible extracted text in a resumable SQLite file.
 See [`docs/gdelt_collection.md`](docs/gdelt_collection.md) for all selectors,
 assignment rules, limitations and recommended sensitivity runs.
 
 | Stage | Status |
 | --- | --- |
-| `collect_gdelt.py` → `gdelt_emdat_query.sql` / `gdelt_bq.json` | **Primary** |
+| `collect_gdelt.py` → `Bxxx.articles.jsonl.gz` / `gdelt_bq.json` | **Primary metadata + MSS summary** |
+| `download_articles.py` → `Bxxx.articles.sqlite` | **Original-site article text where accessible** |
 | `src/archive/news.py` (DOC API) | Recent exploratory legacy only |
 | `src/archive/process_bigquery.py` | Orphan (early 12-event era) |
 

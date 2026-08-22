@@ -66,6 +66,7 @@ appropriate for a multi-state disaster.
 | `--title-fallback` | off | Also scan GKG `Extras` page titles; improves recall but increases bytes billed |
 | `--event-id E001` | all | Generate or execute a small event subset; repeatable |
 | `--max-batch-tib 0.95` | `0.95` | Set the exact dry-run and execution ceiling for every planned batch |
+| `--article-metadata-profile basic\|rich` | `basic` | `basic` returns URL/date/language/event metadata without scanning extra columns; `rich` adds GKG ID, publisher source, title, authors, tone and image but increases bytes processed |
 
 Historical GKG does not expose a dependable outlet-country field equivalent to
 the recent DOC API's `sourcecountry:` operator. For historical comparisons,
@@ -118,10 +119,11 @@ python src/collect_gdelt.py \
 ```
 
 The command writes `data/raw/gdelt_batches/manifest.json` and one reviewable
-SQL file per batch. It packs chronological event groups using BigQuery's exact
-dry-run estimate. Events with overlapping windows in the same state are kept
-in one indivisible group so nearest-onset URL assignment remains identical to
-the full query.
+article-level SQL file per batch. It packs chronological event groups using
+BigQuery's exact dry-run estimate, including every metadata column selected by
+the final query. Events with overlapping windows in the same state are kept in
+one indivisible group so nearest-onset URL assignment remains identical to the
+full query.
 
 Execute only the batch intended for the current billing period:
 
@@ -132,8 +134,18 @@ python src/collect_gdelt.py --execute-batch B001
 
 Execution sets BigQuery `maximum_bytes_billed` to the manifest ceiling. If the
 query would cross that ceiling, BigQuery rejects it before charging for a
-larger scan. A completed batch is skipped on a repeated command unless
-`--overwrite` is supplied, so collection can resume safely in a later period.
+larger scan. BigQuery rows are streamed rather than loaded into memory. For
+`B001`, the two outputs are:
+
+- `B001.articles.jsonl.gz`: one row per assigned article. The default `basic`
+  profile includes event, publication timestamp, URL, normalized URL, URL-derived
+  source domain and source language. The `rich` profile additionally includes
+  GKG record ID, GDELT source, title, authors, tone and sharing image.
+- `B001.json`: the event/language article counts, first/last article dates and
+  coverage days derived locally from the article rows for the MSS pipeline.
+
+A completed batch is skipped on a repeated command unless `--overwrite` is
+supplied, so collection can resume safely in a later period.
 After every listed batch has completed, combine and validate them:
 
 ```bash
@@ -142,6 +154,32 @@ python src/collect_gdelt.py --merge-batches --overwrite
 
 The merge refuses to run when a batch is missing and writes the normal
 `gdelt_bq.json` and `gdelt_bq.meta.json` outputs expected by MSS computation.
+
+## Original article bodies
+
+GDELT GKG contains extracted metadata and the original article URL, not the
+complete article body. Fetch accessible pages separately after a metadata
+batch completes:
+
+```bash
+python src/download_articles.py \
+  data/raw/gdelt_batches/B001.articles.jsonl.gz \
+  --output data/raw/gdelt_batches/B001.articles.sqlite \
+  --delay 1.0
+```
+
+The SQLite database separates unique downloaded documents from event/article
+links, so one URL assigned to multiple state-events is fetched only once. It
+stores the HTTP/final URL, retrieval time, response size, text hash, page title,
+extracted body, and an explicit status such as `ok`, `robots_denied`,
+`http_error`, `non_html`, `too_large`, or `extract_empty`. The default request
+delay is one second and the default response limit is 5 MB. Re-running the same
+command processes only `pending` URLs; use `--retry-failed` to retry failures
+and `--limit N` for a small test run.
+
+Publisher robots rules, access controls and paywalls are not bypassed. Deleted,
+blocked and unsupported pages remain represented by their GDELT metadata and
+download status rather than fabricated article text.
 
 ## Recommended sensitivity runs
 
