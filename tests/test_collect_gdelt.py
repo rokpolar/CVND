@@ -50,6 +50,7 @@ class CollectGdeltTests(unittest.TestCase):
         self.assertEqual(args.pre_days, 0)
         self.assertEqual(args.post_days, 93)
         self.assertEqual(args.max_batch_tib, 0.95)
+        self.assertEqual(args.article_metadata_profile, "basic")
         self.assertEqual(
             collect_gdelt._csv_values(args.languages),
             collect_gdelt.INDIA_MEDIA_LANGUAGES,
@@ -118,6 +119,65 @@ class CollectGdeltTests(unittest.TestCase):
         self.assertIn("NATURAL_DISASTER_TORRENTIAL_RAINFALL", sql)
         self.assertNotIn("'puri'", sql)
         self.assertIn("REGEXP_EXTRACT(Extras", sql)
+
+    def test_article_query_returns_urls_and_gkg_metadata(self):
+        windows = collect_gdelt.prepare_event_windows(
+            self.events, pre_days=0, post_days=93, include_district=True
+        )
+        sql = collect_gdelt.build_query(
+            windows,
+            languages=("en", "hin"),
+            result_level="articles",
+            article_metadata_profile="rich",
+        )
+        self.assertIn("GKGRECORDID AS gkg_record_id", sql)
+        self.assertIn("SourceCommonName", sql)
+        self.assertIn("AS title", sql)
+        self.assertIn("AS authors", sql)
+        self.assertIn("AS tone", sql)
+        self.assertIn("SharingImage", sql)
+        self.assertIn("FROM assigned\nORDER BY event_id, published_at", sql)
+        self.assertNotIn("language_stats AS", sql)
+
+    def test_basic_article_profile_avoids_extra_gkg_columns(self):
+        windows = collect_gdelt.prepare_event_windows(
+            self.events, pre_days=0, post_days=93, include_district=True
+        )
+        sql = collect_gdelt.build_query(windows, result_level="articles")
+        self.assertIn("NET.REG_DOMAIN(DocumentIdentifier)", sql)
+        self.assertIn("CAST(NULL AS STRING) AS title", sql)
+        self.assertNotIn("GKGRECORDID AS", sql)
+        self.assertNotIn("REGEXP_EXTRACT(Extras", sql)
+
+    def test_article_rows_are_aggregated_locally_for_mss(self):
+        windows = collect_gdelt.prepare_event_windows(
+            self.events, pre_days=0, post_days=93, include_district=True
+        )
+        accumulator = collect_gdelt.ArticleSummaryAccumulator(windows)
+        base = {
+            "event_id": "E001",
+            "state": "Odisha",
+            "source_record_id": "2020-0001-IND",
+            "gkg_record_id": "record-1",
+            "url": "https://example.com/1",
+            "source_domain": "example.com",
+            "source_lang": "en",
+        }
+        accumulator.add({**base, "published_at": "2020-06-10T01:00:00+00:00"})
+        accumulator.add(
+            {
+                **base,
+                "gkg_record_id": "record-2",
+                "url": "https://example.com/2",
+                "published_at": "2020-06-11T02:00:00+00:00",
+            }
+        )
+        rows = accumulator.finish()
+        event_one = next(row for row in rows if row["event_id"] == "E001")
+        event_two = next(row for row in rows if row["event_id"] == "E002")
+        self.assertEqual(event_one["article_count"], 2)
+        self.assertEqual(event_one["coverage_days"], 2)
+        self.assertEqual(event_two["article_count"], 0)
 
     def test_partition_ranges_merge_overlapping_windows_only(self):
         windows = collect_gdelt.prepare_event_windows(

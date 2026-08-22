@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "created_at_utc": "2026-08-21T16:55:10.757670+00:00",
+  "version": 2,
+  "created_at_utc": "2026-08-22T08:22:55.518791+00:00",
   "source_table": "gdelt-bq.gdeltv2.gkg_partitioned",
   "events_sha256": "6d398d738828b2e4bf5a3c21c687094f502efd79f1622009ff17a689e59182df",
   "batch_limit_bytes": 1044536046387,
@@ -30,8 +30,10 @@
     "include_domains": [],
     "exclude_domains": [],
     "include_district_term": true,
-    "title_fallback": false
+    "title_fallback": false,
+    "article_metadata_profile": "basic"
   },
+  "query_result_level": "articles",
   "batches": [
     {
       "batch_id": "B001",
@@ -130,6 +132,7 @@
       "estimated_tib": 0.942098,
       "sql_file": "B001.sql",
       "output_file": "B001.json",
+      "article_output_file": "B001.articles.jsonl.gz",
       "metadata_file": "B001.meta.json"
     },
     {
@@ -261,6 +264,7 @@
       "estimated_tib": 0.776297,
       "sql_file": "B002.sql",
       "output_file": "B002.json",
+      "article_output_file": "B002.articles.jsonl.gz",
       "metadata_file": "B002.meta.json"
     }
   ]
