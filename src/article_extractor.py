@@ -241,14 +241,18 @@ def is_noise_block(text: str) -> bool:
 
 def looks_like_headline_block(text: str) -> bool:
     """Identify short link-headline blocks that commonly trail the real story."""
-    words = word_count(text)
+    # ``\w+`` over-counts combining marks in several Indic scripts. Whitespace
+    # tokens are a better approximation for compact headline/link lists.
+    words = len(re.findall(r"\S+", normalize_inline(text)))
     punctuation = len(re.findall(r"[.!?।۔؟。！？]", text))
-    ends_as_prose = text.rstrip().endswith((".", "!", "।", "۔", "。", "！"))
+    # Exclamation and question marks are common in link headlines, including
+    # Indian-language publishers, so only period-like endings imply prose here.
+    ends_as_prose = text.rstrip().endswith((".", "।", "۔", "。"))
     return (
         not ends_as_prose
-        and 35 <= len(text) <= 180
-        and 5 <= words <= 28
-        and punctuation <= 2
+        and 20 <= len(text) <= 220
+        and 3 <= words <= 32
+        and punctuation <= 8
     )
 
 
