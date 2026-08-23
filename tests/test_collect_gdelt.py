@@ -1,9 +1,9 @@
-import hashlib
 import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -49,7 +49,8 @@ class CollectGdeltTests(unittest.TestCase):
         args = collect_gdelt.parse_args([])
         self.assertEqual(args.pre_days, 0)
         self.assertEqual(args.post_days, 93)
-        self.assertEqual(args.max_batch_tib, 0.95)
+        self.assertEqual(args.maximum_tib_billed, 2.0)
+        self.assertEqual(args.article_output.name, "gdelt_bq.articles.jsonl.gz")
         self.assertEqual(args.article_metadata_profile, "basic")
         self.assertEqual(
             collect_gdelt._csv_values(args.languages),
@@ -188,122 +189,62 @@ class CollectGdeltTests(unittest.TestCase):
             [(pd.Timestamp("2020-06-10").date(), pd.Timestamp("2020-09-16").date())],
         )
 
-    def test_batch_plan_keeps_overlapping_same_state_events_together(self):
-        events = pd.concat(
-            [
-                self.events,
-                pd.DataFrame(
-                    [
-                        {
-                            "event_id": "E003",
-                            "state": "Assam",
-                            "district": "Assam",
-                            "start_date": "2021-06-01",
-                            "source_record_id": "2021-0001-IND",
-                            "event_source": "emdat_official_state",
-                        }
-                    ]
-                ),
-            ],
-            ignore_index=True,
-        )
-        windows = collect_gdelt.prepare_event_windows(
-            events, pre_days=0, post_days=93, include_district=True
-        )
-
-        batches = collect_gdelt.plan_query_batches(
-            windows,
-            max_bytes=100,
-            estimate_windows=lambda candidate: 45 * len(candidate),
-        )
-
-        self.assertEqual(len(batches), 2)
-        self.assertEqual(
-            [row["event_id"] for row in batches[0]["windows"]],
-            ["E001", "E002"],
-        )
-        self.assertEqual(
-            [row["event_id"] for row in batches[1]["windows"]],
-            ["E003"],
-        )
-        self.assertTrue(all(batch["estimated_bytes"] <= 100 for batch in batches))
-
-    def test_batch_plan_rejects_indivisible_group_over_limit(self):
-        windows = collect_gdelt.prepare_event_windows(
-            self.events, pre_days=0, post_days=93, include_district=True
-        )
-        with self.assertRaisesRegex(ValueError, "indivisible"):
-            collect_gdelt.plan_query_batches(
-                windows,
-                max_bytes=100,
-                estimate_windows=lambda candidate: 60 * len(candidate),
-            )
-
-    def test_merge_batches_writes_primary_output(self):
+    def test_execute_writes_single_article_and_summary_outputs(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             events_path = root / "events.csv"
-            batch_dir = root / "batches"
+            sql_path = root / "query.sql"
+            article_path = root / "articles.jsonl.gz"
             output_path = root / "gdelt.json"
             metadata_path = root / "gdelt.meta.json"
-            batch_dir.mkdir()
             self.events.to_csv(events_path, index=False)
 
-            batches = []
-            for index, event_id in enumerate(("E001", "E002"), start=1):
-                batch_id = f"B{index:03d}"
-                output_name = f"{batch_id}.json"
-                row = {
-                    "event_id": event_id,
-                    "state": "Odisha",
-                    "source_record_id": f"2020-000{index}-IND",
+            summary_rows = [
+                {
+                    "event_id": row.event_id,
+                    "state": row.state,
+                    "source_record_id": row.source_record_id,
                     "source_lang": "und",
                     "article_count": 0,
                     "first_article_date": None,
                     "last_article_date": None,
                     "coverage_days": 0,
+                    "coverage_days_threshold_1": 0,
                 }
-                (batch_dir / output_name).write_text(
-                    json.dumps([row]), encoding="utf-8"
-                )
-                batches.append(
-                    {
-                        "batch_id": batch_id,
-                        "event_ids": [event_id],
-                        "output_file": output_name,
-                        "metadata_file": f"{batch_id}.meta.json",
-                    }
-                )
-            manifest = {
-                "version": 1,
-                "events_sha256": hashlib.sha256(events_path.read_bytes()).hexdigest(),
-                "query_options": {},
-                "batches": batches,
-            }
-            (batch_dir / "manifest.json").write_text(
-                json.dumps(manifest), encoding="utf-8"
-            )
+                for row in self.events.itertuples()
+            ]
 
-            result = collect_gdelt.main(
-                [
-                    "--events",
-                    str(events_path),
-                    "--batch-dir",
-                    str(batch_dir),
-                    "--output",
-                    str(output_path),
-                    "--metadata",
-                    str(metadata_path),
-                    "--merge-batches",
-                ]
-            )
+            def fake_execute(sql, project, *, article_output, windows, maximum_bytes_billed):
+                article_output.write_bytes(b"test")
+                return summary_rows, {
+                    "job_id": "job-1",
+                    "billing_project": project,
+                    "total_bytes_processed": 123,
+                    "cache_hit": False,
+                    "article_rows": 0,
+                }
+
+            with patch.object(
+                collect_gdelt, "execute_article_query", side_effect=fake_execute
+            ):
+                result = collect_gdelt.main(
+                    [
+                        "--events", str(events_path),
+                        "--sql-output", str(sql_path),
+                        "--article-output", str(article_path),
+                        "--output", str(output_path),
+                        "--metadata", str(metadata_path),
+                        "--billing-project", "test-project",
+                        "--execute",
+                    ]
+                )
 
             self.assertEqual(result, 0)
+            self.assertTrue(article_path.exists())
             self.assertEqual(len(json.loads(output_path.read_text())), 2)
-            self.assertEqual(
-                json.loads(metadata_path.read_text())["collection_mode"],
-                "merged_batches",
-            )
+            metadata = json.loads(metadata_path.read_text())
+            self.assertEqual(metadata["collection_mode"], "article_metadata")
+            self.assertEqual(metadata["job_id"], "job-1")
 
     def test_validation_requires_every_event_including_zero_results(self):
         rows = [

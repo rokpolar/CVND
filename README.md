@@ -124,27 +124,17 @@ python src/collect_gdelt.py --estimate --overwrite
 GDELT_BILLING_PROJECT=your-project \
 python src/collect_gdelt.py --execute --overwrite
 
-# Plan resumable batches capped below 1 TiB, execute one batch in each intended
-# billing period, then merge only after every batch is complete.
-GDELT_BILLING_PROJECT=your-project \
-python src/collect_gdelt.py --plan-batches --max-batch-tib 0.95 --overwrite
-
-# Optional: richer GKG metadata, with a new dry-run plan because extra columns
+# Optional: richer GKG metadata. Estimate it first because extra columns
 # increase bytes processed.
-python src/collect_gdelt.py --plan-batches \
+python src/collect_gdelt.py --estimate \
   --article-metadata-profile rich --overwrite
-
-GDELT_BILLING_PROJECT=your-project \
-python src/collect_gdelt.py --execute-batch B001
 
 # Download accessible article bodies from the GDELT URL metadata. The SQLite
 # file is both the output and the restart checkpoint.
 python src/download_articles.py \
-  data/raw/gdelt_batches/B001.articles.jsonl.gz \
-  --output data/raw/gdelt_batches/B001.articles.sqlite \
+  data/raw/gdelt_bq.articles.jsonl.gz \
+  --output data/raw/gdelt_bq.articles.sqlite \
   --delay 1.0
-
-python src/collect_gdelt.py --merge-batches --overwrite
 
 # Examples: language subset, all GKG languages, broader themes, or domain exclusion.
 python src/collect_gdelt.py --languages en,hin,tam --overwrite
@@ -159,12 +149,10 @@ Census C-16 categories and GDELT Translingual 2.0 support.
 Candidates must mention India plus the event state/UT (or its linked district).
 Exact GDELT document identifiers are assigned to only the nearest overlapping
 event within the same state, preventing duplicate coverage counts.
-Batch planning preserves that rule by keeping overlapping windows from the
-same state together. BigQuery's `maximum_bytes_billed` guard enforces the
-planned per-batch ceiling at execution time, and completed batch files allow
-later runs to resume without repeating successful queries.
-Each batch execution writes article-level GDELT URL metadata to compressed
-JSONL and derives the existing MSS summary locally. GDELT does not contain the
+The full query runs once for all selected events, and BigQuery's
+`maximum_bytes_billed` guard rejects scans above the configured 2 TiB ceiling.
+Execution writes article-level GDELT URL metadata to compressed JSONL and
+derives the existing MSS summary locally. GDELT does not contain the
 full article body; `download_articles.py` follows the original URLs, respects
 robots.txt, and stores accessible extracted text in a resumable SQLite file.
 Body extraction combines Trafilatura, publisher JSON-LD/embedded JSON, semantic
@@ -176,8 +164,8 @@ assignment rules, limitations and recommended sensitivity runs.
 
 | Stage | Status |
 | --- | --- |
-| `collect_gdelt.py` → `Bxxx.articles.jsonl.gz` / `gdelt_bq.json` | **Primary metadata + MSS summary** |
-| `download_articles.py` → `Bxxx.articles.sqlite` | **Original-site article text where accessible** |
+| `collect_gdelt.py` → `gdelt_bq.articles.jsonl.gz` / `gdelt_bq.json` | **Primary metadata + MSS summary** |
+| `download_articles.py` → `gdelt_bq.articles.sqlite` | **Original-site article text where accessible** |
 | `src/archive/news.py` (DOC API) | Recent exploratory legacy only |
 | `src/archive/process_bigquery.py` | Orphan (early 12-event era) |
 
