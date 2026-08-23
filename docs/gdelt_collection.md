@@ -65,6 +65,8 @@ appropriate for a multi-state disaster.
 | `--no-district-term` | off | Require state/UT matching only |
 | `--title-fallback` | off | Also scan GKG `Extras` page titles; improves recall but increases bytes billed |
 | `--event-id E001` | all | Generate or execute a small event subset; repeatable |
+| `--maximum-tib-billed 2.0` | `2.0` | Reject execution when BigQuery estimates a scan above this ceiling |
+| `--article-metadata-profile basic\|rich` | `basic` | `basic` returns URL/date/language/event metadata without scanning extra columns; `rich` adds GKG ID, publisher source, title, authors, tone and image but increases bytes processed |
 
 Historical GKG does not expose a dependable outlet-country field equivalent to
 the recent DOC API's `sourcecountry:` operator. For historical comparisons,
@@ -98,9 +100,76 @@ GDELT_BILLING_PROJECT=your-project \
 python src/collect_gdelt.py --execute --overwrite
 ```
 
-The generated SQL is stored as `data/raw/gdelt_emdat_query.sql`. Execution
-writes `gdelt_bq.json` and `gdelt_bq.meta.json`; metadata includes the SQL hash,
-event-registry hash, BigQuery job ID, billed bytes, filters and retrieval time.
+The generated SQL is stored as `data/raw/gdelt_emdat_query.sql`. `--execute`
+runs that full article-level query once for every selected event and streams
+the result instead of holding it in memory. It writes:
+
+- `gdelt_bq.articles.jsonl.gz`: one row per assigned article, including URL,
+  publication timestamp, event, state, source domain and language.
+- `gdelt_bq.json`: event/language article counts and coverage dates derived
+  locally for the MSS pipeline.
+- `gdelt_bq.meta.json`: SQL and event hashes, BigQuery job ID, processed bytes,
+  filters and retrieval time.
+
+The default `--maximum-tib-billed 2.0` guard covers the current approximately
+1.64 TiB basic-metadata estimate and rejects a larger scan before execution.
+
+## Original article bodies
+
+GDELT GKG contains extracted metadata and the original article URL, not the
+complete article body. Fetch accessible pages separately after metadata
+collection completes:
+
+```bash
+python src/download_articles.py \
+  data/raw/gdelt_bq.articles.jsonl.gz \
+  --output data/raw/gdelt_bq.articles.sqlite \
+  --workers 32 \
+  --extract-workers 4 \
+  --delay 1.0
+```
+
+The SQLite database separates unique downloaded documents from event/article
+links, so one URL assigned to multiple state-events is fetched only once. It
+stores the HTTP/final URL, retrieval time, response size, text hash, page title,
+extracted body, extraction method/confidence, candidate count, and an explicit
+status such as `ok`, `extract_weak`, `extract_empty`, `redirect_home`,
+`redirect_listing`, `domain_parked`, `host_deferred`, `robots_denied`,
+`http_error`, `non_html`, or `too_large`. Trafilatura, publisher JSON, and scored DOM candidates are
+compared; repeated paragraphs, link-heavy widgets, current-headline tails, and
+publisher boilerplate are removed. The default request delay is one second and
+the default response limit is 5 MB. The delay applies independently to each
+origin; up to 32 different origins are fetched concurrently by default, and
+`Crawl-delay` or `Request-rate` from robots.txt can only make an origin slower.
+HTML extraction runs in a separate process pool and SQLite writes commit in
+batches.
+
+For `extract_empty` or `extract_weak`, the downloader can retry same-site URLs
+explicitly declared by canonical or AMP markup. It can also upgrade a failed
+HTTP URL to HTTPS. Playwright rendering is reserved for pages detected as thin
+JavaScript application shells; images, media and fonts are blocked. These
+fallbacks never bypass robots rules, paywalls, access errors, home/listing
+redirects, or parked domains. Every logical attempt is recorded in
+`download_attempts`; `documents.fallback_used` and `selected_attempt_url`
+identify the winning attempt.
+
+Browser fallback uses the Playwright Python package and the `chrome` channel by
+default. Install Google Chrome or select another installed Playwright channel
+with `--browser-channel`; use `--no-browser-fallback` on systems without a
+supported browser.
+
+Re-running the same command processes only `pending` URLs. `--retry-failed`
+retries transient network/HTTP failures and weak/empty extractions, while
+terminal failures remain untouched. Use `--limit N` for a small test run,
+`--no-browser-fallback` to disable browser rendering, and tune `--workers`,
+`--browser-workers`, `--commit-every`, and `--retries` when needed. Three
+consecutive transient failures open a host circuit for the current run and mark
+the remaining URLs `host_deferred`; a later `--retry-failed` run tries them with
+a fresh circuit.
+
+Publisher robots rules, access controls and paywalls are not bypassed. Deleted,
+blocked and unsupported pages remain represented by their GDELT metadata and
+download status rather than fabricated article text.
 
 ## Recommended sensitivity runs
 

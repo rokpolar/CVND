@@ -1,6 +1,9 @@
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -46,6 +49,9 @@ class CollectGdeltTests(unittest.TestCase):
         args = collect_gdelt.parse_args([])
         self.assertEqual(args.pre_days, 0)
         self.assertEqual(args.post_days, 93)
+        self.assertEqual(args.maximum_tib_billed, 2.0)
+        self.assertEqual(args.article_output.name, "gdelt_bq.articles.jsonl.gz")
+        self.assertEqual(args.article_metadata_profile, "basic")
         self.assertEqual(
             collect_gdelt._csv_values(args.languages),
             collect_gdelt.INDIA_MEDIA_LANGUAGES,
@@ -115,6 +121,65 @@ class CollectGdeltTests(unittest.TestCase):
         self.assertNotIn("'puri'", sql)
         self.assertIn("REGEXP_EXTRACT(Extras", sql)
 
+    def test_article_query_returns_urls_and_gkg_metadata(self):
+        windows = collect_gdelt.prepare_event_windows(
+            self.events, pre_days=0, post_days=93, include_district=True
+        )
+        sql = collect_gdelt.build_query(
+            windows,
+            languages=("en", "hin"),
+            result_level="articles",
+            article_metadata_profile="rich",
+        )
+        self.assertIn("GKGRECORDID AS gkg_record_id", sql)
+        self.assertIn("SourceCommonName", sql)
+        self.assertIn("AS title", sql)
+        self.assertIn("AS authors", sql)
+        self.assertIn("AS tone", sql)
+        self.assertIn("SharingImage", sql)
+        self.assertIn("FROM assigned\nORDER BY event_id, published_at", sql)
+        self.assertNotIn("language_stats AS", sql)
+
+    def test_basic_article_profile_avoids_extra_gkg_columns(self):
+        windows = collect_gdelt.prepare_event_windows(
+            self.events, pre_days=0, post_days=93, include_district=True
+        )
+        sql = collect_gdelt.build_query(windows, result_level="articles")
+        self.assertIn("NET.REG_DOMAIN(DocumentIdentifier)", sql)
+        self.assertIn("CAST(NULL AS STRING) AS title", sql)
+        self.assertNotIn("GKGRECORDID AS", sql)
+        self.assertNotIn("REGEXP_EXTRACT(Extras", sql)
+
+    def test_article_rows_are_aggregated_locally_for_mss(self):
+        windows = collect_gdelt.prepare_event_windows(
+            self.events, pre_days=0, post_days=93, include_district=True
+        )
+        accumulator = collect_gdelt.ArticleSummaryAccumulator(windows)
+        base = {
+            "event_id": "E001",
+            "state": "Odisha",
+            "source_record_id": "2020-0001-IND",
+            "gkg_record_id": "record-1",
+            "url": "https://example.com/1",
+            "source_domain": "example.com",
+            "source_lang": "en",
+        }
+        accumulator.add({**base, "published_at": "2020-06-10T01:00:00+00:00"})
+        accumulator.add(
+            {
+                **base,
+                "gkg_record_id": "record-2",
+                "url": "https://example.com/2",
+                "published_at": "2020-06-11T02:00:00+00:00",
+            }
+        )
+        rows = accumulator.finish()
+        event_one = next(row for row in rows if row["event_id"] == "E001")
+        event_two = next(row for row in rows if row["event_id"] == "E002")
+        self.assertEqual(event_one["article_count"], 2)
+        self.assertEqual(event_one["coverage_days"], 2)
+        self.assertEqual(event_two["article_count"], 0)
+
     def test_partition_ranges_merge_overlapping_windows_only(self):
         windows = collect_gdelt.prepare_event_windows(
             self.events, pre_days=0, post_days=93, include_district=True
@@ -123,6 +188,63 @@ class CollectGdeltTests(unittest.TestCase):
             collect_gdelt.coalesce_query_ranges(windows),
             [(pd.Timestamp("2020-06-10").date(), pd.Timestamp("2020-09-16").date())],
         )
+
+    def test_execute_writes_single_article_and_summary_outputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            events_path = root / "events.csv"
+            sql_path = root / "query.sql"
+            article_path = root / "articles.jsonl.gz"
+            output_path = root / "gdelt.json"
+            metadata_path = root / "gdelt.meta.json"
+            self.events.to_csv(events_path, index=False)
+
+            summary_rows = [
+                {
+                    "event_id": row.event_id,
+                    "state": row.state,
+                    "source_record_id": row.source_record_id,
+                    "source_lang": "und",
+                    "article_count": 0,
+                    "first_article_date": None,
+                    "last_article_date": None,
+                    "coverage_days": 0,
+                    "coverage_days_threshold_1": 0,
+                }
+                for row in self.events.itertuples()
+            ]
+
+            def fake_execute(sql, project, *, article_output, windows, maximum_bytes_billed):
+                article_output.write_bytes(b"test")
+                return summary_rows, {
+                    "job_id": "job-1",
+                    "billing_project": project,
+                    "total_bytes_processed": 123,
+                    "cache_hit": False,
+                    "article_rows": 0,
+                }
+
+            with patch.object(
+                collect_gdelt, "execute_article_query", side_effect=fake_execute
+            ):
+                result = collect_gdelt.main(
+                    [
+                        "--events", str(events_path),
+                        "--sql-output", str(sql_path),
+                        "--article-output", str(article_path),
+                        "--output", str(output_path),
+                        "--metadata", str(metadata_path),
+                        "--billing-project", "test-project",
+                        "--execute",
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            self.assertTrue(article_path.exists())
+            self.assertEqual(len(json.loads(output_path.read_text())), 2)
+            metadata = json.loads(metadata_path.read_text())
+            self.assertEqual(metadata["collection_mode"], "article_metadata")
+            self.assertEqual(metadata["job_id"], "job-1")
 
     def test_validation_requires_every_event_including_zero_results(self):
         rows = [
