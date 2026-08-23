@@ -27,8 +27,8 @@ Tiered folders under `data/`. Primary pipeline scripts resolve paths via
 | `emdat_api_raw.csv` | `emdat_api_csv` | `collect_emdat.py` (optional API staging) | Manual comparison before promotion |
 | `emdat_api_raw.meta.json` | `emdat_meta` | `collect_emdat.py` provenance | Audit / reproducibility |
 | `gdelt_emdat_query.sql` | `gdelt_sql` | `collect_gdelt.py` | Reviewable historical GKG query |
-| `gdelt_batches/Bxxx.articles.jsonl.gz` | — | `collect_gdelt.py --execute-batch` | Article-level GDELT URL metadata |
-| `gdelt_batches/Bxxx.articles.sqlite` | — | `download_articles.py` | Resumable original-site article text and fetch status |
+| `gdelt_bq.articles.jsonl.gz` | `gdelt_articles` | `collect_gdelt.py --execute` | Article-level GDELT URL metadata |
+| `gdelt_bq.articles.sqlite` | — | `download_articles.py` | Resumable original-site article text and fetch status |
 | `gdelt_bq.json` | `gdelt_bq` | `collect_gdelt.py --execute` | `compute_mss.py` |
 | `gdelt_bq.meta.json` | `gdelt_meta` | `collect_gdelt.py --execute` | Query provenance and cost audit |
 | `events_quarantine.csv` | `events_quarantine` | Manual QC | `compute_expected_coverage.py` |

@@ -13,7 +13,7 @@ data/e02_sits_map.png
 # Natural Earth cache (downloadable)
 data/ne_india_states.gpkg
 # Generated GDELT article metadata/body stores can be very large.
-data/raw/gdelt_batches/*.articles.jsonl.gz
-data/raw/gdelt_batches/*.articles.sqlite
-data/raw/gdelt_batches/*.articles.sqlite-shm
-data/raw/gdelt_batches/*.articles.sqlite-wal
+data/raw/gdelt_bq.articles.jsonl.gz
+data/raw/gdelt_bq.articles.sqlite
+data/raw/gdelt_bq.articles.sqlite-shm
+data/raw/gdelt_bq.articles.sqlite-wal

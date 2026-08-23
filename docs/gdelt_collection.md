@@ -65,7 +65,7 @@ appropriate for a multi-state disaster.
 | `--no-district-term` | off | Require state/UT matching only |
 | `--title-fallback` | off | Also scan GKG `Extras` page titles; improves recall but increases bytes billed |
 | `--event-id E001` | all | Generate or execute a small event subset; repeatable |
-| `--max-batch-tib 0.95` | `0.95` | Set the exact dry-run and execution ceiling for every planned batch |
+| `--maximum-tib-billed 2.0` | `2.0` | Reject execution when BigQuery estimates a scan above this ceiling |
 | `--article-metadata-profile basic\|rich` | `basic` | `basic` returns URL/date/language/event metadata without scanning extra columns; `rich` adds GKG ID, publisher source, title, authors, tone and image but increases bytes processed |
 
 Historical GKG does not expose a dependable outlet-country field equivalent to
@@ -100,71 +100,30 @@ GDELT_BILLING_PROJECT=your-project \
 python src/collect_gdelt.py --execute --overwrite
 ```
 
-The generated SQL is stored as `data/raw/gdelt_emdat_query.sql`. Execution
-writes `gdelt_bq.json` and `gdelt_bq.meta.json`; metadata includes the SQL hash,
-event-registry hash, BigQuery job ID, billed bytes, filters and retrieval time.
+The generated SQL is stored as `data/raw/gdelt_emdat_query.sql`. `--execute`
+runs that full article-level query once for every selected event and streams
+the result instead of holding it in memory. It writes:
 
-## Resumable byte-capped collection
+- `gdelt_bq.articles.jsonl.gz`: one row per assigned article, including URL,
+  publication timestamp, event, state, source domain and language.
+- `gdelt_bq.json`: event/language article counts and coverage dates derived
+  locally for the MSS pipeline.
+- `gdelt_bq.meta.json`: SQL and event hashes, BigQuery job ID, processed bytes,
+  filters and retrieval time.
 
-For a collection that is larger than the intended monthly processing budget,
-create a plan using BigQuery dry runs. The default ceiling is 0.95 TiB, leaving
-headroom below a 1 TiB budget:
-
-```bash
-GDELT_BILLING_PROJECT=your-project \
-python src/collect_gdelt.py \
-  --plan-batches \
-  --max-batch-tib 0.95 \
-  --overwrite
-```
-
-The command writes `data/raw/gdelt_batches/manifest.json` and one reviewable
-article-level SQL file per batch. It packs chronological event groups using
-BigQuery's exact dry-run estimate, including every metadata column selected by
-the final query. Events with overlapping windows in the same state are kept in
-one indivisible group so nearest-onset URL assignment remains identical to the
-full query.
-
-Execute only the batch intended for the current billing period:
-
-```bash
-GDELT_BILLING_PROJECT=your-project \
-python src/collect_gdelt.py --execute-batch B001
-```
-
-Execution sets BigQuery `maximum_bytes_billed` to the manifest ceiling. If the
-query would cross that ceiling, BigQuery rejects it before charging for a
-larger scan. BigQuery rows are streamed rather than loaded into memory. For
-`B001`, the two outputs are:
-
-- `B001.articles.jsonl.gz`: one row per assigned article. The default `basic`
-  profile includes event, publication timestamp, URL, normalized URL, URL-derived
-  source domain and source language. The `rich` profile additionally includes
-  GKG record ID, GDELT source, title, authors, tone and sharing image.
-- `B001.json`: the event/language article counts, first/last article dates and
-  coverage days derived locally from the article rows for the MSS pipeline.
-
-A completed batch is skipped on a repeated command unless `--overwrite` is
-supplied, so collection can resume safely in a later period.
-After every listed batch has completed, combine and validate them:
-
-```bash
-python src/collect_gdelt.py --merge-batches --overwrite
-```
-
-The merge refuses to run when a batch is missing and writes the normal
-`gdelt_bq.json` and `gdelt_bq.meta.json` outputs expected by MSS computation.
+The default `--maximum-tib-billed 2.0` guard covers the current approximately
+1.64 TiB basic-metadata estimate and rejects a larger scan before execution.
 
 ## Original article bodies
 
 GDELT GKG contains extracted metadata and the original article URL, not the
-complete article body. Fetch accessible pages separately after a metadata
-batch completes:
+complete article body. Fetch accessible pages separately after metadata
+collection completes:
 
 ```bash
 python src/download_articles.py \
-  data/raw/gdelt_batches/B001.articles.jsonl.gz \
-  --output data/raw/gdelt_batches/B001.articles.sqlite \
+  data/raw/gdelt_bq.articles.jsonl.gz \
+  --output data/raw/gdelt_bq.articles.sqlite \
   --delay 1.0
 ```
 
