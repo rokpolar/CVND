@@ -12,7 +12,7 @@ SRC = Path(__file__).resolve().parents[1] / "src"
 sys.path.insert(0, str(SRC))
 
 import download_articles  # noqa: E402
-from article_extractor import clean_candidate  # noqa: E402
+from article_extractor import clean_candidate, extract_article  # noqa: E402
 from article_fetcher import (  # noqa: E402
     AsyncArticleFetcher,
     HttpFetch,
@@ -301,6 +301,46 @@ class DownloadArticlesTests(unittest.TestCase):
         self.assertIn("verified article paragraph", cleaned)
         self.assertNotIn("குபீர்", cleaned)
         self.assertNotIn("ராகுலை", cleaned)
+
+    def test_headline_feed_is_not_accepted_as_article_body(self):
+        title = "Centre assures support to Jammu Kashmir"
+        headlines = [
+            "Maharashtra Election Result Live Updates",
+            "Climate change could erase thousands of jobs by 2050",
+            "Railway passengers take note of new station rules",
+            "Gold rate today in Delhi Mumbai and Hyderabad",
+            "Technology companies announce a new investment plan",
+            "Sports team eyes a major win in final match",
+            "Global markets rise as investors assess inflation data",
+            "Researchers publish findings from a decade long study",
+        ]
+        source = (
+            f"<html><head><title>{title}</title></head><body><main>"
+            + "".join(f"<p>{headline}</p>" for headline in headlines)
+            + "</main></body></html>"
+        )
+        result = extract_article(source, url="https://news.example/story")
+        self.assertEqual(result["status"], "extract_weak")
+        self.assertLess(result["confidence"], 0.42)
+
+    def test_privacy_notice_blocks_are_removed_from_article(self):
+        article = " ".join(
+            ["The government announced detailed flood recovery measures today."]
+            * 12
+        )
+        cleaned = clean_candidate(
+            {
+                "title": "Flood recovery measures",
+                "body": (
+                    "Your Privacy is Important to us\n\n"
+                    "We encourage you to review our Terms of Service and Privacy Policy.\n\n"
+                    + article
+                ),
+            }
+        )["body"]
+        self.assertNotIn("Privacy is Important", cleaned)
+        self.assertNotIn("Terms of Service", cleaned)
+        self.assertIn("flood recovery measures", cleaned)
 
 
 if __name__ == "__main__":
