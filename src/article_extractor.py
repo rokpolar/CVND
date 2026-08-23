@@ -63,6 +63,13 @@ INLINE_PROMO_RE = re.compile(
     r"download the app|subscribe|follow (us|our)|click here)\s*[:»›-]",
     re.I,
 )
+PRIVACY_BLOCK_RE = re.compile(
+    r"^\s*(your privacy is important to us\b|"
+    r"we encourage you to review our terms of service\b|"
+    r"opt out of the sale or sharing of personal information\b|"
+    r"we won.?t sell or share your personal information\b)",
+    re.I,
+)
 HARD_TAIL_RE = re.compile(
     r"^\s*(as a subscriber\b|edited,? printed,? published\b|printed at\b|"
     r"living media india limited\b|for reprint rights\b|copyright\s*©?\s*\d{0,4}\b|"
@@ -230,6 +237,8 @@ def is_noise_block(text: str) -> bool:
         return True
     if INLINE_PROMO_RE.match(text) and len(text) < 220:
         return True
+    if PRIVACY_BLOCK_RE.match(text):
+        return True
     if re.match(r"^your browser does not support inline frames\b", text, re.I):
         return True
     if re.fullmatch(r"https?://\S+|[|/·•\-\s]+", text):
@@ -254,6 +263,41 @@ def looks_like_headline_block(text: str) -> bool:
         and 3 <= words <= 32
         and punctuation <= 8
     )
+
+
+def looks_like_headline_listing(title: str | None, body: str) -> bool:
+    """Reject navigation feeds that extraction heuristics mistake for articles."""
+    blocks = [
+        normalize_inline(block)
+        for block in re.split(r"\n\s*\n", body)
+        if normalize_inline(block)
+    ]
+    if len(blocks) < 6:
+        return False
+    headline_ratio = sum(looks_like_headline_block(block) for block in blocks) / len(
+        blocks
+    )
+    if headline_ratio < 0.80:
+        return False
+
+    stopwords = {
+        "the", "a", "an", "and", "or", "but", "of", "to", "in", "on", "at",
+        "for", "from", "with", "by", "as", "is", "are", "was", "were", "be",
+        "this", "that", "after", "over", "all", "its", "it",
+    }
+
+    def significant_tokens(value: str | None) -> set[str]:
+        return {
+            token
+            for token in re.findall(r"\w+", (value or "").lower(), flags=re.UNICODE)
+            if len(token) >= 3 and token not in stopwords
+        }
+
+    title_tokens = significant_tokens(title)
+    if not title_tokens:
+        return headline_ratio >= 0.90
+    overlap = len(title_tokens & significant_tokens(body)) / len(title_tokens)
+    return overlap < 0.35
 
 
 def blocks_from_node(root: Any) -> tuple[list[str], float]:
@@ -621,6 +665,8 @@ def candidate_score(candidate: dict[str, Any]) -> float:
         score -= 300
     if looks_like_error_page(candidate.get("title"), body):
         score -= 5000
+    if looks_like_headline_listing(candidate.get("title"), body):
+        score -= 5000
     if len(body) >= 500 and not re.search(r"[.!?।۔؟。！？]", body):
         score -= 700
     return score
@@ -724,6 +770,8 @@ def extraction_confidence(candidate: dict[str, Any], agreement: float) -> float:
     confidence -= min(chrome_ratio(body), 1.0) * 0.25
     if looks_like_error_page(candidate.get("title"), body):
         confidence = 0.0
+    if looks_like_headline_listing(candidate.get("title"), body):
+        confidence = min(confidence, 0.2)
     return round(max(0.0, min(confidence, 0.99)), 3)
 
 
@@ -788,6 +836,7 @@ def extract_article(content: str, url: str | None = None) -> dict[str, Any]:
         or words < MIN_BODY_WORDS
         or float(best.get("confidence") or 0) < 0.42
         or chrome_ratio(body) >= 0.35
+        or looks_like_headline_listing(best.get("title"), body)
     ):
         status = "extract_weak"
     else:
