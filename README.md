@@ -134,6 +134,8 @@ python src/collect_gdelt.py --estimate \
 python src/download_articles.py \
   data/raw/gdelt_bq.articles.jsonl.gz \
   --output data/raw/gdelt_bq.articles.sqlite \
+  --workers 32 \
+  --extract-workers 4 \
   --delay 1.0
 
 # Examples: language subset, all GKG languages, broader themes, or domain exclusion.
@@ -154,7 +156,11 @@ The full query runs once for all selected events, and BigQuery's
 Execution writes article-level GDELT URL metadata to compressed JSONL and
 derives the existing MSS summary locally. GDELT does not contain the
 full article body; `download_articles.py` follows the original URLs, respects
-robots.txt, and stores accessible extracted text in a resumable SQLite file.
+robots.txt and publisher-specific request rates, and stores accessible extracted
+text in a resumable SQLite file. Downloads run concurrently across publishers
+while requests to the same origin remain serialized and rate-limited. Weak or
+empty pages can retry declared canonical/AMP pages, an HTTP-to-HTTPS variant,
+and narrowly detected JavaScript shells through a headless browser.
 Body extraction combines Trafilatura, publisher JSON-LD/embedded JSON, semantic
 DOM containers, boilerplate removal, and cross-method agreement. Expired article
 URLs redirected to a publisher home/section page and parked domains are retained

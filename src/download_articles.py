@@ -1,34 +1,47 @@
 #!/usr/bin/env python3
 """Download accessible article text from GDELT article-metadata URLs.
 
-GDELT supplies URLs and metadata, not full article bodies. This collector reads
-the compressed JSONL produced by collect_gdelt.py, stores event/article links in
-SQLite, fetches each unique URL once, respects robots.txt, and resumes safely.
+The downloader runs network requests concurrently across publishers while
+serializing and rate-limiting each origin. Extraction runs in a process pool,
+SQLite writes are batched, and weak/empty pages can use declared canonical,
+AMP, HTTPS, and narrowly targeted browser-rendering fallbacks.
 """
 
 from __future__ import annotations
 
 import argparse
+import asyncio
 import gzip
-import hashlib
 import json
+import os
 import sqlite3
 import sys
 import time
+from collections import defaultdict, deque
+from collections.abc import Iterable, Iterator
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
-from urllib.parse import urlsplit
-from urllib.robotparser import RobotFileParser
+from typing import Any
 
-import requests
-from charset_normalizer import from_bytes
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from article_extractor import extract_article_text
+from article_fetcher import (
+    RETRYABLE_HTTP_STATUSES,
+    AsyncArticleFetcher,
+    _mojibake_score,
+    article_redirect_status,
+    host_for,
+    redirects_article_to_homepage,
+)
 
-from article_extractor import extract_article, extract_article_text
 
 DEFAULT_USER_AGENT = "CVND-Research/1.0 (+https://github.com/rokpolar/CVND)"
+RETRYABLE_RESULT_STATUSES = (
+    "request_error",
+    "host_deferred",
+    "extract_empty",
+    "extract_weak",
+)
 
 
 def open_metadata(path: Path) -> Iterable[dict[str, Any]]:
@@ -47,6 +60,7 @@ def connect_database(path: Path) -> sqlite3.Connection:
     path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(path)
     connection.execute("PRAGMA journal_mode=WAL")
+    connection.execute("PRAGMA synchronous=NORMAL")
     connection.executescript(
         """
         CREATE TABLE IF NOT EXISTS documents (
@@ -65,6 +79,9 @@ def connect_database(path: Path) -> sqlite3.Connection:
           word_count INTEGER,
           candidate_count INTEGER,
           supporting_methods TEXT,
+          selected_attempt_url TEXT,
+          fallback_used TEXT,
+          attempt_count INTEGER NOT NULL DEFAULT 0,
           error TEXT
         );
         CREATE TABLE IF NOT EXISTS event_articles (
@@ -83,8 +100,28 @@ def connect_database(path: Path) -> sqlite3.Connection:
           PRIMARY KEY (event_id, url),
           FOREIGN KEY (url) REFERENCES documents(url)
         );
+        CREATE TABLE IF NOT EXISTS download_attempts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          document_url TEXT NOT NULL,
+          attempt_kind TEXT NOT NULL,
+          attempted_url TEXT NOT NULL,
+          started_at_utc TEXT NOT NULL,
+          finished_at_utc TEXT NOT NULL,
+          status TEXT NOT NULL,
+          http_status INTEGER,
+          final_url TEXT,
+          response_bytes INTEGER,
+          transport_attempts INTEGER NOT NULL DEFAULT 1,
+          extraction_method TEXT,
+          extraction_confidence REAL,
+          word_count INTEGER,
+          error TEXT,
+          FOREIGN KEY (document_url) REFERENCES documents(url)
+        );
         CREATE INDEX IF NOT EXISTS idx_event_articles_url ON event_articles(url);
         CREATE INDEX IF NOT EXISTS idx_documents_status ON documents(status);
+        CREATE INDEX IF NOT EXISTS idx_download_attempts_document
+          ON download_attempts(document_url);
         """
     )
     existing_columns = {
@@ -97,6 +134,9 @@ def connect_database(path: Path) -> sqlite3.Connection:
         "word_count": "INTEGER",
         "candidate_count": "INTEGER",
         "supporting_methods": "TEXT",
+        "selected_attempt_url": "TEXT",
+        "fallback_used": "TEXT",
+        "attempt_count": "INTEGER NOT NULL DEFAULT 0",
     }
     for name, column_type in extra_columns.items():
         if name not in existing_columns:
@@ -113,10 +153,7 @@ def import_metadata(connection: sqlite3.Connection, input_path: Path) -> tuple[i
         url = str(row.get("url") or "").strip()
         if not url.startswith(("http://", "https://")):
             continue
-        connection.execute(
-            "INSERT OR IGNORE INTO documents(url) VALUES (?)",
-            (url,),
-        )
+        connection.execute("INSERT OR IGNORE INTO documents(url) VALUES (?)", (url,))
         connection.execute(
             """
             INSERT OR REPLACE INTO event_articles(
@@ -148,184 +185,15 @@ def import_metadata(connection: sqlite3.Connection, input_path: Path) -> tuple[i
     return article_links, int(unique_urls)
 
 
-class RobotsCache:
-    def __init__(self, session: requests.Session, user_agent: str, timeout: float) -> None:
-        self.session = session
-        self.user_agent = user_agent
-        self.timeout = timeout
-        self.cache: dict[str, RobotFileParser | None] = {}
-
-    def allowed(self, url: str) -> bool:
-        split = urlsplit(url)
-        origin = f"{split.scheme}://{split.netloc}"
-        if origin not in self.cache:
-            robots_url = origin + "/robots.txt"
-            try:
-                response = self.session.get(robots_url, timeout=self.timeout)
-                if response.status_code == 200:
-                    parser = RobotFileParser()
-                    parser.set_url(robots_url)
-                    parser.parse(response.text.splitlines())
-                    self.cache[origin] = parser
-                else:
-                    self.cache[origin] = None
-            except requests.RequestException:
-                self.cache[origin] = None
-        parser = self.cache[origin]
-        return True if parser is None else parser.can_fetch(self.user_agent, url)
-
-
-def build_session(user_agent: str) -> requests.Session:
-    session = requests.Session()
-    session.headers.update(
-        {
-            "User-Agent": user_agent,
-            "Accept": "text/html,application/xhtml+xml",
-            "Accept-Language": "en,*;q=0.5",
-        }
-    )
-    retry = Retry(
-        total=2,
-        connect=2,
-        read=1,
-        backoff_factor=1.0,
-        status_forcelist=(429, 500, 502, 503, 504),
-        allowed_methods=("GET",),
-        respect_retry_after_header=True,
-    )
-    session.mount("http://", HTTPAdapter(max_retries=retry))
-    session.mount("https://", HTTPAdapter(max_retries=retry))
-    return session
-
-
-def article_redirect_status(original_url: str, final_url: str) -> str | None:
-    """Detect expired deep links redirected to a home or section listing page."""
-    original = urlsplit(original_url)
-    final = urlsplit(final_url)
-    original_parts = [part for part in original.path.split("/") if part]
-    final_parts = [part for part in final.path.split("/") if part]
-    if original_parts and not final_parts:
-        return "redirect_home"
-    if (
-        len(original_parts) >= 2
-        and len(final_parts) < len(original_parts)
-        and original_parts[: len(final_parts)] == final_parts
-    ):
-        return "redirect_listing"
-    return None
-
-
-def redirects_article_to_homepage(original_url: str, final_url: str) -> bool:
-    return article_redirect_status(original_url, final_url) == "redirect_home"
-
-
-def _mojibake_score(text: str) -> int:
-    return sum(text.count(marker) for marker in ("â€", "â€™", "Ã", "Â", "�"))
-
-
-def fetch_article(
-    session: requests.Session,
-    robots: RobotsCache,
+def save_result(
+    connection: sqlite3.Connection,
     url: str,
+    result: dict[str, Any],
+    attempts: Iterable[dict[str, Any]] | None = None,
     *,
-    timeout: float,
-    max_bytes: int,
-) -> dict[str, Any]:
-    now = datetime.now(timezone.utc).isoformat()
-    if not robots.allowed(url):
-        return {"status": "robots_denied", "retrieved_at_utc": now}
-    try:
-        with session.get(url, timeout=timeout, stream=True, allow_redirects=True) as response:
-            content_type = response.headers.get("Content-Type", "").lower()
-            if response.status_code >= 400:
-                return {
-                    "status": "http_error",
-                    "http_status": response.status_code,
-                    "final_url": response.url,
-                    "retrieved_at_utc": now,
-                    "error": f"HTTP {response.status_code}",
-                }
-            redirect_status = article_redirect_status(url, response.url)
-            if redirect_status:
-                return {
-                    "status": redirect_status,
-                    "http_status": response.status_code,
-                    "final_url": response.url,
-                    "retrieved_at_utc": now,
-                    "error": "article URL redirected to publisher home/listing page",
-                }
-            if "html" not in content_type:
-                return {
-                    "status": "non_html",
-                    "http_status": response.status_code,
-                    "final_url": response.url,
-                    "retrieved_at_utc": now,
-                    "error": content_type[:200],
-                }
-            chunks = []
-            size = 0
-            for chunk in response.iter_content(chunk_size=65536):
-                if not chunk:
-                    continue
-                size += len(chunk)
-                if size > max_bytes:
-                    return {
-                        "status": "too_large",
-                        "http_status": response.status_code,
-                        "final_url": response.url,
-                        "retrieved_at_utc": now,
-                        "response_bytes": size,
-                        "error": f"response exceeds {max_bytes} bytes",
-                    }
-                chunks.append(chunk)
-            raw = b"".join(chunks)
-            detected = from_bytes(raw).best()
-            encoding = (
-                detected.encoding
-                if detected is not None and detected.encoding
-                else response.encoding or "utf-8"
-            )
-            page = raw.decode(encoding, errors="replace")
-            try:
-                utf8_page = raw.decode("utf-8")
-            except UnicodeDecodeError:
-                utf8_page = None
-            if utf8_page is not None and _mojibake_score(utf8_page) < _mojibake_score(page):
-                page = utf8_page
-            extraction = extract_article(page, url=response.url)
-            body = str(extraction.get("body") or "")
-            result = {
-                "status": extraction["status"],
-                "http_status": response.status_code,
-                "final_url": response.url,
-                "retrieved_at_utc": now,
-                "response_bytes": len(raw),
-                "content_sha256": (
-                    hashlib.sha256(body.encode("utf-8")).hexdigest()
-                    if body
-                    else None
-                ),
-                "page_title": extraction.get("title"),
-                "body_text": body,
-                "canonical_url": extraction.get("canonical_url"),
-                "extraction_method": extraction.get("method"),
-                "extraction_confidence": extraction.get("confidence"),
-                "word_count": extraction.get("word_count"),
-                "candidate_count": extraction.get("candidate_count"),
-                "supporting_methods": extraction.get("supporting_methods"),
-            }
-            if extraction["status"] == "redirect_home":
-                result["error"] = "page canonical URL points to publisher homepage"
-            return result
-    except requests.RequestException as exc:
-        return {
-            "status": "request_error",
-            "retrieved_at_utc": now,
-            "error": str(exc)[:1000],
-        }
-
-
-def save_result(connection: sqlite3.Connection, url: str, result: dict[str, Any]) -> None:
+    commit: bool = True,
+) -> None:
+    history = list(attempts or [])
     connection.execute(
         """
         UPDATE documents SET
@@ -333,7 +201,8 @@ def save_result(connection: sqlite3.Connection, url: str, result: dict[str, Any]
           response_bytes = ?, content_sha256 = ?, page_title = ?, body_text = ?,
           canonical_url = ?, extraction_method = ?, extraction_confidence = ?,
           word_count = ?, candidate_count = ?, supporting_methods = ?,
-          error = ?
+          selected_attempt_url = ?, fallback_used = ?,
+          attempt_count = COALESCE(attempt_count, 0) + ?, error = ?
         WHERE url = ?
         """,
         (
@@ -351,60 +220,300 @@ def save_result(connection: sqlite3.Connection, url: str, result: dict[str, Any]
             result.get("word_count"),
             result.get("candidate_count"),
             json.dumps(result.get("supporting_methods") or [], ensure_ascii=False),
+            result.get("selected_attempt_url"),
+            result.get("fallback_used"),
+            len(history),
             result.get("error"),
             url,
         ),
     )
-    connection.commit()
+    if history:
+        connection.executemany(
+            """
+            INSERT INTO download_attempts(
+              document_url, attempt_kind, attempted_url,
+              started_at_utc, finished_at_utc, status, http_status, final_url,
+              response_bytes, transport_attempts, extraction_method,
+              extraction_confidence, word_count, error
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    url,
+                    item["attempt_kind"],
+                    item["attempted_url"],
+                    item["started_at_utc"],
+                    item["finished_at_utc"],
+                    item["status"],
+                    item.get("http_status"),
+                    item.get("final_url"),
+                    item.get("response_bytes"),
+                    item.get("transport_attempts", 1),
+                    item.get("extraction_method"),
+                    item.get("extraction_confidence"),
+                    item.get("word_count"),
+                    item.get("error"),
+                )
+                for item in history
+            ],
+        )
+    if commit:
+        connection.commit()
+
+
+def round_robin_origins(urls: Iterable[str]) -> Iterator[str]:
+    """Spread a sorted or clustered input across origins fairly."""
+    buckets: dict[str, deque[str]] = defaultdict(deque)
+    for url in urls:
+        buckets[host_for(url)].append(url)
+    active = deque(buckets)
+    while active:
+        origin = active.popleft()
+        bucket = buckets[origin]
+        yield bucket.popleft()
+        if bucket:
+            active.append(origin)
+
+
+def select_download_urls(
+    connection: sqlite3.Connection,
+    *,
+    retry_failed: bool,
+    limit: int | None,
+) -> list[str]:
+    if retry_failed:
+        status_placeholders = ",".join("?" for _ in RETRYABLE_RESULT_STATUSES)
+        http_placeholders = ",".join("?" for _ in RETRYABLE_HTTP_STATUSES)
+        where = (
+            f"status IN ({status_placeholders}) OR "
+            f"(status = 'http_error' AND http_status IN ({http_placeholders}))"
+        )
+        parameters: list[Any] = [
+            *RETRYABLE_RESULT_STATUSES,
+            *sorted(RETRYABLE_HTTP_STATUSES),
+        ]
+    else:
+        where = "status = 'pending'"
+        parameters = []
+    sql = f"SELECT url FROM documents WHERE {where} ORDER BY rowid"
+    if limit is not None:
+        sql += " LIMIT ?"
+        parameters.append(limit)
+    return [row[0] for row in connection.execute(sql, parameters)]
+
+
+def internal_error_result(url: str, exc: Exception) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    now = datetime.now(timezone.utc).isoformat()
+    error = f"internal downloader error: {exc}"[:1000]
+    return (
+        {
+            "status": "request_error",
+            "retrieved_at_utc": now,
+            "selected_attempt_url": url,
+            "error": error,
+        },
+        [
+            {
+                "attempt_kind": "internal",
+                "attempted_url": url,
+                "started_at_utc": now,
+                "finished_at_utc": now,
+                "status": "request_error",
+                "transport_attempts": 1,
+                "error": error,
+            }
+        ],
+    )
+
+
+async def download_urls(
+    connection: sqlite3.Connection,
+    urls: list[str],
+    args: argparse.Namespace,
+) -> None:
+    if not urls:
+        return
+    result_queue: asyncio.Queue[
+        tuple[str, dict[str, Any], list[dict[str, Any]]]
+    ] = asyncio.Queue(maxsize=args.workers * 4)
+    started = time.monotonic()
+    status_counts: dict[str, int] = defaultdict(int)
+    host_buckets: dict[str, list[str]] = defaultdict(list)
+    for url in urls:
+        host_buckets[host_for(url)].append(url)
+
+    async def host_worker(
+        fetcher: AsyncArticleFetcher, host_urls: list[str]
+    ) -> None:
+        for url in host_urls:
+            try:
+                async with asyncio.timeout(args.article_timeout):
+                    result, attempts = await fetcher.fetch_article(url)
+            except TimeoutError:
+                result, attempts = internal_error_result(
+                    url, TimeoutError(f"article exceeded {args.article_timeout}s")
+                )
+            except Exception as exc:
+                result, attempts = internal_error_result(url, exc)
+            await result_queue.put((url, result, attempts))
+
+    async def writer() -> None:
+        completed = 0
+        pending_writes = 0
+        last_commit = time.monotonic()
+        while completed < len(urls):
+            commit_due = max(
+                0.1, args.commit_seconds - (time.monotonic() - last_commit)
+            )
+            try:
+                url, result, attempts = await asyncio.wait_for(
+                    result_queue.get(), timeout=commit_due
+                )
+            except TimeoutError:
+                if pending_writes:
+                    connection.commit()
+                    pending_writes = 0
+                last_commit = time.monotonic()
+                continue
+            completed += 1
+            try:
+                save_result(connection, url, result, attempts, commit=False)
+                pending_writes += 1
+                status_counts[str(result.get("status") or "unknown")] += 1
+                if (
+                    pending_writes >= args.commit_every
+                    or time.monotonic() - last_commit >= args.commit_seconds
+                ):
+                    connection.commit()
+                    pending_writes = 0
+                    last_commit = time.monotonic()
+                if completed % 100 == 0 or completed == len(urls):
+                    elapsed = max(time.monotonic() - started, 0.001)
+                    rate = completed / elapsed
+                    remaining = (len(urls) - completed) / rate if rate else 0.0
+                    print(
+                        f"Processed {completed:,}/{len(urls):,} "
+                        f"({rate:.2f} URLs/s, ETA {remaining / 60:.1f} min): "
+                        f"{json.dumps(dict(status_counts), ensure_ascii=False)}",
+                        flush=True,
+                    )
+            finally:
+                result_queue.task_done()
+        connection.commit()
+
+    with ProcessPoolExecutor(max_workers=args.extract_workers) as extraction_pool:
+        async with AsyncArticleFetcher(
+            workers=args.workers,
+            per_host_delay=args.delay,
+            timeout=args.timeout,
+            max_bytes=args.max_bytes,
+            retries=args.retries,
+            user_agent=args.user_agent,
+            extraction_executor=extraction_pool,
+            browser_enabled=not args.no_browser_fallback,
+            browser_workers=args.browser_workers,
+            browser_timeout=args.browser_timeout,
+            browser_wait_ms=args.browser_wait_ms,
+            browser_failure_limit=args.browser_failure_limit,
+            host_failure_limit=args.host_failure_limit,
+            browser_channel=args.browser_channel,
+        ) as fetcher:
+            writer_task = asyncio.create_task(writer())
+            host_tasks = [
+                asyncio.create_task(host_worker(fetcher, host_urls))
+                for host_urls in host_buckets.values()
+            ]
+            await asyncio.gather(*host_tasks)
+            await result_queue.join()
+            await writer_task
+
+
+def default_output_path(input_path: Path) -> Path:
+    name = input_path.name
+    if name.endswith(".jsonl.gz"):
+        name = name.removesuffix(".jsonl.gz")
+    elif name.endswith(".jsonl"):
+        name = name.removesuffix(".jsonl")
+    return input_path.with_name(name + ".sqlite")
 
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="Bxxx.articles.jsonl.gz metadata")
+    parser.add_argument("input", type=Path, help="Article metadata JSONL or JSONL.GZ")
     parser.add_argument("--output", type=Path, help="SQLite output/checkpoint path")
-    parser.add_argument("--delay", type=float, default=1.0, help="Seconds between URLs")
+    parser.add_argument(
+        "--delay",
+        type=float,
+        default=1.0,
+        help="Minimum seconds between requests to the same origin",
+    )
+    parser.add_argument("--workers", type=int, default=32, help="Concurrent network workers")
+    parser.add_argument(
+        "--extract-workers",
+        type=int,
+        default=min(4, os.cpu_count() or 4),
+        help="Article extraction process workers",
+    )
+    parser.add_argument("--commit-every", type=int, default=100)
+    parser.add_argument("--commit-seconds", type=float, default=5.0)
     parser.add_argument("--timeout", type=float, default=20.0)
+    parser.add_argument("--article-timeout", type=float, default=90.0)
     parser.add_argument("--max-bytes", type=int, default=5_000_000)
+    parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--limit", type=int, help="Maximum URLs to attempt this run")
     parser.add_argument("--retry-failed", action="store_true")
+    parser.add_argument("--no-browser-fallback", action="store_true")
+    parser.add_argument("--browser-workers", type=int, default=2)
+    parser.add_argument("--browser-timeout", type=float, default=20.0)
+    parser.add_argument("--browser-wait-ms", type=int, default=1500)
+    parser.add_argument("--browser-failure-limit", type=int, default=3)
+    parser.add_argument("--host-failure-limit", type=int, default=3)
+    parser.add_argument("--browser-channel", default="chrome")
     parser.add_argument("--user-agent", default=DEFAULT_USER_AGENT)
     return parser.parse_args(list(argv) if argv is not None else None)
+
+
+def validate_args(args: argparse.Namespace) -> None:
+    positive = {
+        "workers": args.workers,
+        "extract-workers": args.extract_workers,
+        "commit-every": args.commit_every,
+        "commit-seconds": args.commit_seconds,
+        "timeout": args.timeout,
+        "article-timeout": args.article_timeout,
+        "max-bytes": args.max_bytes,
+        "browser-workers": args.browser_workers,
+        "browser-timeout": args.browser_timeout,
+        "browser-failure-limit": args.browser_failure_limit,
+        "host-failure-limit": args.host_failure_limit,
+    }
+    invalid = [name for name, value in positive.items() if value <= 0]
+    if args.delay < 0 or args.retries < 0 or args.browser_wait_ms < 0 or invalid:
+        fields = ", ".join(invalid or ["delay/retries/browser-wait-ms"])
+        raise ValueError(f"invalid non-positive downloader option: {fields}")
+    if args.limit is not None and args.limit < 0:
+        raise ValueError("limit must be non-negative")
 
 
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv)
     try:
-        if args.delay < 0 or args.timeout <= 0 or args.max_bytes <= 0:
-            raise ValueError("delay must be non-negative; timeout/max-bytes must be positive")
-        output = args.output or args.input.with_name(
-            args.input.name.removesuffix(".jsonl.gz") + ".articles.sqlite"
-        )
+        validate_args(args)
+        output = args.output or default_output_path(args.input)
         connection = connect_database(output)
         try:
             links, unique_urls = import_metadata(connection, args.input)
             print(f"Imported {links:,} event/article links, {unique_urls:,} unique URLs")
-            where = "status != 'ok'" if args.retry_failed else "status = 'pending'"
-            sql = f"SELECT url FROM documents WHERE {where} ORDER BY url"
-            parameters: tuple[Any, ...] = ()
-            if args.limit is not None:
-                sql += " LIMIT ?"
-                parameters = (args.limit,)
-            urls = [row[0] for row in connection.execute(sql, parameters)]
-            session = build_session(args.user_agent)
-            robots = RobotsCache(session, args.user_agent, args.timeout)
-            for index, url in enumerate(urls, start=1):
-                result = fetch_article(
-                    session,
-                    robots,
-                    url,
-                    timeout=args.timeout,
-                    max_bytes=args.max_bytes,
-                )
-                save_result(connection, url, result)
-                if index % 100 == 0 or index == len(urls):
-                    print(f"Processed {index:,}/{len(urls):,}: {result['status']}")
-                if index < len(urls) and args.delay:
-                    time.sleep(args.delay)
+            urls = select_download_urls(
+                connection,
+                retry_failed=args.retry_failed,
+                limit=args.limit,
+            )
+            print(
+                f"Scheduled {len(urls):,} URLs with {args.workers} network / "
+                f"{args.extract_workers} extraction workers"
+            )
+            asyncio.run(download_urls(connection, urls, args))
             counts = dict(
                 connection.execute(
                     "SELECT status, COUNT(*) FROM documents GROUP BY status"
