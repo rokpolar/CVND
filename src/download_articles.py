@@ -11,96 +11,24 @@ from __future__ import annotations
 import argparse
 import gzip
 import hashlib
-import html
 import json
-import re
 import sqlite3
 import sys
 import time
 from datetime import datetime, timezone
-from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import urlsplit
 from urllib.robotparser import RobotFileParser
 
 import requests
+from charset_normalizer import from_bytes
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from article_extractor import extract_article, extract_article_text
 
 DEFAULT_USER_AGENT = "CVND-Research/1.0 (+https://github.com/rokpolar/CVND)"
-SKIP_TAGS = {"script", "style", "noscript", "svg", "canvas", "form", "nav"}
-TEXT_TAGS = {"p", "h1", "h2", "h3", "h4", "li", "blockquote"}
-
-
-class ArticleHTMLParser(HTMLParser):
-    """Extract readable text, preferring article/main containers."""
-
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self.skip_depth = 0
-        self.article_depth = 0
-        self.main_depth = 0
-        self.text_depth = 0
-        self.title_depth = 0
-        self.article_parts: list[str] = []
-        self.main_parts: list[str] = []
-        self.body_parts: list[str] = []
-        self.title_parts: list[str] = []
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        tag = tag.lower()
-        if tag in SKIP_TAGS:
-            self.skip_depth += 1
-        if tag == "article":
-            self.article_depth += 1
-        if tag == "main":
-            self.main_depth += 1
-        if tag in TEXT_TAGS:
-            self.text_depth += 1
-        if tag == "title":
-            self.title_depth += 1
-
-    def handle_endtag(self, tag: str) -> None:
-        tag = tag.lower()
-        if tag in SKIP_TAGS and self.skip_depth:
-            self.skip_depth -= 1
-        if tag == "article" and self.article_depth:
-            self.article_depth -= 1
-        if tag == "main" and self.main_depth:
-            self.main_depth -= 1
-        if tag in TEXT_TAGS and self.text_depth:
-            self.text_depth -= 1
-        if tag == "title" and self.title_depth:
-            self.title_depth -= 1
-
-    def handle_data(self, data: str) -> None:
-        if self.skip_depth:
-            return
-        value = re.sub(r"\s+", " ", html.unescape(data)).strip()
-        if not value:
-            return
-        if self.title_depth:
-            self.title_parts.append(value)
-        if not self.text_depth:
-            return
-        self.body_parts.append(value)
-        if self.main_depth:
-            self.main_parts.append(value)
-        if self.article_depth:
-            self.article_parts.append(value)
-
-    def result(self) -> tuple[str, str]:
-        parts = self.article_parts or self.main_parts or self.body_parts
-        return " ".join(self.title_parts), "\n\n".join(parts)
-
-
-def extract_article_text(content: str) -> tuple[str, str]:
-    parser = ArticleHTMLParser()
-    parser.feed(content)
-    title, body = parser.result()
-    return title.strip(), body.strip()
 
 
 def open_metadata(path: Path) -> Iterable[dict[str, Any]]:
@@ -131,6 +59,12 @@ def connect_database(path: Path) -> sqlite3.Connection:
           content_sha256 TEXT,
           page_title TEXT,
           body_text TEXT,
+          canonical_url TEXT,
+          extraction_method TEXT,
+          extraction_confidence REAL,
+          word_count INTEGER,
+          candidate_count INTEGER,
+          supporting_methods TEXT,
           error TEXT
         );
         CREATE TABLE IF NOT EXISTS event_articles (
@@ -153,6 +87,23 @@ def connect_database(path: Path) -> sqlite3.Connection:
         CREATE INDEX IF NOT EXISTS idx_documents_status ON documents(status);
         """
     )
+    existing_columns = {
+        row[1] for row in connection.execute("PRAGMA table_info(documents)")
+    }
+    extra_columns = {
+        "canonical_url": "TEXT",
+        "extraction_method": "TEXT",
+        "extraction_confidence": "REAL",
+        "word_count": "INTEGER",
+        "candidate_count": "INTEGER",
+        "supporting_methods": "TEXT",
+    }
+    for name, column_type in extra_columns.items():
+        if name not in existing_columns:
+            connection.execute(
+                f"ALTER TABLE documents ADD COLUMN {name} {column_type}"
+            )
+    connection.commit()
     return connection
 
 
@@ -247,6 +198,31 @@ def build_session(user_agent: str) -> requests.Session:
     return session
 
 
+def article_redirect_status(original_url: str, final_url: str) -> str | None:
+    """Detect expired deep links redirected to a home or section listing page."""
+    original = urlsplit(original_url)
+    final = urlsplit(final_url)
+    original_parts = [part for part in original.path.split("/") if part]
+    final_parts = [part for part in final.path.split("/") if part]
+    if original_parts and not final_parts:
+        return "redirect_home"
+    if (
+        len(original_parts) >= 2
+        and len(final_parts) < len(original_parts)
+        and original_parts[: len(final_parts)] == final_parts
+    ):
+        return "redirect_listing"
+    return None
+
+
+def redirects_article_to_homepage(original_url: str, final_url: str) -> bool:
+    return article_redirect_status(original_url, final_url) == "redirect_home"
+
+
+def _mojibake_score(text: str) -> int:
+    return sum(text.count(marker) for marker in ("â€", "â€™", "Ã", "Â", "�"))
+
+
 def fetch_article(
     session: requests.Session,
     robots: RobotsCache,
@@ -268,6 +244,15 @@ def fetch_article(
                     "final_url": response.url,
                     "retrieved_at_utc": now,
                     "error": f"HTTP {response.status_code}",
+                }
+            redirect_status = article_redirect_status(url, response.url)
+            if redirect_status:
+                return {
+                    "status": redirect_status,
+                    "http_status": response.status_code,
+                    "final_url": response.url,
+                    "retrieved_at_utc": now,
+                    "error": "article URL redirected to publisher home/listing page",
                 }
             if "html" not in content_type:
                 return {
@@ -294,28 +279,44 @@ def fetch_article(
                     }
                 chunks.append(chunk)
             raw = b"".join(chunks)
-            encoding = response.encoding or response.apparent_encoding or "utf-8"
+            detected = from_bytes(raw).best()
+            encoding = (
+                detected.encoding
+                if detected is not None and detected.encoding
+                else response.encoding or "utf-8"
+            )
             page = raw.decode(encoding, errors="replace")
-            title, body = extract_article_text(page)
-            if not body:
-                return {
-                    "status": "extract_empty",
-                    "http_status": response.status_code,
-                    "final_url": response.url,
-                    "retrieved_at_utc": now,
-                    "response_bytes": len(raw),
-                    "page_title": title,
-                }
-            return {
-                "status": "ok",
+            try:
+                utf8_page = raw.decode("utf-8")
+            except UnicodeDecodeError:
+                utf8_page = None
+            if utf8_page is not None and _mojibake_score(utf8_page) < _mojibake_score(page):
+                page = utf8_page
+            extraction = extract_article(page, url=response.url)
+            body = str(extraction.get("body") or "")
+            result = {
+                "status": extraction["status"],
                 "http_status": response.status_code,
                 "final_url": response.url,
                 "retrieved_at_utc": now,
                 "response_bytes": len(raw),
-                "content_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
-                "page_title": title,
+                "content_sha256": (
+                    hashlib.sha256(body.encode("utf-8")).hexdigest()
+                    if body
+                    else None
+                ),
+                "page_title": extraction.get("title"),
                 "body_text": body,
+                "canonical_url": extraction.get("canonical_url"),
+                "extraction_method": extraction.get("method"),
+                "extraction_confidence": extraction.get("confidence"),
+                "word_count": extraction.get("word_count"),
+                "candidate_count": extraction.get("candidate_count"),
+                "supporting_methods": extraction.get("supporting_methods"),
             }
+            if extraction["status"] == "redirect_home":
+                result["error"] = "page canonical URL points to publisher homepage"
+            return result
     except requests.RequestException as exc:
         return {
             "status": "request_error",
@@ -330,6 +331,8 @@ def save_result(connection: sqlite3.Connection, url: str, result: dict[str, Any]
         UPDATE documents SET
           status = ?, http_status = ?, final_url = ?, retrieved_at_utc = ?,
           response_bytes = ?, content_sha256 = ?, page_title = ?, body_text = ?,
+          canonical_url = ?, extraction_method = ?, extraction_confidence = ?,
+          word_count = ?, candidate_count = ?, supporting_methods = ?,
           error = ?
         WHERE url = ?
         """,
@@ -342,6 +345,12 @@ def save_result(connection: sqlite3.Connection, url: str, result: dict[str, Any]
             result.get("content_sha256"),
             result.get("page_title"),
             result.get("body_text"),
+            result.get("canonical_url"),
+            result.get("extraction_method"),
+            result.get("extraction_confidence"),
+            result.get("word_count"),
+            result.get("candidate_count"),
+            json.dumps(result.get("supporting_methods") or [], ensure_ascii=False),
             result.get("error"),
             url,
         ),

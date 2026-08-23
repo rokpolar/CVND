@@ -167,6 +167,10 @@ Each batch execution writes article-level GDELT URL metadata to compressed
 JSONL and derives the existing MSS summary locally. GDELT does not contain the
 full article body; `download_articles.py` follows the original URLs, respects
 robots.txt, and stores accessible extracted text in a resumable SQLite file.
+Body extraction combines Trafilatura, publisher JSON-LD/embedded JSON, semantic
+DOM containers, boilerplate removal, and cross-method agreement. Expired article
+URLs redirected to a publisher home/section page and parked domains are retained
+as explicit non-article statuses instead of being counted as successful bodies.
 See [`docs/gdelt_collection.md`](docs/gdelt_collection.md) for all selectors,
 assignment rules, limitations and recommended sensitivity runs.
 
