@@ -224,7 +224,13 @@ gkg_raw AS (
         REGEXP_EXTRACT(COALESCE(TranslationInfo, ''), r'srclc:([a-z]{3})'),
         'en'
       )
-    END AS source_lang
+    END AS source_lang,
+    CAST(NULL AS STRING) AS gkg_record_id,
+    LOWER(COALESCE(NET.REG_DOMAIN(DocumentIdentifier), '')) AS source_domain,
+    CAST(NULL AS STRING) AS title,
+    CAST(NULL AS STRING) AS authors,
+    CAST(NULL AS FLOAT64) AS tone,
+    CAST(NULL AS STRING) AS sharing_image
   FROM `gdelt-bq.gdeltv2.gkg_partitioned`
   WHERE (
         (_PARTITIONTIME >= TIMESTAMP('2015-03-20') AND _PARTITIONTIME < TIMESTAMP('2016-02-10'))
@@ -305,35 +311,22 @@ assigned AS (
     FROM candidate_matches
   )
   WHERE assignment_rank = 1
-),
-language_stats AS (
-  SELECT
-    event_id,
-    state,
-    source_record_id,
-    source_lang,
-    COUNT(DISTINCT normalized_url) AS article_count,
-    MIN(DATE(published_at)) AS first_article_date,
-    MAX(DATE(published_at)) AS last_article_date
-  FROM assigned
-  GROUP BY event_id, state, source_record_id, source_lang
-),
-event_days AS (
-  SELECT event_id, COUNT(DISTINCT DATE(published_at)) AS coverage_days
-  FROM assigned
-  GROUP BY event_id
 )
+
 SELECT
-  e.event_id,
-  e.state,
-  e.source_record_id,
-  COALESCE(s.source_lang, 'und') AS source_lang,
-  COALESCE(s.article_count, 0) AS article_count,
-  s.first_article_date,
-  s.last_article_date,
-  COALESCE(d.coverage_days, 0) AS coverage_days,
-  COALESCE(d.coverage_days, 0) AS coverage_days_threshold_1
-FROM event_windows e
-LEFT JOIN language_stats s USING (event_id, state, source_record_id)
-LEFT JOIN event_days d USING (event_id)
-ORDER BY e.event_id, article_count DESC, source_lang
+  event_id,
+  state,
+  source_record_id,
+  gkg_record_id,
+  onset_date,
+  published_at,
+  url,
+  normalized_url,
+  source_domain,
+  source_lang,
+  title,
+  authors,
+  tone,
+  sharing_image
+FROM assigned
+ORDER BY event_id, published_at, normalized_url

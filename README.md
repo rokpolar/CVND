@@ -124,6 +124,20 @@ python src/collect_gdelt.py --estimate --overwrite
 GDELT_BILLING_PROJECT=your-project \
 python src/collect_gdelt.py --execute --overwrite
 
+# Optional: richer GKG metadata. Estimate it first because extra columns
+# increase bytes processed.
+python src/collect_gdelt.py --estimate \
+  --article-metadata-profile rich --overwrite
+
+# Download accessible article bodies from the GDELT URL metadata. The SQLite
+# file is both the output and the restart checkpoint.
+python src/download_articles.py \
+  data/raw/gdelt_bq.articles.jsonl.gz \
+  --output data/raw/gdelt_bq.articles.sqlite \
+  --workers 32 \
+  --extract-workers 4 \
+  --delay 1.0
+
 # Examples: language subset, all GKG languages, broader themes, or domain exclusion.
 python src/collect_gdelt.py --languages en,hin,tam --overwrite
 python src/collect_gdelt.py --languages all --overwrite
@@ -137,12 +151,27 @@ Census C-16 categories and GDELT Translingual 2.0 support.
 Candidates must mention India plus the event state/UT (or its linked district).
 Exact GDELT document identifiers are assigned to only the nearest overlapping
 event within the same state, preventing duplicate coverage counts.
+The full query runs once for all selected events, and BigQuery's
+`maximum_bytes_billed` guard rejects scans above the configured 2 TiB ceiling.
+Execution writes article-level GDELT URL metadata to compressed JSONL and
+derives the existing MSS summary locally. GDELT does not contain the
+full article body; `download_articles.py` follows the original URLs, respects
+robots.txt and publisher-specific request rates, and stores accessible extracted
+text in a resumable SQLite file. Downloads run concurrently across publishers
+while requests to the same origin remain serialized and rate-limited. Weak or
+empty pages can retry declared canonical/AMP pages, an HTTP-to-HTTPS variant,
+and narrowly detected JavaScript shells through a headless browser.
+Body extraction combines Trafilatura, publisher JSON-LD/embedded JSON, semantic
+DOM containers, boilerplate removal, and cross-method agreement. Expired article
+URLs redirected to a publisher home/section page and parked domains are retained
+as explicit non-article statuses instead of being counted as successful bodies.
 See [`docs/gdelt_collection.md`](docs/gdelt_collection.md) for all selectors,
 assignment rules, limitations and recommended sensitivity runs.
 
 | Stage | Status |
 | --- | --- |
-| `collect_gdelt.py` → `gdelt_emdat_query.sql` / `gdelt_bq.json` | **Primary** |
+| `collect_gdelt.py` → `gdelt_bq.articles.jsonl.gz` / `gdelt_bq.json` | **Primary metadata + MSS summary** |
+| `download_articles.py` → `gdelt_bq.articles.sqlite` | **Original-site article text where accessible** |
 | `src/archive/news.py` (DOC API) | Recent exploratory legacy only |
 | `src/archive/process_bigquery.py` | Orphan (early 12-event era) |
 

@@ -10,7 +10,7 @@ CVND 파이프라인(홍수 피해 대비 언론 보도 불균형 측정)의 유
 | 연구자 (Researcher) | 주 액터 | 파이프라인 실행, 파라미터(SKIP 플래그) 설정, 결과 해석 |
 | Google Earth Engine | 외부 시스템 | Sentinel-1/2 영상 및 침수 탐지 연산 |
 | Colab (SITS inference) | 외부 시스템 | SITS-VAE 추론으로 패치 점수 생성 |
-| GDELT BigQuery | 외부 시스템 | 다국어 기사 집계 결과(JSON) 제공 |
+| GDELT BigQuery | 외부 시스템 | 다국어 기사 URL·메타데이터와 집계 결과 제공(본문 미포함) |
 | EM-DAT | 외부 데이터 | 재난 목록 및 사망자 수 |
 | Natural Earth | 외부 데이터 | 주 경계 지도(choropleth) |
 
@@ -126,8 +126,8 @@ flowchart LR
 | 목적 | 기사량·점유율·최초보도 지연·보도 지속일을 합성 |
 | 사전조건 | 공식 `events.csv`, Google ADC(실행 시) |
 | 주 흐름 | EM-DAT 기간·주 기반 SQL 생성 → flood/location/language/domain 필터 → URL 중복 제거·겹치는 사건 배정 → MSS 집계 |
-| 결과 | `data/raw/gdelt_emdat_query.sql`, `data/raw/gdelt_bq.json`, MSS 결과 |
-| 구현 | `src/collect_gdelt.py`, `src/compute_mss.py` |
+| 결과 | 배치별 `*.articles.jsonl.gz`, 원문 `*.articles.sqlite`, `data/raw/gdelt_bq.json`, MSS 결과 |
+| 구현 | `src/collect_gdelt.py`, `src/download_articles.py`, `src/compute_mss.py` |
 
 ### UC-07 기대 보도량·불균형 산출
 

@@ -31,6 +31,7 @@ DATA_FILES: dict[str, str] = {
     "emdat_api_csv": "raw/emdat_api_raw.csv",
     "emdat_meta": "raw/emdat_api_raw.meta.json",
     "gdelt_bq": "raw/gdelt_bq.json",
+    "gdelt_articles": "raw/gdelt_bq.articles.jsonl.gz",
     "gdelt_sql": "raw/gdelt_emdat_query.sql",
     "gdelt_meta": "raw/gdelt_bq.meta.json",
     "events_quarantine": "raw/events_quarantine.csv",
