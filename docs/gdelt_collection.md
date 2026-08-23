@@ -171,11 +171,15 @@ python src/download_articles.py \
 The SQLite database separates unique downloaded documents from event/article
 links, so one URL assigned to multiple state-events is fetched only once. It
 stores the HTTP/final URL, retrieval time, response size, text hash, page title,
-extracted body, and an explicit status such as `ok`, `robots_denied`,
-`http_error`, `non_html`, `too_large`, or `extract_empty`. The default request
-delay is one second and the default response limit is 5 MB. Re-running the same
-command processes only `pending` URLs; use `--retry-failed` to retry failures
-and `--limit N` for a small test run.
+extracted body, extraction method/confidence, candidate count, and an explicit
+status such as `ok`, `extract_weak`, `extract_empty`, `redirect_home`,
+`redirect_listing`, `domain_parked`, `robots_denied`, `http_error`, `non_html`,
+or `too_large`. Trafilatura, publisher JSON, and scored DOM candidates are
+compared; repeated paragraphs, link-heavy widgets, current-headline tails, and
+publisher boilerplate are removed. The default request delay is one second and
+the default response limit is 5 MB. Re-running the same command processes only
+`pending` URLs; use `--retry-failed` to retry failures and `--limit N` for a
+small test run.
 
 Publisher robots rules, access controls and paywalls are not bypassed. Deleted,
 blocked and unsupported pages remain represented by their GDELT metadata and
