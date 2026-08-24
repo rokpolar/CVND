@@ -22,10 +22,9 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 from urllib.robotparser import RobotFileParser
 
 import httpx
-from bs4 import BeautifulSoup
 from charset_normalizer import from_bytes
 
-from article_extractor import extract_article
+from article_extractor import extract_article, parse_html
 
 
 RETRYABLE_HTTP_STATUSES = {408, 425, 429, 500, 502, 503, 504}
@@ -120,7 +119,7 @@ def https_variant(url: str) -> str | None:
 
 def fallback_links(content: str, base_url: str) -> list[tuple[str, str]]:
     """Return declared same-site canonical and AMP alternatives."""
-    soup = BeautifulSoup(content, "lxml")
+    soup = parse_html(content)
     alternatives: list[tuple[str, str]] = []
     seen = {base_url.rstrip("/")}
     declarations = (
@@ -149,7 +148,7 @@ def fallback_links(content: str, base_url: str) -> list[tuple[str, str]]:
 def looks_like_javascript_shell(content: str, extraction: dict[str, Any]) -> bool:
     if extraction.get("status") not in FALLBACK_EXTRACTION_STATUSES:
         return False
-    soup = BeautifulSoup(content, "lxml")
+    soup = parse_html(content)
     for tag in soup(["script", "style", "noscript", "template", "svg"]):
         tag.decompose()
     visible_words = len(re.findall(r"\w+", soup.get_text(" ", strip=True)))
@@ -263,7 +262,22 @@ class AsyncRobotsCache:
             if task is None:
                 task = asyncio.create_task(self._load(origin))
                 self._tasks[origin] = task
-        return await task
+        try:
+            # A per-article timeout must not cancel a robots load shared by
+            # other URLs from the same origin.
+            return await asyncio.shield(task)
+        except asyncio.CancelledError:
+            if not task.cancelled():
+                raise
+            async with self._lock:
+                if self._tasks.get(origin) is task:
+                    self._tasks.pop(origin, None)
+            return None
+        except Exception:
+            async with self._lock:
+                if self._tasks.get(origin) is task:
+                    self._tasks.pop(origin, None)
+            return None
 
     async def policy(self, url: str) -> tuple[bool, float]:
         parser = await self.parser_for(url)
