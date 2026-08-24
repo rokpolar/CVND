@@ -139,10 +139,16 @@ status such as `ok`, `extract_weak`, `extract_empty`, `redirect_home`,
 compared; repeated paragraphs, link-heavy widgets, current-headline tails, and
 publisher boilerplate are removed. The default request delay is one second and
 the default response limit is 5 MB. The delay applies independently to each
-origin; up to 32 different origins are fetched concurrently by default, and
+origin; a bounded round-robin queue fetches up to 32 different origins
+concurrently by default, and
 `Crawl-delay` or `Request-rate` from robots.txt can only make an origin slower.
 HTML extraction runs in a separate process pool and SQLite writes commit in
-batches.
+batches. Interactive terminals use tqdm's terminal-width-aware live progress
+display: one static line shows completion, throughput, and ETA while a second
+static line shows compact status counts. Both lines are redrawn in place without
+wrapping or scrolling the terminal. Redirected output retains a stable log line
+every 100 URLs. Set the standard `NO_COLOR` environment variable to disable
+ANSI colors.
 
 For `extract_empty` or `extract_weak`, the downloader can retry same-site URLs
 explicitly declared by canonical or AMP markup. It can also upgrade a failed
