@@ -1,19 +1,32 @@
 import asyncio
 import gzip
+import io
 import json
 import sqlite3
 import sys
 import tempfile
 import unittest
+import warnings
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 
 SRC = Path(__file__).resolve().parents[1] / "src"
 sys.path.insert(0, str(SRC))
 
 import download_articles  # noqa: E402
-from article_extractor import clean_candidate, extract_article  # noqa: E402
+import repair_article_database  # noqa: E402
+from article_extractor import (  # noqa: E402
+    body_from_json,
+    clean_candidate,
+    extract_article,
+    looks_like_known_listing_page,
+)
+from bs4 import XMLParsedAsHTMLWarning  # noqa: E402
 from article_fetcher import (  # noqa: E402
+    AsyncRobotsCache,
     AsyncArticleFetcher,
     HttpFetch,
     fallback_links,
@@ -22,6 +35,232 @@ from article_fetcher import (  # noqa: E402
 
 
 class DownloadArticlesTests(unittest.TestCase):
+    def test_database_corrections_are_audited_and_reversible(self):
+        connection = sqlite3.connect(":memory:")
+        connection.execute(
+            """
+            CREATE TABLE documents (
+              url TEXT PRIMARY KEY, status TEXT, body_text TEXT,
+              content_sha256 TEXT, word_count INTEGER,
+              extraction_confidence REAL, error TEXT
+            )
+            """
+        )
+        connection.execute(
+            "INSERT INTO documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+            ("https://example.com/story", "ok", "old body", "old-hash", 2, 0.8, None),
+        )
+        change = {
+            "url": "https://example.com/story",
+            "kind": "html_markup_cleanup",
+            "previous": ("ok", "old body", "old-hash", 2, 0.8, None),
+            "new": ("ok", "new body", "new-hash", 2, 0.8, None),
+        }
+        repair_article_database.apply_corrections(connection, [change], "test-run")
+        self.assertEqual(
+            connection.execute("SELECT body_text FROM documents").fetchone()[0],
+            "new body",
+        )
+        self.assertEqual(repair_article_database.rollback(connection, "test-run"), 1)
+        self.assertEqual(
+            connection.execute("SELECT body_text FROM documents").fetchone()[0],
+            "old body",
+        )
+
+    def test_escaped_jsonld_markup_becomes_plain_text(self):
+        body = body_from_json(
+            "&lt;p&gt;Officials announced a detailed recovery programme for affected "
+            "households across the district.&lt;/p&gt;"
+            "&lt;p&gt;Funding dates and eligibility guidance were published today for "
+            "residents seeking assistance.&lt;/p&gt;"
+        )
+        self.assertIn("recovery programme", body)
+        self.assertNotIn("<p>", body)
+
+    def test_audited_listing_rules_do_not_reject_normal_category_article(self):
+        feed = " ".join(["Current headline and summary from the live news feed."] * 1200)
+        self.assertTrue(
+            looks_like_known_listing_page(
+                "http://www.brecorder.com/top-news/123-story.html", "Latest News", feed
+            )
+        )
+        self.assertFalse(
+            looks_like_known_listing_page(
+                "https://freemalaysiatoday.com/category/world/2024/01/01/story-slug/",
+                "A specific article title",
+                feed,
+            )
+        )
+
+    def test_xhtml_declaration_does_not_emit_parser_warning(self):
+        source = """<?xml version="1.0" encoding="UTF-8"?>
+        <html><head><title>Flood report</title></head><body><article>
+        <p>The flood recovery programme provides detailed assistance to affected
+        households across the district and will continue throughout the year.</p>
+        <p>Officials published implementation dates, funding details, eligibility
+        rules, and contact information for residents seeking emergency support.</p>
+        </article></body></html>
+        """
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = extract_article(source, url="https://example.com/flood")
+        parser_warnings = [
+            warning
+            for warning in caught
+            if issubclass(warning.category, XMLParsedAsHTMLWarning)
+        ]
+        self.assertEqual(parser_warnings, [])
+        self.assertIn(result["status"], {"ok", "extract_weak"})
+
+    def test_interactive_progress_bar_reports_rate_eta_and_statuses(self):
+        class TerminalBuffer(io.StringIO):
+            def isatty(self):
+                return True
+
+        stream = TerminalBuffer()
+        progress = download_articles.DownloadProgress(
+            200, stream=stream, min_interval=0
+        )
+        counts = {
+            "ok": 30,
+            "http_error": 10,
+            "extract_weak": 3,
+            "extract_empty": 2,
+            "host_deferred": 2,
+            "redirect_home": 3,
+        }
+        progress.update(50, counts)
+        progress.close(50, counts)
+        output = stream.getvalue()
+        self.assertIn("25.0%", output)
+        self.assertIn("50/200", output)
+        self.assertIn("URL/s", output)
+        self.assertIn("ETA", output)
+        self.assertIn("Crawling", output)
+        self.assertIn("Status", output)
+        self.assertIn("█", output)
+        self.assertIn(
+            "ok=30 http=10 request=0 weak=5 deferred=2 other=3", output
+        )
+
+    def test_redirected_progress_keeps_periodic_log_format(self):
+        stream = io.StringIO()
+        progress = download_articles.DownloadProgress(200, stream=stream)
+        progress.update(99, {"ok": 99})
+        self.assertEqual(stream.getvalue(), "")
+        progress.update(100, {"ok": 100})
+        self.assertIn("Processed 100/200", stream.getvalue())
+
+    def test_cancelled_robots_waiter_does_not_cancel_shared_load(self):
+        async def scenario():
+            loader_started = asyncio.Event()
+            release_loader = asyncio.Event()
+            calls = 0
+
+            async def loader(url):
+                nonlocal calls
+                calls += 1
+                loader_started.set()
+                await release_loader.wait()
+                return HttpFetch(
+                    status="html",
+                    attempted_url=url,
+                    final_url=url,
+                    http_status=200,
+                    raw=b"User-agent: *\nAllow: /\n",
+                )
+
+            cache = AsyncRobotsCache("test-agent", 1.0, loader)
+            first = asyncio.create_task(cache.parser_for("https://example.com/a"))
+            second = asyncio.create_task(cache.parser_for("https://example.com/b"))
+            await loader_started.wait()
+            await asyncio.sleep(0)
+            first.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await first
+            release_loader.set()
+            parser = await second
+            return parser, calls
+
+        parser, calls = asyncio.run(scenario())
+        self.assertIsNotNone(parser)
+        self.assertTrue(parser.can_fetch("test-agent", "https://example.com/c"))
+        self.assertEqual(calls, 1)
+
+    def test_scheduler_bounds_active_articles_to_network_workers(self):
+        class FakeFetcher:
+            active = 0
+            maximum_active = 0
+
+            def __init__(self, **kwargs):
+                pass
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *args):
+                return None
+
+            async def fetch_article(self, url):
+                type(self).active += 1
+                type(self).maximum_active = max(
+                    type(self).maximum_active, type(self).active
+                )
+                try:
+                    await asyncio.sleep(0.01)
+                    return {"status": "ok", "body_text": "article"}, []
+                finally:
+                    type(self).active -= 1
+
+        with tempfile.TemporaryDirectory() as tmp:
+            connection = download_articles.connect_database(
+                Path(tmp) / "articles.sqlite"
+            )
+            urls = [f"https://host-{index}.example/story" for index in range(20)]
+            connection.executemany(
+                "INSERT INTO documents(url) VALUES (?)", ((url,) for url in urls)
+            )
+            args = SimpleNamespace(
+                workers=3,
+                extract_workers=1,
+                commit_every=100,
+                commit_seconds=5.0,
+                article_timeout=2.0,
+                delay=0.0,
+                timeout=1.0,
+                max_bytes=1000,
+                retries=0,
+                user_agent="test-agent",
+                no_browser_fallback=True,
+                browser_workers=1,
+                browser_timeout=1.0,
+                browser_wait_ms=0,
+                browser_failure_limit=1,
+                host_failure_limit=1,
+                browser_channel=None,
+            )
+            try:
+                with (
+                    patch.object(
+                        download_articles, "AsyncArticleFetcher", FakeFetcher
+                    ),
+                    patch.object(
+                        download_articles, "ProcessPoolExecutor", ThreadPoolExecutor
+                    ),
+                ):
+                    asyncio.run(
+                        download_articles.download_urls(connection, urls, args)
+                    )
+                self.assertEqual(FakeFetcher.maximum_active, args.workers)
+                self.assertEqual(
+                    connection.execute(
+                        "SELECT count(*) FROM documents WHERE status='ok'"
+                    ).fetchone()[0],
+                    len(urls),
+                )
+            finally:
+                connection.close()
+
     def test_extractor_prefers_article_content(self):
         source = """
         <html><head><title>Flood report</title></head><body>
