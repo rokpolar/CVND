@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import json
 import re
+import warnings
 from difflib import SequenceMatcher
 from html import unescape
 from typing import Any, Iterable
 from urllib.parse import urljoin, urlsplit
 
 import trafilatura
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 
 
 MIN_BODY_CHARS = 200
@@ -107,6 +108,13 @@ DOMAIN_SELECTORS = {
 def normalize_inline(value: Any) -> str:
     text = unescape(str(value or "")).replace("\u00a0", " ")
     return re.sub(r"[\t\r\f\v ]+", " ", text).strip()
+
+
+def parse_html(content: str) -> BeautifulSoup:
+    """Parse news HTML, including XHTML documents with an XML declaration."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
+        return BeautifulSoup(content, "lxml")
 
 
 def normalized_key(value: Any) -> str:
@@ -459,14 +467,57 @@ def body_from_json(value: Any) -> str:
     raw = coerce_json_text(value)
     if not raw:
         return ""
+    # CMSes frequently HTML-escape articleBody inside JSON-LD. Detect markup
+    # after unescaping so it cannot leak into the stored plain-text body.
+    raw = unescape(raw)
     if re.search(r"<(?:p|div|br|article|section|blockquote)\b", raw, re.I):
-        fragment = BeautifulSoup(raw, "lxml")
+        fragment = parse_html(raw)
         blocks, _ = blocks_from_node(fragment.body or fragment)
         if blocks:
             return "\n\n".join(blocks)
         raw = fragment.get_text("\n", strip=True)
     lines = [normalize_inline(line) for line in re.split(r"\n\s*\n|\r?\n", raw)]
     return "\n\n".join(line for line in lines if line)
+
+
+def looks_like_known_listing_page(
+    url: str | None, title: str | None, body: str
+) -> bool:
+    """Recognize a few audited publisher feeds that masquerade as articles.
+
+    These rules are intentionally domain-specific. Generic ``/category/``
+    checks reject valid article URLs on many publishers.
+    """
+    parts = urlsplit(url or "")
+    host = (parts.hostname or "").lower().removeprefix("www.")
+    path = parts.path.rstrip("/").lower()
+    words = word_count(body)
+
+    if host == "brecorder.com":
+        return normalize_inline(title).lower() == "latest news" and words >= 1_000
+
+    known_listing_prefixes = {
+        "advancedbiofuelsusa.info": ("/tag/",),
+        "ufosightingsdaily.com": ("/search/label/",),
+        "warincontext.org": ("/category/",),
+        "mykeystrokes.com": ("/tag/",),
+        "sharemanthan.in": ("/component/tags/tag/",),
+        "thehealthsite.com": ("/topics/",),
+    }
+    if any(prefix in path for prefix in known_listing_prefixes.get(host, ())):
+        return True
+
+    if host == "sakshi.com":
+        if words >= 3_000 and path.startswith("/tags/"):
+            return True
+        segments = [segment for segment in path.split("/") if segment]
+        return (
+            words >= 20_000
+            and len(segments) <= 3
+            and not any(re.search(r"\d", segment) for segment in segments)
+            and word_count(title or "") <= 5
+        )
+    return False
 
 
 def author_name(value: Any) -> str | None:
@@ -776,7 +827,7 @@ def extraction_confidence(candidate: dict[str, Any], agreement: float) -> float:
 
 
 def extract_article(content: str, url: str | None = None) -> dict[str, Any]:
-    soup = BeautifulSoup(content, "lxml")
+    soup = parse_html(content)
     canonical_url = declared_page_url(soup, url)
     redirect_status = declared_redirect_status(soup, url)
     if redirect_status:
@@ -825,6 +876,10 @@ def extract_article(content: str, url: str | None = None) -> dict[str, Any]:
     words = word_count(body)
     if PARKED_DOMAIN_RE.search(f"{best.get('title') or ''} {body[:1200]}"):
         status = "domain_parked"
+        body = ""
+        words = 0
+    elif looks_like_known_listing_page(url, best.get("title") or title, body):
+        status = "redirect_listing"
         body = ""
         words = 0
     elif looks_like_error_page(best.get("title"), body):
