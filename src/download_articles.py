@@ -24,6 +24,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from tqdm import tqdm
+
 from article_extractor import extract_article_text
 from article_fetcher import (
     RETRYABLE_HTTP_STATUSES,
@@ -275,6 +277,124 @@ def round_robin_origins(urls: Iterable[str]) -> Iterator[str]:
             active.append(origin)
 
 
+class DownloadProgress:
+    """Use tqdm for a fixed-width live bar and stable redirected logs."""
+
+    def __init__(
+        self,
+        total: int,
+        *,
+        stream: Any | None = None,
+        min_interval: float = 0.1,
+    ) -> None:
+        self.total = total
+        self.stream = stream or sys.stderr
+        self.min_interval = min_interval
+        self.started = time.monotonic()
+        self.interactive = bool(
+            getattr(self.stream, "isatty", lambda: False)()
+        )
+        colour = (
+            "cyan"
+            if "NO_COLOR" not in os.environ
+            and os.environ.get("TERM", "") != "dumb"
+            else None
+        )
+        self.bar = (
+            tqdm(
+                total=total,
+                desc="Crawling",
+                unit="URL",
+                file=self.stream,
+                dynamic_ncols=True,
+                mininterval=min_interval,
+                smoothing=0.1,
+                ascii=" ▏▎▍▌▋▊▉█",
+                colour=colour,
+                position=0,
+                bar_format=(
+                    "{desc} {percentage:5.1f}%|{bar}| "
+                    "{n_fmt}/{total_fmt} "
+                    "[{elapsed} • {rate_fmt} • ETA {remaining}]"
+                ),
+            )
+            if self.interactive
+            else None
+        )
+        self.status_bar = (
+            tqdm(
+                total=0,
+                desc=f"Status  {self._status_summary({})}",
+                file=self.stream,
+                dynamic_ncols=True,
+                mininterval=min_interval,
+                position=1,
+                leave=True,
+                bar_format="{desc}",
+            )
+            if self.interactive
+            else None
+        )
+
+    @staticmethod
+    def _status_summary(status_counts: dict[str, int]) -> str:
+        ok = status_counts.get("ok", 0)
+        http = status_counts.get("http_error", 0)
+        request = status_counts.get("request_error", 0)
+        weak = status_counts.get("extract_empty", 0) + status_counts.get(
+            "extract_weak", 0
+        )
+        deferred = status_counts.get("host_deferred", 0)
+        categorized = ok + http + request + weak + deferred
+        other = max(sum(status_counts.values()) - categorized, 0)
+        return (
+            f"ok={ok} http={http} request={request} weak={weak} "
+            f"deferred={deferred} other={other}"
+        )
+
+    def update(
+        self,
+        completed: int,
+        status_counts: dict[str, int],
+        *,
+        force: bool = False,
+    ) -> None:
+        now = time.monotonic()
+        elapsed = max(now - self.started, 0.001)
+        rate = completed / elapsed
+        remaining = max(self.total - completed, 0)
+        eta = remaining / rate if rate else float("inf")
+        summary = self._status_summary(status_counts)
+
+        if self.bar is None:
+            if force or completed % 100 == 0 or completed == self.total:
+                print(
+                    f"Processed {completed:,}/{self.total:,} "
+                    f"({rate:.2f} URLs/s, ETA {eta / 60:.1f} min): "
+                    f"{json.dumps(dict(status_counts), ensure_ascii=False)}",
+                    file=self.stream,
+                    flush=True,
+                )
+            return
+        if self.status_bar is not None:
+            self.status_bar.set_description_str(
+                f"Status  {summary}", refresh=False
+            )
+        delta = max(completed - int(self.bar.n), 0)
+        rendered = self.bar.update(delta) if delta else False
+        if force:
+            self.bar.refresh()
+        if self.status_bar is not None and (rendered or force):
+            self.status_bar.refresh()
+
+    def close(self, completed: int, status_counts: dict[str, int]) -> None:
+        if self.bar is not None:
+            self.update(completed, status_counts, force=True)
+            if self.status_bar is not None:
+                self.status_bar.close()
+            self.bar.close()
+
+
 def select_download_urls(
     connection: sqlite3.Connection,
     *,
@@ -336,70 +456,77 @@ async def download_urls(
     result_queue: asyncio.Queue[
         tuple[str, dict[str, Any], list[dict[str, Any]]]
     ] = asyncio.Queue(maxsize=args.workers * 4)
-    started = time.monotonic()
     status_counts: dict[str, int] = defaultdict(int)
     host_buckets: dict[str, list[str]] = defaultdict(list)
     for url in urls:
         host_buckets[host_for(url)].append(url)
+    host_queue: asyncio.Queue[deque[str] | None] = asyncio.Queue()
+    for host_urls in host_buckets.values():
+        host_queue.put_nowait(deque(host_urls))
 
-    async def host_worker(
-        fetcher: AsyncArticleFetcher, host_urls: list[str]
-    ) -> None:
-        for url in host_urls:
+    async def host_worker(fetcher: AsyncArticleFetcher) -> None:
+        while True:
+            host_urls = await host_queue.get()
             try:
-                async with asyncio.timeout(args.article_timeout):
-                    result, attempts = await fetcher.fetch_article(url)
-            except TimeoutError:
-                result, attempts = internal_error_result(
-                    url, TimeoutError(f"article exceeded {args.article_timeout}s")
-                )
-            except Exception as exc:
-                result, attempts = internal_error_result(url, exc)
-            await result_queue.put((url, result, attempts))
+                if host_urls is None:
+                    return
+                url = host_urls.popleft()
+                try:
+                    async with asyncio.timeout(args.article_timeout):
+                        result, attempts = await fetcher.fetch_article(url)
+                except TimeoutError:
+                    result, attempts = internal_error_result(
+                        url, TimeoutError(f"article exceeded {args.article_timeout}s")
+                    )
+                except Exception as exc:
+                    result, attempts = internal_error_result(url, exc)
+                await result_queue.put((url, result, attempts))
+                # Requeue this host only after its current URL finishes. This
+                # keeps same-host requests serial while rotating fairly across
+                # publishers and bounds active article timeouts to --workers.
+                if host_urls:
+                    host_queue.put_nowait(host_urls)
+            finally:
+                host_queue.task_done()
 
     async def writer() -> None:
         completed = 0
         pending_writes = 0
         last_commit = time.monotonic()
-        while completed < len(urls):
-            commit_due = max(
-                0.1, args.commit_seconds - (time.monotonic() - last_commit)
-            )
-            try:
-                url, result, attempts = await asyncio.wait_for(
-                    result_queue.get(), timeout=commit_due
+        progress = DownloadProgress(len(urls))
+        try:
+            while completed < len(urls):
+                commit_due = max(
+                    0.1, args.commit_seconds - (time.monotonic() - last_commit)
                 )
-            except TimeoutError:
-                if pending_writes:
-                    connection.commit()
-                    pending_writes = 0
-                last_commit = time.monotonic()
-                continue
-            completed += 1
-            try:
-                save_result(connection, url, result, attempts, commit=False)
-                pending_writes += 1
-                status_counts[str(result.get("status") or "unknown")] += 1
-                if (
-                    pending_writes >= args.commit_every
-                    or time.monotonic() - last_commit >= args.commit_seconds
-                ):
-                    connection.commit()
-                    pending_writes = 0
-                    last_commit = time.monotonic()
-                if completed % 100 == 0 or completed == len(urls):
-                    elapsed = max(time.monotonic() - started, 0.001)
-                    rate = completed / elapsed
-                    remaining = (len(urls) - completed) / rate if rate else 0.0
-                    print(
-                        f"Processed {completed:,}/{len(urls):,} "
-                        f"({rate:.2f} URLs/s, ETA {remaining / 60:.1f} min): "
-                        f"{json.dumps(dict(status_counts), ensure_ascii=False)}",
-                        flush=True,
+                try:
+                    url, result, attempts = await asyncio.wait_for(
+                        result_queue.get(), timeout=commit_due
                     )
-            finally:
-                result_queue.task_done()
-        connection.commit()
+                except TimeoutError:
+                    if pending_writes:
+                        connection.commit()
+                        pending_writes = 0
+                    last_commit = time.monotonic()
+                    continue
+                completed += 1
+                try:
+                    save_result(connection, url, result, attempts, commit=False)
+                    pending_writes += 1
+                    status_counts[str(result.get("status") or "unknown")] += 1
+                    if (
+                        pending_writes >= args.commit_every
+                        or time.monotonic() - last_commit >= args.commit_seconds
+                    ):
+                        connection.commit()
+                        pending_writes = 0
+                        last_commit = time.monotonic()
+                    progress.update(completed, status_counts)
+                finally:
+                    result_queue.task_done()
+            connection.commit()
+        finally:
+            progress.close(completed, status_counts)
 
     with ProcessPoolExecutor(max_workers=args.extract_workers) as extraction_pool:
         async with AsyncArticleFetcher(
@@ -419,10 +546,14 @@ async def download_urls(
             browser_channel=args.browser_channel,
         ) as fetcher:
             writer_task = asyncio.create_task(writer())
+            worker_count = min(args.workers, len(host_buckets))
             host_tasks = [
-                asyncio.create_task(host_worker(fetcher, host_urls))
-                for host_urls in host_buckets.values()
+                asyncio.create_task(host_worker(fetcher))
+                for _ in range(worker_count)
             ]
+            await host_queue.join()
+            for _ in host_tasks:
+                host_queue.put_nowait(None)
             await asyncio.gather(*host_tasks)
             await result_queue.join()
             await writer_task
