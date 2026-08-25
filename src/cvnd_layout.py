@@ -34,6 +34,7 @@ DATA_FILES: dict[str, str] = {
     "gdelt_articles": "raw/gdelt_bq.articles.jsonl.gz",
     "gdelt_sql": "raw/gdelt_emdat_query.sql",
     "gdelt_meta": "raw/gdelt_bq.meta.json",
+    "gdelt_article_database": "raw/gdelt_bq.articles.sqlite",
     "events_quarantine": "raw/events_quarantine.csv",
     # cache
     "flood_extent": "cache/flood_extent.csv",
@@ -48,6 +49,7 @@ DATA_FILES: dict[str, str] = {
     "event_aoi_area": "intermediate/event_aoi_area.csv",
     "post_cloud": "intermediate/post_cloud.csv",
     "severity_raw": "intermediate/severity_raw.csv",
+    "event_relevance_database": "intermediate/gdelt_event_relevance.sqlite",
     # results
     "pss_results": "results/pss_results.csv",
     "mss_results": "results/mss_results.csv",
@@ -56,6 +58,8 @@ DATA_FILES: dict[str, str] = {
     "mss_weight_meta": "results/mss_weight_sensitivity.json",
     "mss_weight_provenance": "results/mss_weight_provenance.csv",
     "mss_rank_stability": "results/mss_rank_stability.csv",
+    "event_article_counts": "results/event_article_counts.csv",
+    "event_articles": "results/event_articles.csv.gz",
     # archive fallback
     "flood_area_results": "archive/flood_area_results.csv",
 }

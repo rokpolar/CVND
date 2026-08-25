@@ -14,6 +14,15 @@ data/e02_sits_map.png
 data/ne_india_states.gpkg
 # Generated GDELT article metadata/body stores can be very large.
 data/raw/gdelt_bq.articles.jsonl.gz
+data/raw/gdelt_bq.articles.jsonl
+data/raw/gdelt_bq.json
+data/raw/gdelt_bq.meta.json
 data/raw/gdelt_bq.articles.sqlite
 data/raw/gdelt_bq.articles.sqlite-shm
 data/raw/gdelt_bq.articles.sqlite-wal
+# Generated article-event relevance cache, OpenAI Batch files, and large map.
+data/intermediate/gdelt_event_relevance.sqlite
+data/intermediate/gdelt_event_relevance.sqlite-shm
+data/intermediate/gdelt_event_relevance.sqlite-wal
+data/intermediate/gdelt_event_relevance_batches/
+data/results/event_articles.csv.gz
