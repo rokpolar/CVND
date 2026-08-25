@@ -6,6 +6,7 @@ shapely
 geopandas
 pandas
 google-cloud-bigquery
+openai>=1.68,<3
 numpy
 h5py
 openpyxl
