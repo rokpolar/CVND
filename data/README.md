@@ -52,6 +52,8 @@ Tiered folders under `data/`. Primary pipeline scripts resolve paths via
 | `event_aoi_area.csv` | `event_aoi_area` | `event_aoi_area.py` | `merge_results.py` |
 | `post_cloud.csv` | `post_cloud` | `post_cloud.py` | `merge_results.py` |
 | `severity_raw.csv` | `severity_raw` | `compute_population.py` | `compute_pss.py`, `compute_expected_coverage.py` |
+| `gdelt_event_relevance.sqlite` | `event_relevance_database` | `classify_event_articles.py` | Resumable article/event classification and audit |
+| `gdelt_event_relevance_batches/` | — | `classify_event_articles.py submit/collect` | OpenAI Batch JSONL inputs and outputs |
 
 ### `results/`
 
@@ -64,6 +66,8 @@ Tiered folders under `data/`. Primary pipeline scripts resolve paths via
 | `mss_weight_sensitivity.json` | `mss_weight_meta` | `compute_mss.py` |
 | `mss_weight_provenance.csv` | `mss_weight_provenance` | `compute_mss.py` |
 | `mss_rank_stability.csv` | `mss_rank_stability` | `compute_mss.py` |
+| `event_article_counts.csv` | `event_article_counts` | `classify_event_articles.py export` |
+| `event_articles.csv.gz` | `event_articles` | `classify_event_articles.py export` |
 
 ## Current source coverage
 
