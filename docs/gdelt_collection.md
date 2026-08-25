@@ -46,11 +46,13 @@ keeps an article only when all of the following hold:
    strings are retained because some publishers use them to distinguish real
    articles.
 
-When windows for different official events overlap in the same state, one URL
-is assigned to the nearest event onset. This prevents the same article from
-being counted for several nearby floods in one state. An article may still
-count for more than one state when it explicitly matches each state, which is
-appropriate for a multi-state disaster.
+The BigQuery extraction assigns a URL to the nearest event onset within each
+state only to keep the raw export deterministic. That assignment is not the
+final article/event decision. `classify_event_articles.py prepare` later
+re-expands each `(state, URL, publication date)` to every official event whose
+onset-through-onset+93-day window contains the publication date. The keyword
+and LLM stages then decide each article/event pair independently, so one URL
+may correctly count for several events and states.
 
 ## Selectable filters
 
@@ -176,6 +178,96 @@ a fresh circuit.
 Publisher robots rules, access controls and paywalls are not bypassed. Deleted,
 blocked and unsupported pages remain represented by their GDELT metadata and
 download status rather than fabricated article text.
+
+## Event-level article classification
+
+`src/classify_event_articles.py` maps accessible article bodies to official
+EM-DAT state-events without changing MSS. Its fixed sequence is:
+
+1. Re-expand GDELT metadata to every same-state event for which the publication
+   date is between event onset and onset + 93 days, inclusive.
+2. Inspect exactly the first 2,000 body characters. Keep only excerpts that
+   contain a flood term from the English, Arabic, Bengali, Gujarati, Hindi,
+   Kannada, Malayalam, Marathi, Nepali, Odia, Punjabi, Pashto, Sindhi, Tamil,
+   Telugu, or Urdu lexicon. All language lexicons are searched regardless of
+   GDELT's source-language label. Generic rain and monsoon terms do not pass.
+3. Send each surviving article/event candidate to the OpenAI Batch API as a
+   strict structured-output question: does this excerpt discuss this specific
+   official event? Unparseable or ambiguous output is stored as `ambiguous_no`
+   and counts as NO.
+4. Count distinct original URLs with a YES decision for each event. Separate
+   URLs with the same body remain separate articles; their LLM decision is
+   cached by body hash, event-profile hash, prompt version, and model ID.
+
+Only `documents.status IN ('ok', 'extract_weak')` with non-empty body text can
+reach the classifier. Missing or inaccessible bodies are recorded as
+`no_body` and excluded from the final count. This strict policy means the final
+count is the number of positively identified articles among successfully
+retrieved bodies, not an estimate for inaccessible URLs.
+
+The model is intentionally fixed to `gpt-5.6-luna` in code, with
+`reasoning.effort="none"` for this short binary classification task. There is no
+`--model` option. A future model or reasoning-setting change must also bump the
+prompt version so cached decisions cannot be mixed across classifier contracts.
+
+```bash
+# 1. Build candidates and run the offline multilingual keyword filter.
+./venv/bin/python src/classify_event_articles.py prepare
+
+# Optional small offline check.
+./venv/bin/python src/classify_event_articles.py \
+  --database /tmp/cvnd_event_relevance_test.sqlite \
+  prepare \
+  --event-id E001 \
+  --limit 1000
+
+# 2. Inspect request volume before spending API credits.
+./venv/bin/python src/classify_event_articles.py estimate
+
+# 3. After setting the API key, submit JSONL Batch jobs.
+export OPENAI_API_KEY="your-api-key"
+./venv/bin/python src/classify_event_articles.py submit
+
+# 4. Check or wait for completion, then collect and export.
+./venv/bin/python src/classify_event_articles.py status
+./venv/bin/python src/classify_event_articles.py status --wait
+./venv/bin/python src/classify_event_articles.py collect
+./venv/bin/python src/classify_event_articles.py export
+```
+
+Batch input files are capped at 150 MiB and 50,000 requests by default, below
+the API's 200 MB file limit and at its per-batch request limit. Requests use
+`/v1/responses`, unique stable `custom_id` values, a strict boolean JSON schema,
+and 24-hour completion windows. Output order is irrelevant because collection
+joins responses by `custom_id`. `submit --retry-failed` resubmits only failed,
+expired, or cancelled requests that do not already have a decision.
+`collect` also saves partial successful responses from expired or cancelled
+batches before the unfinished requests are made eligible for retry.
+
+`submit` enqueues at most 3,000 requests per invocation by default because the
+model-specific queued-token allowance depends on the OpenAI usage tier. The
+command refuses to enqueue another wave while a prior batch is active or while
+its completed output is still uncollected. Run `status`, then `collect`, before
+the next `submit`. Increase `--limit` only after checking the account's Batch
+queue token limit; this safety limit is independent of the 50,000-request file
+limit.
+
+OpenAI references: [Batch API](https://developers.openai.com/api/docs/guides/batch),
+[Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
+
+Generated artifacts:
+
+- `data/intermediate/gdelt_event_relevance.sqlite`: candidates, heuristics,
+  request cache, decisions, Batch jobs, and run provenance.
+- `data/intermediate/gdelt_event_relevance_batches/`: local Batch JSONL inputs
+  and downloaded output/error files.
+- `data/results/event_article_counts.csv`: one row for every official event,
+  including candidate/body/heuristic/LLM counts and `final_article_count`.
+- `data/results/event_articles.csv.gz`: auditable URL-to-event mapping with the
+  heuristic, LLM status, fixed model, prompt version, and final `related` flag.
+
+The pipeline does not generate a manually labeled evaluation sample, so its
+outputs must not be described as having measured precision or recall.
 
 ## Recommended sensitivity runs
 
