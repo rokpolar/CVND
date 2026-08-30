@@ -87,6 +87,10 @@ under the GKG codebook.
 ## Commands
 
 ```bash
+# Optional: store local credentials in the project-root `.env` file.
+cp .env.example .env
+# Edit .env and set GDELT_BILLING_PROJECT.
+
 # Generate SQL only. This is safe, offline and incurs no BigQuery charge.
 python src/collect_gdelt.py --overwrite
 
@@ -144,6 +148,10 @@ the default response limit is 5 MB. The delay applies independently to each
 origin; a bounded round-robin queue fetches up to 32 different origins
 concurrently by default, and
 `Crawl-delay` or `Request-rate` from robots.txt can only make an origin slower.
+Same-host responses are fully serial by default. For a slow publisher,
+`--per-host-workers N` permits up to N responses to overlap, but request starts
+remain separated by the same robots/default delay. This raises in-flight
+capacity without increasing the configured request-start rate.
 HTML extraction runs in a separate process pool and SQLite writes commit in
 batches. Interactive terminals use tqdm's terminal-width-aware live progress
 display: one static line shows completion, throughput, and ETA while a second
@@ -171,13 +179,32 @@ retries transient network/HTTP failures and weak/empty extractions, while
 terminal failures remain untouched. Use `--limit N` for a small test run,
 `--no-browser-fallback` to disable browser rendering, and tune `--workers`,
 `--browser-workers`, `--commit-every`, and `--retries` when needed. Three
-consecutive transient failures open a host circuit for the current run and mark
-the remaining URLs `host_deferred`; a later `--retry-failed` run tries them with
-a fresh circuit.
+consecutive logical URLs that still fail after all per-URL transport retries
+open a host circuit for the current run and mark the remaining URLs
+`host_deferred`; a later `--retry-failed` run tries them with a fresh circuit.
+One URL's three transport attempts therefore count as one failed URL, not three.
+If a long retry run is interrupted, pass `--retry-before TIMESTAMP` together
+with `--retry-failed`; only retryable documents whose latest saved result
+predates that UTC timestamp are selected, so already checkpointed URLs from the
+interrupted run are not repeated.
 
 Publisher robots rules, access controls and paywalls are not bypassed. Deleted,
 blocked and unsupported pages remain represented by their GDELT metadata and
 download status rather than fabricated article text.
+
+After retries, generate retrieval-quality reports before relevance filtering:
+
+```bash
+./venv/bin/python src/audit_article_retrieval.py
+```
+
+The audit mirrors the classifier's state and onset-through-onset+93-day
+expansion. It reports primary (`ok`) and sensitivity (`ok` + `extract_weak`)
+body availability per event and publication year. The compressed unresolved
+map separates transient retries, weak extractions, 404/410 archive candidates,
+401/403 access restrictions, and terminal publisher failures. This makes the
+lower survival rate of older publisher URLs explicit. It does not fabricate
+bodies or automatically send URLs to third-party archives.
 
 ## Event-level article classification
 
@@ -186,24 +213,38 @@ EM-DAT state-events without changing MSS. Its fixed sequence is:
 
 1. Re-expand GDELT metadata to every same-state event for which the publication
    date is between event onset and onset + 93 days, inclusive.
-2. Inspect exactly the first 2,000 body characters. Keep only excerpts that
-   contain a flood term from the English, Arabic, Bengali, Gujarati, Hindi,
-   Kannada, Malayalam, Marathi, Nepali, Odia, Punjabi, Pashto, Sindhi, Tamil,
-   Telugu, or Urdu lexicon. All language lexicons are searched regardless of
-   GDELT's source-language label. Generic rain and monsoon terms do not pass.
-3. Send each surviving article/event candidate to the OpenAI Batch API as a
-   strict structured-output question: does this excerpt discuss this specific
-   official event? Unparseable or ambiguous output is stored as `ambiguous_no`
-   and counts as NO.
-4. Count distinct original URLs with a YES decision for each event. Separate
-   URLs with the same body remain separate articles; their LLM decision is
-   cached by body hash, event-profile hash, prompt version, and model ID.
+2. Search the downloaded page title and complete extracted body for a flood
+   term from the English, Arabic, Bengali, Gujarati, Hindi, Kannada, Malayalam,
+   Marathi, Nepali, Odia, Punjabi, Pashto, Sindhi, Tamil, Telugu, or Urdu
+   lexicon. All language lexicons are searched regardless of GDELT's
+   source-language label. Generic rain and monsoon terms do not pass. ASCII
+   terms use word boundaries, so text such as `floodlights` is not a match.
+3. Preserve at most 4,000 characters for review and eventual model input: the
+   downloaded page title, the first 1,000 body characters, and up to two
+   keyword-centered context windows. Thus a keyword appearing late in a long
+   article is detectable without sending the whole body to the model.
+4. Create a deterministic validation pilot stratified across source language,
+   publication year, event-overlap count, and keyword location. By default the
+   1,000-row pilot contains 800 keyword-pass candidates and 200 accessible
+   keyword-absent controls.
+5. Send only the pilot to the OpenAI Batch API, compare its decisions with
+   human labels, and require the configured evaluation gate to pass.
+6. Send production waves as strict structured-output questions: does this
+   excerpt discuss this specific official event? Unparseable or ambiguous
+   output is stored as `ambiguous_no` and counts as NO.
+7. Count distinct original URLs with a YES decision for each event. Separate
+   URLs with the same body remain separate articles. An LLM decision is reused
+   only when the complete immutable model input—including event profile,
+   downloaded title/excerpt, prompt version, model, schema, and reasoning
+   setting—has the same SHA-256 hash.
 
-Only `documents.status IN ('ok', 'extract_weak')` with non-empty body text can
-reach the classifier. Missing or inaccessible bodies are recorded as
-`no_body` and excluded from the final count. This strict policy means the final
-count is the number of positively identified articles among successfully
-retrieved bodies, not an estimate for inaccessible URLs.
+Only `documents.status='ok'` with non-empty body text can reach the primary LLM
+path. Non-empty `extract_weak` bodies are retained as `weak_keyword_match` or
+`weak_keyword_absent` sensitivity records, but are excluded from model requests
+by default. Missing or inaccessible bodies are recorded as `no_body` and
+excluded from the final count. This strict policy means the final count is the
+number of positively identified articles among successfully retrieved primary
+bodies, not an estimate for inaccessible URLs.
 
 The model is intentionally fixed to `gpt-5.6-luna` in code, with
 `reasoning.effort="none"` for this short binary classification task. There is no
@@ -224,27 +265,58 @@ prompt version so cached decisions cannot be mixed across classifier contracts.
 # 2. Inspect request volume before spending API credits.
 ./venv/bin/python src/classify_event_articles.py estimate
 
-# 3. After setting the API key, submit JSONL Batch jobs.
-export OPENAI_API_KEY="your-api-key"
-./venv/bin/python src/classify_event_articles.py submit
+# 3. Create the deterministic 1,000-row validation pilot offline.
+./venv/bin/python src/classify_event_articles.py pilot-create
 
-# 4. Check or wait for completion, then collect and export.
+# 4. Review the CSV, then submit only this pilot after setting OPENAI_API_KEY.
+./venv/bin/python src/classify_event_articles.py submit \
+  --pilot-manifest data/intermediate/gdelt_event_relevance_pilot.csv
+
+# 5. Check or wait for pilot completion, then collect.
 ./venv/bin/python src/classify_event_articles.py status
 ./venv/bin/python src/classify_event_articles.py status --wait
 ./venv/bin/python src/classify_event_articles.py collect
+
+# 6. Fill human_related (0/1) and optional human_notes in the pilot CSV.
+# Compare human and LLM labels and write the production gate report.
+./venv/bin/python src/classify_event_articles.py pilot-evaluate \
+  --labels data/intermediate/gdelt_event_relevance_pilot.csv
+
+# 7. A production wave is rejected unless that gate passed on the current
+# candidate revision, model, and prompt version.
+./venv/bin/python src/classify_event_articles.py submit \
+  --production \
+  --gate-report data/intermediate/gdelt_event_relevance_pilot_evaluation.json
+
+# Repeat status/collect/production waves, then export final event counts.
 ./venv/bin/python src/classify_event_articles.py export
 ```
 
+Do not edit pilot selection, event, article, excerpt, model, or request-key
+columns. Only `human_related` and `human_notes` are editable. The manifest has
+an adjacent `.meta.json` file containing its immutable selection hash and
+candidate revision. Re-running `prepare` increments the revision and
+automatically invalidates old pilots and gate reports.
+If annotating fewer than all 1,000 rows, label a contiguous prefix beginning at
+`sample_order=1`; the gate rejects cherry-picked or gapped label subsets.
+
+The default gate requires at least 200 comparable human/LLM labels, 25 human
+positives, 25 keyword-absent controls, and 20 multi-event-overlap labels. It
+requires accuracy >= 0.90, precision >= 0.95, recall >= 0.85, overlap accuracy
+>= 0.85, and no more than 5% human positives among keyword-absent controls.
+Thresholds are explicit `pilot-evaluate` options and are stored in the report.
+
 Batch input files are capped at 150 MiB and 50,000 requests by default, below
 the API's 200 MB file limit and at its per-batch request limit. Requests use
-`/v1/responses`, unique stable `custom_id` values, a strict boolean JSON schema,
+`/v1/responses`, unique `custom_id` values equal to the 64-character request
+hash, a strict boolean JSON schema,
 and 24-hour completion windows. Output order is irrelevant because collection
 joins responses by `custom_id`. `submit --retry-failed` resubmits only failed,
 expired, or cancelled requests that do not already have a decision.
 `collect` also saves partial successful responses from expired or cancelled
 batches before the unfinished requests are made eligible for retry.
 
-`submit` enqueues at most 3,000 requests per invocation by default because the
+Production `submit` enqueues at most 3,000 requests per invocation by default because the
 model-specific queued-token allowance depends on the OpenAI usage tier. The
 command refuses to enqueue another wave while a prior batch is active or while
 its completed output is still uncollected. Run `status`, then `collect`, before
@@ -257,8 +329,23 @@ OpenAI references: [Batch API](https://developers.openai.com/api/docs/guides/bat
 
 Generated artifacts:
 
+- `data/intermediate/article_retrieval_qc_by_event.csv`: event-level URL/body
+  recovery rates under the exact 93-day candidate windows.
+- `data/intermediate/article_retrieval_qc_by_year.csv`: unique-URL and
+  event-candidate recovery rates by publication year.
+- `data/intermediate/article_retrieval_unresolved.csv.gz`: non-primary
+  state/URL records with retry/archive/access classifications and fetch errors.
 - `data/intermediate/gdelt_event_relevance.sqlite`: candidates, heuristics,
   request cache, decisions, Batch jobs, and run provenance.
+- `data/intermediate/gdelt_event_relevance_pilot.csv`: immutable stratified
+  selection plus the two human-editable annotation columns.
+- `data/intermediate/gdelt_event_relevance_pilot.csv.meta.json`: pilot ID,
+  candidate revision, selection hash, sampling configuration, and stratum
+  counts.
+- `data/intermediate/gdelt_event_relevance_pilot_evaluation.json`: precision,
+  recall, accuracy, overlap/control metrics, thresholds, and pass/fail gate.
+- `data/intermediate/gdelt_event_relevance_pilot_evaluated.csv`: joined human
+  and collected LLM labels for row-level review.
 - `data/intermediate/gdelt_event_relevance_batches/`: local Batch JSONL inputs
   and downloaded output/error files.
 - `data/results/event_article_counts.csv`: one row for every official event,
@@ -266,8 +353,8 @@ Generated artifacts:
 - `data/results/event_articles.csv.gz`: auditable URL-to-event mapping with the
   heuristic, LLM status, fixed model, prompt version, and final `related` flag.
 
-The pipeline does not generate a manually labeled evaluation sample, so its
-outputs must not be described as having measured precision or recall.
+Precision and recall may be reported only after the pilot contains genuine
+human labels and `pilot-evaluate` has produced the corresponding metrics.
 
 ## Recommended sensitivity runs
 

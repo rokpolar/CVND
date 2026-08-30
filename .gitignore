@@ -25,4 +25,9 @@ data/intermediate/gdelt_event_relevance.sqlite
 data/intermediate/gdelt_event_relevance.sqlite-shm
 data/intermediate/gdelt_event_relevance.sqlite-wal
 data/intermediate/gdelt_event_relevance_batches/
+data/intermediate/gdelt_event_relevance_pilot*.csv
+data/intermediate/gdelt_event_relevance_pilot*.json
+data/intermediate/article_retrieval_qc_by_event.csv
+data/intermediate/article_retrieval_qc_by_year.csv
+data/intermediate/article_retrieval_unresolved.csv.gz
 data/results/event_articles.csv.gz

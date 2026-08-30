@@ -6,11 +6,15 @@ the final semantic decision:
 
 1. Re-expand each GDELT URL to every event in the same state whose fixed
    onset-through-onset+93-day window contains the publication date.
-2. Keep body text only when a flood keyword appears in its first 2,000
-   characters. The lexicon covers every source language used by the collector.
-3. Ask one hardcoded OpenAI model for a strict binary relevance decision using
+2. Search the downloaded page title and complete extracted body for a flood
+   keyword. Retain a bounded lead-plus-match context for later inspection.
+3. Keep `ok` bodies in the primary path and record `extract_weak` bodies as a
+   separate sensitivity category that cannot reach the model by default.
+4. Build a deterministic multilingual/year/overlap/context-stratified pilot,
+   then require human-vs-LLM evaluation to pass before production submission.
+5. Ask one hardcoded OpenAI model for a strict binary relevance decision using
    the Responses API through Batch API JSONL jobs.
-4. Count distinct URLs per event. The same URL may count for several events,
+6. Count distinct URLs per event. The same URL may count for several events,
    while separate URLs with identical bodies remain separate articles.
 
 The classifier model and reasoning effort are code constants by design: there
@@ -26,12 +30,13 @@ import hashlib
 import itertools
 import json
 import os
+import re
 import sqlite3
 import sys
 import time
 import unicodedata
 import uuid
-from collections import defaultdict
+from collections import Counter, defaultdict, deque
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Sequence
@@ -40,21 +45,56 @@ import pandas as pd
 
 from cvnd_layout import ROOT, data_path
 
+try:
+    from dotenv import load_dotenv
+except ImportError:  # Environment variables exported in the shell still work.
+    pass
+else:
+    load_dotenv(ROOT / ".env")
+
 
 # Fixed research configuration. Changing either value requires a prompt-version
 # bump so cached decisions cannot be mixed across classifier contracts.
 OPENAI_EVENT_FILTER_MODEL = "gpt-5.6-luna"
 OPENAI_REASONING_EFFORT = "none"
 
-PROMPT_VERSION = "event-relevance-v2-gpt56luna"
-TEXT_CHAR_LIMIT = 2_000
+PROMPT_VERSION = "event-relevance-v5-unicode-inputhash-gpt56luna"
+# Keyword recall and later model context are deliberately separate. The whole
+# extracted body is searched offline; only a compact lead + matched-context
+# excerpt is retained for inspection and eventual model input.
+TEXT_CHAR_LIMIT = 4_000
+TITLE_CHAR_LIMIT = 500
+LEAD_CHAR_LIMIT = 1_000
+KEYWORD_CONTEXT_RADIUS = 700
+MAX_KEYWORD_CONTEXTS = 2
 EVENT_WINDOW_DAYS = 93
 DEFAULT_BATCH_MAX_MIB = 150
 MAX_BATCH_MIB = 190
 DEFAULT_BATCH_MAX_REQUESTS = 50_000
 DEFAULT_SUBMIT_REQUEST_LIMIT = 3_000
 MAX_OUTPUT_TOKENS = 64
-ACCEPTED_BODY_STATUSES = frozenset({"ok", "extract_weak"})
+DEFAULT_PILOT_SIZE = 1_000
+DEFAULT_PILOT_NEGATIVE_SHARE = 0.20
+DEFAULT_PILOT_SEED = 20_260_830
+DEFAULT_PILOT_MAX_PER_DOMAIN = 20
+DEFAULT_PILOT_MANIFEST = data_path("event_relevance_pilot_manifest")
+DEFAULT_PILOT_EVALUATION = data_path("event_relevance_pilot_evaluation")
+DEFAULT_PILOT_ANNOTATED = data_path("event_relevance_pilot_annotated")
+DEFAULT_MIN_PILOT_LABELS = 200
+DEFAULT_MIN_HUMAN_POSITIVES = 25
+DEFAULT_MIN_NEGATIVE_CONTROLS = 25
+DEFAULT_MIN_OVERLAP_LABELS = 20
+DEFAULT_MIN_ACCURACY = 0.90
+DEFAULT_MIN_PRECISION = 0.95
+DEFAULT_MIN_RECALL = 0.85
+DEFAULT_MIN_OVERLAP_ACCURACY = 0.85
+DEFAULT_MAX_HEURISTIC_FALSE_NEGATIVE_RATE = 0.05
+# Batch JSONL custom_id is commonly validated at 64 characters. request_key is
+# already a SHA-256 hex digest of that length, so it is used as custom_id.
+BATCH_CUSTOM_ID_MAX_LEN = 64
+PRIMARY_BODY_STATUSES = frozenset({"ok"})
+WEAK_BODY_STATUSES = frozenset({"extract_weak"})
+ACCEPTED_BODY_STATUSES = PRIMARY_BODY_STATUSES | WEAK_BODY_STATUSES
 TERMINAL_BATCH_STATUSES = frozenset(
     {"completed", "failed", "expired", "cancelled"}
 )
@@ -65,6 +105,62 @@ DEFAULT_RELEVANCE_DATABASE = data_path("event_relevance_database")
 DEFAULT_BATCH_DIRECTORY = ROOT / "data" / "intermediate" / "gdelt_event_relevance_batches"
 DEFAULT_COUNTS_OUTPUT = data_path("event_article_counts")
 DEFAULT_MAPPING_OUTPUT = data_path("event_articles")
+
+PILOT_IMMUTABLE_FIELDS = (
+    "sample_order",
+    "sample_role",
+    "event_id",
+    "source_record_id",
+    "state",
+    "district",
+    "event_start_date",
+    "event_end_date",
+    "url",
+    "published_at",
+    "source_domain",
+    "source_lang",
+    "event_overlap_count",
+    "event_overlap_bucket",
+    "keyword_location",
+    "request_key",
+    "heuristic_status",
+    "matched_keywords_json",
+    "page_title",
+    "text_excerpt",
+    "prompt_version",
+    "model_id",
+)
+
+PILOT_MANIFEST_FIELDS = (
+    "pilot_id",
+    "sample_order",
+    "sample_role",
+    "event_id",
+    "source_record_id",
+    "state",
+    "district",
+    "event_start_date",
+    "event_end_date",
+    "url",
+    "published_at",
+    "publication_year",
+    "source_domain",
+    "source_lang",
+    "event_overlap_count",
+    "event_overlap_bucket",
+    "keyword_location",
+    "heuristic_status",
+    "matched_keywords_json",
+    "page_title",
+    "text_excerpt",
+    "request_key",
+    "prompt_version",
+    "model_id",
+    "human_related",
+    "human_notes",
+    "llm_related",
+    "llm_decision_status",
+)
 
 
 # Search all lexicons for every article. GDELT's source-language label can be
@@ -163,30 +259,111 @@ NORMALIZED_FLOOD_KEYWORDS: tuple[tuple[str, str], ...] = tuple(
 )
 
 
+def _keyword_pattern(term: str) -> re.Pattern[str]:
+    escaped = re.escape(term).replace(r"\ ", r"\s+")
+    if re.fullmatch(r"[a-z0-9\- ]+", term):
+        # Avoid metaphorical/irrelevant substrings such as "floodlights" while
+        # retaining explicit forms already enumerated in the lexicon.
+        escaped = rf"(?<![a-z0-9]){escaped}(?![a-z0-9])"
+    return re.compile(escaped)
+
+
+KEYWORD_PATTERNS: tuple[tuple[str, str, re.Pattern[str]], ...] = tuple(
+    (language, term, _keyword_pattern(term))
+    for language, term in NORMALIZED_FLOOD_KEYWORDS
+    if term
+)
+
+
+def keyword_occurrences(value: str) -> list[tuple[str, int, int]]:
+    """Return unique keyword labels and approximate raw-text positions."""
+    normalized = unicodedata.normalize("NFKC", value or "").casefold()
+    found: dict[str, tuple[int, int]] = {}
+    for language, term, pattern in KEYWORD_PATTERNS:
+        match = pattern.search(normalized)
+        if match is None:
+            continue
+        label = f"{language}:{term}"
+        previous = found.get(label)
+        span = (match.start(), match.end())
+        if previous is None or span < previous:
+            found[label] = span
+    return [
+        (label, *found[label])
+        for label in sorted(found, key=lambda item: (found[item][0], item))
+    ]
+
+
 def keyword_matches(excerpt: str) -> list[str]:
-    normalized = normalize_for_keyword_search(excerpt)
-    found = {
-        f"{language}:{term}"
-        for language, term in NORMALIZED_FLOOD_KEYWORDS
-        if term and term in normalized
+    return sorted({label for label, _start, _end in keyword_occurrences(excerpt)})
+
+
+def build_context_excerpt(
+    body_text: str,
+    page_title: str | None,
+    body_occurrences: Sequence[tuple[str, int, int]],
+) -> str:
+    """Build a bounded title + lead + keyword-context excerpt."""
+    sections: list[str] = []
+    title = clean_scalar(page_title)
+    if title:
+        sections.append(f"TITLE\n{title[:TITLE_CHAR_LIMIT]}")
+
+    lead = body_text[:LEAD_CHAR_LIMIT].strip()
+    if lead:
+        sections.append(f"ARTICLE LEAD\n{lead}")
+
+    # occurrence offsets belong to this normalized search text. Using them
+    # against the raw Unicode body can miss Indic-script contexts because NFKC
+    # and casefold may change string length.
+    search_text = unicodedata.normalize("NFKC", body_text).casefold()
+    lead_labels = {
+        label for label, _start, _end in keyword_occurrences(body_text[:LEAD_CHAR_LIMIT])
     }
-    return sorted(found)
+    windows: list[tuple[int, int]] = []
+    for label, start, end in body_occurrences:
+        if label in lead_labels:
+            continue
+        window = (
+            max(0, start - KEYWORD_CONTEXT_RADIUS),
+            min(len(search_text), end + KEYWORD_CONTEXT_RADIUS),
+        )
+        if windows and window[0] <= windows[-1][1]:
+            windows[-1] = (windows[-1][0], max(windows[-1][1], window[1]))
+        else:
+            windows.append(window)
+        if len(windows) >= MAX_KEYWORD_CONTEXTS:
+            break
+    for index, (start, end) in enumerate(windows, start=1):
+        context = search_text[start:end].strip()
+        if context:
+            sections.append(f"MATCHED CONTEXT {index}\n{context}")
+
+    return "\n\n".join(sections)[:TEXT_CHAR_LIMIT]
 
 
 def classify_heuristic(
     document_status: str | None,
     body_text: str | None,
+    page_title: str | None = None,
 ) -> tuple[str, str | None, list[str]]:
-    """Return heuristic status, exact raw excerpt, and matched keywords."""
+    """Return body-quality-aware status, selected excerpt, and keywords."""
     if document_status not in ACCEPTED_BODY_STATUSES or not body_text:
         return "no_body", None, []
-    excerpt = body_text[:TEXT_CHAR_LIMIT]
-    matches = keyword_matches(excerpt)
-    return (
-        "keyword_match" if matches else "keyword_absent",
-        excerpt,
-        matches,
+    body_occurrences = keyword_occurrences(body_text)
+    title_occurrences = keyword_occurrences(page_title or "")
+    matches = sorted(
+        {
+            label
+            for label, _start, _end in itertools.chain(
+                body_occurrences, title_occurrences
+            )
+        }
     )
+    excerpt = build_context_excerpt(body_text, page_title, body_occurrences)
+    quality_prefix = "weak_" if document_status in WEAK_BODY_STATUSES else ""
+    status = quality_prefix + ("keyword_match" if matches else "keyword_absent")
+    return status, excerpt, matches
 
 
 def configured_model() -> str:
@@ -249,7 +426,19 @@ def connect_relevance_database(path: Path) -> sqlite3.Connection:
           authors TEXT,
           tone REAL,
           sharing_image TEXT,
+          page_title TEXT,
+          final_url TEXT,
+          canonical_url TEXT,
+          selected_attempt_url TEXT,
+          http_status INTEGER,
           document_status TEXT,
+          extraction_method TEXT,
+          extraction_confidence REAL,
+          word_count INTEGER,
+          extraction_candidate_count INTEGER,
+          fallback_used TEXT,
+          download_attempt_count INTEGER,
+          download_error TEXT,
           content_sha256 TEXT,
           body_char_count INTEGER NOT NULL DEFAULT 0,
           text_excerpt TEXT,
@@ -277,6 +466,7 @@ def connect_relevance_database(path: Path) -> sqlite3.Connection:
           custom_id TEXT NOT NULL UNIQUE,
           event_id TEXT NOT NULL,
           content_sha256 TEXT NOT NULL,
+          input_sha256 TEXT NOT NULL,
           event_profile_hash TEXT NOT NULL,
           prompt_version TEXT NOT NULL,
           model_id TEXT NOT NULL,
@@ -302,6 +492,8 @@ def connect_relevance_database(path: Path) -> sqlite3.Connection:
         CREATE TABLE IF NOT EXISTS batch_jobs (
           batch_id TEXT PRIMARY KEY,
           run_id TEXT NOT NULL,
+          submission_scope TEXT NOT NULL DEFAULT 'production',
+          pilot_id TEXT,
           input_file_id TEXT NOT NULL,
           output_file_id TEXT,
           error_file_id TEXT,
@@ -328,6 +520,12 @@ def connect_relevance_database(path: Path) -> sqlite3.Connection:
           finished_at_utc TEXT
         );
 
+        CREATE TABLE IF NOT EXISTS pipeline_state (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at_utc TEXT NOT NULL
+        );
+
         CREATE INDEX IF NOT EXISTS idx_candidates_url
           ON article_event_candidates(url);
         CREATE INDEX IF NOT EXISTS idx_candidates_request
@@ -338,10 +536,83 @@ def connect_relevance_database(path: Path) -> sqlite3.Connection:
           ON llm_requests(status, model_id);
         CREATE INDEX IF NOT EXISTS idx_requests_batch
           ON llm_requests(batch_id);
+
+        INSERT OR IGNORE INTO pipeline_state(key, value, updated_at_utc)
+        VALUES ('candidate_revision', '0', '1970-01-01T00:00:00+00:00');
         """
     )
+    candidate_columns = {
+        row[1]
+        for row in connection.execute(
+            "PRAGMA table_info(article_event_candidates)"
+        )
+    }
+    candidate_migrations = {
+        "page_title": "TEXT",
+        "final_url": "TEXT",
+        "canonical_url": "TEXT",
+        "selected_attempt_url": "TEXT",
+        "http_status": "INTEGER",
+        "extraction_method": "TEXT",
+        "extraction_confidence": "REAL",
+        "word_count": "INTEGER",
+        "extraction_candidate_count": "INTEGER",
+        "fallback_used": "TEXT",
+        "download_attempt_count": "INTEGER",
+        "download_error": "TEXT",
+    }
+    for name, column_type in candidate_migrations.items():
+        if name not in candidate_columns:
+            connection.execute(
+                f"ALTER TABLE article_event_candidates ADD COLUMN {name} {column_type}"
+            )
+    request_columns = {
+        row[1] for row in connection.execute("PRAGMA table_info(llm_requests)")
+    }
+    if "input_sha256" not in request_columns:
+        connection.execute(
+            "ALTER TABLE llm_requests ADD COLUMN input_sha256 TEXT"
+        )
+        connection.execute(
+            "UPDATE llm_requests SET input_sha256=request_key "
+            "WHERE input_sha256 IS NULL"
+        )
+    batch_columns = {
+        row[1] for row in connection.execute("PRAGMA table_info(batch_jobs)")
+    }
+    batch_migrations = {
+        "submission_scope": "TEXT NOT NULL DEFAULT 'production'",
+        "pilot_id": "TEXT",
+    }
+    for name, column_type in batch_migrations.items():
+        if name not in batch_columns:
+            connection.execute(
+                f"ALTER TABLE batch_jobs ADD COLUMN {name} {column_type}"
+            )
     connection.commit()
     return connection
+
+
+def candidate_revision(connection: sqlite3.Connection) -> int:
+    row = connection.execute(
+        "SELECT value FROM pipeline_state WHERE key='candidate_revision'"
+    ).fetchone()
+    if row is None:
+        raise RuntimeError("candidate_revision is missing from pipeline_state")
+    return int(row[0])
+
+
+def bump_candidate_revision(connection: sqlite3.Connection) -> int:
+    revision = candidate_revision(connection) + 1
+    connection.execute(
+        """
+        UPDATE pipeline_state
+        SET value=?, updated_at_utc=?
+        WHERE key='candidate_revision'
+        """,
+        (str(revision), utc_now()),
+    )
+    return revision
 
 
 def start_run(
@@ -537,6 +808,26 @@ def upsert_profiles(
     connection.commit()
 
 
+def prune_missing_event_profiles(
+    connection: sqlite3.Connection,
+    keep_ids: Sequence[str],
+) -> int:
+    """Drop event_profiles that are no longer in the official registry.
+
+    Candidates and heuristic rows cascade. Cached llm_requests are left in
+    place so a later re-added event can reuse a matching body-hash decision.
+    """
+    if not keep_ids:
+        cursor = connection.execute("DELETE FROM event_profiles")
+        return int(cursor.rowcount)
+    placeholders = ",".join("?" for _ in keep_ids)
+    cursor = connection.execute(
+        f"DELETE FROM event_profiles WHERE event_id NOT IN ({placeholders})",
+        list(keep_ids),
+    )
+    return int(cursor.rowcount)
+
+
 def resolve_selected_profiles(
     profiles: Sequence[dict[str, str]],
     event_ids: Sequence[str] | None,
@@ -562,7 +853,19 @@ SELECT
   MAX(ea.authors) AS authors,
   MAX(ea.tone) AS tone,
   MAX(ea.sharing_image) AS sharing_image,
+  d.page_title,
+  d.final_url,
+  d.canonical_url,
+  d.selected_attempt_url,
+  d.http_status,
   d.status AS document_status,
+  d.extraction_method,
+  d.extraction_confidence,
+  d.word_count,
+  d.candidate_count AS extraction_candidate_count,
+  d.fallback_used,
+  d.attempt_count AS download_attempt_count,
+  d.error AS download_error,
   d.content_sha256,
   d.body_text
 FROM event_articles AS ea
@@ -572,6 +875,112 @@ WHERE (ea.url LIKE 'http://%' OR ea.url LIKE 'https://%')
 GROUP BY ea.state, ea.url
 ORDER BY ea.state, ea.url
 {limit_clause}
+"""
+
+CANDIDATE_COLUMN_NAMES = (
+    "event_id",
+    "url",
+    "published_at",
+    "source_domain",
+    "source_lang",
+    "gdelt_title",
+    "authors",
+    "tone",
+    "sharing_image",
+    "page_title",
+    "final_url",
+    "canonical_url",
+    "selected_attempt_url",
+    "http_status",
+    "document_status",
+    "extraction_method",
+    "extraction_confidence",
+    "word_count",
+    "extraction_candidate_count",
+    "fallback_used",
+    "download_attempt_count",
+    "download_error",
+    "content_sha256",
+    "body_char_count",
+    "text_excerpt",
+    "request_key",
+    "prepared_at_utc",
+)
+
+CANDIDATE_COLUMNS_SQL = ",\n              ".join(CANDIDATE_COLUMN_NAMES)
+CANDIDATE_VALUES_SQL = ", ".join("?" for _ in CANDIDATE_COLUMN_NAMES)
+
+CANDIDATE_REPLACE_SQL = f"""
+        INSERT OR REPLACE INTO article_event_candidates(
+{CANDIDATE_COLUMNS_SQL}
+            ) VALUES ({CANDIDATE_VALUES_SQL})
+"""
+
+CANDIDATE_UPSERT_RESUME_SQL = f"""
+        INSERT INTO article_event_candidates(
+{CANDIDATE_COLUMNS_SQL}
+            ) VALUES ({CANDIDATE_VALUES_SQL})
+        ON CONFLICT(event_id, url) DO UPDATE SET
+          published_at=excluded.published_at,
+          source_domain=excluded.source_domain,
+          source_lang=excluded.source_lang,
+          gdelt_title=excluded.gdelt_title,
+          authors=excluded.authors,
+          tone=excluded.tone,
+          sharing_image=excluded.sharing_image,
+          page_title=excluded.page_title,
+          final_url=excluded.final_url,
+          canonical_url=excluded.canonical_url,
+          selected_attempt_url=excluded.selected_attempt_url,
+          http_status=excluded.http_status,
+          document_status=excluded.document_status,
+          extraction_method=excluded.extraction_method,
+          extraction_confidence=excluded.extraction_confidence,
+          word_count=excluded.word_count,
+          extraction_candidate_count=excluded.extraction_candidate_count,
+          fallback_used=excluded.fallback_used,
+          download_attempt_count=excluded.download_attempt_count,
+          download_error=excluded.download_error,
+          content_sha256=excluded.content_sha256,
+          body_char_count=excluded.body_char_count,
+          text_excerpt=excluded.text_excerpt,
+          request_key=CASE
+            WHEN ? <> 'keyword_match' THEN NULL
+            WHEN article_event_candidates.content_sha256
+                 IS NOT excluded.content_sha256
+              OR article_event_candidates.text_excerpt
+                 IS NOT excluded.text_excerpt
+            THEN NULL
+            WHEN NOT EXISTS (
+              SELECT 1
+              FROM llm_requests AS request
+              JOIN event_profiles AS profile
+                ON profile.event_id=article_event_candidates.event_id
+              WHERE request.request_key=article_event_candidates.request_key
+                AND request.event_profile_hash=profile.profile_hash
+                AND request.prompt_version=?
+                AND request.model_id=?
+            )
+            THEN NULL
+            ELSE article_event_candidates.request_key
+          END,
+          prepared_at_utc=excluded.prepared_at_utc
+"""
+
+HEURISTIC_REPLACE_SQL = """
+        INSERT OR REPLACE INTO heuristic_results(
+          event_id, url, status, matched_keywords_json, evaluated_at_utc
+        ) VALUES (?, ?, ?, ?, ?)
+"""
+
+HEURISTIC_UPSERT_RESUME_SQL = """
+        INSERT INTO heuristic_results(
+          event_id, url, status, matched_keywords_json, evaluated_at_utc
+        ) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(event_id, url) DO UPDATE SET
+          status=excluded.status,
+          matched_keywords_json=excluded.matched_keywords_json,
+          evaluated_at_utc=excluded.evaluated_at_utc
 """
 
 
@@ -615,6 +1024,11 @@ def prepare_candidates(
                 "Use --resume or pass a separate --database path for a test run."
             )
         upsert_profiles(target, selected)
+        pruned_stale_event_profiles = 0
+        if event_ids is None:
+            pruned_stale_event_profiles = prune_missing_event_profiles(
+                target, selected_ids
+            )
         if not resume and selected_ids:
             placeholders = ",".join("?" for _ in selected_ids)
             target.execute(
@@ -625,26 +1039,21 @@ def prepare_candidates(
                 f"DELETE FROM article_event_candidates WHERE event_id IN ({placeholders})",
                 selected_ids,
             )
-            target.commit()
+        target.commit()
 
         source_rows = 0
         candidates = 0
-        body_available = 0
+        primary_body_available = 0
+        weak_body_available = 0
         keyword_pass = 0
+        weak_keyword_pass = 0
         now = utc_now()
         candidate_sql = (
-            "INSERT OR IGNORE" if resume else "INSERT OR REPLACE"
-        ) + """ INTO article_event_candidates(
-              event_id, url, published_at, source_domain, source_lang,
-              gdelt_title, authors, tone, sharing_image, document_status,
-              content_sha256, body_char_count, text_excerpt, request_key,
-              prepared_at_utc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)"""
+            CANDIDATE_UPSERT_RESUME_SQL if resume else CANDIDATE_REPLACE_SQL
+        )
         heuristic_sql = (
-            "INSERT OR IGNORE" if resume else "INSERT OR REPLACE"
-        ) + """ INTO heuristic_results(
-              event_id, url, status, matched_keywords_json, evaluated_at_utc
-            ) VALUES (?, ?, ?, ?, ?)"""
+            HEURISTIC_UPSERT_RESUME_SQL if resume else HEURISTIC_REPLACE_SQL
+        )
 
         selected_states = sorted(by_state)
         state_filter = ""
@@ -670,7 +1079,7 @@ def prepare_candidates(
                 continue
             body_text = row["body_text"]
             heuristic_status, excerpt, matches = classify_heuristic(
-                row["document_status"], body_text
+                row["document_status"], body_text, row["page_title"]
             )
             content_hash = clean_scalar(row["content_sha256"])
             if body_text and not content_hash:
@@ -678,25 +1087,47 @@ def prepare_candidates(
             for profile, window_start, window_end in by_state[state]:
                 if not window_start <= published_date <= window_end:
                     continue
-                target.execute(
-                    candidate_sql,
-                    (
-                        profile["event_id"],
-                        row["url"],
-                        row["published_at"],
-                        row["source_domain"],
-                        row["source_lang"],
-                        row["gdelt_title"],
-                        row["authors"],
-                        row["tone"],
-                        row["sharing_image"],
-                        row["document_status"],
-                        content_hash or None,
-                        len(str(body_text)) if body_text else 0,
-                        excerpt,
-                        now,
-                    ),
+                candidate_values = (
+                    profile["event_id"],
+                    row["url"],
+                    row["published_at"],
+                    row["source_domain"],
+                    row["source_lang"],
+                    row["gdelt_title"],
+                    row["authors"],
+                    row["tone"],
+                    row["sharing_image"],
+                    row["page_title"],
+                    row["final_url"],
+                    row["canonical_url"],
+                    row["selected_attempt_url"],
+                    row["http_status"],
+                    row["document_status"],
+                    row["extraction_method"],
+                    row["extraction_confidence"],
+                    row["word_count"],
+                    row["extraction_candidate_count"],
+                    row["fallback_used"],
+                    row["download_attempt_count"],
+                    row["download_error"],
+                    content_hash or None,
+                    len(str(body_text)) if body_text else 0,
+                    excerpt,
+                    None,
+                    now,
                 )
+                if resume:
+                    target.execute(
+                        candidate_sql,
+                        (
+                            *candidate_values,
+                            heuristic_status,
+                            PROMPT_VERSION,
+                            OPENAI_EVENT_FILTER_MODEL,
+                        ),
+                    )
+                else:
+                    target.execute(candidate_sql, candidate_values)
                 target.execute(
                     heuristic_sql,
                     (
@@ -708,18 +1139,31 @@ def prepare_candidates(
                     ),
                 )
                 candidates += 1
-                body_available += heuristic_status != "no_body"
+                primary_body_available += heuristic_status in {
+                    "keyword_match", "keyword_absent"
+                }
+                weak_body_available += heuristic_status in {
+                    "weak_keyword_match", "weak_keyword_absent"
+                }
                 keyword_pass += heuristic_status == "keyword_match"
+                weak_keyword_pass += heuristic_status == "weak_keyword_match"
             if source_rows % 5_000 == 0:
                 target.commit()
         target.commit()
         details = {
             "source_state_urls_scanned": source_rows,
             "candidate_event_urls": candidates,
-            "body_available_candidates": body_available,
+            "primary_body_available_candidates": primary_body_available,
+            "weak_body_available_candidates": weak_body_available,
+            "body_available_candidates": (
+                primary_body_available + weak_body_available
+            ),
             "keyword_pass_candidates": keyword_pass,
+            "weak_keyword_pass_candidates": weak_keyword_pass,
             "selected_events": len(selected),
+            "pruned_stale_event_profiles": pruned_stale_event_profiles,
         }
+        details["candidate_revision"] = bump_candidate_revision(target)
         finish_run(target, run_id, "completed", details)
         return details
     except Exception as exc:
@@ -747,9 +1191,49 @@ def event_prompt(profile: dict[str, Any], excerpt: str) -> str:
     return (
         "EVENT\n"
         + "\n".join(event_lines)
-        + f"\n\nARTICLE EXCERPT (first {TEXT_CHAR_LIMIT} characters)\n"
+        + f"\n\nARTICLE EXCERPT (selected context, max {TEXT_CHAR_LIMIT} characters)\n"
         + excerpt
     )
+
+
+def response_request_body(
+    model_id: str,
+    profile: dict[str, Any],
+    excerpt: str,
+) -> dict[str, Any]:
+    return {
+        "model": model_id,
+        "input": [
+            {
+                "role": "system",
+                "content": [{"type": "input_text", "text": SYSTEM_PROMPT}],
+            },
+            {
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": event_prompt(profile, excerpt)}
+                ],
+            },
+        ],
+        "text": {"format": RESPONSE_SCHEMA},
+        "reasoning": {"effort": OPENAI_REASONING_EFFORT},
+        "max_output_tokens": MAX_OUTPUT_TOKENS,
+    }
+
+
+def request_key_for(
+    profile: dict[str, Any],
+    excerpt: str,
+    model_id: str,
+) -> str:
+    """Hash the exact immutable LLM input, excluding only Batch custom_id."""
+    payload = {
+        "method": "POST",
+        "url": "/v1/responses",
+        "body": response_request_body(model_id, profile, excerpt),
+        "prompt_version": PROMPT_VERSION,
+    }
+    return sha256_text(stable_json(payload))
 
 
 def build_batch_request(
@@ -762,37 +1246,17 @@ def build_batch_request(
         "custom_id": custom_id,
         "method": "POST",
         "url": "/v1/responses",
-        "body": {
-            "model": model_id,
-            "input": [
-                {
-                    "role": "system",
-                    "content": [{"type": "input_text", "text": SYSTEM_PROMPT}],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "input_text", "text": event_prompt(profile, excerpt)}
-                    ],
-                },
-            ],
-            "text": {"format": RESPONSE_SCHEMA},
-            "reasoning": {"effort": OPENAI_REASONING_EFFORT},
-            "max_output_tokens": MAX_OUTPUT_TOKENS,
-        },
+        "body": response_request_body(model_id, profile, excerpt),
     }
 
 
-def request_key_for(
-    content_sha256: str,
-    event_profile_hash: str,
-    model_id: str,
-) -> str:
-    return sha256_text(
-        "\0".join(
-            (content_sha256, event_profile_hash, PROMPT_VERSION, model_id)
+def batch_custom_id(request_key: str) -> str:
+    if len(request_key) > BATCH_CUSTOM_ID_MAX_LEN:
+        raise ValueError(
+            f"Batch custom_id exceeds {BATCH_CUSTOM_ID_MAX_LEN} characters: "
+            f"{request_key!r}"
         )
-    )
+    return request_key
 
 
 def _event_filter_sql(event_ids: Sequence[str] | None, column: str) -> tuple[str, list[str]]:
@@ -802,37 +1266,81 @@ def _event_filter_sql(event_ids: Sequence[str] | None, column: str) -> tuple[str
     return f" AND {column} IN ({placeholders})", list(event_ids)
 
 
+def install_candidate_selection(
+    connection: sqlite3.Connection,
+    candidate_pairs: Sequence[tuple[str, str]],
+) -> None:
+    connection.execute("DROP TABLE IF EXISTS temp.selected_llm_candidates")
+    connection.execute(
+        """
+        CREATE TEMP TABLE selected_llm_candidates (
+          event_id TEXT NOT NULL,
+          url TEXT NOT NULL,
+          selection_order INTEGER NOT NULL,
+          PRIMARY KEY (event_id, url)
+        )
+        """
+    )
+    connection.executemany(
+        """
+        INSERT INTO selected_llm_candidates(event_id, url, selection_order)
+        VALUES (?, ?, ?)
+        """,
+        [
+            (event_id, url, index)
+            for index, (event_id, url) in enumerate(candidate_pairs, start=1)
+        ],
+    )
+
+
 def ensure_llm_requests(
     connection: sqlite3.Connection,
     model_id: str,
     *,
     event_ids: Sequence[str] | None = None,
+    candidate_pairs: Sequence[tuple[str, str]] | None = None,
+    include_negative_controls: bool = False,
     retry_failed: bool = False,
 ) -> int:
-    event_sql, params = _event_filter_sql(event_ids, "c.event_id")
-    rows = connection.execute(
+    if candidate_pairs is not None and event_ids:
+        raise ValueError("candidate_pairs and event_ids cannot be combined")
+    selection_join = ""
+    selection_order = "c.event_id, c.url"
+    if candidate_pairs is not None:
+        install_candidate_selection(connection, candidate_pairs)
+        selection_join = """
+        JOIN selected_llm_candidates AS selected
+          ON selected.event_id=c.event_id AND selected.url=c.url
         """
+        selection_order = "selected.selection_order"
+    event_sql, params = _event_filter_sql(event_ids, "c.event_id")
+    accepted_statuses = (
+        "('keyword_match', 'keyword_absent')"
+        if include_negative_controls
+        else "('keyword_match')"
+    )
+    rows = connection.execute(
+        f"""
         SELECT
           c.event_id, c.url, c.content_sha256, c.text_excerpt,
           p.profile_hash, p.profile_json
         FROM article_event_candidates AS c
+        {selection_join}
         JOIN heuristic_results AS h
           ON h.event_id = c.event_id AND h.url = c.url
         JOIN event_profiles AS p ON p.event_id = c.event_id
-        WHERE h.status = 'keyword_match'
+        WHERE h.status IN {accepted_statuses}
           AND c.text_excerpt IS NOT NULL
           AND c.content_sha256 IS NOT NULL
-        """ + event_sql + " ORDER BY c.event_id, c.url",
+        """ + event_sql + f" ORDER BY {selection_order}",
         params,
     )
     now = utc_now()
     created_keys: set[str] = set()
     for row in rows:
-        request_key = request_key_for(
-            row["content_sha256"], row["profile_hash"], model_id
-        )
-        custom_id = f"cvnd_{request_key}"
         profile = json.loads(row["profile_json"])
+        request_key = request_key_for(profile, row["text_excerpt"], model_id)
+        custom_id = batch_custom_id(request_key)
         request = build_batch_request(
             custom_id, model_id, profile, row["text_excerpt"]
         )
@@ -840,15 +1348,16 @@ def ensure_llm_requests(
             """
             INSERT OR IGNORE INTO llm_requests(
               request_key, custom_id, event_id, content_sha256,
-              event_profile_hash, prompt_version, model_id, request_json,
+              input_sha256, event_profile_hash, prompt_version, model_id, request_json,
               status, created_at_utc, updated_at_utc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
             """,
             (
                 request_key,
                 custom_id,
                 row["event_id"],
                 row["content_sha256"],
+                request_key,
                 row["profile_hash"],
                 PROMPT_VERSION,
                 model_id,
@@ -898,8 +1407,16 @@ def estimate_workload(
             SELECT
               COUNT(*) AS candidates,
               SUM(CASE WHEN h.status != 'no_body' THEN 1 ELSE 0 END) AS body_available,
+              SUM(CASE WHEN h.status IN ('keyword_match', 'keyword_absent')
+                  THEN 1 ELSE 0 END) AS primary_body_available,
+              SUM(CASE WHEN h.status IN ('weak_keyword_match', 'weak_keyword_absent')
+                  THEN 1 ELSE 0 END) AS weak_body_available,
               SUM(CASE WHEN h.status = 'keyword_match' THEN 1 ELSE 0 END) AS keyword_pass,
+              SUM(CASE WHEN h.status = 'weak_keyword_match'
+                  THEN 1 ELSE 0 END) AS weak_keyword_pass,
               SUM(CASE WHEN h.status = 'keyword_absent' THEN 1 ELSE 0 END) AS keyword_absent,
+              SUM(CASE WHEN h.status = 'weak_keyword_absent'
+                  THEN 1 ELSE 0 END) AS weak_keyword_absent,
               SUM(CASE WHEN h.status = 'no_body' THEN 1 ELSE 0 END) AS no_body
             FROM article_event_candidates AS c
             JOIN heuristic_results AS h
@@ -908,32 +1425,44 @@ def estimate_workload(
             """ + event_sql,
             params,
         ).fetchone()
-        grouped = connection.execute(
+        request_rows = connection.execute(
             """
-            SELECT c.content_sha256, p.profile_hash, p.profile_json,
-                   MAX(c.text_excerpt) AS text_excerpt
+            SELECT p.profile_json, c.text_excerpt
             FROM article_event_candidates AS c
             JOIN heuristic_results AS h
               ON h.event_id=c.event_id AND h.url=c.url
             JOIN event_profiles AS p ON p.event_id=c.event_id
             WHERE h.status='keyword_match' AND c.text_excerpt IS NOT NULL
-            """ + event_sql + " GROUP BY c.content_sha256, p.profile_hash",
+            """ + event_sql + " ORDER BY c.event_id, c.url",
             params,
         )
-        requests = 0
+        request_keys: set[str] = set()
         input_characters = 0
-        for item in grouped:
-            requests += 1
+        for item in request_rows:
             profile = json.loads(item["profile_json"])
+            request_key = request_key_for(
+                profile, item["text_excerpt"], OPENAI_EVENT_FILTER_MODEL
+            )
+            if request_key in request_keys:
+                continue
+            request_keys.add(request_key)
             input_characters += len(SYSTEM_PROMPT) + len(
                 event_prompt(profile, item["text_excerpt"])
             )
+        requests = len(request_keys)
         return {
             "candidates": int(row["candidates"] or 0),
             "body_available": int(row["body_available"] or 0),
+            "primary_body_available": int(row["primary_body_available"] or 0),
+            "weak_body_available": int(row["weak_body_available"] or 0),
             "keyword_pass_candidate_urls": int(row["keyword_pass"] or 0),
+            "weak_keyword_pass_candidate_urls": int(row["weak_keyword_pass"] or 0),
             "keyword_absent": int(row["keyword_absent"] or 0),
+            "weak_keyword_absent": int(row["weak_keyword_absent"] or 0),
             "no_body": int(row["no_body"] or 0),
+            "unique_llm_requests_after_prompt_cache": requests,
+            # Compatibility alias for older notebooks. The cache now hashes
+            # the exact prompt rather than only the extracted body.
             "unique_llm_requests_after_body_hash_cache": requests,
             "input_characters": input_characters,
             "rough_input_tokens_at_4_chars_per_token": (input_characters + 3) // 4,
@@ -941,6 +1470,734 @@ def estimate_workload(
         }
     finally:
         connection.close()
+
+
+def pilot_metadata_path(manifest_path: Path) -> Path:
+    return manifest_path.with_name(manifest_path.name + ".meta.json")
+
+
+def write_json_atomic(path: Path, value: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(
+        json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+
+
+def pilot_selection_hash(rows: Sequence[dict[str, Any]]) -> str:
+    payload = [
+        {field: str(row.get(field, "")) for field in PILOT_IMMUTABLE_FIELDS}
+        for row in sorted(rows, key=lambda item: int(item["sample_order"]))
+    ]
+    return sha256_text(stable_json(payload))
+
+
+def keyword_location_bucket(
+    heuristic_status: str,
+    page_title: str | None,
+    excerpt: str | None,
+) -> str:
+    if heuristic_status != "keyword_match":
+        return "none"
+    text = str(excerpt or "")
+    lead = ""
+    marker = "ARTICLE LEAD\n"
+    if marker in text:
+        lead = text.split(marker, 1)[1].split("\n\nMATCHED CONTEXT", 1)[0]
+    locations: list[str] = []
+    if keyword_matches(str(page_title or "")):
+        locations.append("title")
+    if keyword_matches(lead):
+        locations.append("lead")
+    if "\n\nMATCHED CONTEXT " in text:
+        locations.append("late")
+    if not locations:
+        return "unlocated"
+    if len(locations) > 1:
+        return "multiple"
+    return locations[0]
+
+
+def overlap_bucket(count: int) -> str:
+    if count <= 1:
+        return "1"
+    if count == 2:
+        return "2"
+    return "3+"
+
+
+def stable_sample_order(seed: int, event_id: str, url: str) -> str:
+    return sha256_text(f"{seed}\0{event_id}\0{url}")
+
+
+def _round_robin_sample(
+    groups: dict[tuple[str, ...], list[dict[str, Any]]],
+    target: int,
+    *,
+    seed: int,
+    max_per_domain: int,
+) -> list[dict[str, Any]]:
+    if target <= 0:
+        return []
+    queues = {
+        key: deque(sorted(items, key=lambda item: item["stable_order"]))
+        for key, items in groups.items()
+        if items
+    }
+    group_order = sorted(
+        queues,
+        key=lambda key: sha256_text(f"{seed}\0{stable_json(key)}"),
+    )
+    selected: list[dict[str, Any]] = []
+    deferred: dict[tuple[str, ...], deque[dict[str, Any]]] = {
+        key: deque() for key in group_order
+    }
+    domain_counts: Counter[str] = Counter()
+
+    while len(selected) < target:
+        progress = False
+        for key in group_order:
+            queue = queues[key]
+            while queue:
+                candidate = queue.popleft()
+                domain = candidate["source_domain"] or "unknown"
+                if max_per_domain and domain_counts[domain] >= max_per_domain:
+                    deferred[key].append(candidate)
+                    continue
+                selected.append(candidate)
+                domain_counts[domain] += 1
+                progress = True
+                break
+            if len(selected) >= target:
+                break
+        if not progress:
+            break
+
+    # Domain caps are a diversity preference, never a reason to return a short
+    # manifest. Fill any remainder in the same deterministic stratum rotation.
+    if len(selected) < target:
+        for key in group_order:
+            deferred[key].extend(queues[key])
+        while len(selected) < target:
+            progress = False
+            for key in group_order:
+                if deferred[key]:
+                    selected.append(deferred[key].popleft())
+                    progress = True
+                if len(selected) >= target:
+                    break
+            if not progress:
+                break
+    return selected
+
+
+PILOT_CANDIDATE_QUERY = """
+WITH overlap_counts AS (
+  SELECT url, COUNT(*) AS event_overlap_count
+  FROM article_event_candidates
+  GROUP BY url
+)
+SELECT
+  c.event_id,
+  c.url,
+  c.published_at,
+  c.source_domain,
+  c.source_lang,
+  c.page_title,
+  c.text_excerpt,
+  h.status AS heuristic_status,
+  overlap_counts.event_overlap_count
+FROM article_event_candidates AS c
+JOIN heuristic_results AS h
+  ON h.event_id=c.event_id AND h.url=c.url
+JOIN overlap_counts ON overlap_counts.url=c.url
+WHERE h.status IN ('keyword_match', 'keyword_absent')
+  AND c.text_excerpt IS NOT NULL
+  AND c.content_sha256 IS NOT NULL
+ORDER BY c.event_id, c.url
+"""
+
+
+PILOT_SELECTED_QUERY = """
+SELECT
+  selected.selection_order,
+  c.event_id,
+  c.url,
+  c.published_at,
+  c.source_domain,
+  c.source_lang,
+  c.page_title,
+  c.text_excerpt,
+  h.status AS heuristic_status,
+  h.matched_keywords_json,
+  p.source_record_id,
+  p.state,
+  p.district,
+  p.start_date,
+  p.end_date,
+  p.profile_json,
+  (
+    SELECT COUNT(*) FROM article_event_candidates AS overlap
+    WHERE overlap.url=c.url
+  ) AS event_overlap_count
+FROM selected_llm_candidates AS selected
+JOIN article_event_candidates AS c
+  ON c.event_id=selected.event_id AND c.url=selected.url
+JOIN heuristic_results AS h
+  ON h.event_id=c.event_id AND h.url=c.url
+JOIN event_profiles AS p ON p.event_id=c.event_id
+ORDER BY selected.selection_order
+"""
+
+
+def create_pilot_manifest(
+    relevance_database: Path,
+    manifest_path: Path,
+    *,
+    size: int = DEFAULT_PILOT_SIZE,
+    negative_share: float = DEFAULT_PILOT_NEGATIVE_SHARE,
+    seed: int = DEFAULT_PILOT_SEED,
+    max_per_domain: int = DEFAULT_PILOT_MAX_PER_DOMAIN,
+    overwrite: bool = False,
+) -> dict[str, Any]:
+    if size <= 0:
+        raise ValueError("Pilot size must be positive")
+    if not 0.0 <= negative_share < 1.0:
+        raise ValueError("Pilot negative share must be in [0, 1)")
+    if max_per_domain < 0:
+        raise ValueError("Pilot max-per-domain cannot be negative")
+    metadata_path = pilot_metadata_path(manifest_path)
+    if not overwrite and (manifest_path.exists() or metadata_path.exists()):
+        raise FileExistsError(
+            f"Pilot artifact exists: {manifest_path}. Pass --overwrite to replace it."
+        )
+
+    model_id = configured_model()
+    connection = connect_relevance_database(relevance_database)
+    run_id = start_run(
+        connection,
+        "pilot-create",
+        model_id=model_id,
+        details={
+            "size": size,
+            "negative_share": negative_share,
+            "seed": seed,
+            "max_per_domain": max_per_domain,
+        },
+    )
+    try:
+        revision = candidate_revision(connection)
+        positive_target = int(round(size * (1.0 - negative_share)))
+        negative_target = size - positive_target
+        grouped: dict[str, dict[tuple[str, ...], list[dict[str, Any]]]] = {
+            "heuristic_positive": defaultdict(list),
+            "heuristic_negative_control": defaultdict(list),
+        }
+        for row in connection.execute(PILOT_CANDIDATE_QUERY):
+            status = row["heuristic_status"]
+            role = (
+                "heuristic_positive"
+                if status == "keyword_match"
+                else "heuristic_negative_control"
+            )
+            year = str(row["published_at"] or "")[:4] or "unknown"
+            language = str(row["source_lang"] or "unknown")
+            overlap = int(row["event_overlap_count"] or 0)
+            location = keyword_location_bucket(
+                status, row["page_title"], row["text_excerpt"]
+            )
+            candidate = {
+                "event_id": row["event_id"],
+                "url": row["url"],
+                "source_domain": str(row["source_domain"] or "unknown"),
+                "stable_order": stable_sample_order(
+                    seed, row["event_id"], row["url"]
+                ),
+            }
+            stratum = (language, year, overlap_bucket(overlap), location)
+            grouped[role][stratum].append(candidate)
+
+        positive = _round_robin_sample(
+            grouped["heuristic_positive"],
+            positive_target,
+            seed=seed,
+            max_per_domain=max_per_domain,
+        )
+        negative = _round_robin_sample(
+            grouped["heuristic_negative_control"],
+            negative_target,
+            seed=seed + 1,
+            max_per_domain=max_per_domain,
+        )
+        if len(positive) != positive_target or len(negative) != negative_target:
+            raise RuntimeError(
+                "Not enough eligible candidates for requested pilot composition: "
+                f"positive {len(positive)}/{positive_target}, "
+                f"negative {len(negative)}/{negative_target}"
+            )
+
+        selected = []
+        for role, candidates in (
+            ("heuristic_positive", positive),
+            ("heuristic_negative_control", negative),
+        ):
+            selected.extend((role, item) for item in candidates)
+        selected.sort(
+            key=lambda item: sha256_text(
+                f"{seed}\0{item[0]}\0{item[1]['event_id']}\0{item[1]['url']}"
+            )
+        )
+        pairs = [(item["event_id"], item["url"]) for _role, item in selected]
+        role_by_pair = {
+            (item["event_id"], item["url"]): role for role, item in selected
+        }
+        install_candidate_selection(connection, pairs)
+
+        manifest_rows: list[dict[str, Any]] = []
+        unique_keys: set[str] = set()
+        input_characters = 0
+        for row in connection.execute(PILOT_SELECTED_QUERY):
+            profile = json.loads(row["profile_json"])
+            request_key = request_key_for(profile, row["text_excerpt"], model_id)
+            if request_key not in unique_keys:
+                unique_keys.add(request_key)
+                input_characters += len(SYSTEM_PROMPT) + len(
+                    event_prompt(profile, row["text_excerpt"])
+                )
+            overlap = int(row["event_overlap_count"] or 0)
+            manifest_rows.append(
+                {
+                    "pilot_id": "",
+                    "sample_order": int(row["selection_order"]),
+                    "sample_role": role_by_pair[(row["event_id"], row["url"])],
+                    "event_id": row["event_id"],
+                    "source_record_id": row["source_record_id"],
+                    "state": row["state"],
+                    "district": row["district"] or "",
+                    "event_start_date": row["start_date"],
+                    "event_end_date": row["end_date"] or "",
+                    "url": row["url"],
+                    "published_at": row["published_at"],
+                    "publication_year": str(row["published_at"] or "")[:4],
+                    "source_domain": row["source_domain"] or "unknown",
+                    "source_lang": row["source_lang"] or "unknown",
+                    "event_overlap_count": overlap,
+                    "event_overlap_bucket": overlap_bucket(overlap),
+                    "keyword_location": keyword_location_bucket(
+                        row["heuristic_status"],
+                        row["page_title"],
+                        row["text_excerpt"],
+                    ),
+                    "heuristic_status": row["heuristic_status"],
+                    "matched_keywords_json": row["matched_keywords_json"],
+                    "page_title": row["page_title"] or "",
+                    "text_excerpt": row["text_excerpt"],
+                    "request_key": request_key,
+                    "prompt_version": PROMPT_VERSION,
+                    "model_id": model_id,
+                    "human_related": "",
+                    "human_notes": "",
+                    "llm_related": "",
+                    "llm_decision_status": "",
+                }
+            )
+
+        selection_hash = pilot_selection_hash(manifest_rows)
+        pilot_id = f"pilot-r{revision}-{selection_hash[:12]}"
+        for row in manifest_rows:
+            row["pilot_id"] = pilot_id
+
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = manifest_path.with_name(manifest_path.name + ".tmp")
+        with temporary.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=PILOT_MANIFEST_FIELDS)
+            writer.writeheader()
+            writer.writerows(manifest_rows)
+        temporary.replace(manifest_path)
+
+        role_counts = Counter(row["sample_role"] for row in manifest_rows)
+        language_counts = Counter(row["source_lang"] for row in manifest_rows)
+        year_counts = Counter(row["publication_year"] for row in manifest_rows)
+        overlap_counts = Counter(
+            row["event_overlap_bucket"] for row in manifest_rows
+        )
+        location_counts = Counter(row["keyword_location"] for row in manifest_rows)
+        metadata = {
+            "schema_version": 1,
+            "pilot_id": pilot_id,
+            "created_at_utc": utc_now(),
+            "manifest_path": str(manifest_path.resolve()),
+            "selection_hash": selection_hash,
+            "candidate_revision": revision,
+            "prompt_version": PROMPT_VERSION,
+            "model_id": model_id,
+            "seed": seed,
+            "requested_size": size,
+            "sample_count": len(manifest_rows),
+            "unique_llm_request_count": len(unique_keys),
+            "input_characters": input_characters,
+            "rough_input_tokens_at_4_chars_per_token": (input_characters + 3) // 4,
+            "negative_share": negative_share,
+            "max_per_domain": max_per_domain,
+            "role_counts": dict(sorted(role_counts.items())),
+            "language_counts": dict(sorted(language_counts.items())),
+            "year_counts": dict(sorted(year_counts.items())),
+            "overlap_bucket_counts": dict(sorted(overlap_counts.items())),
+            "keyword_location_counts": dict(sorted(location_counts.items())),
+        }
+        write_json_atomic(metadata_path, metadata)
+        details = {
+            "pilot_id": pilot_id,
+            "manifest": str(manifest_path),
+            "metadata": str(metadata_path),
+            "candidate_revision": revision,
+            "sample_count": len(manifest_rows),
+            "unique_llm_request_count": len(unique_keys),
+            "role_counts": metadata["role_counts"],
+        }
+        finish_run(connection, run_id, "completed", details)
+        return details
+    except Exception as exc:
+        finish_run(connection, run_id, "failed", {"error": str(exc)})
+        raise
+    finally:
+        connection.close()
+
+
+def read_pilot_artifacts(
+    connection: sqlite3.Connection,
+    manifest_path: Path,
+    model_id: str,
+) -> tuple[dict[str, Any], list[dict[str, str]]]:
+    metadata_path = pilot_metadata_path(manifest_path)
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Pilot manifest not found: {manifest_path}")
+    if not metadata_path.exists():
+        raise FileNotFoundError(f"Pilot metadata not found: {metadata_path}")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    with manifest_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        missing = set(PILOT_MANIFEST_FIELDS) - set(reader.fieldnames or ())
+        if missing:
+            raise ValueError(f"Pilot manifest is missing columns: {sorted(missing)}")
+        rows = [dict(row) for row in reader]
+    if not rows:
+        raise ValueError("Pilot manifest is empty")
+    pairs = [(row["event_id"], row["url"]) for row in rows]
+    if len(pairs) != len(set(pairs)):
+        raise ValueError("Pilot manifest contains duplicate event/url samples")
+    orders = [int(row["sample_order"]) for row in rows]
+    if sorted(orders) != list(range(1, len(rows) + 1)):
+        raise ValueError("Pilot sample_order must be contiguous from 1")
+    pilot_ids = {row["pilot_id"] for row in rows}
+    if pilot_ids != {metadata.get("pilot_id")}:
+        raise ValueError("Pilot ID differs between manifest and metadata")
+    if metadata.get("selection_hash") != pilot_selection_hash(rows):
+        raise ValueError("Pilot immutable selection fields were modified")
+    if int(metadata.get("sample_count", -1)) != len(rows):
+        raise ValueError("Pilot sample count differs from metadata")
+    if metadata.get("model_id") != model_id:
+        raise ValueError(
+            f"Pilot model {metadata.get('model_id')!r} does not match {model_id!r}"
+        )
+    if metadata.get("prompt_version") != PROMPT_VERSION:
+        raise ValueError("Pilot prompt version does not match the current code")
+    revision = candidate_revision(connection)
+    if int(metadata.get("candidate_revision", -1)) != revision:
+        raise ValueError(
+            "Pilot was created from a different candidate revision; create a new pilot"
+        )
+    if any(row["model_id"] != model_id for row in rows):
+        raise ValueError("Pilot manifest contains a different model ID")
+    if any(row["prompt_version"] != PROMPT_VERSION for row in rows):
+        raise ValueError("Pilot manifest contains a different prompt version")
+
+    install_candidate_selection(connection, pairs)
+    current_rows = list(connection.execute(PILOT_SELECTED_QUERY))
+    if len(current_rows) != len(rows):
+        raise ValueError("One or more pilot candidates no longer exist")
+    manifest_by_pair = {(row["event_id"], row["url"]): row for row in rows}
+    for current in current_rows:
+        pair = (current["event_id"], current["url"])
+        manifest = manifest_by_pair[pair]
+        if current["heuristic_status"] != manifest["heuristic_status"]:
+            raise ValueError(f"Heuristic status changed for pilot sample {pair}")
+        profile = json.loads(current["profile_json"])
+        expected_key = request_key_for(
+            profile, current["text_excerpt"], model_id
+        )
+        if manifest["request_key"] != expected_key:
+            raise ValueError(f"LLM input changed for pilot sample {pair}")
+    rows.sort(key=lambda row: int(row["sample_order"]))
+    return metadata, rows
+
+
+def parse_human_label(value: Any) -> int | None:
+    text = str(value or "").strip().casefold()
+    if not text:
+        return None
+    if text in {"1", "true", "yes", "y", "related"}:
+        return 1
+    if text in {"0", "false", "no", "n", "unrelated"}:
+        return 0
+    raise ValueError(f"Invalid human_related value: {value!r}")
+
+
+def _classification_metrics(pairs: Sequence[tuple[int, int]]) -> dict[str, Any]:
+    tp = sum(human == 1 and predicted == 1 for human, predicted in pairs)
+    tn = sum(human == 0 and predicted == 0 for human, predicted in pairs)
+    fp = sum(human == 0 and predicted == 1 for human, predicted in pairs)
+    fn = sum(human == 1 and predicted == 0 for human, predicted in pairs)
+    total = len(pairs)
+    precision = tp / (tp + fp) if tp + fp else None
+    recall = tp / (tp + fn) if tp + fn else None
+    accuracy = (tp + tn) / total if total else None
+    f1 = (
+        2 * precision * recall / (precision + recall)
+        if precision is not None and recall is not None and precision + recall
+        else None
+    )
+    return {
+        "count": total,
+        "true_positive": tp,
+        "true_negative": tn,
+        "false_positive": fp,
+        "false_negative": fn,
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+    }
+
+
+def evaluate_pilot(
+    relevance_database: Path,
+    labels_path: Path,
+    report_path: Path,
+    annotated_output: Path,
+    *,
+    min_labels: int = DEFAULT_MIN_PILOT_LABELS,
+    min_human_positives: int = DEFAULT_MIN_HUMAN_POSITIVES,
+    min_negative_controls: int = DEFAULT_MIN_NEGATIVE_CONTROLS,
+    min_overlap_labels: int = DEFAULT_MIN_OVERLAP_LABELS,
+    min_accuracy: float = DEFAULT_MIN_ACCURACY,
+    min_precision: float = DEFAULT_MIN_PRECISION,
+    min_recall: float = DEFAULT_MIN_RECALL,
+    min_overlap_accuracy: float = DEFAULT_MIN_OVERLAP_ACCURACY,
+    max_heuristic_false_negative_rate: float = (
+        DEFAULT_MAX_HEURISTIC_FALSE_NEGATIVE_RATE
+    ),
+) -> dict[str, Any]:
+    integer_requirements = {
+        "min_labels": min_labels,
+        "min_human_positives": min_human_positives,
+        "min_negative_controls": min_negative_controls,
+        "min_overlap_labels": min_overlap_labels,
+    }
+    if any(value < 0 for value in integer_requirements.values()):
+        raise ValueError("Pilot minimum counts cannot be negative")
+    rate_requirements = {
+        "min_accuracy": min_accuracy,
+        "min_precision": min_precision,
+        "min_recall": min_recall,
+        "min_overlap_accuracy": min_overlap_accuracy,
+        "max_heuristic_false_negative_rate": max_heuristic_false_negative_rate,
+    }
+    if any(not 0.0 <= value <= 1.0 for value in rate_requirements.values()):
+        raise ValueError("Pilot metric thresholds must be between 0 and 1")
+
+    model_id = configured_model()
+    connection = connect_relevance_database(relevance_database)
+    run_id = start_run(
+        connection,
+        "pilot-evaluate",
+        model_id=model_id,
+        details={"labels_path": str(labels_path)},
+    )
+    try:
+        metadata, rows = read_pilot_artifacts(connection, labels_path, model_id)
+        request_keys = sorted({row["request_key"] for row in rows})
+        connection.execute("DROP TABLE IF EXISTS temp.selected_pilot_requests")
+        connection.execute(
+            "CREATE TEMP TABLE selected_pilot_requests(request_key TEXT PRIMARY KEY)"
+        )
+        connection.executemany(
+            "INSERT INTO selected_pilot_requests(request_key) VALUES (?)",
+            [(key,) for key in request_keys],
+        )
+        decisions = {
+            row["request_key"]: (int(row["related"]), row["decision_status"])
+            for row in connection.execute(
+                """
+                SELECT d.request_key, d.related, d.decision_status
+                FROM llm_decisions AS d
+                JOIN selected_pilot_requests AS selected
+                  ON selected.request_key=d.request_key
+                """
+            )
+        }
+
+        comparable: list[tuple[int, int]] = []
+        overlap_comparable: list[tuple[int, int]] = []
+        human_positive_count = 0
+        negative_labels = 0
+        negative_human_related = 0
+        human_labeled = 0
+        missing_llm = 0
+        labeled_orders: list[int] = []
+        annotated_rows: list[dict[str, Any]] = []
+        for row in rows:
+            human = parse_human_label(row.get("human_related"))
+            decision = decisions.get(row["request_key"])
+            annotated = dict(row)
+            if decision is None:
+                annotated["llm_related"] = ""
+                annotated["llm_decision_status"] = ""
+            else:
+                annotated["llm_related"] = decision[0]
+                annotated["llm_decision_status"] = decision[1]
+            annotated_rows.append(annotated)
+            if human is None:
+                continue
+            human_labeled += 1
+            labeled_orders.append(int(row["sample_order"]))
+            human_positive_count += int(human == 1)
+            if row["sample_role"] == "heuristic_negative_control":
+                negative_labels += 1
+                negative_human_related += int(human == 1)
+            if decision is None:
+                missing_llm += 1
+                continue
+            pair = (human, decision[0])
+            comparable.append(pair)
+            if int(row["event_overlap_count"] or 0) >= 2:
+                overlap_comparable.append(pair)
+
+        metrics = _classification_metrics(comparable)
+        overlap_metrics = _classification_metrics(overlap_comparable)
+        heuristic_false_negative_rate = (
+            negative_human_related / negative_labels if negative_labels else None
+        )
+        labels_form_prefix = sorted(labeled_orders) == list(
+            range(1, len(labeled_orders) + 1)
+        )
+        checks = {
+            "minimum_human_labels": human_labeled >= min_labels,
+            "minimum_comparable_labels": len(comparable) >= min_labels,
+            "minimum_human_positives": human_positive_count >= min_human_positives,
+            "minimum_negative_controls": negative_labels >= min_negative_controls,
+            "minimum_overlap_labels": len(overlap_comparable) >= min_overlap_labels,
+            "human_labels_form_deterministic_prefix": labels_form_prefix,
+            "no_missing_llm_for_labeled_rows": missing_llm == 0,
+            "minimum_accuracy": (
+                metrics["accuracy"] is not None
+                and metrics["accuracy"] >= min_accuracy
+            ),
+            "minimum_precision": (
+                metrics["precision"] is not None
+                and metrics["precision"] >= min_precision
+            ),
+            "minimum_recall": (
+                metrics["recall"] is not None
+                and metrics["recall"] >= min_recall
+            ),
+            "minimum_overlap_accuracy": (
+                (min_overlap_labels == 0 and not overlap_comparable)
+                or (
+                    overlap_metrics["accuracy"] is not None
+                    and overlap_metrics["accuracy"] >= min_overlap_accuracy
+                )
+            ),
+            "maximum_heuristic_false_negative_rate": (
+                (min_negative_controls == 0 and not negative_labels)
+                or (
+                    heuristic_false_negative_rate is not None
+                    and heuristic_false_negative_rate
+                    <= max_heuristic_false_negative_rate
+                )
+            ),
+        }
+        passed = all(checks.values())
+
+        annotated_output.parent.mkdir(parents=True, exist_ok=True)
+        temporary = annotated_output.with_name(annotated_output.name + ".tmp")
+        with temporary.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=PILOT_MANIFEST_FIELDS)
+            writer.writeheader()
+            writer.writerows(annotated_rows)
+        temporary.replace(annotated_output)
+
+        report = {
+            "schema_version": 1,
+            "evaluated_at_utc": utc_now(),
+            "passed": passed,
+            "pilot_id": metadata["pilot_id"],
+            "selection_hash": metadata["selection_hash"],
+            "candidate_revision": candidate_revision(connection),
+            "prompt_version": PROMPT_VERSION,
+            "model_id": model_id,
+            "labels_path": str(labels_path.resolve()),
+            "annotated_output": str(annotated_output.resolve()),
+            "human_labeled": human_labeled,
+            "human_positive_count": human_positive_count,
+            "negative_control_labels": negative_labels,
+            "negative_control_human_related": negative_human_related,
+            "heuristic_false_negative_rate": heuristic_false_negative_rate,
+            "missing_llm_for_labeled_rows": missing_llm,
+            "metrics": metrics,
+            "overlap_metrics": overlap_metrics,
+            "thresholds": {
+                **integer_requirements,
+                **rate_requirements,
+            },
+            "checks": checks,
+        }
+        write_json_atomic(report_path, report)
+        finish_run(
+            connection,
+            run_id,
+            "completed",
+            {
+                "pilot_id": metadata["pilot_id"],
+                "passed": passed,
+                "report": str(report_path),
+                "human_labeled": human_labeled,
+                "comparable": len(comparable),
+            },
+        )
+        return report
+    except Exception as exc:
+        finish_run(connection, run_id, "failed", {"error": str(exc)})
+        raise
+    finally:
+        connection.close()
+
+
+def validate_production_gate(
+    connection: sqlite3.Connection,
+    report_path: Path | None,
+    model_id: str,
+) -> dict[str, Any]:
+    if report_path is None:
+        raise ValueError(
+            "Production submission requires --gate-report from pilot-evaluate"
+        )
+    if not report_path.exists():
+        raise FileNotFoundError(f"Pilot gate report not found: {report_path}")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    if report.get("passed") is not True:
+        raise RuntimeError("Pilot evaluation did not pass")
+    if report.get("model_id") != model_id:
+        raise RuntimeError("Pilot gate model does not match the configured model")
+    if report.get("prompt_version") != PROMPT_VERSION:
+        raise RuntimeError("Pilot gate prompt version does not match current code")
+    if int(report.get("candidate_revision", -1)) != candidate_revision(connection):
+        raise RuntimeError(
+            "Pilot gate belongs to an older candidate revision; rerun the pilot"
+        )
+    return report
 
 
 def chunk_requests(
@@ -993,12 +2250,22 @@ def submit_batches(
     batch_directory: Path,
     *,
     event_ids: Sequence[str] | None = None,
+    pilot_manifest: Path | None = None,
+    production: bool = False,
+    gate_report: Path | None = None,
+    enforce_gate: bool = True,
     limit: int | None = None,
     retry_failed: bool = False,
     batch_max_mib: int = DEFAULT_BATCH_MAX_MIB,
     client: Any | None = None,
 ) -> dict[str, Any]:
     model_id = configured_model()  # Fail before creating a client/API request.
+    if pilot_manifest is not None and production:
+        raise ValueError("Choose either pilot submission or --production, not both")
+    if pilot_manifest is not None and event_ids:
+        raise ValueError("--event-id cannot be combined with a pilot manifest")
+    if enforce_gate and pilot_manifest is None and not production:
+        raise ValueError("Choose --pilot-manifest or --production")
     if limit is not None and limit <= 0:
         raise ValueError("Submit request limit must be positive.")
     if not 1 <= batch_max_mib <= MAX_BATCH_MIB:
@@ -1006,12 +2273,34 @@ def submit_batches(
             f"Batch file limit must be between 1 and {MAX_BATCH_MIB} MiB."
         )
     connection = connect_relevance_database(relevance_database)
-    run_id = start_run(
-        connection,
-        "submit",
-        model_id=model_id,
-        details={"event_ids": list(event_ids or []), "limit": limit},
-    )
+    submission_scope = "pilot" if pilot_manifest is not None else "production"
+    pilot_metadata: dict[str, Any] | None = None
+    pilot_rows: list[dict[str, str]] = []
+    gate: dict[str, Any] | None = None
+    try:
+        if pilot_manifest is not None:
+            pilot_metadata, pilot_rows = read_pilot_artifacts(
+                connection, pilot_manifest, model_id
+            )
+        elif enforce_gate:
+            gate = validate_production_gate(connection, gate_report, model_id)
+        run_id = start_run(
+            connection,
+            "submit",
+            model_id=model_id,
+            details={
+                "submission_scope": submission_scope,
+                "pilot_id": (
+                    pilot_metadata.get("pilot_id") if pilot_metadata else None
+                ),
+                "gate_pilot_id": gate.get("pilot_id") if gate else None,
+                "event_ids": list(event_ids or []),
+                "limit": limit,
+            },
+        )
+    except Exception:
+        connection.close()
+        raise
     try:
         active_job = connection.execute(
             """
@@ -1033,28 +2322,93 @@ def submit_batches(
                 "has not been collected. Run status and collect before submitting "
                 "the next request wave."
             )
-        ensure_llm_requests(
-            connection,
-            model_id,
-            event_ids=event_ids,
-            retry_failed=retry_failed,
-        )
-        event_sql, params = _event_filter_sql(event_ids, "event_id")
+        if pilot_manifest is not None:
+            candidate_pairs = [
+                (row["event_id"], row["url"]) for row in pilot_rows
+            ]
+            ensure_llm_requests(
+                connection,
+                model_id,
+                candidate_pairs=candidate_pairs,
+                include_negative_controls=True,
+                retry_failed=retry_failed,
+            )
+            ordered_keys = list(
+                dict.fromkeys(row["request_key"] for row in pilot_rows)
+            )
+            connection.execute(
+                "DROP TABLE IF EXISTS temp.selected_submit_requests"
+            )
+            connection.execute(
+                """
+                CREATE TEMP TABLE selected_submit_requests(
+                  request_key TEXT PRIMARY KEY,
+                  selection_order INTEGER NOT NULL
+                )
+                """
+            )
+            connection.executemany(
+                """
+                INSERT INTO selected_submit_requests(request_key, selection_order)
+                VALUES (?, ?)
+                """,
+                [(key, index) for index, key in enumerate(ordered_keys, start=1)],
+            )
+            pending_from = """
+            JOIN selected_submit_requests AS selected
+              ON selected.request_key=llm_requests.request_key
+            """
+            pending_scope_filter = ""
+            pending_order = "selected.selection_order"
+            event_sql = ""
+            params: list[Any] = []
+        else:
+            ensure_llm_requests(
+                connection,
+                model_id,
+                event_ids=event_ids,
+                retry_failed=retry_failed,
+            )
+            event_sql, params = _event_filter_sql(event_ids, "event_id")
+            pending_from = ""
+            pending_scope_filter = """
+              AND EXISTS (
+                SELECT 1
+                FROM article_event_candidates AS production_candidate
+                JOIN heuristic_results AS production_heuristic
+                  ON production_heuristic.event_id=production_candidate.event_id
+                 AND production_heuristic.url=production_candidate.url
+                WHERE production_candidate.request_key=llm_requests.request_key
+                  AND production_heuristic.status='keyword_match'
+              )
+            """
+            pending_order = "event_id, custom_id"
         limit_sql = "" if limit is None else " LIMIT ?"
         query_params: list[Any] = [model_id, *params]
         if limit is not None:
             query_params.append(limit)
         pending_cursor = connection.execute(
-            """
-            SELECT request_key, custom_id, request_json
+            f"""
+            SELECT llm_requests.request_key AS request_key,
+                   llm_requests.custom_id AS custom_id,
+                   llm_requests.request_json AS request_json
             FROM llm_requests
-            WHERE status='pending' AND model_id=?
-            """ + event_sql + " ORDER BY event_id, custom_id" + limit_sql,
+            {pending_from}
+            WHERE llm_requests.status='pending' AND llm_requests.model_id=?
+            {pending_scope_filter}
+            """ + event_sql + f" ORDER BY {pending_order}" + limit_sql,
             query_params,
         )
         first_pending = pending_cursor.fetchone()
         if first_pending is None:
-            details = {"submitted_batches": 0, "submitted_requests": 0}
+            details = {
+                "submission_scope": submission_scope,
+                "pilot_id": (
+                    pilot_metadata.get("pilot_id") if pilot_metadata else None
+                ),
+                "submitted_batches": 0,
+                "submitted_requests": 0,
+            }
             finish_run(connection, run_id, "completed", details)
             return details
         pending = itertools.chain((first_pending,), pending_cursor)
@@ -1074,28 +2428,35 @@ def submit_batches(
                     handle.write(row["request_json"] + "\n")
             with input_path.open("rb") as handle:
                 uploaded = api.files.create(file=handle, purpose="batch")
+            api_metadata = {
+                "project": "CVND",
+                "pipeline": "event-relevance",
+                "run_id": run_id,
+                "prompt_version": PROMPT_VERSION,
+                "scope": submission_scope,
+            }
+            if pilot_metadata is not None:
+                api_metadata["pilot_id"] = str(pilot_metadata["pilot_id"])
             batch = api.batches.create(
                 input_file_id=uploaded.id,
                 endpoint="/v1/responses",
                 completion_window="24h",
-                metadata={
-                    "project": "CVND",
-                    "pipeline": "event-relevance",
-                    "run_id": run_id,
-                    "prompt_version": PROMPT_VERSION,
-                },
+                metadata=api_metadata,
             )
             now = utc_now()
             connection.execute(
                 """
                 INSERT INTO batch_jobs(
-                  batch_id, run_id, input_file_id, local_input_path, status,
-                  request_count, created_at_utc, updated_at_utc
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                  batch_id, run_id, submission_scope, pilot_id, input_file_id,
+                  local_input_path, status, request_count, created_at_utc,
+                  updated_at_utc
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     batch.id,
                     run_id,
+                    submission_scope,
+                    pilot_metadata.get("pilot_id") if pilot_metadata else None,
                     uploaded.id,
                     str(input_path),
                     getattr(batch, "status", "validating"),
@@ -1117,6 +2478,9 @@ def submit_batches(
             submitted_requests += len(rows)
             batch_ids.append(batch.id)
         details = {
+            "submission_scope": submission_scope,
+            "pilot_id": pilot_metadata.get("pilot_id") if pilot_metadata else None,
+            "gate_pilot_id": gate.get("pilot_id") if gate else None,
             "submitted_batches": submitted_batches,
             "submitted_requests": submitted_requests,
             "batch_ids": batch_ids,
@@ -1344,6 +2708,7 @@ def collect_error_line(
         """
         UPDATE llm_requests SET status='failed', error=?, updated_at_utc=?
         WHERE custom_id=? AND batch_id=?
+          AND request_key NOT IN (SELECT request_key FROM llm_decisions)
         """,
         (stable_json(payload.get("error") or payload), now, custom_id, batch_id),
     )
@@ -1460,7 +2825,16 @@ SELECT
   c.source_domain,
   c.source_lang,
   c.gdelt_title,
+  c.page_title,
+  c.final_url,
+  c.canonical_url,
+  c.http_status,
   c.document_status,
+  c.extraction_method,
+  c.extraction_confidence,
+  c.word_count,
+  c.fallback_used,
+  c.download_attempt_count,
   c.content_sha256,
   c.body_char_count,
   h.status AS heuristic_status,
@@ -1473,6 +2847,8 @@ SELECT
   CASE
     WHEN h.status='no_body' THEN 'no_body'
     WHEN h.status='keyword_absent' THEN 'heuristic_no'
+    WHEN h.status='weak_keyword_absent' THEN 'weak_body_heuristic_no'
+    WHEN h.status='weak_keyword_match' THEN 'weak_body_excluded'
     WHEN d.related=1 THEN 'related'
     WHEN d.related=0 THEN COALESCE(d.decision_status, 'llm_no')
     WHEN r.status IN ('failed', 'expired', 'cancelled') THEN 'llm_error'
@@ -1497,9 +2873,17 @@ SELECT
   p.end_date,
   COUNT(c.url) AS candidate_count,
   SUM(CASE WHEN h.status != 'no_body' THEN 1 ELSE 0 END) AS body_available_count,
+  SUM(CASE WHEN h.status IN ('keyword_match', 'keyword_absent')
+      THEN 1 ELSE 0 END) AS primary_body_available_count,
+  SUM(CASE WHEN h.status IN ('weak_keyword_match', 'weak_keyword_absent')
+      THEN 1 ELSE 0 END) AS weak_body_available_count,
   SUM(CASE WHEN h.status = 'no_body' THEN 1 ELSE 0 END) AS no_body_count,
   SUM(CASE WHEN h.status = 'keyword_match' THEN 1 ELSE 0 END) AS heuristic_pass_count,
+  SUM(CASE WHEN h.status = 'weak_keyword_match'
+      THEN 1 ELSE 0 END) AS weak_heuristic_pass_count,
   SUM(CASE WHEN h.status = 'keyword_absent' THEN 1 ELSE 0 END) AS heuristic_no_count,
+  SUM(CASE WHEN h.status = 'weak_keyword_absent'
+      THEN 1 ELSE 0 END) AS weak_heuristic_no_count,
   COUNT(DISTINCT CASE
     WHEN h.status = 'keyword_match'
     THEN COALESCE(c.request_key, c.content_sha256 || ':' || p.profile_hash)
@@ -1597,15 +2981,94 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--limit", type=int)
     prepare.add_argument(
         "--resume", action="store_true",
-        help="Preserve existing candidate rows and insert only missing rows.",
+        help=(
+            "Do not delete existing candidates. Insert missing rows and "
+            "refresh scanned article bodies, including repaired downloads."
+        ),
     )
 
     estimate = subparsers.add_parser("estimate", help="Estimate LLM workload offline.")
     estimate.add_argument("--event-id", action="append")
 
+    pilot_create = subparsers.add_parser(
+        "pilot-create",
+        help="Create a deterministic stratified pilot and human-label manifest.",
+    )
+    pilot_create.add_argument("--output", type=Path, default=DEFAULT_PILOT_MANIFEST)
+    pilot_create.add_argument("--size", type=int, default=DEFAULT_PILOT_SIZE)
+    pilot_create.add_argument(
+        "--negative-share", type=float, default=DEFAULT_PILOT_NEGATIVE_SHARE
+    )
+    pilot_create.add_argument("--seed", type=int, default=DEFAULT_PILOT_SEED)
+    pilot_create.add_argument(
+        "--max-per-domain", type=int, default=DEFAULT_PILOT_MAX_PER_DOMAIN
+    )
+    pilot_create.add_argument("--overwrite", action="store_true")
+
+    pilot_evaluate = subparsers.add_parser(
+        "pilot-evaluate",
+        help="Compare collected LLM decisions with human pilot labels.",
+    )
+    pilot_evaluate.add_argument("--labels", type=Path, required=True)
+    pilot_evaluate.add_argument(
+        "--report", type=Path, default=DEFAULT_PILOT_EVALUATION
+    )
+    pilot_evaluate.add_argument(
+        "--annotated-output", type=Path, default=DEFAULT_PILOT_ANNOTATED
+    )
+    pilot_evaluate.add_argument(
+        "--min-labels", type=int, default=DEFAULT_MIN_PILOT_LABELS
+    )
+    pilot_evaluate.add_argument(
+        "--min-human-positives", type=int, default=DEFAULT_MIN_HUMAN_POSITIVES
+    )
+    pilot_evaluate.add_argument(
+        "--min-negative-controls",
+        type=int,
+        default=DEFAULT_MIN_NEGATIVE_CONTROLS,
+    )
+    pilot_evaluate.add_argument(
+        "--min-overlap-labels", type=int, default=DEFAULT_MIN_OVERLAP_LABELS
+    )
+    pilot_evaluate.add_argument(
+        "--min-accuracy", type=float, default=DEFAULT_MIN_ACCURACY
+    )
+    pilot_evaluate.add_argument(
+        "--min-precision", type=float, default=DEFAULT_MIN_PRECISION
+    )
+    pilot_evaluate.add_argument(
+        "--min-recall", type=float, default=DEFAULT_MIN_RECALL
+    )
+    pilot_evaluate.add_argument(
+        "--min-overlap-accuracy",
+        type=float,
+        default=DEFAULT_MIN_OVERLAP_ACCURACY,
+    )
+    pilot_evaluate.add_argument(
+        "--max-heuristic-false-negative-rate",
+        type=float,
+        default=DEFAULT_MAX_HEURISTIC_FALSE_NEGATIVE_RATE,
+    )
+
     submit = subparsers.add_parser("submit", help="Submit pending requests to Batch API.")
     submit.add_argument("--batch-directory", type=Path, default=DEFAULT_BATCH_DIRECTORY)
     submit.add_argument("--event-id", action="append")
+    submit_scope = submit.add_mutually_exclusive_group(required=True)
+    submit_scope.add_argument(
+        "--pilot-manifest",
+        type=Path,
+        help="Submit only the immutable candidates in this pilot manifest.",
+    )
+    submit_scope.add_argument(
+        "--production",
+        action="store_true",
+        help="Submit a production wave after a pilot gate has passed.",
+    )
+    submit.add_argument(
+        "--gate-report",
+        type=Path,
+        help="Passed pilot-evaluate JSON required with --production.",
+    )
     submit.add_argument(
         "--limit",
         type=int,
@@ -1649,11 +3112,42 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         elif args.command == "estimate":
             result = estimate_workload(args.database, event_ids=args.event_id)
+        elif args.command == "pilot-create":
+            result = create_pilot_manifest(
+                args.database,
+                args.output,
+                size=args.size,
+                negative_share=args.negative_share,
+                seed=args.seed,
+                max_per_domain=args.max_per_domain,
+                overwrite=args.overwrite,
+            )
+        elif args.command == "pilot-evaluate":
+            result = evaluate_pilot(
+                args.database,
+                args.labels,
+                args.report,
+                args.annotated_output,
+                min_labels=args.min_labels,
+                min_human_positives=args.min_human_positives,
+                min_negative_controls=args.min_negative_controls,
+                min_overlap_labels=args.min_overlap_labels,
+                min_accuracy=args.min_accuracy,
+                min_precision=args.min_precision,
+                min_recall=args.min_recall,
+                min_overlap_accuracy=args.min_overlap_accuracy,
+                max_heuristic_false_negative_rate=(
+                    args.max_heuristic_false_negative_rate
+                ),
+            )
         elif args.command == "submit":
             result = submit_batches(
                 args.database,
                 args.batch_directory,
                 event_ids=args.event_id,
+                pilot_manifest=args.pilot_manifest,
+                production=args.production,
+                gate_report=args.gate_report,
                 limit=args.limit,
                 retry_failed=args.retry_failed,
                 batch_max_mib=args.batch_max_mib,
@@ -1679,7 +3173,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise AssertionError(args.command)
         print_json(result)
         return 0
-    except (FileNotFoundError, RuntimeError, ValueError, sqlite3.DatabaseError) as exc:
+    except (OSError, RuntimeError, ValueError, sqlite3.DatabaseError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 

@@ -50,6 +50,12 @@ DATA_FILES: dict[str, str] = {
     "post_cloud": "intermediate/post_cloud.csv",
     "severity_raw": "intermediate/severity_raw.csv",
     "event_relevance_database": "intermediate/gdelt_event_relevance.sqlite",
+    "event_relevance_pilot_manifest": "intermediate/gdelt_event_relevance_pilot.csv",
+    "event_relevance_pilot_evaluation": "intermediate/gdelt_event_relevance_pilot_evaluation.json",
+    "event_relevance_pilot_annotated": "intermediate/gdelt_event_relevance_pilot_evaluated.csv",
+    "article_retrieval_event_qc": "intermediate/article_retrieval_qc_by_event.csv",
+    "article_retrieval_year_qc": "intermediate/article_retrieval_qc_by_year.csv",
+    "article_retrieval_unresolved": "intermediate/article_retrieval_unresolved.csv.gz",
     # results
     "pss_results": "results/pss_results.csv",
     "mss_results": "results/mss_results.csv",

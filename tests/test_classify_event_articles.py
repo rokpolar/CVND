@@ -1,3 +1,4 @@
+import csv
 import json
 import io
 import sqlite3
@@ -5,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from collections import Counter
 from types import SimpleNamespace
 from unittest import mock
 
@@ -78,6 +80,18 @@ def write_article_database(root: Path) -> Path:
         CREATE TABLE documents (
           url TEXT PRIMARY KEY,
           status TEXT,
+          http_status INTEGER,
+          final_url TEXT,
+          page_title TEXT,
+          canonical_url TEXT,
+          extraction_method TEXT,
+          extraction_confidence REAL,
+          word_count INTEGER,
+          candidate_count INTEGER,
+          selected_attempt_url TEXT,
+          fallback_used TEXT,
+          attempt_count INTEGER,
+          error TEXT,
           content_sha256 TEXT,
           body_text TEXT
         );
@@ -103,6 +117,9 @@ def write_article_database(root: Path) -> Path:
         "https://c.example/hindi": ("extract_weak", "hindi-hash", "गांव में बाढ़ से घर डूब गए।"),
         "https://d.example/weather": ("ok", "weather-hash", "Heavy rain is expected."),
         "https://e.example/missing": ("http_error", None, None),
+        "https://f.example/other": (
+            "ok", "other-hash", "Inundation damaged another village."
+        ),
         "not-a-url": ("ok", "bad-url", "flood"),
     }
     connection.executemany(
@@ -116,6 +133,7 @@ def write_article_database(root: Path) -> Path:
         ("E001", "State A", "2020-0001-IND", "2020-01-16T12:00:00Z", "https://c.example/hindi"),
         ("E001", "State A", "2020-0001-IND", "2020-01-17T12:00:00Z", "https://d.example/weather"),
         ("E001", "State A", "2020-0001-IND", "2020-01-18T12:00:00Z", "https://e.example/missing"),
+        ("E001", "State A", "2020-0001-IND", "2020-01-19T12:00:00Z", "https://f.example/other"),
         ("E001", "State A", "2020-0001-IND", "2021-01-01T12:00:00Z", "not-a-url"),
     ]
     connection.executemany(
@@ -133,13 +151,50 @@ def write_article_database(root: Path) -> Path:
 
 
 class KeywordTests(unittest.TestCase):
-    def test_multilingual_keywords_and_exact_excerpt_limit(self):
-        body = "x" * 1990 + " बाढ़ " + "tail" * 20
-        status, excerpt, matches = classifier.classify_heuristic("ok", body)
-        self.assertEqual(len(excerpt), classifier.TEXT_CHAR_LIMIT)
-        self.assertEqual(excerpt, body[: classifier.TEXT_CHAR_LIMIT])
+    def test_multilingual_keywords_scan_full_body_and_keep_context(self):
+        body = "x" * 5_000 + " बाढ़ " + "tail" * 200
+        status, excerpt, matches = classifier.classify_heuristic(
+            "ok", body, "Village update"
+        )
+        self.assertLessEqual(len(excerpt), classifier.TEXT_CHAR_LIMIT)
         self.assertEqual(status, "keyword_match")
         self.assertIn("hin:बाढ़", matches)
+        self.assertIn("Village update", excerpt)
+        self.assertIn("बाढ़", excerpt)
+
+    def test_unicode_normalization_offsets_do_not_drop_matched_context(self):
+        # NFKC contracts each two-codepoint sequence to one character. The
+        # keyword is beyond the raw 1,000-char lead but before normalized 1,000.
+        body = ("e\u0301" * 700) + " flood damaged homes"
+        status, excerpt, matches = classifier.classify_heuristic("ok", body)
+        self.assertEqual(status, "keyword_match")
+        self.assertIn("en:flood", matches)
+        self.assertIn("flood", excerpt)
+        self.assertIn("MATCHED CONTEXT", excerpt)
+
+    def test_page_title_participates_in_keyword_filter(self):
+        status, excerpt, matches = classifier.classify_heuristic(
+            "ok",
+            "The district administration issued a public notice.",
+            "Flash flood damages several villages",
+        )
+        self.assertEqual(status, "keyword_match")
+        self.assertIn("en:flash flood", matches)
+        self.assertIn("Flash flood", excerpt)
+
+    def test_weak_body_is_separate_from_primary_candidates(self):
+        status, _excerpt, matches = classifier.classify_heuristic(
+            "extract_weak", "गांव में बाढ़ से घर डूब गए।"
+        )
+        self.assertEqual(status, "weak_keyword_match")
+        self.assertIn("hin:बाढ़", matches)
+
+    def test_english_keywords_use_word_boundaries(self):
+        status, _excerpt, matches = classifier.classify_heuristic(
+            "ok", "The stadium installed new LED floodlights."
+        )
+        self.assertEqual(status, "keyword_absent")
+        self.assertNotIn("en:flood", matches)
 
     def test_missing_body_and_generic_rain_are_rejected(self):
         self.assertEqual(
@@ -200,7 +255,7 @@ class CandidatePipelineTests(unittest.TestCase):
         connection = classifier.connect_relevance_database(self.relevance_path)
         try:
             created = classifier.ensure_llm_requests(
-                connection, "fixed-test-model", event_ids=["E001"]
+                connection, classifier.configured_model(), event_ids=["E001"]
             )
             # Two different URLs have the same body hash and event profile.
             self.assertGreaterEqual(created, 2)
@@ -242,6 +297,42 @@ class CandidatePipelineTests(unittest.TestCase):
         counts = pd.read_csv(counts_path).set_index("event_id")
         self.assertEqual(counts.loc["E001", "final_article_count"], 2)
 
+    def test_prompt_cache_separates_same_body_with_different_titles(self):
+        articles = sqlite3.connect(self.articles_path)
+        try:
+            articles.execute(
+                "UPDATE documents SET page_title='North district flood' "
+                "WHERE url='https://a.example/shared'"
+            )
+            articles.execute(
+                "UPDATE documents SET page_title='South district flood' "
+                "WHERE url='https://b.example/same-body'"
+            )
+            articles.commit()
+        finally:
+            articles.close()
+        self.prepare()
+        connection = classifier.connect_relevance_database(self.relevance_path)
+        try:
+            classifier.ensure_llm_requests(
+                connection, classifier.configured_model(), event_ids=["E001"]
+            )
+            keys = {
+                row[0]
+                for row in connection.execute(
+                    """
+                    SELECT request_key
+                    FROM article_event_candidates
+                    WHERE event_id='E001' AND url IN (
+                      'https://a.example/shared', 'https://b.example/same-body'
+                    )
+                    """
+                )
+            }
+            self.assertEqual(len(keys), 2)
+        finally:
+            connection.close()
+
     def test_all_events_are_exported_even_when_no_candidates_exist(self):
         self.prepare()
         counts_path = self.root / "counts.csv"
@@ -260,6 +351,149 @@ class CandidatePipelineTests(unittest.TestCase):
                 self.rich_path,
                 limit=1,
             )
+
+    def test_full_prepare_drops_events_removed_from_the_registry(self):
+        self.prepare()
+        events = pd.read_csv(self.events_path)
+        events[events["event_id"] != "E003"].to_csv(self.events_path, index=False)
+        result = classifier.prepare_candidates(
+            self.articles_path,
+            self.relevance_path,
+            self.events_path,
+            self.rich_path,
+        )
+        self.assertEqual(result["pruned_stale_event_profiles"], 1)
+        connection = sqlite3.connect(self.relevance_path)
+        try:
+            remaining = {
+                row[0]
+                for row in connection.execute("SELECT event_id FROM event_profiles")
+            }
+            self.assertEqual(remaining, {"E001", "E002"})
+            self.assertEqual(
+                connection.execute(
+                    "SELECT COUNT(*) FROM article_event_candidates WHERE event_id='E003'"
+                ).fetchone()[0],
+                0,
+            )
+        finally:
+            connection.close()
+        counts_path = self.root / "counts.csv"
+        classifier.export_results(
+            self.relevance_path, counts_path, self.root / "mapping.csv.gz"
+        )
+        counts = pd.read_csv(counts_path)
+        self.assertEqual(set(counts["event_id"]), {"E001", "E002"})
+
+    def test_filtered_prepare_keeps_other_event_profiles(self):
+        self.prepare()
+        classifier.prepare_candidates(
+            self.articles_path,
+            self.relevance_path,
+            self.events_path,
+            self.rich_path,
+            event_ids=["E001"],
+        )
+        connection = sqlite3.connect(self.relevance_path)
+        try:
+            remaining = {
+                row[0]
+                for row in connection.execute("SELECT event_id FROM event_profiles")
+            }
+            self.assertEqual(remaining, {"E001", "E002", "E003"})
+        finally:
+            connection.close()
+
+    def test_resume_refreshes_repaired_bodies_without_dropping_cached_keys(self):
+        self.prepare()
+        connection = classifier.connect_relevance_database(self.relevance_path)
+        try:
+            classifier.ensure_llm_requests(
+                connection, classifier.configured_model(), event_ids=["E001"]
+            )
+            shared_key = connection.execute(
+                """
+                SELECT request_key FROM article_event_candidates
+                WHERE event_id='E001' AND url='https://a.example/shared'
+                """
+            ).fetchone()[0]
+            other_key = connection.execute(
+                """
+                SELECT request_key FROM article_event_candidates
+                WHERE event_id='E001' AND url='https://f.example/other'
+                """
+            ).fetchone()[0]
+            missing_status = connection.execute(
+                """
+                SELECT h.status FROM heuristic_results AS h
+                WHERE h.event_id='E001' AND h.url='https://e.example/missing'
+                """
+            ).fetchone()[0]
+            self.assertIsNotNone(shared_key)
+            self.assertIsNotNone(other_key)
+            self.assertEqual(missing_status, "no_body")
+        finally:
+            connection.close()
+
+        articles = sqlite3.connect(self.articles_path)
+        try:
+            articles.execute(
+                """
+                UPDATE documents
+                SET status='ok', content_sha256='repaired-hash',
+                    body_text='Flood waters returned to the village.'
+                WHERE url='https://e.example/missing'
+                """
+            )
+            articles.execute(
+                """
+                UPDATE documents
+                SET content_sha256='other-hash-2',
+                    body_text='Floodwater damaged another village again.'
+                WHERE url='https://f.example/other'
+                """
+            )
+            articles.commit()
+        finally:
+            articles.close()
+
+        classifier.prepare_candidates(
+            self.articles_path,
+            self.relevance_path,
+            self.events_path,
+            self.rich_path,
+            resume=True,
+        )
+        connection = sqlite3.connect(self.relevance_path)
+        try:
+            shared_after = connection.execute(
+                """
+                SELECT request_key FROM article_event_candidates
+                WHERE event_id='E001' AND url='https://a.example/shared'
+                """
+            ).fetchone()[0]
+            other_after = connection.execute(
+                """
+                SELECT request_key FROM article_event_candidates
+                WHERE event_id='E001' AND url='https://f.example/other'
+                """
+            ).fetchone()[0]
+            repaired = connection.execute(
+                """
+                SELECT c.document_status, c.text_excerpt, h.status
+                FROM article_event_candidates AS c
+                JOIN heuristic_results AS h
+                  ON h.event_id=c.event_id AND h.url=c.url
+                WHERE c.event_id='E001' AND c.url='https://e.example/missing'
+                """
+            ).fetchone()
+            self.assertEqual(shared_after, shared_key)
+            self.assertIsNone(other_after)
+            self.assertEqual(repaired[0], "ok")
+            self.assertIn("Flood waters", repaired[1])
+            self.assertEqual(repaired[2], "keyword_match")
+        finally:
+            connection.close()
 
 
 class LlmContractTests(unittest.TestCase):
@@ -291,6 +525,30 @@ class LlmContractTests(unittest.TestCase):
         self.assertEqual(body["text"]["format"], classifier.RESPONSE_SCHEMA)
         self.assertTrue(body["text"]["format"]["strict"])
         self.assertEqual(request["url"], "/v1/responses")
+
+    def test_batch_custom_id_is_the_64_character_request_key(self):
+        profile = {
+            "event_id": "E001",
+            "source_record_id": "2020-0001-IND",
+            "state": "State A",
+            "district": "North",
+            "start_date": "2020-01-01",
+            "end_date": "2020-01-05",
+            "disaster_type": "Flood",
+            "disaster_subtype": "Flash flood",
+            "event_name": "",
+            "official_location": "North river",
+            "origin": "Heavy rain",
+            "associated_types": "",
+            "river_basin": "N",
+        }
+        request_key = classifier.request_key_for(
+            profile, "Flood waters reached homes.", classifier.configured_model()
+        )
+        self.assertEqual(len(request_key), 64)
+        self.assertEqual(classifier.batch_custom_id(request_key), request_key)
+        with self.assertRaisesRegex(ValueError, "64 characters"):
+            classifier.batch_custom_id("x" * 65)
 
     def test_model_is_hardcoded_and_missing_value_fails(self):
         with mock.patch.object(classifier, "OPENAI_EVENT_FILTER_MODEL", ""):
@@ -331,7 +589,7 @@ class LlmContractTests(unittest.TestCase):
         self.assertEqual([len(chunk) for chunk in chunks], [2, 2, 1])
 
     def test_submit_cli_uses_a_conservative_default_wave(self):
-        args = classifier.build_parser().parse_args(["submit"])
+        args = classifier.build_parser().parse_args(["submit", "--production"])
         self.assertEqual(args.limit, classifier.DEFAULT_SUBMIT_REQUEST_LIMIT)
 
 
@@ -376,6 +634,150 @@ class FakeOpenAI:
         self.batches = FakeBatches()
 
 
+class PilotWorkflowTests(unittest.TestCase):
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.root = Path(self.tempdir.name)
+        events, rich = write_event_sources(self.root)
+        articles = write_article_database(self.root)
+        self.database = self.root / "relevance.sqlite"
+        classifier.prepare_candidates(articles, self.database, events, rich)
+        self.manifest = self.root / "pilot.csv"
+        self.api = FakeOpenAI()
+        self.model_patch = mock.patch.object(
+            classifier, "OPENAI_EVENT_FILTER_MODEL", "fixed-test-model"
+        )
+        self.model_patch.start()
+
+    def tearDown(self):
+        self.model_patch.stop()
+        self.tempdir.cleanup()
+
+    def create_pilot(self):
+        return classifier.create_pilot_manifest(
+            self.database,
+            self.manifest,
+            size=4,
+            negative_share=0.25,
+            seed=7,
+            max_per_domain=0,
+        )
+
+    def test_stratified_pilot_manifest_submits_only_selected_requests(self):
+        created = self.create_pilot()
+        self.assertEqual(created["sample_count"], 4)
+        with self.manifest.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle))
+        self.assertEqual(
+            Counter(row["sample_role"] for row in rows),
+            Counter({"heuristic_positive": 3, "heuristic_negative_control": 1}),
+        )
+        submitted = classifier.submit_batches(
+            self.database,
+            self.root / "batches",
+            pilot_manifest=self.manifest,
+            client=self.api,
+        )
+        submitted_lines = [
+            json.loads(line)
+            for upload, _purpose in self.api.files.uploads
+            for line in upload.splitlines()
+        ]
+        self.assertEqual(
+            {line["custom_id"] for line in submitted_lines},
+            {row["request_key"] for row in rows},
+        )
+        self.assertEqual(submitted["submission_scope"], "pilot")
+        connection = sqlite3.connect(self.database)
+        try:
+            scope, pilot_id = connection.execute(
+                "SELECT submission_scope,pilot_id FROM batch_jobs"
+            ).fetchone()
+            self.assertEqual(scope, "pilot")
+            self.assertEqual(pilot_id, created["pilot_id"])
+        finally:
+            connection.close()
+
+    def test_human_evaluation_creates_a_production_gate(self):
+        self.create_pilot()
+        connection = classifier.connect_relevance_database(self.database)
+        try:
+            _metadata, rows = classifier.read_pilot_artifacts(
+                connection, self.manifest, "fixed-test-model"
+            )
+            classifier.ensure_llm_requests(
+                connection,
+                "fixed-test-model",
+                candidate_pairs=[(row["event_id"], row["url"]) for row in rows],
+                include_negative_controls=True,
+            )
+            for row in rows:
+                related = int(row["sample_role"] == "heuristic_positive")
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO llm_decisions(
+                      request_key,related,decision_status,decided_at_utc
+                    ) VALUES (?,?,'parsed','2026-01-01T00:00:00Z')
+                    """,
+                    (row["request_key"], related),
+                )
+                connection.execute(
+                    "UPDATE llm_requests SET status='completed' WHERE request_key=?",
+                    (row["request_key"],),
+                )
+            connection.commit()
+        finally:
+            connection.close()
+
+        with self.manifest.open(encoding="utf-8", newline="") as handle:
+            labeled = list(csv.DictReader(handle))
+        for row in labeled:
+            row["human_related"] = int(
+                row["sample_role"] == "heuristic_positive"
+            )
+        with self.manifest.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=classifier.PILOT_MANIFEST_FIELDS)
+            writer.writeheader()
+            writer.writerows(labeled)
+
+        report_path = self.root / "pilot-evaluation.json"
+        report = classifier.evaluate_pilot(
+            self.database,
+            self.manifest,
+            report_path,
+            self.root / "pilot-evaluated.csv",
+            min_labels=4,
+            min_human_positives=1,
+            min_negative_controls=1,
+            min_overlap_labels=0,
+            min_accuracy=1.0,
+            min_precision=1.0,
+            min_recall=1.0,
+            min_overlap_accuracy=0.0,
+            max_heuristic_false_negative_rate=0.0,
+        )
+        self.assertTrue(report["passed"])
+
+        submitted = classifier.submit_batches(
+            self.database,
+            self.root / "production-batches",
+            production=True,
+            gate_report=report_path,
+            limit=1,
+            client=self.api,
+        )
+        self.assertEqual(submitted["submission_scope"], "production")
+
+    def test_production_submission_rejects_a_missing_gate(self):
+        with self.assertRaisesRegex(ValueError, "requires --gate-report"):
+            classifier.submit_batches(
+                self.database,
+                self.root / "batches",
+                production=True,
+                client=self.api,
+            )
+
+
 class BatchLifecycleTests(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
@@ -400,6 +802,7 @@ class BatchLifecycleTests(unittest.TestCase):
             self.root / "batches",
             event_ids=["E001"],
             client=self.api,
+            enforce_gate=False,
         )
         self.assertEqual(submitted["submitted_batches"], 1)
         self.assertEqual(self.api.files.uploads[0][1], "batch")
@@ -411,12 +814,15 @@ class BatchLifecycleTests(unittest.TestCase):
         self.assertEqual(first_body["reasoning"], {"effort": "none"})
 
         connection = sqlite3.connect(self.database)
-        custom_ids = [
-            row[0]
-            for row in connection.execute(
-                "SELECT custom_id FROM llm_requests WHERE event_id='E001'"
+        request_rows = list(
+            connection.execute(
+                "SELECT custom_id, request_key FROM llm_requests WHERE event_id='E001'"
             )
-        ]
+        )
+        custom_ids = [row[0] for row in request_rows]
+        for custom_id, request_key in request_rows:
+            self.assertEqual(custom_id, request_key)
+            self.assertEqual(len(custom_id), 64)
         connection.close()
         lines = [
             json.dumps(
@@ -459,6 +865,7 @@ class BatchLifecycleTests(unittest.TestCase):
             self.root / "batches",
             event_ids=["E001"],
             client=self.api,
+            enforce_gate=False,
         )
         self.api.batches.jobs[submitted["batch_ids"][0]].status = "expired"
         classifier.status_batches(self.database, client=self.api)
@@ -491,6 +898,7 @@ class BatchLifecycleTests(unittest.TestCase):
             self.root / "batches",
             event_ids=["E001"],
             client=self.api,
+            enforce_gate=False,
         )
         batch_id = submitted["batch_ids"][0]
         connection = sqlite3.connect(self.database)
@@ -549,6 +957,7 @@ class BatchLifecycleTests(unittest.TestCase):
             event_ids=["E001"],
             limit=1,
             client=self.api,
+            enforce_gate=False,
         )
         with self.assertRaisesRegex(RuntimeError, "Run status and collect"):
             classifier.submit_batches(
@@ -557,7 +966,72 @@ class BatchLifecycleTests(unittest.TestCase):
                 event_ids=["E001"],
                 limit=1,
                 client=self.api,
+                enforce_gate=False,
             )
+
+    def test_error_file_does_not_overwrite_a_collected_decision(self):
+        submitted = classifier.submit_batches(
+            self.database,
+            self.root / "batches",
+            event_ids=["E001"],
+            limit=1,
+            client=self.api,
+            enforce_gate=False,
+        )
+        batch_id = submitted["batch_ids"][0]
+        connection = sqlite3.connect(self.database)
+        custom_id = connection.execute(
+            "SELECT custom_id FROM llm_requests WHERE batch_id=?",
+            (batch_id,),
+        ).fetchone()[0]
+        connection.close()
+        success_line = json.dumps(
+            {
+                "custom_id": custom_id,
+                "response": {
+                    "status_code": 200,
+                    "body": {
+                        "id": "response-ok",
+                        "output_text": json.dumps({"related": True}),
+                    },
+                },
+                "error": None,
+            }
+        )
+        error_line = json.dumps(
+            {
+                "custom_id": custom_id,
+                "response": None,
+                "error": {"code": "server_error", "message": "duplicate error row"},
+            }
+        )
+        self.api.files.downloads["output-ok"] = (success_line + "\n").encode()
+        self.api.files.downloads["error-dup"] = (error_line + "\n").encode()
+        job = self.api.batches.jobs[batch_id]
+        job.status = "completed"
+        job.output_file_id = "output-ok"
+        job.error_file_id = "error-dup"
+
+        collected = classifier.collect_batches(
+            self.database, self.root / "batches", client=self.api
+        )
+        self.assertEqual(collected["decisions"], 1)
+        self.assertEqual(collected["related"], 1)
+        connection = sqlite3.connect(self.database)
+        try:
+            status, related = connection.execute(
+                """
+                SELECT r.status, d.related
+                FROM llm_requests AS r
+                JOIN llm_decisions AS d ON d.request_key=r.request_key
+                WHERE r.custom_id=?
+                """,
+                (custom_id,),
+            ).fetchone()
+            self.assertEqual(status, "completed")
+            self.assertEqual(related, 1)
+        finally:
+            connection.close()
 
 
 if __name__ == "__main__":

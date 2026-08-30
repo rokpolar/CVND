@@ -52,7 +52,13 @@ Tiered folders under `data/`. Primary pipeline scripts resolve paths via
 | `event_aoi_area.csv` | `event_aoi_area` | `event_aoi_area.py` | `merge_results.py` |
 | `post_cloud.csv` | `post_cloud` | `post_cloud.py` | `merge_results.py` |
 | `severity_raw.csv` | `severity_raw` | `compute_population.py` | `compute_pss.py`, `compute_expected_coverage.py` |
+| `article_retrieval_qc_by_event.csv` | `article_retrieval_event_qc` | `audit_article_retrieval.py` | Pre-LLM retrieval-bias audit |
+| `article_retrieval_qc_by_year.csv` | `article_retrieval_year_qc` | `audit_article_retrieval.py` | Historical URL-survival audit |
+| `article_retrieval_unresolved.csv.gz` | `article_retrieval_unresolved` | `audit_article_retrieval.py` | Retry/archive/access review queue |
 | `gdelt_event_relevance.sqlite` | `event_relevance_database` | `classify_event_articles.py` | Resumable article/event classification and audit |
+| `gdelt_event_relevance_pilot.csv` | `event_relevance_pilot_manifest` | `classify_event_articles.py pilot-create` | Stratified LLM/human validation sample |
+| `gdelt_event_relevance_pilot_evaluation.json` | `event_relevance_pilot_evaluation` | `classify_event_articles.py pilot-evaluate` | Production submission gate and validation metrics |
+| `gdelt_event_relevance_pilot_evaluated.csv` | `event_relevance_pilot_annotated` | `classify_event_articles.py pilot-evaluate` | Human and LLM labels joined for review |
 | `gdelt_event_relevance_batches/` | — | `classify_event_articles.py submit/collect` | OpenAI Batch JSONL inputs and outputs |
 
 ### `results/`
