@@ -22,7 +22,14 @@ from typing import Any, Iterable
 
 import pandas as pd
 
-from cvnd_layout import data_path
+from cvnd_layout import ROOT, data_path
+
+try:
+    from dotenv import load_dotenv
+except ImportError:  # Environment variables exported in the shell still work.
+    pass
+else:
+    load_dotenv(ROOT / ".env")
 
 
 GKG_TABLE = "gdelt-bq.gdeltv2.gkg_partitioned"
