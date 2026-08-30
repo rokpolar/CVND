@@ -4,6 +4,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+if [[ -f "$ROOT/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/.env"
+  set +a
+fi
+
 VENV_DIR="$ROOT/venv"
 # Prefer Unix venv; fall back to Windows Scripts/python.exe
 if [[ -x "$VENV_DIR/bin/python" ]]; then
