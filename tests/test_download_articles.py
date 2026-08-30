@@ -10,7 +10,7 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 
 SRC = Path(__file__).resolve().parents[1] / "src"
@@ -29,12 +29,88 @@ from article_fetcher import (  # noqa: E402
     AsyncRobotsCache,
     AsyncArticleFetcher,
     HttpFetch,
+    OriginThrottle,
     fallback_links,
     looks_like_javascript_shell,
 )
 
 
 class DownloadArticlesTests(unittest.TestCase):
+    def test_origin_throttle_does_not_hold_lock_for_entire_response(self):
+        async def scenario():
+            throttle = OriginThrottle()
+            first_started = asyncio.Event()
+            release_first = asyncio.Event()
+            second_started = asyncio.Event()
+
+            async def first_operation():
+                first_started.set()
+                await release_first.wait()
+                return HttpFetch(
+                    status="html", attempted_url="https://example.com/a"
+                )
+
+            async def second_operation():
+                second_started.set()
+                return HttpFetch(
+                    status="html", attempted_url="https://example.com/b"
+                )
+
+            first = asyncio.create_task(
+                throttle.run("https://example.com/a", 0.0, first_operation)
+            )
+            await first_started.wait()
+            second = asyncio.create_task(
+                throttle.run("https://example.com/b", 0.0, second_operation)
+            )
+            await asyncio.wait_for(second_started.wait(), timeout=0.5)
+            release_first.set()
+            await asyncio.gather(first, second)
+
+        asyncio.run(scenario())
+
+    def test_retry_before_resumes_only_stale_retryable_documents(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            connection = download_articles.connect_database(
+                Path(temporary) / "articles.sqlite"
+            )
+            try:
+                connection.executemany(
+                    """
+                    INSERT INTO documents(url, status, retrieved_at_utc)
+                    VALUES (?, ?, ?)
+                    """,
+                    [
+                        ("https://example.com/old", "host_deferred", "2026-01-01T00:00:00+00:00"),
+                        ("https://example.com/new", "host_deferred", "2026-08-30T04:00:00+00:00"),
+                        ("https://example.com/missing", "request_error", None),
+                        ("https://example.com/done", "ok", "2025-01-01T00:00:00+00:00"),
+                    ],
+                )
+                selected = download_articles.select_download_urls(
+                    connection,
+                    retry_failed=True,
+                    limit=None,
+                    retry_before="2026-08-30T03:53:00+00:00",
+                )
+            finally:
+                connection.close()
+        self.assertEqual(
+            selected,
+            ["https://example.com/old", "https://example.com/missing"],
+        )
+
+    def test_retry_before_requires_retry_failed(self):
+        args = download_articles.parse_args(
+            [
+                "articles.jsonl.gz",
+                "--retry-before",
+                "2026-08-30T03:53:00Z",
+            ]
+        )
+        with self.assertRaisesRegex(ValueError, "requires --retry-failed"):
+            download_articles.validate_args(args)
+
     def test_database_corrections_are_audited_and_reversible(self):
         connection = sqlite3.connect(":memory:")
         connection.execute(
@@ -523,6 +599,51 @@ class DownloadArticlesTests(unittest.TestCase):
         result = asyncio.run(fetcher._fetch_http("https://www.example.com/story"))
         self.assertEqual(result.status, "host_deferred")
         self.assertIn("circuit open", result.error)
+
+    def test_host_circuit_counts_failed_urls_not_transport_retries(self):
+        fetcher = object.__new__(AsyncArticleFetcher)
+        fetcher.host_failure_limit = 3
+        fetcher.retries = 2
+        fetcher.max_bytes = 1_000
+        fetcher.per_host_delay = 0.0
+        fetcher._host_transient_failures = {}
+
+        class Robots:
+            async def policy(self, _url):
+                return True, 0.0
+
+        fetcher.robots = Robots()
+        calls = []
+
+        async def request_once(url, _delay, _max_bytes):
+            calls.append(url)
+            return HttpFetch(
+                status="request_error",
+                attempted_url=url,
+                error="temporary failure",
+            )
+
+        fetcher._request_once = request_once
+        with patch("article_fetcher.asyncio.sleep", new_callable=AsyncMock):
+            first = asyncio.run(fetcher._fetch_http("https://example.com/one"))
+            self.assertEqual(first.status, "request_error")
+            self.assertEqual(fetcher._host_transient_failures["example.com"], 1)
+            self.assertEqual(len(calls), 3)
+
+            second = asyncio.run(fetcher._fetch_http("https://example.com/two"))
+            self.assertEqual(second.status, "request_error")
+            self.assertEqual(fetcher._host_transient_failures["example.com"], 2)
+            self.assertEqual(len(calls), 6)
+
+            third = asyncio.run(fetcher._fetch_http("https://example.com/three"))
+            self.assertEqual(third.status, "request_error")
+            self.assertIn("circuit opened", third.error)
+            self.assertEqual(fetcher._host_transient_failures["example.com"], 3)
+            self.assertEqual(len(calls), 9)
+
+            deferred = asyncio.run(fetcher._fetch_http("https://example.com/four"))
+            self.assertEqual(deferred.status, "host_deferred")
+            self.assertEqual(len(calls), 9)
 
     def test_multilingual_headline_tail_is_removed(self):
         article = " ".join(["This is a verified article paragraph with details."] * 20)
