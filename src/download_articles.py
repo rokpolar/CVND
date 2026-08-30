@@ -400,6 +400,7 @@ def select_download_urls(
     *,
     retry_failed: bool,
     limit: int | None,
+    retry_before: str | None = None,
 ) -> list[str]:
     if retry_failed:
         status_placeholders = ",".join("?" for _ in RETRYABLE_RESULT_STATUSES)
@@ -412,6 +413,12 @@ def select_download_urls(
             *RETRYABLE_RESULT_STATUSES,
             *sorted(RETRYABLE_HTTP_STATUSES),
         ]
+        if retry_before is not None:
+            where = (
+                f"({where}) AND "
+                "(retrieved_at_utc IS NULL OR retrieved_at_utc < ?)"
+            )
+            parameters.append(retry_before)
     else:
         where = "status = 'pending'"
         parameters = []
@@ -457,37 +464,47 @@ async def download_urls(
         tuple[str, dict[str, Any], list[dict[str, Any]]]
     ] = asyncio.Queue(maxsize=args.workers * 4)
     status_counts: dict[str, int] = defaultdict(int)
-    host_buckets: dict[str, list[str]] = defaultdict(list)
+    host_buckets: dict[str, deque[str]] = defaultdict(deque)
     for url in urls:
         host_buckets[host_for(url)].append(url)
-    host_queue: asyncio.Queue[deque[str] | None] = asyncio.Queue()
-    for host_urls in host_buckets.values():
-        host_queue.put_nowait(deque(host_urls))
+    # Materialize a publisher-round-robin work queue. A per-host semaphore
+    # bounds overlapping responses, while OriginThrottle still spaces request
+    # starts according to the robots/default delay.
+    work_queue: asyncio.Queue[str] = asyncio.Queue()
+    active_hosts = deque(host_buckets.values())
+    while active_hosts:
+        host_urls = active_hosts.popleft()
+        work_queue.put_nowait(host_urls.popleft())
+        if host_urls:
+            active_hosts.append(host_urls)
+    per_host_workers = max(1, int(getattr(args, "per_host_workers", 1)))
+    host_slots = {
+        host: asyncio.Semaphore(per_host_workers) for host in host_buckets
+    }
 
     async def host_worker(fetcher: AsyncArticleFetcher) -> None:
         while True:
-            host_urls = await host_queue.get()
             try:
-                if host_urls is None:
-                    return
-                url = host_urls.popleft()
-                try:
-                    async with asyncio.timeout(args.article_timeout):
-                        result, attempts = await fetcher.fetch_article(url)
-                except TimeoutError:
-                    result, attempts = internal_error_result(
-                        url, TimeoutError(f"article exceeded {args.article_timeout}s")
-                    )
-                except Exception as exc:
-                    result, attempts = internal_error_result(url, exc)
+                url = work_queue.get_nowait()
+            except asyncio.QueueEmpty:
+                return
+            try:
+                async with host_slots[host_for(url)]:
+                    try:
+                        async with asyncio.timeout(args.article_timeout):
+                            result, attempts = await fetcher.fetch_article(url)
+                    except TimeoutError:
+                        result, attempts = internal_error_result(
+                            url,
+                            TimeoutError(
+                                f"article exceeded {args.article_timeout}s"
+                            ),
+                        )
+                    except Exception as exc:
+                        result, attempts = internal_error_result(url, exc)
                 await result_queue.put((url, result, attempts))
-                # Requeue this host only after its current URL finishes. This
-                # keeps same-host requests serial while rotating fairly across
-                # publishers and bounds active article timeouts to --workers.
-                if host_urls:
-                    host_queue.put_nowait(host_urls)
             finally:
-                host_queue.task_done()
+                work_queue.task_done()
 
     async def writer() -> None:
         completed = 0
@@ -546,14 +563,12 @@ async def download_urls(
             browser_channel=args.browser_channel,
         ) as fetcher:
             writer_task = asyncio.create_task(writer())
-            worker_count = min(args.workers, len(host_buckets))
+            worker_count = min(args.workers, len(urls))
             host_tasks = [
                 asyncio.create_task(host_worker(fetcher))
                 for _ in range(worker_count)
             ]
-            await host_queue.join()
-            for _ in host_tasks:
-                host_queue.put_nowait(None)
+            await work_queue.join()
             await asyncio.gather(*host_tasks)
             await result_queue.join()
             await writer_task
@@ -568,6 +583,18 @@ def default_output_path(input_path: Path) -> Path:
     return input_path.with_name(name + ".sqlite")
 
 
+def parse_utc_timestamp(value: str) -> str:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "timestamp must be ISO 8601, for example 2026-08-30T03:53:00Z"
+        ) from exc
+    if parsed.tzinfo is None:
+        raise argparse.ArgumentTypeError("timestamp must include a UTC offset")
+    return parsed.astimezone(timezone.utc).isoformat()
+
+
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path, help="Article metadata JSONL or JSONL.GZ")
@@ -579,6 +606,15 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
         help="Minimum seconds between requests to the same origin",
     )
     parser.add_argument("--workers", type=int, default=32, help="Concurrent network workers")
+    parser.add_argument(
+        "--per-host-workers",
+        type=int,
+        default=1,
+        help=(
+            "Maximum in-flight article responses per host (default: 1). "
+            "Request starts remain spaced by --delay/robots rules."
+        ),
+    )
     parser.add_argument(
         "--extract-workers",
         type=int,
@@ -593,6 +629,15 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--limit", type=int, help="Maximum URLs to attempt this run")
     parser.add_argument("--retry-failed", action="store_true")
+    parser.add_argument(
+        "--retry-before",
+        type=parse_utc_timestamp,
+        help=(
+            "With --retry-failed, only retry documents whose latest result "
+            "predates this ISO-8601 timestamp. This resumes an interrupted "
+            "retry manifest without repeating URLs already handled in that run."
+        ),
+    )
     parser.add_argument("--no-browser-fallback", action="store_true")
     parser.add_argument("--browser-workers", type=int, default=2)
     parser.add_argument("--browser-timeout", type=float, default=20.0)
@@ -607,6 +652,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 def validate_args(args: argparse.Namespace) -> None:
     positive = {
         "workers": args.workers,
+        "per-host-workers": args.per_host_workers,
         "extract-workers": args.extract_workers,
         "commit-every": args.commit_every,
         "commit-seconds": args.commit_seconds,
@@ -624,6 +670,8 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ValueError(f"invalid non-positive downloader option: {fields}")
     if args.limit is not None and args.limit < 0:
         raise ValueError("limit must be non-negative")
+    if args.retry_before is not None and not args.retry_failed:
+        raise ValueError("--retry-before requires --retry-failed")
 
 
 def main(argv: Iterable[str] | None = None) -> int:
@@ -639,6 +687,7 @@ def main(argv: Iterable[str] | None = None) -> int:
                 connection,
                 retry_failed=args.retry_failed,
                 limit=args.limit,
+                retry_before=args.retry_before,
             )
             print(
                 f"Scheduled {len(urls):,} URLs with {args.workers} network / "

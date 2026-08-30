@@ -210,7 +210,12 @@ class HttpFetch:
 
 
 class OriginThrottle:
-    """Serialize each origin and enforce spacing between request starts."""
+    """Reserve rate-limited request starts for each origin.
+
+    The lock protects only the next-start reservation. Callers may choose more
+    than one in-flight response per host without starting requests closer
+    together than the resolved robots/default delay.
+    """
 
     def __init__(self) -> None:
         self._locks: dict[str, asyncio.Lock] = {}
@@ -229,7 +234,7 @@ class OriginThrottle:
             if wait > 0:
                 await asyncio.sleep(wait)
             self._next_start[host] = time.monotonic() + max(delay, 0.0)
-            return await operation()
+        return await operation()
 
 
 class AsyncRobotsCache:
@@ -603,24 +608,33 @@ class AsyncArticleFetcher:
             fetched.transport_attempts = attempt_number
             last = fetched
             if fetched.status == "html":
+                # A completed URL request proves that the host is reachable.
+                # The circuit counts failed URLs, not transport retries within
+                # one URL, so any successful response resets the sequence.
+                self._host_transient_failures.pop(host, None)
                 return fetched
             retryable = fetched.status == "request_error" or (
                 fetched.status == "http_error"
                 and fetched.http_status in RETRYABLE_HTTP_STATUSES
             )
-            if retryable:
-                self._host_transient_failures[host] = (
-                    self._host_transient_failures.get(host, 0) + 1
-                )
-            else:
+            if not retryable:
                 self._host_transient_failures.pop(host, None)
-            if not retryable or attempt_number > self.retries:
                 return fetched
-            if self._host_transient_failures[host] >= self.host_failure_limit:
-                fetched.error = (
-                    f"{fetched.error or fetched.status}; host circuit opened"
-                )[:1000]
+
+            if attempt_number > self.retries:
+                # Exhausting all transport retries is one failed URL. The old
+                # implementation incremented this counter for every transport
+                # attempt, allowing one troublesome URL to defer an entire
+                # publisher. Open the circuit only after consecutive logical
+                # URL failures.
+                failures = self._host_transient_failures.get(host, 0) + 1
+                self._host_transient_failures[host] = failures
+                if failures >= self.host_failure_limit:
+                    fetched.error = (
+                        f"{fetched.error or fetched.status}; host circuit opened"
+                    )[:1000]
                 return fetched
+
             retry_delay = min(30.0, 2 ** (attempt_number - 1))
             if fetched.retry_after is not None:
                 retry_delay = max(retry_delay, min(fetched.retry_after, 300.0))
