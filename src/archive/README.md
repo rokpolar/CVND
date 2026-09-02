@@ -1,7 +1,7 @@
 # Legacy / optional source scripts
 
 Scripts here are **not** on the primary analysis path
-(`compute_population` → `compute_pss` → `compute_mss` → `compute_expected_coverage` → `visualize`).
+(`compute_population` → `join_flood_articles`).
 
 | Script | Role |
 | --- | --- |
