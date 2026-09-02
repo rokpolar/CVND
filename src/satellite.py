@@ -29,7 +29,6 @@ initialize_gee()
 #   Next:   Upload to Google Drive → run sits_inference.ipynb on Colab GPU
 #           → place score NPZs in data/cache/sits_scores/
 #           → merge_results.py → flood_combined.csv → compute_population.py
-#           (NOT sits_vae_results.csv → compute_pss.py — that handoff is retired)
 #
 # Citation: Fang & Azizpour (WACV 2025) — MIT license
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -910,7 +909,7 @@ if __name__ == '__main__':
         print(f"  1. Upload {SITS_OUTPUT_DIR}/ to Google Drive")
         print(f"  2. Run sits_inference.ipynb on Colab (T4 GPU)")
         print(f"  3. Place score NPZs in {data_path('sits_scores')}/")
-        print(f"  4. Run merge_results.py → compute_population.py → compute_pss.py")
+        print(f"  4. Run merge_results.py → compute_population.py → join_flood_articles.py")
 
     # ── Summary ───────────────────────────────────────────────────────────────
     print("\n" + "=" * 65)

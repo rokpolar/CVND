@@ -478,7 +478,7 @@ def _atomic_write(path: Path, content: str) -> None:
 
 
 class ArticleSummaryAccumulator:
-    """Build the existing MSS summary while article rows stream to disk."""
+    """Build per-event language summaries while article rows stream to disk."""
 
     def __init__(self, windows: list[dict[str, Any]]) -> None:
         self.events = {row["event_id"]: row for row in windows}
