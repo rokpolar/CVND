@@ -72,7 +72,6 @@ if [[ "$SKIP_GEE" != "1" ]]; then
   )
 else
   echo "NOTE: SKIP_GEE=1 — skipping GEE satellite pull (using cached flood artifacts)"
-  # Still rebuild severity from existing flood_combined / flood_extent artifacts
   if [[ -f "$ROOT/data/cache/flood_extent.csv" && -d "$ROOT/data/cache/sits_scores" ]]; then
     if [[ ! -f "$ROOT/data/intermediate/event_aoi_area.csv" || ! -f "$ROOT/data/intermediate/post_cloud.csv" ]]; then
       echo "ERROR: cached satellite data lacks state-AOI area/cloud files; run with SKIP_GEE=0." >&2
@@ -87,8 +86,6 @@ else
   STEPS+=("src/compute_population.py")
 fi
 
-STEPS+=("src/compute_pss.py")
-
 if [[ "$SKIP_ARTICLES" != "1" ]]; then
   if [[ -z "${GDELT_BILLING_PROJECT:-}" ]]; then
     echo "ERROR: SKIP_ARTICLES=0 requires GDELT_BILLING_PROJECT and Google ADC credentials." >&2
@@ -97,18 +94,10 @@ if [[ "$SKIP_ARTICLES" != "1" ]]; then
   echo "NOTE: SKIP_ARTICLES=0 — querying historical GDELT GKG BigQuery"
   "$PYTHON" src/collect_gdelt.py --execute --overwrite
 else
-  echo "NOTE: SKIP_ARTICLES=1 — using existing data/raw/gdelt_bq.json"
-  if [[ ! -f "$ROOT/data/raw/gdelt_bq.json" ]]; then
-    echo "ERROR: data/raw/gdelt_bq.json is missing; run src/collect_gdelt.py --execute first." >&2
-    exit 1
-  fi
+  echo "NOTE: SKIP_ARTICLES=1 — skipping GDELT BigQuery collection"
 fi
 
-STEPS+=(
-  "src/compute_mss.py"
-  "src/compute_expected_coverage.py"
-  "src/visualize.py"
-)
+STEPS+=("src/join_flood_articles.py")
 
 echo "======================================================="
 echo "CVND PIPELINE"
@@ -118,7 +107,7 @@ echo "Python       : $PYTHON"
 echo "SKIP_GEE     : $SKIP_GEE"
 echo "SKIP_ARTICLES: $SKIP_ARTICLES"
 echo "SETUP_DEPS   : $SETUP_DEPS"
-echo "Primary model: NegBin log_ratio on article counts (MSS total_articles)"
+echo "Outputs      : flood area (severity_raw) + heuristic article_count join"
 echo "Steps        : ${#STEPS[@]}"
 echo "======================================================="
 
