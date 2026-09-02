@@ -36,13 +36,13 @@ class StateAoiPipelineTests(unittest.TestCase):
             ).to_csv(paths["events"], index=False)
 
             with patch.object(compute_population, "data_path", side_effect=lambda key: paths[key]):
-                result = compute_population.from_flood_combined(
-                    {"Assam": 10_000}, {"Assam": 2_000}
-                )
+                result = compute_population.from_flood_combined({"Assam": 2_000})
 
             self.assertEqual(result.loc[0, "aoi_km2"], 1000.0)
-            self.assertEqual(result.loc[0, "population_exposed"], 500)
+            self.assertEqual(result.loc[0, "adjusted_flood_area_km2"], 100.0)
+            self.assertEqual(result.loc[0, "flood_ratio"], 0.1)
             self.assertNotIn("district_km2", result.columns)
+            self.assertNotIn("population_exposed", result.columns)
 
     def test_merge_results_emits_aoi_area(self):
         with tempfile.TemporaryDirectory() as tmp:

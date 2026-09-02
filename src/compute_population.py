@@ -1,11 +1,13 @@
 """
-compute_population.py — PRIMARY population/severity builder for the pipeline.
-Build data/intermediate/severity_raw.csv from state-AOI flood results.
+compute_population.py — event-level flood area table for the primary stack.
+
+Build data/intermediate/severity_raw.csv from state-AOI flood merge results.
+Population exposure columns are not computed here; use join_flood_articles.py
+to combine flood area with heuristic article counts.
 
 Primary input:
     data/intermediate/flood_combined.csv
     data/raw/events.csv
-    data/raw/population.csv
     data/raw/state_area.csv
 
 Output:
@@ -19,7 +21,6 @@ import math
 import os
 import sys
 
-import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -49,10 +50,6 @@ def resolve(name, known):
     return m[0] if m else None
 
 
-def parse_pop(v):
-    return int(str(v).replace(",", "").strip())
-
-
 def load_state_area() -> dict[str, int]:
     area_raw = pd.read_csv(data_path("state_area"))
     lookup = {}
@@ -61,21 +58,7 @@ def load_state_area() -> dict[str, int]:
     return lookup
 
 
-def load_pop_lookup(known_states) -> dict[str, int]:
-    pop_raw = pd.read_csv(data_path("population"))
-    pop_lookup = {}
-    for _, row in pop_raw.iterrows():
-        canonical = resolve(str(row["State/UT"]), known_states)
-        if canonical:
-            pop_lookup[canonical] = parse_pop(row["Population (2025)"])
-        else:
-            print(f"WARNING: could not match '{row['State/UT']}' — skipped")
-    return pop_lookup
-
-
-def from_flood_combined(
-    pop_lookup: dict[str, int], state_area: dict[str, int]
-) -> pd.DataFrame:
+def from_flood_combined(state_area: dict[str, int]) -> pd.DataFrame:
     """Primary path: state-level combined flood areas."""
     combined = pd.read_csv(data_path("flood_combined"))
     events = pd.read_csv(data_path("events"))[
@@ -87,7 +70,6 @@ def from_flood_combined(
     rows = []
     for _, r in df.iterrows():
         canonical = resolve(r.get("state"), known)
-        state_pop = pop_lookup.get(canonical)
         area_km2 = state_area.get(canonical)
         warnings = []
 
@@ -114,9 +96,6 @@ def from_flood_combined(
                 "adjusted_flood_area_km2": None,
                 "flood_ratio": None,
                 "combined_source": source,
-                "region_total_population": state_pop,
-                "population_exposed": None,
-                "exposure_rate": None,
                 "warnings": "; ".join(warnings),
             })
             continue
@@ -127,20 +106,8 @@ def from_flood_combined(
         if not pd.isna(flood_ratio):
             flood_ratio = float(min(max(flood_ratio, 0.0), 1.0))
 
-        if area_km2 and state_pop:
-            exposed = round((flood_km2 / area_km2) * state_pop)
-            exposure_rate = (
-                round(flood_ratio, 6)
-                if flood_ratio is not None and not pd.isna(flood_ratio)
-                else round(min(flood_km2 / area_km2, 1.0), 6)
-            )
-        else:
-            exposed = None
-            exposure_rate = None
-            if not state_pop:
-                warnings.append(f"NO POPULATION DATA for '{canonical}'")
-            if not area_km2:
-                warnings.append(f"NO AREA DATA for '{canonical}'")
+        if not area_km2:
+            warnings.append(f"NO AREA DATA for '{canonical}'")
 
         if flood_km2 == 0:
             warnings.append("ZERO FLOOD AREA after combine")
@@ -158,9 +125,6 @@ def from_flood_combined(
             "adjusted_flood_area_km2": round(flood_km2, 2),
             "flood_ratio": flood_ratio,
             "combined_source": source,
-            "region_total_population": state_pop,
-            "population_exposed": exposed,
-            "exposure_rate": exposure_rate,
             "warnings": "; ".join(warnings),
         })
 
@@ -174,16 +138,13 @@ def bbox_area_km2(minlon, minlat, maxlon, maxlat):
     return lat_km * lon_km
 
 
-def from_legacy_flood_area(
-    pop_lookup: dict[str, int], state_area: dict[str, int]
-) -> pd.DataFrame:
+def from_legacy_flood_area(state_area: dict[str, int]) -> pd.DataFrame:
     """Legacy bbox-scaled path (only if flood_combined.csv missing)."""
     flood = pd.read_csv(data_path("flood_area_results"))
     known = state_area.keys()
     rows = []
     for _, r in flood.iterrows():
         canonical = resolve(r["state"], known)
-        state_pop = pop_lookup.get(canonical)
         area_km2 = state_area.get(canonical)
         raw_flood = r.get("flood_area_km2")
         warnings = []
@@ -202,8 +163,6 @@ def from_legacy_flood_area(
                 "aoi_km2": None,
                 "raw_flood_area_km2": None, "adjusted_flood_area_km2": None,
                 "flood_ratio": None, "combined_source": "legacy",
-                "region_total_population": state_pop,
-                "population_exposed": None, "exposure_rate": None,
                 "warnings": "; ".join(warnings),
             })
             continue
@@ -228,14 +187,6 @@ def from_legacy_flood_area(
         else:
             adjusted_flood = raw_flood
 
-        if area_km2 and state_pop:
-            fraction = min(adjusted_flood / area_km2, 1.0)
-            exposed = round(fraction * state_pop)
-            exposure_rate = round(fraction, 6)
-        else:
-            exposed = None
-            exposure_rate = None
-
         rows.append({
             "event_id": r["event_id"], "state": r["state"],
             "district": r.get("district", ""), "canonical_state": canonical,
@@ -246,8 +197,6 @@ def from_legacy_flood_area(
             "raw_flood_area_km2": round(raw_flood, 2),
             "adjusted_flood_area_km2": round(adjusted_flood, 2),
             "flood_ratio": None, "combined_source": "legacy",
-            "region_total_population": state_pop,
-            "population_exposed": exposed, "exposure_rate": exposure_rate,
             "warnings": "; ".join(warnings),
         })
     return pd.DataFrame(rows)
@@ -255,20 +204,19 @@ def from_legacy_flood_area(
 
 def main():
     print("=" * 60)
-    print("COMPUTE POPULATION / SEVERITY RAW")
+    print("BUILD EVENT FLOOD AREA TABLE (severity_raw)")
     print("=" * 60)
 
     state_area = load_state_area()
-    pop_lookup = load_pop_lookup(state_area.keys())
     combined_path = data_path("flood_combined")
     legacy_path = data_path("flood_area_results")
 
     if combined_path.exists():
         print(f"Using PRIMARY input: {combined_path} (state AOI)")
-        out = from_flood_combined(pop_lookup, state_area)
+        out = from_flood_combined(state_area)
     elif legacy_path.exists():
         print(f"WARNING: {combined_path.name} missing — legacy {legacy_path}")
-        out = from_legacy_flood_area(pop_lookup, state_area)
+        out = from_legacy_flood_area(state_area)
     else:
         raise FileNotFoundError(
             f"Need {combined_path} or {legacy_path}"
@@ -291,7 +239,7 @@ def main():
         out["adjusted_flood_area_km2"].notna(),
         [
             "event_id", "state", "adjusted_flood_area_km2", "flood_ratio",
-            "population_exposed", "exposure_rate", "combined_source",
+            "combined_source",
         ],
     ].head(15)
     print("\nPreview:")
