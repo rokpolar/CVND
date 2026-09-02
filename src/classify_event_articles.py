@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Classify downloaded GDELT articles against official EM-DAT state-events.
+"""
+EM-DAT 주별 이벤트에 따라서 다운로드된 GDELT 본문을 분류합니다.
+Classify downloaded GDELT articles against official EM-DAT state-events.
 
-The pipeline deliberately separates inexpensive recall-oriented filtering from
-the final semantic decision:
 
 1. Re-expand each GDELT URL to every event in the same state whose fixed
    onset-through-onset+93-day window contains the publication date.
@@ -12,13 +12,9 @@ the final semantic decision:
    separate sensitivity category that cannot reach the model by default.
 4. Build a deterministic multilingual/year/overlap/context-stratified pilot,
    then require human-vs-LLM evaluation to pass before production submission.
-5. Ask one hardcoded OpenAI model for a strict binary relevance decision using
-   the Responses API through Batch API JSONL jobs.
+5. Ask LLM model for a strict binary relevance decision using the Responses API through Batch API JSONL jobs.
 6. Count distinct URLs per event. The same URL may count for several events,
    while separate URLs with identical bodies remain separate articles.
-
-The classifier model and reasoning effort are code constants by design: there
-is no CLI or environment override for either setting.
 """
 
 from __future__ import annotations
@@ -105,6 +101,10 @@ DEFAULT_RELEVANCE_DATABASE = data_path("event_relevance_database")
 DEFAULT_BATCH_DIRECTORY = ROOT / "data" / "intermediate" / "gdelt_event_relevance_batches"
 DEFAULT_COUNTS_OUTPUT = data_path("event_article_counts")
 DEFAULT_MAPPING_OUTPUT = data_path("event_articles")
+DEFAULT_HEURISTIC_COUNTS_OUTPUT = data_path("event_article_counts_heuristic")
+DEFAULT_HEURISTIC_MAPPING_OUTPUT = data_path("event_articles_heuristic")
+COUNT_SOURCE_LLM = "llm"
+COUNT_SOURCE_HEURISTIC = "heuristic"
 
 PILOT_IMMUTABLE_FIELDS = (
     "sample_order",
@@ -2922,9 +2922,21 @@ def export_results(
     relevance_database: Path,
     counts_output: Path,
     mapping_output: Path,
+    *,
+    count_source: str = COUNT_SOURCE_LLM,
 ) -> dict[str, int]:
+    if count_source not in {COUNT_SOURCE_LLM, COUNT_SOURCE_HEURISTIC}:
+        raise ValueError(
+            "count_source must be "
+            f"{COUNT_SOURCE_LLM!r} or {COUNT_SOURCE_HEURISTIC!r}."
+        )
     connection = connect_relevance_database(relevance_database)
-    run_id = start_run(connection, "export", model_id=OPENAI_EVENT_FILTER_MODEL)
+    run_id = start_run(
+        connection,
+        "export",
+        model_id=OPENAI_EVENT_FILTER_MODEL,
+        details={"count_source": count_source},
+    )
     try:
         counts = pd.read_sql_query(COUNTS_QUERY, connection)
         numeric = [
@@ -2933,19 +2945,37 @@ def export_results(
         ]
         for column in numeric:
             counts[column] = counts[column].fillna(0).astype(int)
+        if count_source == COUNT_SOURCE_HEURISTIC:
+            counts["final_article_count"] = counts["heuristic_pass_count"]
+        counts["count_source"] = count_source
         counts_output.parent.mkdir(parents=True, exist_ok=True)
         counts.to_csv(counts_output, index=False)
 
         mapping_rows = 0
         cursor = connection.execute(MAPPING_QUERY)
+        columns = [description[0] for description in cursor.description]
+        related_index = columns.index("related")
+        status_index = columns.index("classification_status")
+        heuristic_index = columns.index("heuristic_status")
         with _open_csv_output(mapping_output) as handle:
             writer = csv.writer(handle)
-            writer.writerow([description[0] for description in cursor.description])
+            writer.writerow(columns)
             for row in cursor:
-                writer.writerow(tuple(row))
+                values = list(row)
+                if count_source == COUNT_SOURCE_HEURISTIC:
+                    if values[heuristic_index] != "keyword_match":
+                        continue
+                    values[related_index] = 1
+                    values[status_index] = "heuristic_yes"
+                writer.writerow(values)
                 mapping_rows += 1
+        positive_events = (
+            int((counts["final_article_count"] > 0).sum()) if not counts.empty else 0
+        )
         details = {
+            "count_source": count_source,
             "events": len(counts),
+            "events_with_articles": positive_events,
             "mapping_rows": mapping_rows,
             "final_related_event_url_pairs": int(counts["final_article_count"].sum())
             if not counts.empty else 0,
@@ -3092,8 +3122,17 @@ def build_parser() -> argparse.ArgumentParser:
     collect.add_argument("--batch-id", action="append")
 
     export = subparsers.add_parser("export", help="Write event counts and mapping CSVs.")
-    export.add_argument("--counts-output", type=Path, default=DEFAULT_COUNTS_OUTPUT)
-    export.add_argument("--mapping-output", type=Path, default=DEFAULT_MAPPING_OUTPUT)
+    export.add_argument("--counts-output", type=Path, default=None)
+    export.add_argument("--mapping-output", type=Path, default=None)
+    export.add_argument(
+        "--count-source",
+        choices=(COUNT_SOURCE_LLM, COUNT_SOURCE_HEURISTIC),
+        default=COUNT_SOURCE_HEURISTIC,
+        help=(
+            "heuristic uses primary keyword matches (default). llm uses "
+            "collected model YES decisions."
+        ),
+    )
     return parser
 
 
@@ -3166,8 +3205,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 batch_ids=args.batch_id,
             )
         elif args.command == "export":
+            counts_output = args.counts_output
+            mapping_output = args.mapping_output
+            if counts_output is None:
+                counts_output = (
+                    DEFAULT_HEURISTIC_COUNTS_OUTPUT
+                    if args.count_source == COUNT_SOURCE_HEURISTIC
+                    else DEFAULT_COUNTS_OUTPUT
+                )
+            if mapping_output is None:
+                mapping_output = (
+                    DEFAULT_HEURISTIC_MAPPING_OUTPUT
+                    if args.count_source == COUNT_SOURCE_HEURISTIC
+                    else DEFAULT_MAPPING_OUTPUT
+                )
             result = export_results(
-                args.database, args.counts_output, args.mapping_output
+                args.database,
+                counts_output,
+                mapping_output,
+                count_source=args.count_source,
             )
         else:  # pragma: no cover - argparse enforces this.
             raise AssertionError(args.command)
