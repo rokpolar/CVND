@@ -150,7 +150,7 @@ class CollectGdeltTests(unittest.TestCase):
         self.assertNotIn("GKGRECORDID AS", sql)
         self.assertNotIn("REGEXP_EXTRACT(Extras", sql)
 
-    def test_article_rows_are_aggregated_locally_for_mss(self):
+    def test_article_rows_are_aggregated_locally(self):
         windows = collect_gdelt.prepare_event_windows(
             self.events, pre_days=0, post_days=93, include_district=True
         )
