@@ -4,7 +4,7 @@ Resolve data artifacts by logical key via data_path(key). Tier layout:
   data/raw/          — external inputs
   data/cache/        — satellite / GEE caches
   data/intermediate/ — pipeline step outputs
-  data/results/      — scores and model outputs
+  data/results/      — joined flood + article outputs
   data/archive/      — legacy fallbacks (unchanged)
 """
 
@@ -57,22 +57,17 @@ DATA_FILES: dict[str, str] = {
     "article_retrieval_year_qc": "intermediate/article_retrieval_qc_by_year.csv",
     "article_retrieval_unresolved": "intermediate/article_retrieval_unresolved.csv.gz",
     # results
-    "pss_results": "results/pss_results.csv",
-    "mss_results": "results/mss_results.csv",
-    "expected_coverage": "results/expected_coverage.csv",
-    "state_expected_coverage": "results/state_expected_coverage.csv",
-    "mss_weight_meta": "results/mss_weight_sensitivity.json",
-    "mss_weight_provenance": "results/mss_weight_provenance.csv",
-    "mss_rank_stability": "results/mss_rank_stability.csv",
     "event_article_counts": "results/event_article_counts.csv",
     "event_articles": "results/event_articles.csv.gz",
+    "event_article_counts_heuristic": "results/event_article_counts.heuristic.csv",
+    "event_articles_heuristic": "results/event_articles.heuristic.csv.gz",
+    "event_flood_articles": "results/event_flood_articles.csv",
+    "state_flood_articles": "results/state_flood_articles.csv",
     # archive fallback
     "flood_area_results": "archive/flood_area_results.csv",
 }
 
-OUTPUT_FILES: dict[str, str] = {
-    "pipeline_result": "pipeline_result.md",
-}
+OUTPUT_FILES: dict[str, str] = {}
 
 
 def data_path(key: str) -> Path:
@@ -86,7 +81,7 @@ def data_path(key: str) -> Path:
 
 
 def output_path(key: str) -> Path:
-    """Return absolute path for a registered output artifact."""
+    """Return absolute path for a registered output artifact under outputs/."""
     try:
         rel = OUTPUT_FILES[key]
     except KeyError as exc:
