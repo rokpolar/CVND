@@ -113,7 +113,7 @@ the result instead of holding it in memory. It writes:
 - `gdelt_bq.articles.jsonl.gz`: one row per assigned article, including URL,
   publication timestamp, event, state, source domain and language.
 - `gdelt_bq.json`: event/language article counts and coverage dates derived
-  locally for the MSS pipeline.
+  locally for optional GDELT metadata summaries.
 - `gdelt_bq.meta.json`: SQL and event hashes, BigQuery job ID, processed bytes,
   filters and retrieval time.
 
@@ -209,7 +209,7 @@ bodies or automatically send URLs to third-party archives.
 ## Event-level article classification
 
 `src/classify_event_articles.py` maps accessible article bodies to official
-EM-DAT state-events without changing MSS. Its fixed sequence is:
+EM-DAT state-events. Its fixed sequence is:
 
 1. Re-expand GDELT metadata to every same-state event for which the publication
    date is between event onset and onset + 93 days, inclusive.
@@ -358,7 +358,9 @@ human labels and `pilot-evaluate` has produced the corresponding metrics.
 
 ## Recommended sensitivity runs
 
-Use the strict India-Census/GDELT-intersection result as the primary MSS input.
+Use the strict India-Census/GDELT-intersection result as the primary metadata
+export. Heuristic article counts for analysis come from
+`classify_event_articles.py export --count-source heuristic`.
 Run at least these
 robustness checks separately instead of mixing them into the primary file:
 
