@@ -26,9 +26,9 @@ initialize_gee()
 #
 # Track B — SITS-Extreme-VAE data preparation
 #   Output: data/cache/sits_patches/<event_id>.h5
-#   Next:   Upload to Google Drive → run sits_inference.ipynb on Colab GPU
-#           → place score NPZs in data/cache/sits_scores/
-#           → merge_results.py → flood_combined.csv → compute_population.py
+#   Next:   run_sits_inference.py scores completed H5 files on the local GPU/CPU
+#           and writes NPZs to data/cache/sits_scores/. H5 inputs are retained.
+#           Then merge_results.py → flood_combined.csv → compute_population.py.
 #
 # Citation: Fang & Azizpour (WACV 2025) — MIT license
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -906,10 +906,9 @@ if __name__ == '__main__':
         print(f"\nTrack B complete: {len(ok_b)}/{len(events)} patches")
         print(f"Index: {SITS_INDEX_CSV}")
         print(f"\nNext steps:")
-        print(f"  1. Upload {SITS_OUTPUT_DIR}/ to Google Drive")
-        print(f"  2. Run sits_inference.ipynb on Colab (T4 GPU)")
-        print(f"  3. Place score NPZs in {data_path('sits_scores')}/")
-        print(f"  4. Run merge_results.py → compute_population.py → join_flood_articles.py")
+        print("  1. Run src/run_sits_inference.py locally (H5 files are retained)")
+        print(f"  2. Scores are saved in {data_path('sits_scores')}/")
+        print("  3. Run merge_results.py → compute_population.py → join_flood_articles.py")
 
     # ── Summary ───────────────────────────────────────────────────────────────
     print("\n" + "=" * 65)
