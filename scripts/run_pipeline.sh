@@ -65,6 +65,7 @@ STEPS=()
 if [[ "$SKIP_GEE" != "1" ]]; then
   STEPS+=(
     "src/satellite.py"
+    "src/run_sits_inference.py"
     "event_aoi_area.py"
     "post_cloud.py"
     "src/merge_results.py"

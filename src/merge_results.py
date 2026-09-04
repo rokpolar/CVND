@@ -39,6 +39,7 @@ from cvnd_layout import data_path  # noqa: E402
 
 SCORES_DIR = str(data_path("sits_scores"))
 TRACK_A_CSV = str(data_path("flood_extent"))
+EVENTS_CSV = str(data_path("events"))
 OUT_CSV = str(data_path("flood_combined"))
 
 PATCH_KM2 = (64 * 10 / 1000) ** 2   # 0.4096 km2 per patch
@@ -129,9 +130,9 @@ def main():
 
     npz = {os.path.basename(f)[:-4]: f
            for f in glob.glob(os.path.join(SCORES_DIR, '*.npz'))}
-    # union: every event with a SITS score OR a Track A row (cloud-blind 0-patch events
-    # have no .npz but still have S1/NDWI in Track A -> route them to S1, don't drop them)
-    all_events = sorted(set(npz) | set(ta))
+    # The current registry defines the output rows; missing satellite artifacts
+    # remain explicit missing results instead of dropping newly added events.
+    all_events = pd.read_csv(EVENTS_CSV)["event_id"].tolist()
 
     rows = []
     for ev in all_events:

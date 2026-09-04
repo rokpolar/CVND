@@ -38,11 +38,14 @@ Tiered folders under `data/`. Primary pipeline scripts resolve paths via
 | File | Key | Producer | Consumers |
 | --- | --- | --- | --- |
 | `flood_extent.csv` | `flood_extent` | `satellite.py` | `merge_results.py` |
-| `sits_scores/*.npz` | `sits_scores` | Colab / SITS scoring | `merge_results.py` |
-| `sits_patches/*.h5` | `sits_patches` | `satellite.py` Track B | External SITS inference |
+| `sits_scores/*.npz` | `sits_scores` | `run_sits_inference.py` | `merge_results.py` |
+| `sits_patches/*.h5` | `sits_patches` | `satellite.py` Track B | Local SITS inference; retained after scoring |
 | `sits_patches_index.csv` | `sits_patches_index` | `satellite.py` Track B | Audit / resume |
 | `satellite_checkpoint_*.json` | `satellite_checkpoint_*` | `satellite.py` | GEE resume |
 | `ne_india_states.gpkg` | `ne_india_states` | Optional map tooling | Choropleth exports |
+
+The local SITS model checkpoint is loaded from
+`SITS-ExtremeEvents-main/checkpoints/ravaen/`, outside the data cache.
 
 ### `intermediate/`
 
