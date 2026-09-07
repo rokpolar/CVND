@@ -97,6 +97,15 @@ PRE_SEARCH_DAYS = 90          # look this far back for the two pre-event scenes
 SAR_BLOCK_PATCHES = 8
 SAR_KEEP_VALID = 0.70         # keep a patch only if this fraction is valid in EVERY scene
 
+# ── terrain gate ──────────────────────────────────────────────────────────────
+# FloodViT was trained on Kuro Siwo's 43 events, which do not include Himalayan
+# terrain. On steep slopes radar shadow returns almost no signal and reads as
+# dark -- indistinguishable from water to the model. Measured on Sikkim (E104):
+# it reported 899 km2 of flood where the state holds only 199 km2 of land under
+# 5 degrees, i.e. most of the "flood" was on slopes that cannot pond water.
+# The same 5-degree threshold the optical path already used.
+SLOPE_MAX_DEG = 5
+
 OUTPUT_DIR = str(data_path("sar_patches"))
 INDEX_CSV = str(data_path("sar_patches_index"))
 CHECKPOINT = str(data_path("sar_checkpoint"))
@@ -189,6 +198,11 @@ def _append(hdf, patches, coords):
         ds[n0:] = val
 
 
+def terrain_mask():
+    """Land flat enough to pond water. See SLOPE_MAX_DEG for why this is needed."""
+    return ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003')).lt(SLOPE_MAX_DEG)
+
+
 def _download_block(image, region_block):
     """One block as NPY: VV, VH plus a validity band. Order-preserving."""
     valid = image.mask().reduce(ee.Reducer.min()).rename('valid').toByte()
@@ -222,8 +236,8 @@ def grid_dims(minx, miny, maxx, maxy, patch_px, scale_m):
     return dlat, dlon, int((maxy - miny) / dlat), int((maxx - minx) / dlon)
 
 
-def iter_patch_blocks(images, region, skip=frozenset()):
-    """Yield (block_id, patches, coords) for each downloadable block of the AOI.
+def iter_patch_blocks(images, region, skip=frozenset(), flat=None):
+    """Yield (block_id, patches, coords, valid) per downloadable block of the AOI.
 
     A generator so the same tiling and download logic serves both consumers: the
     one that writes patches to disk and the one that runs them through FloodViT
@@ -231,10 +245,18 @@ def iter_patch_blocks(images, region, skip=frozenset()):
     them needs none, and both paths must tile identically or their areas are not
     comparable.
 
+    `flat` is a terrain mask applied to the imagery. Masked pixels arrive as
+    invalid, so wholly steep patches fall below SAR_KEEP_VALID and are dropped,
+    and blocks holding no flat ground are never requested at all. `valid` is
+    returned per patch so the caller can exclude masked pixels from its counts
+    rather than letting them be classified.
+
     Blocks whose id is in `skip` are not re-downloaded (resume). A block that
-    fails to download yields (block_id, None, None) so the caller can count it
-    without marking it done.
+    fails to download yields (block_id, None, None, None) so the caller can
+    count it without marking it done.
     """
+    if flat is not None:
+        images = [im.updateMask(flat) for im in images]
     ring = region.bounds().coordinates().getInfo()[0]
     lons = [p[0] for p in ring]
     lats = [p[1] for p in ring]
@@ -251,14 +273,21 @@ def iter_patch_blocks(images, region, skip=frozenset()):
 
     feats = [ee.Feature(blk_geom(bi, bj), {'i': i})
              for i, (bi, bj) in enumerate(all_blocks)]
-    inside = set(ee.FeatureCollection(feats).filterBounds(region)
-                 .aggregate_array('i').getInfo())
+    fc = ee.FeatureCollection(feats).filterBounds(region)
+    if flat is not None:
+        # Drop blocks with no flat ground at all -- in mountain states most of the
+        # AOI is like this, so it removes download time as well as false positives.
+        # One batched reduceRegions, not one call per block.
+        fc = (flat.rename('f').unmask(0)
+              .reduceRegions(fc, ee.Reducer.max(), 200)
+              .filter(ee.Filter.gt('max', 0)))
+    inside = set(fc.aggregate_array('i').getInfo())
     todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks)
             if i in inside and i not in skip]
     print(f"    tiling: {npx_}x{npy_} patches @{SAR_SCALE_M}m, "
           f"{len(inside)}/{len(all_blocks)} blocks in AOI, {len(todo)} to download")
 
-    yield ('__total__', len(inside), len(todo))
+    yield ('__total__', len(inside), len(todo), None)
 
     bar = tqdm(todo, desc='    downloading', unit='blk')
     for i, bi, bj in bar:
@@ -271,24 +300,26 @@ def iter_patch_blocks(images, region, skip=frozenset()):
                 arrs = list(ex.map(lambda im: _download_block(im, block), images))
         except Exception as e:
             bar.write(f"      block ({bi},{bj}) failed: {e}")
-            yield (i, None, None)
+            yield (i, None, None, None)
             continue
 
         H = min(a.shape[0] for a in arrs)
         W = min(a.shape[1] for a in arrs)
         rows, cols = H // P, W // P
 
-        batch, coords = [], []
+        batch, coords, valids = [], [], []
         for r in range(rows):
             for c in range(cols):
                 rs, cs = r * P, c * P
-                if min(float(a['valid'][rs:rs + P, cs:cs + P].mean())
-                       for a in arrs) < SAR_KEEP_VALID:
+                vmask = np.logical_and.reduce(
+                    [a['valid'][rs:rs + P, cs:cs + P] > 0 for a in arrs])
+                if vmask.mean() < SAR_KEEP_VALID:
                     continue
                 # (post VV,VH, pre1 VV,VH, pre2 VV,VH) -- the model's 6 channels
                 chans = [a[b][rs:rs + P, cs:cs + P].astype(np.float32)
                          for a in arrs for b in SAR_POLARISATIONS]
                 batch.append(np.stack(chans))
+                valids.append(vmask)
                 coords.append([(bi + r) * P, (bj + c) * P,
                                lat_top - (r + 0.5) * dlat, lon0 + (c + 0.5) * dlon])
 
@@ -296,11 +327,13 @@ def iter_patch_blocks(images, region, skip=frozenset()):
         # e.g. an all-cloud/ocean block. None is reserved for download failure,
         # so a legitimately empty block is still marked done and never retried.
         if batch:
-            yield (i, np.stack(batch), np.array(coords, dtype='float64'))
+            yield (i, np.stack(batch), np.array(coords, dtype='float64'),
+                   np.stack(valids))
         else:
             yield (i,
                    np.empty((0, SAR_CHANNELS, P, P), dtype=np.float32),
-                   np.empty((0, 4), dtype='float64'))
+                   np.empty((0, 4), dtype='float64'),
+                   np.empty((0, P, P), dtype=bool))
         bar.set_postfix(blk=i)
 
 
@@ -308,7 +341,8 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
     """Consume iter_patch_blocks, writing every kept patch to the open HDF5."""
     failed = 0
     total = 0
-    for block_id, patches, coords in iter_patch_blocks(images, region, done_blocks):
+    for block_id, patches, coords, _valid in iter_patch_blocks(
+            images, region, done_blocks, flat=terrain_mask()):
         if block_id == '__total__':
             total = patches
             continue

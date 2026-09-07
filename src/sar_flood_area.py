@@ -40,6 +40,17 @@ from cvnd_layout import data_path  # noqa: E402
 RESULT_NAME = 'sar_flood_area.csv'
 PROGRESS_DIR = 'sar_progress'
 
+# Bump whenever a change makes previously computed areas incomparable, e.g. a new
+# mask, a different scale, another checkpoint. Progress and results carry the
+# version they were produced under, and anything older is recomputed instead of
+# silently mixed with new numbers -- the exact failure this pipeline exists to
+# remove. No manual deleting of state.
+#   1: first streaming version, no terrain mask
+#   2: slope < SLOPE_MAX_DEG gate; steep pixels excluded from counts and from
+#      observed area (v1 reported 899 km2 of flood in Sikkim, which holds only
+#      199 km2 of land under 5 degrees)
+METHOD_VERSION = 2
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Portable state
@@ -53,16 +64,25 @@ def load_progress(state_dir, event_id):
     """Resume state for one event: which blocks are done and the counts so far."""
     p = progress_path(state_dir, event_id)
     if not p.exists():
-        return {'done_blocks': [], 'counts': _zero_counts(), 'patches': 0,
-                'failed_blocks': [], 'total_blocks': None}
+        return _fresh_state()
     try:
         raw = json.loads(p.read_text())
     except (json.JSONDecodeError, OSError):
         print(f"  WARN unreadable progress for {event_id}; starting over")
         return load_progress(Path(state_dir) / '__missing__', event_id)
+    if raw.get('method_version') != METHOD_VERSION:
+        print(f"  {event_id}: state from method v{raw.get('method_version')} "
+              f"!= v{METHOD_VERSION} -> recomputing")
+        return _fresh_state()
     raw.setdefault('failed_blocks', [])
     raw.setdefault('total_blocks', None)
     return raw
+
+
+def _fresh_state():
+    return {'done_blocks': [], 'counts': _zero_counts(), 'patches': 0,
+            'valid_px': 0, 'failed_blocks': [], 'total_blocks': None,
+            'method_version': METHOD_VERSION}
 
 
 def save_progress(state_dir, event_id, state):
@@ -92,10 +112,16 @@ def append_result(state_dir, row):
 
 
 def finished_events(state_dir):
+    """Events already done UNDER THE CURRENT METHOD. Rows from an older version
+    are ignored so a method change re-runs them without anyone deleting files."""
     path = Path(state_dir) / RESULT_NAME
     if not path.exists():
         return set()
-    return set(pd.read_csv(path)['event_id'].astype(str))
+    df = pd.read_csv(path)
+    if 'method_version' not in df.columns:
+        return set()
+    df = df[df['method_version'] == METHOD_VERSION]
+    return set(df['event_id'].astype(str))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -115,7 +141,8 @@ def process_event(row, model, state_dir, device, batch_size):
     if images is None:
         print(f"  skip: {meta}")
         return {'event_id': event_id, 'state': row['state'],
-                'status': f'SKIPPED: {meta}', 'flood_km2': None}
+                'status': f'SKIPPED: {meta}', 'flood_km2': None,
+                'method_version': METHOD_VERSION}
     print(f"  orbit {meta['relative_orbit']} {meta['orbit_pass']} | "
           f"pre {meta['pre_1_date']}, {meta['pre_2_date']} -> "
           f"post {meta['post_date']}")
@@ -126,11 +153,13 @@ def process_event(row, model, state_dir, device, batch_size):
     counts = dict(state['counts'])
     failed = set(state['failed_blocks'])
     n_patches = state['patches']
+    valid_px = state.get('valid_px', 0)
     if done:
         print(f"  resuming: {len(done)} blocks already classified")
 
     started = time.time()
-    for block_id, patches, coords in sp.iter_patch_blocks(images, region, done):
+    for block_id, patches, coords, valid in sp.iter_patch_blocks(
+            images, region, done, flat=sp.terrain_mask()):
         if block_id == '__total__':
             state['total_blocks'] = patches
             continue
@@ -139,13 +168,19 @@ def process_event(row, model, state_dir, device, batch_size):
             continue
         if len(patches):
             pred = fvi.predict(model, patches, device=device, batch_size=batch_size)
+            # Masked pixels (steep ground, missing data) still get a class, so
+            # force them to "no water" before counting. Otherwise the terrain gate
+            # would only shrink the patch set, not the false positives inside it.
+            pred[~valid] = fvi.CLASS_NO_WATER
             for k, v in fvi.count_classes(pred).items():
                 counts[k] += v
             n_patches += len(patches)
+            valid_px += int(valid.sum())
         done.add(block_id)
         failed.discard(block_id)
         state.update({'done_blocks': sorted(done), 'counts': counts,
-                      'patches': n_patches, 'failed_blocks': sorted(failed)})
+                      'patches': n_patches, 'valid_px': valid_px,
+                      'failed_blocks': sorted(failed)})
         save_progress(state_dir, event_id, state)
 
     if failed:
@@ -155,7 +190,10 @@ def process_event(row, model, state_dir, device, batch_size):
     elapsed = time.time() - started
     flood_km2 = fvi.px_to_km2(counts['flood_px'], sp.SAR_SCALE_M)
     perm_km2 = fvi.px_to_km2(counts['permanent_water_px'], sp.SAR_SCALE_M)
-    observed_km2 = fvi.px_to_km2(n_patches * sp.SAR_PATCH_SIZE ** 2, sp.SAR_SCALE_M)
+    # Area actually classified = valid pixels, not whole patches. A patch kept at
+    # 70% validity contributes only its valid part, so the flood fraction below is
+    # over ground that was really observed.
+    observed_km2 = fvi.px_to_km2(valid_px, sp.SAR_SCALE_M)
     print(f"  flood {flood_km2:.2f} km2 | permanent {perm_km2:.2f} km2 | "
           f"observed {observed_km2:.0f} km2 | {elapsed / 60:.1f} min")
 
@@ -168,9 +206,13 @@ def process_event(row, model, state_dir, device, batch_size):
         # area actually classified: patches dropped for missing data are not in it,
         # so flood_km2 is a count over observed_km2, not over the whole AOI
         'observed_km2': round(observed_km2, 1),
+        'flood_frac_observed': (round(flood_km2 / observed_km2, 5)
+                                if observed_km2 else None),
         'n_patches': n_patches,
         'flood_px': counts['flood_px'],
         'blocks_done': len(done),
+        'slope_max_deg': sp.SLOPE_MAX_DEG,
+        'method_version': METHOD_VERSION,
         'status': 'OK',
         **meta,
     }
