@@ -106,6 +106,16 @@ SAR_KEEP_VALID = 0.70         # keep a patch only if this fraction is valid in E
 # The same 5-degree threshold the optical path already used.
 SLOPE_MAX_DEG = 5
 
+# ── speckle ───────────────────────────────────────────────────────────────────
+# Kuro Siwo's SNAP graph applies Lee Sigma 3x3 before training. Earth Engine has
+# no Lee Sigma, so this is the classic Lee filter it derives from -- same window,
+# same multiplicative-noise model. Feeding unfiltered imagery leaves speckle
+# darkening random pixels, which the model reads as water: measured on Sikkim, it
+# called 30% of flat ground flood in a year with no flood at all.
+# ENL for Sentinel-1 IW GRD is about 4.4 looks.
+SPECKLE_WINDOW = 3
+SPECKLE_ENL = 4.4
+
 OUTPUT_DIR = str(data_path("sar_patches"))
 INDEX_CSV = str(data_path("sar_patches_index"))
 CHECKPOINT = str(data_path("sar_checkpoint"))
@@ -198,19 +208,43 @@ def _append(hdf, patches, coords):
         ds[n0:] = val
 
 
+def lee_filter(img, window=SPECKLE_WINDOW, enl=SPECKLE_ENL):
+    """Classic Lee speckle filter on linear-power SAR.
+
+    Speckle is multiplicative, so the filter blends the local mean toward the raw
+    pixel by how much of the local variance looks like real signal rather than
+    noise. Flat, uniform ground gets smoothed hard (b -> 0); edges and bright
+    targets keep their value (b -> 1), which is why a plain blur is not a
+    substitute.
+    """
+    bands = img.bandNames()
+    k = ee.Kernel.square(window // 2)
+    mean = img.reduceNeighborhood(ee.Reducer.mean(), k).rename(bands)
+    var = img.reduceNeighborhood(ee.Reducer.variance(), k).rename(bands)
+
+    sigma_v2 = 1.0 / enl                       # noise variance of unit-mean speckle
+    var_signal = (var.subtract(mean.pow(2).multiply(sigma_v2))
+                  .divide(1.0 + sigma_v2).max(0))
+    b = var_signal.divide(var.max(1e-12))
+    return mean.add(b.multiply(img.subtract(mean))).rename(bands)
+
+
 def terrain_mask():
     """Land flat enough to pond water. See SLOPE_MAX_DEG for why this is needed."""
     return ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003')).lt(SLOPE_MAX_DEG)
 
 
-def _download_block(image, region_block, extra=None):
+def _download_block(image, region_block, extra=None, speckle=True):
     """One block as NPY: VV, VH plus a validity band, and `extra` bands if given.
 
     Order-preserving. `extra` carries the terrain mask on the first request only,
     so the static mask costs no separate round trip.
     """
     valid = image.mask().reduce(ee.Reducer.min()).rename('valid').toByte()
-    stack = image.select(SAR_POLARISATIONS).toFloat().addBands(valid)
+    sar = image.select(SAR_POLARISATIONS).toFloat()
+    if speckle:
+        sar = lee_filter(sar)
+    stack = sar.addBands(valid)
     if extra is not None:
         stack = stack.addBands(extra)
     url = stack.getDownloadURL({'region': region_block,
@@ -242,7 +276,7 @@ def grid_dims(minx, miny, maxx, maxy, patch_px, scale_m):
     return dlat, dlon, int((maxy - miny) / dlat), int((maxx - minx) / dlon)
 
 
-def iter_patch_blocks(images, region, skip=frozenset(), flat=None):
+def iter_patch_blocks(images, region, skip=frozenset(), flat=None, speckle=True):
     """Yield (block_id, patches, coords, valid) per downloadable block of the AOI.
 
     A generator so the same tiling and download logic serves both consumers: the
@@ -250,6 +284,9 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None):
     and throws them away. Storing every patch would need terabytes; streaming
     them needs none, and both paths must tile identically or their areas are not
     comparable.
+
+    `speckle` applies the Lee filter to match Kuro Siwo's own preprocessing.
+    Left switchable so its effect can be measured rather than assumed.
 
     `flat` is a terrain mask downloaded as an extra band, NOT applied to the
     imagery. Patches are kept on data coverage alone; the returned `valid` mask
@@ -309,8 +346,10 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None):
         try:
             with ThreadPoolExecutor(max_workers=len(images)) as ex:
                 arrs = list(ex.map(
-                    lambda p: _download_block(p[1], block,
-                                              extra=flat_band if p[0] == 0 else None),
+                    lambda p: _download_block(
+                        p[1], block,
+                        extra=flat_band if p[0] == 0 else None,
+                        speckle=speckle),
                     enumerate(images)))
         except Exception as e:
             bar.write(f"      block ({bi},{bj}) failed: {e}")
@@ -358,7 +397,7 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
     failed = 0
     total = 0
     for block_id, patches, coords, _valid in iter_patch_blocks(
-            images, region, done_blocks, flat=terrain_mask()):
+            images, region, done_blocks, flat=terrain_mask(), speckle=True):
         if block_id == '__total__':
             total = patches
             continue
