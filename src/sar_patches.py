@@ -254,7 +254,7 @@ def iter_patch_blocks(images, region, skip=frozenset()):
     inside = set(ee.FeatureCollection(feats).filterBounds(region)
                  .aggregate_array('i').getInfo())
     todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks)
-            if i in inside and i not in done_blocks]
+            if i in inside and i not in skip]
     print(f"    tiling: {npx_}x{npy_} patches @{SAR_SCALE_M}m, "
           f"{len(inside)}/{len(all_blocks)} blocks in AOI, {len(todo)} to download")
 
