@@ -203,10 +203,16 @@ def terrain_mask():
     return ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003')).lt(SLOPE_MAX_DEG)
 
 
-def _download_block(image, region_block):
-    """One block as NPY: VV, VH plus a validity band. Order-preserving."""
+def _download_block(image, region_block, extra=None):
+    """One block as NPY: VV, VH plus a validity band, and `extra` bands if given.
+
+    Order-preserving. `extra` carries the terrain mask on the first request only,
+    so the static mask costs no separate round trip.
+    """
     valid = image.mask().reduce(ee.Reducer.min()).rename('valid').toByte()
     stack = image.select(SAR_POLARISATIONS).toFloat().addBands(valid)
+    if extra is not None:
+        stack = stack.addBands(extra)
     url = stack.getDownloadURL({'region': region_block,
                                 'scale': SAR_SCALE_M, 'format': 'NPY'})
     for attempt in range(4):
@@ -245,18 +251,22 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None):
     them needs none, and both paths must tile identically or their areas are not
     comparable.
 
-    `flat` is a terrain mask applied to the imagery. Masked pixels arrive as
-    invalid, so wholly steep patches fall below SAR_KEEP_VALID and are dropped,
-    and blocks holding no flat ground are never requested at all. `valid` is
-    returned per patch so the caller can exclude masked pixels from its counts
-    rather than letting them be classified.
+    `flat` is a terrain mask downloaded as an extra band, NOT applied to the
+    imagery. Patches are kept on data coverage alone; the returned `valid` mask
+    is then narrowed to flat ground so the caller counts only pixels that could
+    actually hold water. Blocks with no flat ground at all are never requested.
 
     Blocks whose id is in `skip` are not re-downloaded (resume). A block that
     fails to download yields (block_id, None, None, None) so the caller can
     count it without marking it done.
     """
-    if flat is not None:
-        images = [im.updateMask(flat) for im in images]
+    # NOT updateMask: masking the imagery would make steep pixels *invalid*, and
+    # SAR_KEEP_VALID then throws away any patch that is mostly slope. A 224 px
+    # patch is 2.24 km across and Sikkim's 199 km2 of flat land is strung along
+    # valleys, so no patch reaches 70% flat and every one is dropped (measured:
+    # 0 patches kept). "Did the satellite see this pixel" and "can this pixel
+    # hold water" are different questions -- the first decides whether a patch is
+    # usable, the second only which pixels count.
     ring = region.bounds().coordinates().getInfo()[0]
     lons = [p[0] for p in ring]
     lats = [p[1] for p in ring]
@@ -264,6 +274,7 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None):
     dlat, dlon, npy_, npx_ = grid_dims(minx, miny, maxx, maxy,
                                        SAR_PATCH_SIZE, SAR_SCALE_M)
     P, B = SAR_PATCH_SIZE, SAR_BLOCK_PATCHES
+    flat_band = None if flat is None else flat.rename('flat').unmask(0).toByte()
     all_blocks = [(bi, bj) for bi in range(0, npy_, B) for bj in range(0, npx_, B)]
 
     def blk_geom(bi, bj):
@@ -297,7 +308,10 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None):
                                        minx + pj * dlon, lat_top])
         try:
             with ThreadPoolExecutor(max_workers=len(images)) as ex:
-                arrs = list(ex.map(lambda im: _download_block(im, block), images))
+                arrs = list(ex.map(
+                    lambda p: _download_block(p[1], block,
+                                              extra=flat_band if p[0] == 0 else None),
+                    enumerate(images)))
         except Exception as e:
             bar.write(f"      block ({bi},{bj}) failed: {e}")
             yield (i, None, None, None)
@@ -313,8 +327,10 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None):
                 rs, cs = r * P, c * P
                 vmask = np.logical_and.reduce(
                     [a['valid'][rs:rs + P, cs:cs + P] > 0 for a in arrs])
-                if vmask.mean() < SAR_KEEP_VALID:
+                if vmask.mean() < SAR_KEEP_VALID:      # data coverage only
                     continue
+                if flat_band is not None:              # then narrow to flat ground
+                    vmask = vmask & (arrs[0]['flat'][rs:rs + P, cs:cs + P] > 0)
                 # (post VV,VH, pre1 VV,VH, pre2 VV,VH) -- the model's 6 channels
                 chans = [a[b][rs:rs + P, cs:cs + P].astype(np.float32)
                          for a in arrs for b in SAR_POLARISATIONS]
