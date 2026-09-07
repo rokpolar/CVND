@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"PYTHONIOENCODING=utf-8 python -c \\\"\\nimport json\\nfor p in [r'C:/KuroSiwo/configs/config.json', r'C:/KuroSiwo/configs/train/data_config.json']:\\n    print('='*15, p.split('/')[-1])\\n    fo...",
+  "error": "Exit code 1\nTraceback (most recent call last):\r\n  File \"<string>\", line 5, in <module>\r\n    for k,v in json.load(open(p)).items():\r\n               ~~~~~~~~~^^^^^^^^^\r\n  File \"C:\\Python313\\Lib\\json\\__init__.py\", line 293, in load\r\n    return loads(fp.read(),\r\n        cls=cls, object_hook=object_hook,\r\n        parse_float=parse_float, parse_int=parse_int,\r\n        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)\r\n  File \"C:\\Python313\\Lib\\json\\__init__.py\", line 346, in loa...",
+  "timestamp": "2026-09-07T13:04:52.281Z",
+  "retry_count": 2
+}

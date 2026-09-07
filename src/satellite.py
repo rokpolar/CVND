@@ -102,44 +102,6 @@ def _otsu_from_hist(h):
     return (float(best_t) if best_t is not None else None), sep
 
 
-def otsu_threshold(image, region, scale=30, max_pixels=1e8):
-    """Otsu on difference image. Falls back to 3.0 dB."""
-    try:
-        histogram = image.reduceRegion(
-            reducer=ee.Reducer.histogram(255, 0.5),
-            geometry=region, scale=scale,
-            maxPixels=max_pixels, bestEffort=True
-        ).getInfo()
-        band      = list(histogram.keys())[0]
-        hist_data = histogram.get(band)
-        if not hist_data or 'histogram' not in hist_data:
-            return 3.0
-        counts  = np.array(hist_data['histogram'], dtype=float)
-        buckets = np.array(hist_data['bucketMeans'], dtype=float)
-        total   = counts.sum()
-        if total == 0:
-            return 3.0
-        best_thresh, best_var = 0.0, 0.0
-        w0, sum0 = 0.0, 0.0
-        total_mean = (counts * buckets).sum() / total
-        for i in range(len(counts)):
-            w0  += counts[i] / total
-            w1   = 1.0 - w0
-            if w0 == 0 or w1 == 0:
-                continue
-            sum0 += counts[i] * buckets[i] / total
-            mu0   = sum0 / w0
-            mu1   = (total_mean - w0 * mu0) / w1 if w1 > 0 else 0.0
-            var   = w0 * w1 * (mu0 - mu1) ** 2
-            if var > best_var:
-                best_var    = var
-                best_thresh = buckets[i]
-        return float(best_thresh) if best_thresh > 0 else 3.0
-    except Exception as e:
-        print(f"    WARN: Otsu failed ({e}) — fallback 3.0 dB")
-        return 3.0
-
-
 def otsu_backscatter_threshold(image, region, scale=30,
                                fallback=-16.0, lo=-20.0, hi=-13.0):
     """Otsu on post-event backscatter image (water=dark). Clamped to VV water range."""
@@ -380,120 +342,6 @@ def _monthly_composite_sits(s2, target_dt):
     return col.median(), n
 
 
-# ══ (OLD) center single-patch method — superseded by full-AOI tiling. Kept for reference ══
-_OLD_CENTER_PATCH_CODE = r'''
-def _extract_patch_sits(image, lat, lon):
-    """Extract (10, 64, 64) float32 patch centred on (lat, lon)."""
-    half_m     = (SITS_PATCH_SIZE * 10) / 2
-    point      = ee.Geometry.Point([lon, lat])
-    patch_geom = point.buffer(half_m).bounds()
-    n_px       = SITS_PATCH_SIZE * SITS_PATCH_SIZE
-
-    try:
-        data = image.reduceRegion(
-            reducer   = ee.Reducer.toList(),
-            geometry  = patch_geom,
-            scale     = 10,
-            maxPixels = n_px * 2
-        ).getInfo()
-
-        arrays = []
-        for band in SITS_BANDS:
-            vals = data.get(band, [])
-            if len(vals) == 0:
-                return None
-            arr = np.array(vals, dtype=np.float32)
-            if len(arr) < n_px:
-                arr = np.pad(arr, (0, n_px - len(arr)), constant_values=0)
-            arr = arr[:n_px].reshape(SITS_PATCH_SIZE, SITS_PATCH_SIZE)
-            arrays.append(arr)
-
-        patch = np.stack(arrays, axis=0)
-        return np.clip(patch / SITS_NORM, 0, 1)
-
-    except Exception as e:
-        print(f"      Patch extraction failed: {e}")
-        return None
-
-
-def prepare_sits_patch(row):
-    """Track B: prepare one event's S2 time series as HDF5 patch."""
-    event_id  = row['event_id']
-    state     = row['state']
-    lat       = float(row['lat'])
-    lon       = float(row['lon'])
-    start_str = row['start_date']
-    print(f"\n  [Track B] [{event_id}] {state} — {start_str}")
-
-    bbox     = [float(x) for x in row['bbox'].split(',')]
-    # region   = ee.Geometry.Rectangle(bbox)   # (old) loose bbox
-    region   = get_region(row)                  # state AOI (shared with Track A)
-    s2       = _get_s2_sits(region)
-    event_dt = datetime.strptime(start_str, '%Y-%m-%d')
-    zeros    = np.zeros((len(SITS_BANDS), SITS_PATCH_SIZE, SITS_PATCH_SIZE),
-                        dtype=np.float32)
-
-    # 6 monthly pre-event composites
-    pre_patches = []
-    for m in range(SITS_N_PRE, 0, -1):
-        target = event_dt - timedelta(days=30 * m)
-        img, n = _monthly_composite_sits(s2, target)
-        if img is None:
-            print(f"    Pre -{m}mo: no imagery → zeros")
-            pre_patches.append(zeros.copy())
-            continue
-        patch = _extract_patch_sits(img, lat, lon)
-        if patch is None:
-            print(f"    Pre -{m}mo: extraction failed → zeros")
-            pre_patches.append(zeros.copy())
-        else:
-            print(f"    Pre -{m}mo: OK ({n} imgs)")
-            pre_patches.append(patch)
-
-    pre_array = np.stack(pre_patches, axis=0)   # (6, 10, 64, 64)
-
-    # 1 post-event composite (0-14 days after)
-    post_col = s2.filterDate(
-        ee.Date(start_str),
-        ee.Date(start_str).advance(14, 'day')
-    )
-    post_n = post_col.size().getInfo()
-
-    if post_n == 0:
-        print(f"    Post: no imagery → zeros")
-        post_patch = zeros.copy()
-    else:
-        post_patch = _extract_patch_sits(post_col.median(), lat, lon)
-        if post_patch is None:
-            print(f"    Post: extraction failed → zeros")
-            post_patch = zeros.copy()
-        else:
-            print(f"    Post: OK ({post_n} imgs)")
-
-    post_array = post_patch[np.newaxis, ...]    # (1, 10, 64, 64)
-
-    # Save HDF5
-    os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
-    out_path = os.path.join(SITS_OUTPUT_DIR, f'{event_id}.h5')
-    with h5py.File(out_path, 'w') as f:
-        f.create_dataset('pre',  data=pre_array,  dtype='float32')
-        f.create_dataset('post', data=post_array, dtype='float32')
-        m = f.create_group('meta')
-        m.attrs['event_id']   = event_id
-        m.attrs['state']      = state
-        m.attrs['start_date'] = start_str
-        m.attrs['lat']        = lat
-        m.attrs['lon']        = lon
-        m.attrs['bands']      = ','.join(SITS_BANDS)
-        m.attrs['n_pre']      = SITS_N_PRE
-        m.attrs['patch_size'] = SITS_PATCH_SIZE
-
-    print(f"    Saved: {out_path}  "
-          f"[pre={pre_array.shape}, post={post_array.shape}]")
-    return out_path
-'''  # ══ (end of OLD) ══
-
-
 # ══════════════════════════════════════════════════════════════════════════════
 # Tile the whole state AOI into 64x64 patches
 #   - getDownloadURL(NPY) block download -> preserves pixel order (fixes toList reshape bug)
@@ -515,6 +363,30 @@ def _download_block(image, region_block):
             if attempt == 3:
                 raise
             time.sleep(2 ** attempt)
+
+
+def _save_block_progress(path, done_blocks, total_blocks, failed=0):
+    """Persist block-level resume state AND the denominator.
+
+    The old format was a bare list of finished block indices, which made resume
+    work but left the total unknown, so no caller could report a percentage.
+    Written every block, so keep it small and atomic-ish.
+    """
+    tmp = path + '.tmp'
+    with open(tmp, 'w') as cf:
+        json.dump({'done': sorted(done_blocks),
+                   'total': int(total_blocks),
+                   'failed': int(failed)}, cf)
+    os.replace(tmp, path)
+
+
+def _load_block_progress(path):
+    """Read block resume state. Accepts the legacy bare-list format."""
+    with open(path) as bf:
+        raw = json.load(bf)
+    if isinstance(raw, list):                       # legacy checkpoints
+        return set(raw), None
+    return set(raw.get('done', [])), raw.get('total')
 
 
 def _append_h5(f, pre, post, coord):
@@ -604,8 +476,7 @@ def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
             _append_h5(hdf, np.stack(b_pre), np.stack(b_post),
                        np.array(b_coord, dtype='float64'))
         done_blocks.add(i)
-        with open(blocks_ckpt, 'w') as cf:
-            json.dump(sorted(done_blocks), cf)
+        _save_block_progress(blocks_ckpt, done_blocks, len(inside), failed)
         bar.set_postfix(kept=hdf['pre'].shape[0])
     return hdf['pre'].shape[0], failed
 
@@ -615,35 +486,6 @@ def _ndwi_water_frac(img, region):
     water = img.normalizedDifference(['B3', 'B8']).gt(0)
     return water.reduceRegion(ee.Reducer.mean(), region, scale=100,
                               maxPixels=1e9, bestEffort=True).values().get(0)
-
-
-# ── (OLD) driest-only baseline — replaced by _pick_baseline (clear-first). Kept for reference ──
-_OLD_DRY_BASELINE = r'''
-def _dry_baseline(s2, region, event_dt, n_pre=SITS_N_PRE, n_years=6):
-    """Baseline t1..t4 = the n_pre 'driest' SAME-SEASON composites (all before the event)."""
-    cand = []
-    for yr in range(event_dt.year - n_years, event_dt.year + 1):
-        for off in (-2, -1, 0, 1, 2):
-            y, mo = yr, event_dt.month + off
-            if mo < 1:
-                y, mo = y - 1, mo + 12
-            elif mo > 12:
-                y, mo = y + 1, mo - 12
-            if datetime(y, mo, 15) >= event_dt:
-                continue
-            img, _ = _monthly_composite_sits(s2, datetime(y, mo, 15))
-            if img is None:
-                continue
-            wf = _ndwi_water_frac(img, region).getInfo()
-            if wf is None:
-                continue
-            cand.append((f"{y:04d}-{mo:02d}", img, float(wf)))
-    print(f"    baseline candidates found: {len(cand)}")
-    if len(cand) < n_pre:
-        return None
-    cand.sort(key=lambda c: c[2])
-    return sorted(cand[:n_pre], key=lambda c: c[0])
-'''  # ── (end of OLD) ──
 
 
 def _pick_baseline(s2, region, event_dt, n_pre=SITS_N_PRE, n_years=3, min_clear=0.5):
@@ -752,9 +594,9 @@ def prepare_sits_patch(row):
     done_blocks = set()
     resume = os.path.exists(out_path) and os.path.exists(blocks_ckpt)
     if resume:
-        with open(blocks_ckpt) as bf:
-            done_blocks = set(json.load(bf))
-        print(f"    resuming: {len(done_blocks)} blocks already done")
+        done_blocks, prev_total = _load_block_progress(blocks_ckpt)
+        print(f"    resuming: {len(done_blocks)}"
+              f"{f'/{prev_total}' if prev_total else ''} blocks already done")
 
     with h5py.File(out_path, 'a' if resume else 'w') as f:
         if not resume:
@@ -799,7 +641,20 @@ if __name__ == '__main__':
                         help='Only run these event_ids (e.g. --events EVENT_ID). Default: all')
     parser.add_argument('--reverse', action='store_true',
                         help='Process events last-to-first (last event -> first event)')
+    # Parallel runs must not share checkpoint files: several processes writing the
+    # same JSON corrupts it. scripts/download_patches.py gives each worker its own
+    # and merges them afterwards. Per-event .h5/.blocks.json need no such split.
+    parser.add_argument('--checkpoint-b', default=None,
+                        help='Track B checkpoint path (default: shared cache file). '
+                             'Give parallel workers separate files.')
+    parser.add_argument('--sits-index', default=None,
+                        help='Track B index CSV path (default: shared cache file).')
     args = parser.parse_args()
+
+    if args.checkpoint_b:
+        CHECKPOINT_B = args.checkpoint_b
+    if args.sits_index:
+        SITS_INDEX_CSV = args.sits_index
 
     print("=" * 65)
     print("CVND SATELLITE PIPELINE")

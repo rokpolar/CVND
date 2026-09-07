@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"PYTHONIOENCODING=utf-8 python -c \\\"\\nimport sys, json, tempfile, os\\nsys.path.insert(0,'src'); sys.path.insert(0,'scripts')\\nimport satellite as sat\\nd=tempfile.mkdtemp(); p=os.path.join(d...",
+  "error": "Exit code 1\nTraceback (most recent call last):\r\n  File \"<string>\", line 4, in <module>\r\n    import satellite as sat\r\n  File \"C:\\IndiaCVND\\src\\satellite.py\", line 19, in <module>\r\n    initialize_gee()\r\n    ~~~~~~~~~~~~~~^^\r\n  File \"C:\\IndiaCVND\\src\\gee_config.py\", line 26, in initialize_gee\r\n    ee.Initialize(project=get_gee_project_id())\r\n                          ~~~~~~~~~~~~~~~~~~^^\r\n  File \"C:\\IndiaCVND\\src\\gee_config.py\", line 16, in get_gee_project_id\r\n    raise RuntimeError(\r\n    ...<4 lin...",
+  "timestamp": "2026-09-07T08:20:30.719Z",
+  "retry_count": 1
+}

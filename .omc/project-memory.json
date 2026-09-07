@@ -1,0 +1,172 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1788721439091,
+  "projectRoot": "C:\\IndiaCVND",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": "snake_case",
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "scripts",
+      "src",
+      "tests"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "data": {
+      "path": "data",
+      "purpose": "Data files",
+      "fileCount": 1,
+      "lastAccessed": 1788721438955,
+      "keyFiles": [
+        "README.md"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1788721438957,
+      "keyFiles": [
+        "gdelt_collection.md",
+        "use_cases.md"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1788721438958,
+      "keyFiles": [
+        "run_pipeline.sh"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 13,
+      "lastAccessed": 1788721438959,
+      "keyFiles": [
+        "build_emdat_events.py",
+        "collect_emdat.py",
+        "collect_gdelt.py",
+        "compute_expected_coverage.py",
+        "compute_mss.py"
+      ]
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 5,
+      "lastAccessed": 1788721438961,
+      "keyFiles": [
+        "test_build_emdat_events.py",
+        "test_collect_emdat.py",
+        "test_collect_gdelt.py",
+        "test_compute_mss.py",
+        "test_state_aoi_pipeline.py"
+      ]
+    },
+    "__pycache__": {
+      "path": "__pycache__",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1788721438963,
+      "keyFiles": [
+        "estimate_blocks.cpython-313.pyc",
+        "event_aoi_area.cpython-313.pyc",
+        "post_cloud.cpython-313.pyc"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src/sar_patches.py",
+      "accessCount": 5,
+      "lastAccessed": 1788787961456,
+      "type": "file"
+    },
+    {
+      "path": "src/satellite.py",
+      "accessCount": 4,
+      "lastAccessed": 1788769136328,
+      "type": "file"
+    },
+    {
+      "path": "scripts/download_patches.py",
+      "accessCount": 1,
+      "lastAccessed": 1788769181289,
+      "type": "file"
+    },
+    {
+      "path": "src/cvnd_layout.py",
+      "accessCount": 1,
+      "lastAccessed": 1788787845671,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_sar_patches.py",
+      "accessCount": 1,
+      "lastAccessed": 1788787985408,
+      "type": "file"
+    },
+    {
+      "path": "src/floodvit_infer.py",
+      "accessCount": 1,
+      "lastAccessed": 1788791356580,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_floodvit_infer.py",
+      "accessCount": 1,
+      "lastAccessed": 1788791380097,
+      "type": "file"
+    },
+    {
+      "path": "src/sar_flood_area.py",
+      "accessCount": 1,
+      "lastAccessed": 1788791603589,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_sar_flood_area.py",
+      "accessCount": 1,
+      "lastAccessed": 1788791626742,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
