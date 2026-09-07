@@ -143,6 +143,27 @@ def sar_collection(region):
             .filterBounds(region))
 
 
+def acquisition_dates(col):
+    """Distinct acquisition dates in a collection, oldest first.
+
+    Sentinel-1 stores one scene per frame, and a 250 km swath does not cover a
+    large state: Bihar (94,466 km2) is only 7% inside a single frame, and one
+    pass over it is recorded as two scenes seconds apart. Treating scenes as
+    timesteps therefore picked two frames of the SAME pass as pre_event_1 and
+    pre_event_2 -- no time difference at all, and 93% of the AOI missing. Dates
+    are the unit of time here, not scenes.
+    """
+    stamps = col.aggregate_array('system:time_start').getInfo() or []
+    return sorted({pd.to_datetime(ms, unit='ms').strftime('%Y-%m-%d')
+                   for ms in stamps})
+
+
+def mosaic_on(col, date_str):
+    """All frames acquired on one date, joined into a single image."""
+    day = ee.Date(date_str)
+    return col.filterDate(day, day.advance(1, 'day')).mosaic()
+
+
 def pick_triplet(region, start_date):
     """Choose (post_event, pre_event_1, pre_event_2) from ONE relative orbit.
 
@@ -151,9 +172,11 @@ def pick_triplet(region, start_date):
     builds its triplets from a single track for this reason; anything else feeds
     the model a difference it was never trained to ignore.
 
-    Returns (images, meta) with images ordered post, pre_event_1, pre_event_2
-    to match the trainer's channel layout, or (None, reason) when the track has
-    too few usable acquisitions.
+    Each timestep is a mosaic of every frame from that date, so the AOI is
+    covered whatever its size, and the three timesteps are three distinct dates.
+
+    Returns (images, meta) ordered post, pre_event_1, pre_event_2 to match the
+    trainer's channel layout, or (None, reason) when the track is too sparse.
     """
     col = sar_collection(region)
     post_col = (col.filterDate(ee.Date(start_date),
@@ -162,41 +185,41 @@ def pick_triplet(region, start_date):
     if post_col.size().getInfo() == 0:
         return None, 'NO_POST_SCENE'
 
-    post = ee.Image(post_col.first())
-    info = post.getInfo()['properties']
+    info = ee.Image(post_col.first()).getInfo()['properties']
     orbit = info['relativeOrbitNumber_start']
     passdir = info['orbitProperties_pass']
-    post_ms = info['system:time_start']
 
-    # same track only, strictly before onset
-    pre_col = (col
-               .filter(ee.Filter.eq('relativeOrbitNumber_start', orbit))
-               .filter(ee.Filter.eq('orbitProperties_pass', passdir))
-               .filterDate(ee.Date(start_date).advance(-PRE_SEARCH_DAYS, 'day'),
-                           ee.Date(start_date))
-               .sort('system:time_start', False))          # newest first
-    n_pre = pre_col.size().getInfo()
-    if n_pre < SAR_N_PRE:
-        return None, f'ONLY_{n_pre}_PRE_SCENES_ON_ORBIT_{orbit}'
+    track = (col
+             .filter(ee.Filter.eq('relativeOrbitNumber_start', orbit))
+             .filter(ee.Filter.eq('orbitProperties_pass', passdir)))
 
-    pre_list = pre_col.toList(SAR_N_PRE)
-    newest = ee.Image(pre_list.get(0))
-    older = ee.Image(pre_list.get(1))
+    post_dates = acquisition_dates(
+        track.filterDate(ee.Date(start_date),
+                         ee.Date(start_date).advance(POST_WINDOW_DAYS, 'day')))
+    if not post_dates:
+        return None, f'NO_POST_DATE_ON_ORBIT_{orbit}'
+    post_date = post_dates[0]                      # first pass after onset
 
-    def stamp(img):
-        return img.getInfo()['properties']['system:time_start']
+    pre_track = track.filterDate(
+        ee.Date(start_date).advance(-PRE_SEARCH_DAYS, 'day'), ee.Date(start_date))
+    pre_dates = acquisition_dates(pre_track)
+    if len(pre_dates) < SAR_N_PRE:
+        return None, (f'ONLY_{len(pre_dates)}_PRE_DATES_ON_ORBIT_{orbit}')
+    pre_1, pre_2 = pre_dates[-SAR_N_PRE:]          # two most recent, oldest first
 
-    # post first, matching the trainer's cat(post, pre1, pre2)
+    images = [mosaic_on(track, post_date),
+              mosaic_on(pre_track, pre_1),
+              mosaic_on(pre_track, pre_2)]
     meta = {
         'relative_orbit': int(orbit),
         'orbit_pass': passdir,
-        'pre_1_date': _iso(stamp(older)),      # oldest first, matching the
-        'pre_2_date': _iso(stamp(newest)),     # config's pre_event_1/2 order
-        'post_date': _iso(post_ms),
-        'post_lag_days': round((post_ms - stamp(newest)) / 86400000.0, 1),
-        'n_pre_available': int(n_pre),
+        'pre_1_date': pre_1,
+        'pre_2_date': pre_2,
+        'post_date': post_date,
+        'post_lag_days': (pd.Timestamp(post_date) - pd.Timestamp(pre_2)).days,
+        'n_pre_dates': len(pre_dates),
     }
-    return [post, older, newest], meta
+    return images, meta
 
 
 def _iso(ms):

@@ -80,6 +80,72 @@ class ProgressTests(unittest.TestCase):
             self.assertIsNone(s["total_blocks"])
 
 
+class CompletenessTests(unittest.TestCase):
+    """An event counts as finished only when every block was classified.
+
+    Without the check, a session killed mid-download leaves the blocks it reached
+    marked done, the next run finds nothing left to do, and a partial area is
+    written as final. Sikkim was once recorded complete with 0 km2 observed.
+    """
+
+    def test_result_carries_both_block_counts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            sfa.append_result(tmp, {"event_id": "E203", "flood_km2": 5.0,
+                                    "blocks_done": 364, "blocks_total": 364,
+                                    "is_control": False,
+                                    "method_version": sfa.METHOD_VERSION})
+            df = pd.read_csv(Path(tmp) / sfa.RESULT_NAME)
+            self.assertEqual(df.loc[0, "blocks_done"], df.loc[0, "blocks_total"])
+
+    def test_partial_progress_is_not_a_result(self):
+        """Progress alone must never make an event look finished -- only a row in
+        the results file does, and that row is written after the check."""
+        with tempfile.TemporaryDirectory() as tmp:
+            state = sfa._fresh_state()
+            state["done_blocks"] = list(range(71))
+            state["total_blocks"] = 364
+            sfa.save_progress(tmp, "E203", state)
+            self.assertEqual(sfa.finished_events(tmp), set())
+
+
+class ResetTests(unittest.TestCase):
+    @staticmethod
+    def _seed(tmp, ev, km2=1.0):
+        sfa.save_progress(tmp, ev, sfa._fresh_state())
+        sfa.append_result(tmp, {"event_id": ev, "flood_km2": km2,
+                                "is_control": "#ctrl" in ev,
+                                "method_version": sfa.METHOD_VERSION})
+
+    def test_resets_only_the_named_ids(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._seed(tmp, "E104")
+            self._seed(tmp, "E203")
+            sfa.reset_summary(tmp, ["E104"])
+            self.assertFalse(sfa.progress_path(tmp, "E104").exists())
+            self.assertTrue(sfa.progress_path(tmp, "E203").exists())
+            self.assertEqual(sfa.finished_events(tmp), {"E203"})
+
+    def test_can_reset_a_control_id(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._seed(tmp, "E104")
+            self._seed(tmp, "E104#ctrl-365d")
+            sfa.reset_summary(tmp, ["E104#ctrl-365d"])
+            self.assertEqual(sfa.finished_events(tmp), {"E104"})
+
+    def test_all_clears_progress_and_results(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._seed(tmp, "E104")
+            self._seed(tmp, "E203")
+            sfa.reset_summary(tmp, ["all"])
+            self.assertEqual(sfa.finished_events(tmp), set())
+            self.assertEqual(
+                list((Path(tmp) / sfa.PROGRESS_DIR).glob("*.json")), [])
+
+    def test_reports_when_there_was_nothing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIn("nothing to delete", sfa.reset_summary(tmp, ["E999"]))
+
+
 class ControlRunTests(unittest.TestCase):
     """A control run measures the same AOI at a non-flood date. It must never be
     mistaken for the real event, or a baseline would end up in the severity model."""

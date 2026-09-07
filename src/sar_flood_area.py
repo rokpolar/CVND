@@ -56,7 +56,12 @@ PROGRESS_DIR = 'sar_progress'
 #      it speckle darkens random pixels and the model reads them as water
 #   5: int16 transfer encoding (float64 from the Lee filter exceeded GEE's
 #      48 MiB request cap and every block failed)
-METHOD_VERSION = 5
+#   6: timesteps are DATES, mosaicking every frame of that date. A 250 km swath
+#      does not cover a large state -- one frame held 7% of Bihar, and one pass
+#      is stored as two scenes, so v5 picked two frames of the same pass as the
+#      two pre-event timesteps. Also refuses to record an event as finished
+#      unless every block in its AOI was classified.
+METHOD_VERSION = 6
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -147,6 +152,34 @@ def reset_event(state_dir, event_id):
             keep.to_csv(path, index=False)
 
 
+def reset_summary(state_dir, ids):
+    """Delete the given ids (or everything) and report what went.
+
+    Deleting by hand is easy to get half right -- removing the result row but
+    leaving the progress file makes the next run resume on top of counts it was
+    meant to discard, and the reverse silently marks the event finished again.
+    """
+    if len(ids) == 1 and ids[0] == 'all':
+        path = Path(state_dir) / RESULT_NAME
+        known = sorted(pd.read_csv(path)['event_id'].astype(str)) if path.exists() else []
+        for p in (Path(state_dir) / PROGRESS_DIR).glob('*.json'):
+            known.append(p.stem)
+        ids = sorted(set(known))
+
+    lines = []
+    for ev in ids:
+        had_progress = progress_path(state_dir, ev).exists()
+        path = Path(state_dir) / RESULT_NAME
+        had_result = (path.exists()
+                      and str(ev) in set(pd.read_csv(path)['event_id'].astype(str)))
+        reset_event(state_dir, ev)
+        what = ', '.join(w for w, ok in
+                         (('progress', had_progress), ('result', had_result)) if ok)
+        lines.append(f"  {ev}: {what or 'nothing to delete'}")
+    header = f"reset {len(ids)} id(s)"
+    return "\n".join([header] + lines)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # One event
 # ══════════════════════════════════════════════════════════════════════════════
@@ -202,10 +235,12 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
         print(f"  resuming: {len(done)} blocks already classified")
 
     started = time.time()
+    total_blocks = state.get('total_blocks')
     for block_id, patches, coords, valid in sp.iter_patch_blocks(
             images, region, done, flat=sp.terrain_mask(), speckle=speckle):
         if block_id == '__total__':
-            state['total_blocks'] = patches
+            total_blocks = patches
+            state['total_blocks'] = total_blocks
             continue
         if patches is None:                      # download failed; retry next run
             failed.add(block_id)
@@ -229,6 +264,19 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
 
     if failed:
         print(f"  {len(failed)} blocks failed -> event left open, re-run to finish")
+        return None
+
+    # An event is finished only when every block in its AOI has been classified.
+    # Without this check a session killed mid-download leaves the blocks it did
+    # reach marked done, the next run sees nothing left to do, and a partial area
+    # is written as a final result -- which is how Sikkim was once recorded as
+    # complete with 0 km2 observed.
+    if not total_blocks:
+        print("  no blocks in AOI -> nothing measurable, leaving open")
+        return None
+    if len(done) < total_blocks:
+        print(f"  only {len(done)}/{total_blocks} blocks classified -> "
+              f"event left open, re-run to finish")
         return None
 
     elapsed = time.time() - started
@@ -257,6 +305,7 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
         'n_patches': n_patches,
         'flood_px': counts['flood_px'],
         'blocks_done': len(done),
+        'blocks_total': total_blocks,
         'slope_max_deg': sp.SLOPE_MAX_DEG,
         'speckle_filter': 'lee3x3' if speckle else 'none',
         'method_version': METHOD_VERSION,
@@ -291,12 +340,22 @@ def main():
                         'and season, which is the only way to tell whether a '
                         'flood fraction is a signal or the model over-reading '
                         'unfamiliar ground. Written under a separate event id.')
+    p.add_argument('--reset', nargs='+', metavar='ID',
+                   help='delete saved progress and results for these ids, then '
+                        'exit without running. Ids are as they appear in the '
+                        'results file, so control runs are given in full, e.g. '
+                        '"E104#ctrl-365d". Pass "all" to clear everything.')
     p.add_argument('--force', action='store_true',
                    help='recompute the selected events even if already finished, '
                         'discarding their saved progress. METHOD_VERSION handles '
                         'this automatically for method changes; use --force for '
                         'a one-off redo (a suspect result, a new checkpoint).')
     args = p.parse_args()
+
+    if args.reset:
+        print(f"state dir : {args.state_dir}")
+        print(reset_summary(args.state_dir, args.reset))
+        return
 
     events = pd.read_csv(data_path('events'))
     if args.events:
@@ -318,6 +377,7 @@ def main():
     print(f"state dir : {args.state_dir}")
     print(f"finished  : {len(already)} | to process: {len(events)}")
     if events.empty:
+        print_results(args.state_dir)
         return
 
     model = fvi.load_model(args.checkpoint, args.kuro_siwo_repo, args.device)
@@ -336,8 +396,56 @@ def main():
             print(f"  ERROR {row['event_id']}: {e}")
             continue
         if result is not None:
-            out = append_result(args.state_dir, result)
-    print(f"\nresults -> {Path(args.state_dir) / RESULT_NAME}")
+            append_result(args.state_dir, result)
+    print_results(args.state_dir)
+
+
+SUMMARY_COLS = ['event_id', 'state', 'start_date', 'flood_km2', 'observed_km2',
+                'flood_frac_observed', 'blocks_done', 'is_control', 'status']
+
+
+def print_results(state_dir):
+    """Show the table at the end of a run.
+
+    Printing only the file path means a disconnected Colab session takes the
+    numbers with it: the run finished, but nobody saw what it produced.
+    """
+    path = Path(state_dir) / RESULT_NAME
+    print(f"\nresults -> {path}")
+    if not path.exists():
+        return
+    df = pd.read_csv(path)
+    cols = [c for c in SUMMARY_COLS if c in df.columns]
+    print(df[cols].to_string(index=False))
+    if {'is_control', 'flood_frac_observed'} <= set(df.columns):
+        _print_control_comparison(df)
+
+
+def _print_control_comparison(df):
+    """Event flood fraction against its own no-flood baseline.
+
+    The fraction alone says nothing: FloodViT called 46% of flat Sikkim flooded
+    during an event and 35% a year earlier with no flood at all. Only the gap
+    between the two is evidence that the model saw the event.
+    """
+    ctrl = df[df['is_control'].fillna(False).astype(bool)]
+    rows = []
+    for _, c in ctrl.iterrows():
+        base = str(c['event_id']).split('#')[0]
+        ev = df[(df['event_id'].astype(str) == base)
+                & (~df['is_control'].fillna(False).astype(bool))]
+        if ev.empty:
+            continue
+        e = ev.iloc[0]
+        gap = None
+        if pd.notna(e['flood_frac_observed']) and pd.notna(c['flood_frac_observed']):
+            gap = round(e['flood_frac_observed'] - c['flood_frac_observed'], 4)
+        rows.append({'event_id': base, 'state': e.get('state'),
+                     'event_frac': e['flood_frac_observed'],
+                     'control_frac': c['flood_frac_observed'], 'gap': gap})
+    if rows:
+        print("\nevent vs control (a high fraction means nothing without the gap):")
+        print(pd.DataFrame(rows).to_string(index=False))
 
 
 if __name__ == '__main__':
