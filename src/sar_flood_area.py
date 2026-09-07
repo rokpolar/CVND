@@ -49,7 +49,10 @@ PROGRESS_DIR = 'sar_progress'
 #   2: slope < SLOPE_MAX_DEG gate; steep pixels excluded from counts and from
 #      observed area (v1 reported 899 km2 of flood in Sikkim, which holds only
 #      199 km2 of land under 5 degrees)
-METHOD_VERSION = 2
+#   3: terrain mask downloaded as a band and applied only when counting, not to
+#      the imagery -- v2 masked the imagery, so SAR_KEEP_VALID dropped every
+#      patch in mountain states and Sikkim returned 0 km2 observed
+METHOD_VERSION = 3
 
 
 # ══════════════════════════════════════════════════════════════════════════════
