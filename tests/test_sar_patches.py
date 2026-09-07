@@ -83,11 +83,32 @@ class GridTests(unittest.TestCase):
         self.assertAlmostEqual(c10 / c20, 2.0, delta=0.05)
 
     def test_block_request_stays_under_the_gee_limit(self):
-        """One timestep is (block px)^2 x 2 bands x float32; GEE caps a
-        getDownloadURL response at 48 MB."""
+        """GEE rejects a getDownloadURL response over 48 MiB (50,331,648 bytes).
+        One request carries VV and VH as float32 plus two uint8 mask bands.
+        The Lee filter first produced float64 and hit exactly this wall, so the
+        budget is checked against the real limit, not a rounded 48 MB."""
         px = sp.SAR_BLOCK_PATCHES * sp.SAR_PATCH_SIZE
-        mb = px * px * len(sp.SAR_POLARISATIONS) * 4 / 1e6
-        self.assertLess(mb, 48.0, f"block request would be {mb:.1f} MB")
+        per_px = len(sp.SAR_POLARISATIONS) * 2 + 2      # int16 x2, uint8 x2
+        self.assertLess(px * px * per_px, 48 * 1024 * 1024,
+                        f"block request would be {px * px * per_px / 2**20:.1f} MiB")
+
+    def test_float64_block_would_not_fit(self):
+        """Guards the cast: if the filter output ever goes back to float64 the
+        block size must be revisited, not silently retried 4 times per block."""
+        px = sp.SAR_BLOCK_PATCHES * sp.SAR_PATCH_SIZE
+        self.assertGreater(px * px * (len(sp.SAR_POLARISATIONS) * 8 + 2),
+                           48 * 1024 * 1024)
+
+    def test_transfer_encoding_round_trips(self):
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertIn("multiply(SAR_SCALE_FACTOR).toInt16()", src)
+        self.assertIn("/ SAR_SCALE_FACTOR", src)
+
+    def test_scale_factor_fits_int16_and_keeps_precision(self):
+        """Clamped at 0.15 downstream, so the encoded value must not overflow,
+        and one step must stay far below the normalisation std (0.0215 for VH)."""
+        self.assertLess(0.15 * sp.SAR_SCALE_FACTOR, 32767)
+        self.assertLess(1.0 / sp.SAR_SCALE_FACTOR, 0.0215 / 100)
 
 
 class AppendTests(unittest.TestCase):
