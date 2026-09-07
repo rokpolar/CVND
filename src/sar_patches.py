@@ -116,6 +116,14 @@ SLOPE_MAX_DEG = 5
 SPECKLE_WINDOW = 3
 SPECKLE_ENL = 4.4
 
+# ── transfer encoding ─────────────────────────────────────────────────────────
+# Linear sigma0 sits in roughly [0, 1] and is clamped at 0.15 before the model,
+# so int16 at 1/10000 resolves it to 0.0001 -- about 0.005 of the normalisation
+# std, below anything the model can notice. Same trick the optical pipeline
+# already used (SITS_NORM). It also keeps the request well inside GEE's 48 MiB
+# cap: the Lee filter's float64 output reached 72 MB and every block failed.
+SAR_SCALE_FACTOR = 10000
+
 OUTPUT_DIR = str(data_path("sar_patches"))
 INDEX_CSV = str(data_path("sar_patches_index"))
 CHECKPOINT = str(data_path("sar_checkpoint"))
@@ -244,9 +252,10 @@ def _download_block(image, region_block, extra=None, speckle=True):
     sar = image.select(SAR_POLARISATIONS).toFloat()
     if speckle:
         sar = lee_filter(sar)
-    stack = sar.addBands(valid)
+    # int16 transfer encoding; decoded on arrival. See SAR_SCALE_FACTOR.
+    stack = sar.multiply(SAR_SCALE_FACTOR).toInt16().addBands(valid)
     if extra is not None:
-        stack = stack.addBands(extra)
+        stack = stack.addBands(extra.toByte())
     url = stack.getDownloadURL({'region': region_block,
                                 'scale': SAR_SCALE_M, 'format': 'NPY'})
     for attempt in range(4):
@@ -371,7 +380,9 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None, speckle=True)
                 if flat_band is not None:              # then narrow to flat ground
                     vmask = vmask & (arrs[0]['flat'][rs:rs + P, cs:cs + P] > 0)
                 # (post VV,VH, pre1 VV,VH, pre2 VV,VH) -- the model's 6 channels
+                # back to linear sigma0 from the int16 transfer encoding
                 chans = [a[b][rs:rs + P, cs:cs + P].astype(np.float32)
+                         / SAR_SCALE_FACTOR
                          for a in arrs for b in SAR_POLARISATIONS]
                 batch.append(np.stack(chans))
                 valids.append(vmask)

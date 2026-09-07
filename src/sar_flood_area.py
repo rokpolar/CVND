@@ -54,7 +54,9 @@ PROGRESS_DIR = 'sar_progress'
 #      patch in mountain states and Sikkim returned 0 km2 observed
 #   4: Lee 3x3 speckle filter, matching Kuro Siwo's SNAP preprocessing. Without
 #      it speckle darkens random pixels and the model reads them as water
-METHOD_VERSION = 4
+#   5: int16 transfer encoding (float64 from the Lee filter exceeded GEE's
+#      48 MiB request cap and every block failed)
+METHOD_VERSION = 5
 
 
 # ══════════════════════════════════════════════════════════════════════════════
