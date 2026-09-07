@@ -80,6 +80,37 @@ class ProgressTests(unittest.TestCase):
             self.assertIsNone(s["total_blocks"])
 
 
+class ControlRunTests(unittest.TestCase):
+    """A control run measures the same AOI at a non-flood date. It must never be
+    mistaken for the real event, or a baseline would end up in the severity model."""
+
+    def test_control_id_is_distinct(self):
+        cid = sfa.control_id("E104", -365)
+        self.assertNotEqual(cid, "E104")
+        self.assertIn("E104", cid)
+
+    def test_control_id_encodes_the_offset(self):
+        self.assertNotEqual(sfa.control_id("E104", -365),
+                            sfa.control_id("E104", -730))
+
+    def test_shift_date_keeps_the_season(self):
+        """A year back, not six months: SAR backscatter is seasonal, so a control
+        from a different season would differ for reasons other than flooding."""
+        self.assertEqual(sfa.shift_date("2020-05-24", -365), "2019-05-25")
+
+    def test_control_and_event_coexist_in_results(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            sfa.append_result(tmp, {"event_id": "E104", "flood_km2": 63.4,
+                                    "is_control": False,
+                                    "method_version": sfa.METHOD_VERSION})
+            sfa.append_result(tmp, {"event_id": sfa.control_id("E104", -365),
+                                    "flood_km2": 2.1, "is_control": True,
+                                    "method_version": sfa.METHOD_VERSION})
+            df = pd.read_csv(Path(tmp) / sfa.RESULT_NAME)
+            self.assertEqual(len(df), 2)
+            self.assertEqual(len(df[~df["is_control"]]), 1)
+
+
 class ResultTests(unittest.TestCase):
     @staticmethod
     def _row(ev, km2, version=None):
