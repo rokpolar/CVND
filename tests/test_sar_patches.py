@@ -44,6 +44,27 @@ class ModelContractTests(unittest.TestCase):
         self.assertNotIn("'COPERNICUS/S1_GRD'", src)
 
 
+class SpeckleTests(unittest.TestCase):
+    """Kuro Siwo trains on Lee-filtered imagery. Unfiltered input leaves speckle
+    darkening random pixels, which the model reads as water -- measured at 30% of
+    flat ground called flood in a Sikkim year with no flood."""
+
+    def test_window_matches_kuro_siwo(self):
+        self.assertEqual(sp.SPECKLE_WINDOW, 3)
+
+    def test_enl_is_plausible_for_iw_grd(self):
+        """Sentinel-1 IW GRD is roughly 4-5 looks; a wrong ENL mis-weights how
+        much of the local variance counts as signal."""
+        self.assertTrue(3.0 <= sp.SPECKLE_ENL <= 6.0)
+
+    def test_filter_is_on_by_default(self):
+        import inspect
+        sig = inspect.signature(sp.iter_patch_blocks)
+        self.assertIs(sig.parameters["speckle"].default, True)
+        self.assertIs(inspect.signature(sp._download_block)
+                      .parameters["speckle"].default, True)
+
+
 class GridTests(unittest.TestCase):
     def test_patch_spans_expected_ground_distance(self):
         dlat, dlon, _, _ = sp.grid_dims(77.0, 23.0, 84.0, 30.0, 224, 10)

@@ -52,7 +52,9 @@ PROGRESS_DIR = 'sar_progress'
 #   3: terrain mask downloaded as a band and applied only when counting, not to
 #      the imagery -- v2 masked the imagery, so SAR_KEEP_VALID dropped every
 #      patch in mountain states and Sikkim returned 0 km2 observed
-METHOD_VERSION = 3
+#   4: Lee 3x3 speckle filter, matching Kuro Siwo's SNAP preprocessing. Without
+#      it speckle darkens random pixels and the model reads them as water
+METHOD_VERSION = 4
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -156,7 +158,8 @@ def shift_date(date_str, offset_days):
     return (pd.Timestamp(date_str) + pd.Timedelta(days=offset_days)).strftime('%Y-%m-%d')
 
 
-def process_event(row, model, state_dir, device, batch_size, control_offset=None):
+def process_event(row, model, state_dir, device, batch_size, control_offset=None,
+                  speckle=True):
     """Stream one event's blocks through the model. Returns a result row or None.
 
     With control_offset set, the same AOI is measured at a shifted date. Same
@@ -198,7 +201,7 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
 
     started = time.time()
     for block_id, patches, coords, valid in sp.iter_patch_blocks(
-            images, region, done, flat=sp.terrain_mask()):
+            images, region, done, flat=sp.terrain_mask(), speckle=speckle):
         if block_id == '__total__':
             state['total_blocks'] = patches
             continue
@@ -253,6 +256,7 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
         'flood_px': counts['flood_px'],
         'blocks_done': len(done),
         'slope_max_deg': sp.SLOPE_MAX_DEG,
+        'speckle_filter': 'lee3x3' if speckle else 'none',
         'method_version': METHOD_VERSION,
         'status': 'OK',
         **meta,
@@ -274,6 +278,10 @@ def main():
     p.add_argument('--batch-size', type=int, default=32)
     p.add_argument('--events', nargs='*', default=None)
     p.add_argument('--limit', type=int, default=None)
+    p.add_argument('--no-speckle-filter', action='store_true',
+                   help='skip the Lee filter. Kuro Siwo trained on speckle-'
+                        'filtered imagery, so this is for measuring the effect '
+                        'of the filter, not for production runs.')
     p.add_argument('--control-offset-days', type=int, default=None,
                    help='run the same AOI shifted by this many days instead of '
                         'the real onset, e.g. -365 for the same week a year '
@@ -317,7 +325,8 @@ def main():
         try:
             result = process_event(row, model, args.state_dir,
                                    args.device, args.batch_size,
-                                   control_offset=args.control_offset_days)
+                                   control_offset=args.control_offset_days,
+                                   speckle=not args.no_speckle_filter)
         except KeyboardInterrupt:
             print("\ninterrupted — progress saved, re-run to resume")
             return
