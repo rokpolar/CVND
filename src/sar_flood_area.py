@@ -1,0 +1,228 @@
+"""sar_flood_area.py — download SAR patches, run FloodViT, keep only the areas.
+
+Storing the patches is not an option: 204 events over whole-state AOIs is about
+2.3 million 224x224x6 float32 patches, roughly 3.9 TB. The patches themselves are
+disposable -- what the study needs is one flood area per event. So each block is
+downloaded, classified, counted, and discarded, and the run costs no disk.
+
+State lives in --state-dir so a run can move between machines and accounts:
+    <state-dir>/sar_progress/<event_id>.json   done blocks + running pixel counts
+    <state-dir>/sar_flood_area.csv             finished events
+
+Point --state-dir at a shared Google Drive folder and a Colab session that hits
+its quota can be resumed from another account, or locally, with the same command.
+Nothing else is carried between runs.
+
+Colab:  python src/sar_flood_area.py --state-dir /content/drive/MyDrive/cvnd_state
+Local:  python src/sar_flood_area.py --state-dir data/cache --device cpu
+
+CPU works but is only sensible for a handful of events: this is ViT-Large.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import floodvit_infer as fvi  # noqa: E402
+import sar_patches as sp  # noqa: E402
+from cvnd_layout import data_path  # noqa: E402
+
+RESULT_NAME = 'sar_flood_area.csv'
+PROGRESS_DIR = 'sar_progress'
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Portable state
+# ══════════════════════════════════════════════════════════════════════════════
+
+def progress_path(state_dir, event_id):
+    return Path(state_dir) / PROGRESS_DIR / f'{event_id}.json'
+
+
+def load_progress(state_dir, event_id):
+    """Resume state for one event: which blocks are done and the counts so far."""
+    p = progress_path(state_dir, event_id)
+    if not p.exists():
+        return {'done_blocks': [], 'counts': _zero_counts(), 'patches': 0,
+                'failed_blocks': [], 'total_blocks': None}
+    try:
+        raw = json.loads(p.read_text())
+    except (json.JSONDecodeError, OSError):
+        print(f"  WARN unreadable progress for {event_id}; starting over")
+        return load_progress(Path(state_dir) / '__missing__', event_id)
+    raw.setdefault('failed_blocks', [])
+    raw.setdefault('total_blocks', None)
+    return raw
+
+
+def save_progress(state_dir, event_id, state):
+    """Written after every block, so a killed session loses one block at most."""
+    p = progress_path(state_dir, event_id)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_suffix('.json.tmp')
+    tmp.write_text(json.dumps(state))
+    os.replace(tmp, p)
+
+
+def _zero_counts():
+    return {'no_water_px': 0, 'permanent_water_px': 0, 'flood_px': 0}
+
+
+def append_result(state_dir, row):
+    """Append one finished event, replacing any earlier row for it."""
+    path = Path(state_dir) / RESULT_NAME
+    path.parent.mkdir(parents=True, exist_ok=True)
+    df = pd.DataFrame([row])
+    if path.exists():
+        old = pd.read_csv(path)
+        old = old[old['event_id'] != row['event_id']]
+        df = pd.concat([old, df], ignore_index=True)
+    df.sort_values('event_id').to_csv(path, index=False)
+    return path
+
+
+def finished_events(state_dir):
+    path = Path(state_dir) / RESULT_NAME
+    if not path.exists():
+        return set()
+    return set(pd.read_csv(path)['event_id'].astype(str))
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# One event
+# ══════════════════════════════════════════════════════════════════════════════
+
+def process_event(row, model, state_dir, device, batch_size):
+    """Stream one event's blocks through the model. Returns a result row or None."""
+    event_id = str(row['event_id'])
+    sat = sp._sat()
+    if hasattr(sat, 'ensure_gee'):
+        sat.ensure_gee()
+
+    print(f"\n[{event_id}] {row['state']} — {row['start_date']}")
+    region = sat.get_region(row)
+    images, meta = sp.pick_triplet(region, row['start_date'])
+    if images is None:
+        print(f"  skip: {meta}")
+        return {'event_id': event_id, 'state': row['state'],
+                'status': f'SKIPPED: {meta}', 'flood_km2': None}
+    print(f"  orbit {meta['relative_orbit']} {meta['orbit_pass']} | "
+          f"pre {meta['pre_1_date']}, {meta['pre_2_date']} -> "
+          f"post {meta['post_date']}")
+
+    images = [im.clip(region) for im in images]
+    state = load_progress(state_dir, event_id)
+    done = set(state['done_blocks'])
+    counts = dict(state['counts'])
+    failed = set(state['failed_blocks'])
+    n_patches = state['patches']
+    if done:
+        print(f"  resuming: {len(done)} blocks already classified")
+
+    started = time.time()
+    for block_id, patches, coords in sp.iter_patch_blocks(images, region, done):
+        if block_id == '__total__':
+            state['total_blocks'] = patches
+            continue
+        if patches is None:                      # download failed; retry next run
+            failed.add(block_id)
+            continue
+        if len(patches):
+            pred = fvi.predict(model, patches, device=device, batch_size=batch_size)
+            for k, v in fvi.count_classes(pred).items():
+                counts[k] += v
+            n_patches += len(patches)
+        done.add(block_id)
+        failed.discard(block_id)
+        state.update({'done_blocks': sorted(done), 'counts': counts,
+                      'patches': n_patches, 'failed_blocks': sorted(failed)})
+        save_progress(state_dir, event_id, state)
+
+    if failed:
+        print(f"  {len(failed)} blocks failed -> event left open, re-run to finish")
+        return None
+
+    elapsed = time.time() - started
+    flood_km2 = fvi.px_to_km2(counts['flood_px'], sp.SAR_SCALE_M)
+    perm_km2 = fvi.px_to_km2(counts['permanent_water_px'], sp.SAR_SCALE_M)
+    observed_km2 = fvi.px_to_km2(n_patches * sp.SAR_PATCH_SIZE ** 2, sp.SAR_SCALE_M)
+    print(f"  flood {flood_km2:.2f} km2 | permanent {perm_km2:.2f} km2 | "
+          f"observed {observed_km2:.0f} km2 | {elapsed / 60:.1f} min")
+
+    return {
+        'event_id': event_id,
+        'state': row['state'],
+        'start_date': row['start_date'],
+        'flood_km2': round(flood_km2, 3),
+        'permanent_water_km2': round(perm_km2, 3),
+        # area actually classified: patches dropped for missing data are not in it,
+        # so flood_km2 is a count over observed_km2, not over the whole AOI
+        'observed_km2': round(observed_km2, 1),
+        'n_patches': n_patches,
+        'flood_px': counts['flood_px'],
+        'blocks_done': len(done),
+        'status': 'OK',
+        **meta,
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument('--state-dir', default=str(data_path('flood_extent').parent),
+                   help='where progress and results live; point at shared Drive '
+                        'in Colab so another account can resume')
+    p.add_argument('--checkpoint', default='C:/KuroSiwo/checkpoints/floodvit.pt')
+    p.add_argument('--kuro-siwo-repo', default='C:/KuroSiwo',
+                   help='needed on sys.path: the checkpoint pickles its classes')
+    p.add_argument('--device', default='cuda')
+    p.add_argument('--batch-size', type=int, default=32)
+    p.add_argument('--events', nargs='*', default=None)
+    p.add_argument('--limit', type=int, default=None)
+    args = p.parse_args()
+
+    events = pd.read_csv(data_path('events'))
+    if args.events:
+        events = events[events['event_id'].isin(args.events)]
+    already = finished_events(args.state_dir)
+    events = events[~events['event_id'].astype(str).isin(already)]
+    if args.limit:
+        events = events.head(args.limit)
+
+    print(f"state dir : {args.state_dir}")
+    print(f"finished  : {len(already)} | to process: {len(events)}")
+    if events.empty:
+        return
+
+    model = fvi.load_model(args.checkpoint, args.kuro_siwo_repo, args.device)
+    print(f"model     : {args.checkpoint} on {args.device}\n")
+
+    for _, row in events.iterrows():
+        try:
+            result = process_event(row, model, args.state_dir,
+                                   args.device, args.batch_size)
+        except KeyboardInterrupt:
+            print("\ninterrupted — progress saved, re-run to resume")
+            return
+        except Exception as e:
+            print(f"  ERROR {row['event_id']}: {e}")
+            continue
+        if result is not None:
+            out = append_result(args.state_dir, result)
+    print(f"\nresults -> {Path(args.state_dir) / RESULT_NAME}")
+
+
+if __name__ == '__main__':
+    main()

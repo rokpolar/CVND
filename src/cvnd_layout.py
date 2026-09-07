@@ -41,6 +41,10 @@ DATA_FILES: dict[str, str] = {
     "sits_patches_index": "cache/sits_patches_index.csv",
     "satellite_checkpoint_a": "cache/satellite_checkpoint_a.json",
     "satellite_checkpoint_b": "cache/satellite_checkpoint_b.json",
+    # Sentinel-1 patches for the Kuro Siwo FloodViT model (6ch, 224px, linear sigma0)
+    "sar_patches": "cache/sar_patches",
+    "sar_patches_index": "cache/sar_patches_index.csv",
+    "sar_checkpoint": "cache/sar_checkpoint.json",
     "ne_india_states": "cache/ne_india_states.gpkg",
     # intermediate
     "flood_combined": "intermediate/flood_combined.csv",
