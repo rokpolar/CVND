@@ -147,9 +147,27 @@ def reset_event(state_dir, event_id):
 # One event
 # ══════════════════════════════════════════════════════════════════════════════
 
-def process_event(row, model, state_dir, device, batch_size):
-    """Stream one event's blocks through the model. Returns a result row or None."""
+def control_id(event_id, offset_days):
+    """Id for a control run, kept distinct so it never passes as the real event."""
+    return f"{event_id}#ctrl{offset_days:+d}d"
+
+
+def shift_date(date_str, offset_days):
+    return (pd.Timestamp(date_str) + pd.Timedelta(days=offset_days)).strftime('%Y-%m-%d')
+
+
+def process_event(row, model, state_dir, device, batch_size, control_offset=None):
+    """Stream one event's blocks through the model. Returns a result row or None.
+
+    With control_offset set, the same AOI is measured at a shifted date. Same
+    state, same tiling, same terrain gate -- only the imagery differs, so the two
+    flood fractions are directly comparable.
+    """
+    row = row.copy()
     event_id = str(row['event_id'])
+    if control_offset is not None:
+        row['start_date'] = shift_date(row['start_date'], control_offset)
+        event_id = control_id(event_id, control_offset)
     sat = sp._sat()
     if hasattr(sat, 'ensure_gee'):
         sat.ensure_gee()
@@ -161,6 +179,8 @@ def process_event(row, model, state_dir, device, batch_size):
         print(f"  skip: {meta}")
         return {'event_id': event_id, 'state': row['state'],
                 'status': f'SKIPPED: {meta}', 'flood_km2': None,
+                'is_control': control_offset is not None,
+                'control_offset_days': control_offset,
                 'method_version': METHOD_VERSION}
     print(f"  orbit {meta['relative_orbit']} {meta['orbit_pass']} | "
           f"pre {meta['pre_1_date']}, {meta['pre_2_date']} -> "
@@ -220,6 +240,8 @@ def process_event(row, model, state_dir, device, batch_size):
         'event_id': event_id,
         'state': row['state'],
         'start_date': row['start_date'],
+        'is_control': control_offset is not None,
+        'control_offset_days': control_offset,
         'flood_km2': round(flood_km2, 3),
         'permanent_water_km2': round(perm_km2, 3),
         # area actually classified: patches dropped for missing data are not in it,
@@ -252,6 +274,13 @@ def main():
     p.add_argument('--batch-size', type=int, default=32)
     p.add_argument('--events', nargs='*', default=None)
     p.add_argument('--limit', type=int, default=None)
+    p.add_argument('--control-offset-days', type=int, default=None,
+                   help='run the same AOI shifted by this many days instead of '
+                        'the real onset, e.g. -365 for the same week a year '
+                        'earlier. Gives a no-flood baseline for the same terrain '
+                        'and season, which is the only way to tell whether a '
+                        'flood fraction is a signal or the model over-reading '
+                        'unfamiliar ground. Written under a separate event id.')
     p.add_argument('--force', action='store_true',
                    help='recompute the selected events even if already finished, '
                         'discarding their saved progress. METHOD_VERSION handles '
@@ -262,13 +291,17 @@ def main():
     events = pd.read_csv(data_path('events'))
     if args.events:
         events = events[events['event_id'].isin(args.events)]
+    def run_id(ev):
+        return (ev if args.control_offset_days is None
+                else control_id(ev, args.control_offset_days))
+
     already = finished_events(args.state_dir)
     if args.force:
         for ev in events['event_id'].astype(str):
-            reset_event(args.state_dir, ev)
+            reset_event(args.state_dir, run_id(ev))
         print(f"forced redo of {len(events)} event(s)")
     else:
-        events = events[~events['event_id'].astype(str).isin(already)]
+        events = events[~events['event_id'].astype(str).map(run_id).isin(already)]
     if args.limit:
         events = events.head(args.limit)
 
@@ -283,7 +316,8 @@ def main():
     for _, row in events.iterrows():
         try:
             result = process_event(row, model, args.state_dir,
-                                   args.device, args.batch_size)
+                                   args.device, args.batch_size,
+                                   control_offset=args.control_offset_days)
         except KeyboardInterrupt:
             print("\ninterrupted — progress saved, re-run to resume")
             return
