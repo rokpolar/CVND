@@ -124,6 +124,26 @@ class ResultTests(unittest.TestCase):
                 Path(tmp) / sfa.RESULT_NAME, index=False)
             self.assertEqual(sfa.finished_events(tmp), set())
 
+    def test_reset_clears_both_progress_and_result(self):
+        """--force must drop both: a leftover result row marks the event finished
+        again, and leftover progress resumes on top of the counts being thrown away."""
+        with tempfile.TemporaryDirectory() as tmp:
+            sfa.save_progress(tmp, "E001", sfa._fresh_state())
+            sfa.append_result(tmp, self._row("E001", 1.0))
+            sfa.append_result(tmp, self._row("E002", 2.0))
+
+            sfa.reset_event(tmp, "E001")
+
+            self.assertFalse(sfa.progress_path(tmp, "E001").exists())
+            self.assertEqual(sfa.finished_events(tmp), {"E002"})
+            self.assertTrue(sfa.progress_path(tmp, "E002").exists() is False)
+
+    def test_reset_on_unknown_event_is_harmless(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            sfa.append_result(tmp, self._row("E002", 2.0))
+            sfa.reset_event(tmp, "E999")
+            self.assertEqual(sfa.finished_events(tmp), {"E002"})
+
     def test_state_dir_is_self_contained(self):
         """Everything needed to resume must sit under state-dir -- that is what
         gets copied to Drive or to the other machine."""
