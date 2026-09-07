@@ -124,6 +124,22 @@ def finished_events(state_dir):
     return set(df['event_id'].astype(str))
 
 
+def reset_event(state_dir, event_id):
+    """Forget one event: drop its progress and its result row.
+
+    Used by --force. Both have to go together -- leaving the result row would
+    mark the event finished again on the next run, and leaving the progress file
+    would resume on top of counts from the run being discarded.
+    """
+    progress_path(state_dir, event_id).unlink(missing_ok=True)
+    path = Path(state_dir) / RESULT_NAME
+    if path.exists():
+        df = pd.read_csv(path)
+        keep = df[df['event_id'].astype(str) != str(event_id)]
+        if len(keep) != len(df):
+            keep.to_csv(path, index=False)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # One event
 # ══════════════════════════════════════════════════════════════════════════════
@@ -233,13 +249,23 @@ def main():
     p.add_argument('--batch-size', type=int, default=32)
     p.add_argument('--events', nargs='*', default=None)
     p.add_argument('--limit', type=int, default=None)
+    p.add_argument('--force', action='store_true',
+                   help='recompute the selected events even if already finished, '
+                        'discarding their saved progress. METHOD_VERSION handles '
+                        'this automatically for method changes; use --force for '
+                        'a one-off redo (a suspect result, a new checkpoint).')
     args = p.parse_args()
 
     events = pd.read_csv(data_path('events'))
     if args.events:
         events = events[events['event_id'].isin(args.events)]
     already = finished_events(args.state_dir)
-    events = events[~events['event_id'].astype(str).isin(already)]
+    if args.force:
+        for ev in events['event_id'].astype(str):
+            reset_event(args.state_dir, ev)
+        print(f"forced redo of {len(events)} event(s)")
+    else:
+        events = events[~events['event_id'].astype(str).isin(already)]
     if args.limit:
         events = events.head(args.limit)
 
