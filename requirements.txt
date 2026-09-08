@@ -9,6 +9,7 @@ google-cloud-bigquery
 openai>=1.68,<3
 numpy
 h5py
+torch
 openpyxl
 requests
 httpx>=0.28,<1
