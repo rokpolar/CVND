@@ -46,8 +46,8 @@ class StateProfile:
         return round((lon_min + lon_max) / 2, 3)
 
 
-# Bboxes are state-level analysis extents. Income groups are retained only for
-# compatibility with the existing downstream stratification.
+# Parent geography and income groups are retained only for provenance and audit;
+# no state-area scaling enters the district primary analysis.
 STATE_PROFILES: dict[str, StateProfile] = {
     "Andhra Pradesh": StateProfile("77.0,12.5,84.8,19.9", "Middle"),
     "Arunachal Pradesh": StateProfile("91.5,26.5,97.4,29.5", "Low"),

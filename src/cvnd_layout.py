@@ -23,7 +23,7 @@ DATA_FILES: dict[str, str] = {
     "events": "raw/events.csv",
     "population": "raw/population.csv",
     "state_area": "raw/state_area.csv",
-    # Official EM-DAT workbook and its state-level derived workbook.
+    # Official EM-DAT workbook and its parent-event audit workbook.
     "emdat": "raw/EM-DAT-BASE.xlsx",
     "emdat_base": "raw/EM-DAT-BASE.xlsx",
     "emdat_state": "raw/EM-DAT.xlsx",
@@ -53,9 +53,6 @@ DATA_FILES: dict[str, str] = {
     "event_relevance_pilot_manifest": "intermediate/gdelt_event_relevance_pilot.csv",
     "event_relevance_pilot_evaluation": "intermediate/gdelt_event_relevance_pilot_evaluation.json",
     "event_relevance_pilot_annotated": "intermediate/gdelt_event_relevance_pilot_evaluated.csv",
-    "article_retrieval_event_qc": "intermediate/article_retrieval_qc_by_event.csv",
-    "article_retrieval_year_qc": "intermediate/article_retrieval_qc_by_year.csv",
-    "article_retrieval_unresolved": "intermediate/article_retrieval_unresolved.csv.gz",
     # results
     "event_article_counts": "results/event_article_counts.csv",
     "event_articles": "results/event_articles.csv.gz",

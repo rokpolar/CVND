@@ -1,6 +1,6 @@
 # District refactor: implementation and validation
 
-Validated on 2026-09-08 in the local `rokpolar/CVND` checkout. The pre-existing local changes to `classify_event_articles.py` were preserved.
+Validated on 2026-09-08 in the local `rokpolar/CVND` checkout. State-only entry points are removed; the district pipeline is the supported execution path.
 
 ## A. What changed
 
@@ -9,12 +9,12 @@ Validated on 2026-09-08 in the local `rokpolar/CVND` checkout. The pre-existing 
 | `src/build_emdat_events.py`, `src/district_keys.py` | Preserve 204 parent state events from 75 official source floods; create 495 deterministic district/audit rows, with source/date/administrative evidence. Unicode/case/space normalization only; unresolved districts remain explicit. |
 | `src/build_district_covariates.py`, `data/raw/district_name_crosswalk.csv` | Parse actual official Census PCA workbook, validate population counts and district keys, match Census to registry districts, and preserve crosswalk evidence/source hashes. Empty crosswalk template only. |
 | `src/satellite.py`, `event_aoi_area.py`, `post_cloud.py`, `src/gee_config.py` | Strict unique GAUL2 India/state/district AOIs; provenance and missing statuses; district cache and H5 identities; no import-time Earth Engine initialization. Preserve existing detection stack. |
-| `src/merge_results.py`, `src/build_flood_area_table.py`, `src/compute_population.py` | District score/area routing and table with missing versus observed zero. External SITS archives require source/model provenance. Legacy area utility remains available. |
-| `src/collect_gdelt.py`, `src/district_articles.py` | District CLI, half-open 14-day SQL, same-block district/state evidence, explicit title sensitivity, URL/district nearest-onset deduplication, collection manifests with registry/payload hashes, and existing multilingual relevance heuristic. Missing/weak text cannot manufacture zero. |
+| `src/merge_results.py`, `src/build_flood_area_table.py` | District score/area routing and table with missing versus observed zero. External SITS archives require source/model provenance. |
+| `src/gdelt_backend.py`, `src/district_articles.py` | District-only CLI, half-open 14-day SQL, same-block district/state evidence, explicit title sensitivity, URL/district nearest-onset deduplication, collection manifests with registry/payload hashes, and the district-local multilingual relevance heuristic. Missing/weak text cannot manufacture zero. |
 | `src/join_district_flood_articles.py` | One-to-one district observation join and many-to-one Census lookup; stale identities/duplicate keys rejected; excluded rows retained. Optional `--audit-missing` records absent stages as NA. |
 | `src/analyze_coverage_disparity.py` | NB2 Models 1–3, estimated alpha, ordinary/eligible state-clustered inference, IRRs including 10pp, conditional conclusions, selection audit and two 300 dpi figures. |
 | `src/cvnd_layout.py`, `src/cvnd_config.py`, `scripts/run_pipeline.sh`, `src/pipeline_preflight.py` | Central district paths, explicit primary window, runnable district sequence, skip flags and offline audit. |
-| `README.md`, `data/README.md`, `docs/district_methodology.md` | Research question, methods, actual input schemas, run instructions, output contracts and limitations. Prior state docs clearly labeled legacy. |
+| `README.md`, `data/README.md`, `docs/district_methodology.md` | Research question, methods, actual input schemas, district-only run instructions, output contracts and limitations. |
 | `tests/test_district_*.py`, `tests/test_coverage_disparity.py` | Registry, Census, AOI, cache, article attribution/missingness, join and statistical regression tests. |
 
 The remote branch added `src/run_sits_inference.py` and the vendor model implementation after the district refactor. The scorer now writes district-keyed, provenance-bearing NPZ files when the verified local checkpoint is present. Default execution still uses the existing Track A S1/S2 stack; Track B is optional and requires the local upstream checkpoint.

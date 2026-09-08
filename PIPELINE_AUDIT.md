@@ -403,3 +403,8 @@ deaths.loc[i] = float(hits.max())
 - `test/test_measurement_consistency.py` — `population_exposed == area × state_density` 항등식, PSS 두 성분 상관, 주별 AOI 유일성, `combined_source`별 면적 분포 검사. 위 항목 중 임계 위반 시 실패.
 - `test/test_media_window.py` — `first_article_date − onset`, `last − end`, 창 길이 vs 이벤트 기간 상관을 검사해 문서화된 창 정의와 대조.
 - `test/test_residual_calibration.py` — `log_ratio` 평균·중위수가 0에서 얼마나 벗어나는지, LOO 잔차와 표본 내 잔차의 순위 상관을 보고.
+# Historical audit note
+
+This document predates the district-only refactor. References to removed
+state-level scripts are historical findings; use `docs/implementation_validation.md`
+and `docs/district_methodology.md` for the supported pipeline.
