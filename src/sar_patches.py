@@ -44,7 +44,6 @@ from __future__ import annotations
 
 import io
 import json
-import math
 import os
 import sys
 import time
@@ -87,7 +86,11 @@ PRE_SEARCH_DAYS = 90          # look this far back for the two pre-event scenes
 # 8*224 = 1792 px/side -> ~26 MB per timestep request, inside GEE's 48 MB limit.
 # Fewer, larger requests: at 4 the same AOI needs ~425k blocks, at 8 only ~108k.
 SAR_BLOCK_PATCHES = 8
-SAR_KEEP_VALID = 0.70         # keep a patch only if this fraction is valid in EVERY scene
+# Patches below this are dropped. No-data is filled with the clamp before the
+# model sees it, which is a guess either way, so the fewer such pixels the
+# better; at 0.70 nearly a third of a patch could have been invented. Raised now
+# that blocks tile exactly and only true AOI and swath edges fall short.
+SAR_KEEP_VALID = 0.95
 
 # ── terrain gate ──────────────────────────────────────────────────────────────
 # FloodViT was trained on Kuro Siwo's 43 events, which do not include Himalayan
@@ -252,12 +255,28 @@ def lee_filter(img, window=SPECKLE_WINDOW, enl=SPECKLE_ENL):
     return mean.add(b.multiply(img.subtract(mean))).rename(bands)
 
 
+def utm_crs(region):
+    """EPSG code of the UTM zone under the AOI centroid.
+
+    mosaic() drops the source projection: the result reports EPSG:4326 with a
+    1-degree transform, so getDownloadURL(scale=10) lays down a grid that is
+    square in DEGREES. At Bihar's latitude that is 9.93 m north-south but 9.02 m
+    east-west -- 89.6 m2 per pixel instead of 100, an 11% area error that grows
+    with latitude -- and it resamples the native UTM 10 m imagery onto a skewed
+    grid before the model and the speckle filter ever see it. Requesting an
+    explicit metric CRS restores true 10 m pixels.
+    """
+    c = region.centroid(1000).coordinates().getInfo()
+    zone = int((c[0] + 180) / 6) + 1
+    return f"EPSG:{326 if c[1] >= 0 else 327}{zone:02d}"
+
+
 def terrain_mask():
     """Land flat enough to pond water. See SLOPE_MAX_DEG for why this is needed."""
     return ee.Terrain.slope(ee.Image('USGS/SRTMGL1_003')).lt(SLOPE_MAX_DEG)
 
 
-def _download_block(image, region_block, extra=None, speckle=True):
+def _download_block(image, region_block, extra=None, speckle=True, crs=None):
     """One block as NPY: VV, VH plus a validity band, and `extra` bands if given.
 
     Order-preserving. `extra` carries the terrain mask on the first request only,
@@ -268,6 +287,11 @@ def _download_block(image, region_block, extra=None, speckle=True):
     valid = (image.select(SAR_POLARISATIONS).mask()
              .reduce(ee.Reducer.min()).rename('valid').toByte())
     sar = image.select(SAR_POLARISATIONS).toFloat()
+    if crs:
+        # Pin the grid before filtering: reduceNeighborhood works in the image's
+        # projection, so on a mosaic's default 1-degree grid a "3x3" window is
+        # not 3x3 native pixels.
+        sar = sar.setDefaultProjection(crs, None, SAR_SCALE_M)
     if speckle:
         sar = lee_filter(sar)          # filter the real values, then clamp
     # int16 transfer encoding; decoded on arrival. See SAR_CLAMP/SAR_SCALE_FACTOR.
@@ -275,8 +299,10 @@ def _download_block(image, region_block, extra=None, speckle=True):
              .multiply(SAR_SCALE_FACTOR).toInt16().addBands(valid))
     if extra is not None:
         stack = stack.addBands(extra.toByte())
-    url = stack.getDownloadURL({'region': region_block,
-                                'scale': SAR_SCALE_M, 'format': 'NPY'})
+    params = {'region': region_block, 'scale': SAR_SCALE_M, 'format': 'NPY'}
+    if crs:
+        params['crs'] = crs
+    url = stack.getDownloadURL(params)
     for attempt in range(4):
         try:
             r = requests.get(url, timeout=300)
@@ -288,20 +314,17 @@ def _download_block(image, region_block, extra=None, speckle=True):
             time.sleep(2 ** attempt)
 
 
-def tile_grid(region, patch_px=SAR_PATCH_SIZE, scale_m=SAR_SCALE_M):
-    """Degree-space tile grid over the AOI bounds. Pure geometry -- unit tested."""
-    ring = region.bounds().coordinates().getInfo()[0]
-    lons = [p[0] for p in ring]
-    lats = [p[1] for p in ring]
-    return grid_dims(min(lons), min(lats), max(lons), max(lats), patch_px, scale_m)
+def grid_dims(minx, miny, maxx, maxy, patch_px=SAR_PATCH_SIZE,
+              scale_m=SAR_SCALE_M):
+    """(rows, cols) of patches over a projected-metre bounding box.
 
-
-def grid_dims(minx, miny, maxx, maxy, patch_px, scale_m):
-    """Return (dlat, dlon, n_rows, n_cols) for the patch grid. No Earth Engine."""
-    clat = (miny + maxy) / 2.0
-    dlat = patch_px * scale_m / 110540.0
-    dlon = patch_px * scale_m / (111320.0 * math.cos(math.radians(clat)))
-    return dlat, dlon, int((maxy - miny) / dlat), int((maxx - minx) / dlon)
+    Metres in, metres out: no latitude term, because the grid now lives in the
+    same UTM CRS the imagery is requested in. The degree-space version this
+    replaces needed 110540/111320 approximations and still produced blocks whose
+    projected footprints overlapped.
+    """
+    side = patch_px * scale_m
+    return int((maxy - miny) / side), int((maxx - minx) / side)
 
 
 def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True):
@@ -336,20 +359,30 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
     # 0 patches kept). "Did the satellite see this pixel" and "can this pixel
     # hold water" are different questions -- the first decides whether a patch is
     # usable, the second only which pixels count.
-    ring = region.bounds().coordinates().getInfo()[0]
-    lons = [p[0] for p in ring]
-    lats = [p[1] for p in ring]
-    minx, maxx, miny, maxy = min(lons), max(lons), min(lats), max(lats)
-    dlat, dlon, npy_, npx_ = grid_dims(minx, miny, maxx, maxy,
-                                       SAR_PATCH_SIZE, SAR_SCALE_M)
+    # The grid is laid out in the SAME metric CRS the blocks are downloaded in.
+    # Building it in degrees instead made each block a lat/lon rectangle whose
+    # UTM bounding box overlaps its neighbours', so adjacent blocks could count
+    # the same ground twice and leave slivers uncounted between them. In UTM the
+    # blocks tile exactly and every patch is exactly 224 * 10 m on a side.
     P, B = SAR_PATCH_SIZE, SAR_BLOCK_PATCHES
+    crs = utm_crs(region)
+    proj = ee.Projection(crs)
+    ring = region.bounds(1, proj).coordinates().getInfo()[0]
+    xs = [pt[0] for pt in ring]
+    ys = [pt[1] for pt in ring]
+    minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+    patch_m = P * SAR_SCALE_M
+    npy_ = int((maxy - miny) / patch_m)
+    npx_ = int((maxx - minx) / patch_m)
     flat_band = None if flat is None else flat.rename('flat').unmask(0).toByte()
     all_blocks = [(bi, bj) for bi in range(0, npy_, B) for bj in range(0, npx_, B)]
 
     def blk_geom(bi, bj):
         pi, pj = min(bi + B, npy_), min(bj + B, npx_)
-        return ee.Geometry.Rectangle([minx + bj * dlon, maxy - pi * dlat,
-                                      minx + pj * dlon, maxy - bi * dlat])
+        return ee.Geometry.Rectangle(
+            [minx + bj * patch_m, maxy - pi * patch_m,
+             minx + pj * patch_m, maxy - bi * patch_m],
+            proj=proj, geodesic=False)
 
     feats = [ee.Feature(blk_geom(bi, bj), {'i': i})
              for i, (bi, bj) in enumerate(all_blocks)]
@@ -376,7 +409,7 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
             if i in inside and i not in skip]
     per_orbit = {src['orbit']: sum(1 for v in assigned.values() if v == si)
                  for si, src in enumerate(sources)}
-    print(f"    tiling: {npx_}x{npy_} patches @{SAR_SCALE_M}m, "
+    print(f"    tiling: {npx_}x{npy_} patches @{SAR_SCALE_M}m {crs}, "
           f"{len(inside)} blocks assigned across {len(sources)} orbit(s) "
           f"{per_orbit}, {len(todo)} to download")
 
@@ -384,10 +417,8 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
 
     bar = tqdm(todo, desc='    downloading', unit='blk')
     for i, bi, bj in bar:
-        pi, pj = min(bi + B, npy_), min(bj + B, npx_)
-        lon0, lat_top = minx + bj * dlon, maxy - bi * dlat
-        block = ee.Geometry.Rectangle([lon0, maxy - pi * dlat,
-                                       minx + pj * dlon, lat_top])
+        x0, y_top = minx + bj * patch_m, maxy - bi * patch_m
+        block = blk_geom(bi, bj)
         images = sources[assigned[i]]['images']
         try:
             with ThreadPoolExecutor(max_workers=len(images)) as ex:
@@ -395,7 +426,7 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
                     lambda p: _download_block(
                         p[1], block,
                         extra=flat_band if p[0] == 0 else None,
-                        speckle=speckle),
+                        speckle=speckle, crs=crs),
                     enumerate(images)))
         except Exception as e:
             bar.write(f"      block ({bi},{bj}) failed: {e}")
@@ -434,8 +465,11 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
                         chans.append(ch)
                 batch.append(np.stack(chans))
                 valids.append(vmask)
+                # row, col in the AOI-wide patch grid, then the patch centre in
+                # projected metres (crs is recorded on the run, not per patch)
                 coords.append([(bi + r) * P, (bj + c) * P,
-                               lat_top - (r + 0.5) * dlat, lon0 + (c + 0.5) * dlon])
+                               y_top - (r + 0.5) * patch_m,
+                               x0 + (c + 0.5) * patch_m])
 
         # An empty (not None) array means "downloaded fine, nothing kept" --
         # e.g. an all-cloud/ocean block. None is reserved for download failure,

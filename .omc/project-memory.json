@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1788721439091,
+  "lastScanned": 1788887436263,
   "projectRoot": "C:\\IndiaCVND",
   "techStack": {
     "languages": [
@@ -50,7 +50,7 @@
       "path": "data",
       "purpose": "Data files",
       "fileCount": 1,
-      "lastAccessed": 1788721438955,
+      "lastAccessed": 1788887436128,
       "keyFiles": [
         "README.md"
       ]
@@ -59,7 +59,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 2,
-      "lastAccessed": 1788721438957,
+      "lastAccessed": 1788887436129,
       "keyFiles": [
         "gdelt_collection.md",
         "use_cases.md"
@@ -68,17 +68,18 @@
     "scripts": {
       "path": "scripts",
       "purpose": "Build/utility scripts",
-      "fileCount": 1,
-      "lastAccessed": 1788721438958,
+      "fileCount": 2,
+      "lastAccessed": 1788887436130,
       "keyFiles": [
+        "download_patches.py",
         "run_pipeline.sh"
       ]
     },
     "src": {
       "path": "src",
       "purpose": "Source code",
-      "fileCount": 13,
-      "lastAccessed": 1788721438959,
+      "fileCount": 17,
+      "lastAccessed": 1788887436132,
       "keyFiles": [
         "build_emdat_events.py",
         "collect_emdat.py",
@@ -90,21 +91,21 @@
     "tests": {
       "path": "tests",
       "purpose": "Test files",
-      "fileCount": 5,
-      "lastAccessed": 1788721438961,
+      "fileCount": 10,
+      "lastAccessed": 1788887436134,
       "keyFiles": [
         "test_build_emdat_events.py",
         "test_collect_emdat.py",
         "test_collect_gdelt.py",
         "test_compute_mss.py",
-        "test_state_aoi_pipeline.py"
+        "test_floodvit_infer.py"
       ]
     },
     "__pycache__": {
       "path": "__pycache__",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1788721438963,
+      "lastAccessed": 1788887436136,
       "keyFiles": [
         "estimate_blocks.cpython-313.pyc",
         "event_aoi_area.cpython-313.pyc",
@@ -126,15 +127,15 @@
       "type": "file"
     },
     {
-      "path": "src/satellite.py",
-      "accessCount": 4,
-      "lastAccessed": 1788769136328,
+      "path": "src/floodvit_infer.py",
+      "accessCount": 5,
+      "lastAccessed": 1788873517282,
       "type": "file"
     },
     {
-      "path": "src/floodvit_infer.py",
+      "path": "src/satellite.py",
       "accessCount": 4,
-      "lastAccessed": 1788830675497,
+      "lastAccessed": 1788769136328,
       "type": "file"
     },
     {
