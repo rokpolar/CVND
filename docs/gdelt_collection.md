@@ -1,3 +1,5 @@
+> **LEGACY STATE WORKFLOW.** The 93-day inclusive windows and event re-expansion below apply only to the retained state tools. The primary district collector uses a half-open 14-day window, strict district evidence, nearest-onset deduplication, and separate artifacts. See [current README](../README.md) and [district methodology](district_methodology.md). Existing local classifier export behavior may differ from the historical examples below.
+
 # EM-DAT-based GDELT collection
 
 ## Why BigQuery is the primary source

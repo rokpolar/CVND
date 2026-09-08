@@ -1,3 +1,52 @@
+# Primary district data artifacts
+
+All paths are registered in `src/cvnd_layout.py`. Primary satellite caches live under `data/cache/district/`, and primary article/covariate tables use district-specific names. An `event_id`-only state table is never an acceptable district input.
+
+## Required Census input
+
+Supply the official Census of India 2011 district urban/rural population file at `data/raw/census_2011_district_urban_rural.xlsx` (or pass `--input`). The verified input is ORGI [Basic Population Figures of India/State/District/Sub-District/Village, 2011](https://censusindia.gov.in/nada/index.php/catalog/42557), file `2011-IndiaStateDist-0000.xlsx`. Its actual `Data` and `Record Structure` sheets were inspected; 2,028 input rows include 1,920 district/residence rows representing 640 districts. The parser recognizes:
+
+- PCA SD machine columns: `State`, `District`, `Level`, `Name`, `TRU`, `TOT_P`. State/district are location codes; district names come from `Name`, residence from `TRU` (`Total`, `Rural`, `Urban`), and person counts from `TOT_P`.
+- Named-geography long format: `state`, `district`, `Residence` (`Total/Rural/Urban`), `Population - Persons`; optional district code.
+- A transparent wide extraction of the official source: `state`, `district`, `total_population`, `urban_population`, `rural_population`; optional `census_district_code`, `census_year` (must be 2011).
+
+Counts must be nonnegative and consistent (`total = urban + rural`). Zero denominators remain invalid rather than generating urbanization zero. The builder never infers a missing urban count from a district's reputation. Unsupported headers or missing required population rows fail explicitly. The original official file should be preserved, with any extraction or header conversion recorded. The exact official workbook was downloaded on 2026-09-08 and is present locally at the configured input path. `census_2011_district_urban_rural.meta.json` records its download URL and SHA-256 (`acb01ddb965be41cf22a20f0e641fdbcc1f4a16e6b7bc9cf91478ce289f853e8`). No header conversion was needed. The default projected lookup contains 261 registry geographies: 166 matched, 64 unmatched, 31 unresolved placeholders; this is not 261 independent measured observations.
+
+`district_name_crosswalk.csv` is an empty template. Its keys are `registry_state,registry_district,census_state,census_district` with evidence fields. Only documented geographic equivalences belong here; modern split districts cannot simply inherit an entire old district's Census counts. Telangana has no separate 2011 Census state code; correct boundary matching requires evidence rather than silently substituting Andhra Pradesh.
+
+## Primary artifacts and schemas
+
+| Artifact | Key columns / contract |
+| --- | --- |
+| `intermediate/event_districts.csv` | `event_district_id` PK; parent `event_id`, `source_record_id`, state, district, start/end dates, district source/confidence/evidence, AOI level/status |
+| `intermediate/district_covariates.csv` | one state/district row; Census code, total/urban/rural population, continuous urban share, Census year/source, match status |
+| `intermediate/district_aoi.csv` | district PK, parent/source/geography, AOI level/source/match status, geometry ID, `aoi_area_km2`; failed matches retained |
+| `cache/district/flood_extent.csv` | district PK with identity/provenance, S1/S2 areas, image counts and detection status |
+| `cache/district/sits_patches/` | optional H5 patches with district and source/date identity; never state patches |
+| `cache/district/sits_scores/` | optional external NPZ SITS scores for those district patches; requires valid provenance |
+| `intermediate/district_post_cloud.csv` | district PK, post-image count, clear/cloud percentage, query status |
+| `intermediate/district_flood_combined.csv` | district PK, combined pixel flood area/source, AOI area, flood ratio, provenance |
+| `intermediate/district_flood_area.csv` | district PK, parent/source/geography/date, `flood_area_km2`, `flood_ratio`, `aoi_area_km2`, `satellite_source`, `satellite_status`, `aoi_match_status` |
+| `intermediate/district_gdelt.sql` | reproducible 14-day query and district assignment logic |
+| `intermediate/district_gdelt.articles.jsonl.gz` | district PK, parent/source/geography, URL, publication date, location evidence and GKG metadata |
+| `intermediate/district_gdelt.manifest.json` | spatial/window contract, collection completeness and provenance; needed to distinguish missing from zero |
+| `cache/district/articles.sqlite` | original URL documents, retrieved title/body and retrieval status; district metadata remains authoritative in JSONL |
+| `results/district_article_counts.heuristic.csv` | district PK, parent/geography, candidate/pass/final counts, count source, collection status and text missingness |
+| `results/district_flood_articles.csv` | district PK; parent/source/state/district/date; flood area/ratio; article count; urban share/populations; satellite/collection/district/Census statuses; `analysis_eligible`, `exclusion_reason` |
+| `results/district_analysis_exclusions.csv` | same schema as joined table, restricted to excluded rows; multiple reasons separated by semicolons |
+| `results/district_qc.json` | stage success numerator, denominator, fraction and final analyzable N |
+| `results/district_selection_bias.csv` | known urbanization tercile/unknown, number of rows/exclusions and exclusion rate |
+| `results/coverage_model_results.csv` | model/term/SE type, coefficient, SE, p-value, coefficient CI, IRR CI, urban 10pp IRR CI, N, estimated alpha |
+| `results/coverage_predictions.csv` | Model 2 urbanization grid, fixed median flood extent, expected count and mean CI |
+| `../outputs/paper_results.md` | numeric results, model availability, exclusions, quality warnings and conditional conclusion |
+| `../outputs/coverage_summary.json` | machine-readable descriptive/model/QC results; unavailable values are JSON null |
+| `../outputs/flood_area_vs_articles.png` | 300 dpi observed log1p scatter |
+| `../outputs/urbanization_adjusted_coverage.png` | 300 dpi Model 2 adjusted mean and 95% CI |
+
+## Legacy state artifacts (retained)
+
+The following previous layout remains for compatibility. Its references to “primary” describe the former state workflow, not the current runner. Do not reuse its state flood/count caches as district values.
+
 # CVND data layout
 
 Tiered folders under `data/`. Primary pipeline scripts resolve paths via

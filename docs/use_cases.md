@@ -1,3 +1,5 @@
+> **Historical state pipeline reference.** The current primary workflow is event × district. See [README](../README.md) for the runnable sequence and [district methodology](district_methodology.md) for observation rules.
+
 # CVND Use Cases
 
 CVND 파이프라인(홍수 침수 면적과 헤리스틱 기사 수 집계)의 유스케이스 정리.

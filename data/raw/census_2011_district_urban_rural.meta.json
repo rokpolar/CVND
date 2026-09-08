@@ -1,0 +1,23 @@
+{
+  "source_url": "https://censusindia.gov.in/nada/index.php/catalog/42557/download/46183/2011-IndiaStateDist-0000.xlsx",
+  "catalog_url": "https://censusindia.gov.in/nada/index.php/catalog/42557",
+  "publisher": "Office of the Registrar General & Census Commissioner, India",
+  "original_filename": "2011-IndiaStateDist-0000.xlsx",
+  "retrieved_at_utc": "2026-09-08T08:38:57.143560+00:00",
+  "sha256": "acb01ddb965be41cf22a20f0e641fdbcc1f4a16e6b7bc9cf91478ce289f853e8",
+  "bytes": 1381659,
+  "data_sheet": "Data",
+  "structure_sheet": "Record Structure",
+  "input_rows": 2028,
+  "district_residence_rows": 1920,
+  "unique_districts": 640,
+  "verified_columns": [
+    "State",
+    "District",
+    "Level",
+    "Name",
+    "TRU",
+    "TOT_P"
+  ],
+  "transformation": "None. Exact official workbook bytes preserved under configured input filename."
+}
