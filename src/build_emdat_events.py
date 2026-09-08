@@ -23,6 +23,7 @@ from typing import Any, Iterable
 import pandas as pd
 
 from cvnd_layout import data_path
+from district_keys import make_event_district_id, normalize_name, normalize_state_name
 
 
 SOURCE_SHEET = "EM-DAT Data"
@@ -267,6 +268,176 @@ def resolve_states(row: pd.Series) -> list[dict[str, Any]]:
     return resolved
 
 
+def _location_district_candidates(location: Any) -> list[tuple[str, str]]:
+    """Extract district labels only from explicit ``Districts (State state)`` text.
+
+    EM-DAT's free-text Location field is not a gazetteer.  We therefore use it
+    only where a parenthetical state explicitly scopes a comma-separated list,
+    and never apply fuzzy spelling or administrative-history matching here.
+    Structured GADM/Admin Units remain the higher-confidence source.
+    """
+
+    text = str(location or "")
+    if not text.strip():
+        return []
+    state_patterns = [(pattern, state) for pattern, state in LOCATION_PATTERNS]
+    out: list[tuple[str, str]] = []
+    block_pattern = re.compile(r"(?P<names>[^()]*)\((?P<scope>[^()]*)\)")
+    for match in block_pattern.finditer(text):
+        scope = match.group("scope")
+        states = []
+        for pattern, state in state_patterns:
+            if pattern.search(scope) and state not in states:
+                states.append(state)
+        if len(states) != 1:
+            # A label such as "Punjab, Haryana states" gives no safe parent
+            # for a preceding district token.
+            continue
+        explicit_state_scope = bool(re.search(r"\bstates?\b", scope, flags=re.IGNORECASE))
+        exact_state_scope = normalize_name(scope) == normalize_name(states[0])
+        if not explicit_state_scope and not exact_state_scope:
+            continue
+        names = match.group("names").strip().rstrip(";,:").lstrip(" ;,:")
+        names = re.sub(r"\s+districts?\s*$", "", names, flags=re.IGNORECASE).strip()
+        if not names:
+            continue
+        for token in names.split(","):
+            token = token.strip()
+            if not token or re.search(r"\bstates?\b", token, flags=re.IGNORECASE):
+                continue
+            # State names appearing in a trailing list are not districts.
+            if any(pattern.fullmatch(token) for pattern, _state in state_patterns):
+                continue
+            out.append((states[0], token))
+    return out
+
+
+def resolve_state_districts(row: pd.Series) -> list[dict[str, Any]]:
+    """Resolve every credible state × district pair in one EM-DAT row.
+
+    GADM level-2 units and Admin Units are authoritative structured evidence.
+    Location-derived labels are retained with medium confidence only when the
+    text explicitly scopes them to one state.  No state capital or fuzzy match
+    is invented when district evidence is absent.
+    """
+
+    state_evidence: dict[str, list[str]] = defaultdict(list)
+    candidates: dict[tuple[str, str], dict[str, Any]] = {}
+    legacy_districts: list[str] = []
+
+    def add_state(state: Any, source: str, evidence: str) -> str | None:
+        canonical = normalize_state_name(state)
+        if canonical not in STATE_PROFILES:
+            return None
+        marker = f"{source}:{evidence}"
+        if marker not in state_evidence[canonical]:
+            state_evidence[canonical].append(marker)
+        return canonical
+
+    def add_district(state: str, district: Any, source: str, evidence: str, confidence: str) -> None:
+        label = str(district or "").strip()
+        if not label or normalize_name(label) in {"administrative unit not available", "district not available"}:
+            return
+        key = (state, normalize_name(label))
+        entry = candidates.setdefault(
+            key,
+            {
+                "state": state,
+                "district": label,
+                "sources": set(),
+                "evidence": [],
+                "confidence": confidence,
+            },
+        )
+        entry["sources"].add(source)
+        marker = f"{source}:{evidence}"
+        if marker not in entry["evidence"]:
+            entry["evidence"].append(marker)
+        if entry["confidence"] != "high" and confidence == "high":
+            entry["confidence"] = "high"
+
+    for unit in _json_units(row.get("GADM Admin Units")):
+        state = _state_from_gadm_id(unit.get("gid_2") or unit.get("gid_1"))
+        if not state:
+            state = unit.get("name_1")
+        canonical = add_state(state, "gadm", unit.get("gid_1") or unit.get("gid_2") or unit.get("name_1") or "")
+        if canonical:
+            district = unit.get("name_2")
+            if district:
+                add_district(canonical, district, "gadm", unit.get("gid_2") or district, "high")
+
+    for unit in _json_units(row.get("Admin Units")):
+        canonical = add_state(unit.get("adm1_name"), "admin_units", unit.get("adm1_code", ""))
+        district = unit.get("adm2_name")
+        if canonical and district:
+            add_district(canonical, district, "admin_units", unit.get("adm2_code", district), "high")
+        elif (not normalize_name(unit.get("adm1_name")) and district
+              and str(district).strip() and str(district).strip() not in legacy_districts):
+            legacy_districts.append(str(district).strip())
+
+    location = str(row.get("Location") or "")
+    for pattern, state in LOCATION_PATTERNS:
+        if state in STATE_PROFILES and pattern.search(location):
+            add_state(state, "location", pattern.pattern)
+    for state, district in _location_district_candidates(location):
+        if state in STATE_PROFILES:
+            add_state(state, "location", district)
+            add_district(state, district, "location", district, "medium")
+
+    # Older EM-DAT Admin Units rows sometimes contain adm2_name without its
+    # adm1 parent.  It is safe to attach those labels only to one resolved state.
+    if legacy_districts and len(state_evidence) == 1:
+        only_state = next(iter(state_evidence))
+        for district in legacy_districts:
+            add_district(only_state, district, "admin_units", district, "high")
+
+    resolved: list[dict[str, Any]] = []
+    for state in sorted(state_evidence, key=normalize_name):
+        district_rows = [entry for (entry_state, _key), entry in candidates.items() if entry_state == state]
+        district_rows.sort(key=lambda entry: (normalize_name(entry["district"]), entry["district"]))
+        state_sources = sorted({item.split(":", 1)[0] for item in state_evidence[state]})
+        state_evidence_json = json.dumps(sorted(state_evidence[state]), ensure_ascii=False)
+        if not district_rows:
+            resolved.append(
+                {
+                    "state": state,
+                    "district": "district_missing",
+                    "district_source": "state_only",
+                    "district_resolution_confidence": "unresolved",
+                    "district_resolution_evidence": "[]",
+                    "resolution_source": "|".join(state_sources),
+                    "resolution_evidence": state_evidence_json,
+                }
+            )
+            continue
+        for entry in district_rows:
+            resolved.append(
+                {
+                    "state": state,
+                    "district": entry["district"],
+                    "district_source": "|".join(sorted(entry["sources"])),
+                    "district_resolution_confidence": entry["confidence"],
+                    "district_resolution_evidence": json.dumps(sorted(entry["evidence"]), ensure_ascii=False),
+                    "resolution_source": "|".join(state_sources),
+                    "resolution_evidence": state_evidence_json,
+                }
+            )
+
+    if not resolved:
+        resolved.append(
+            {
+                "state": "state_missing",
+                "district": "district_missing",
+                "district_source": "unresolved",
+                "district_resolution_confidence": "unresolved",
+                "district_resolution_evidence": "[]",
+                "resolution_source": "unresolved",
+                "resolution_evidence": "[]",
+            }
+        )
+    return resolved
+
+
 def _date_parts(row: pd.Series, prefix: str) -> tuple[date, str]:
     year = int(row[f"{prefix} Year"])
     month = int(row[f"{prefix} Month"])
@@ -371,6 +542,85 @@ def build_state_events(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     return full, registry
 
 
+def build_event_districts(
+    base: pd.DataFrame,
+    state_registry: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Build the bounded district-level event registry.
+
+    ``state_registry`` is the legacy registry returned by
+    :func:`build_state_events`; supplying it preserves the existing E### IDs.
+    Every credible structured district is retained.  State-only and entirely
+    unresolved records remain as explicit ``district_missing`` rows so that
+    coverage loss is observable downstream.
+    """
+
+    if state_registry is None:
+        _full, state_registry = build_state_events(base)
+    event_lookup = {
+        (str(row["source_record_id"]), str(row["state"])): str(row["event_id"])
+        for _, row in state_registry.iterrows()
+    }
+    records: list[dict[str, Any]] = []
+    for _, row in base.iterrows():
+        source_record_id = str(row["DisNo."])
+        start_date, start_precision = _date_parts(row, "Start")
+        end_date, end_precision = _date_parts(row, "End")
+        if end_date < start_date:
+            end_date = start_date
+        resolved = resolve_state_districts(row)
+        for item in resolved:
+            state = item["state"]
+            event_id = event_lookup.get((source_record_id, state))
+            if event_id is None:
+                # State-missing records do not have a legacy row.  Keep a
+                # deterministic parent token for auditability without creating
+                # a fake state event that could enter the primary model.
+                event_id = f"UNRESOLVED-{source_record_id}"
+            district = item["district"]
+            missing = state == "state_missing" or district == "district_missing"
+            records.append(
+                {
+                    "event_district_id": make_event_district_id(event_id, district),
+                    "event_id": event_id,
+                    "source_record_id": source_record_id,
+                    "state": state,
+                    "district": district,
+                    "start_date": start_date.isoformat(),
+                    "end_date": end_date.isoformat(),
+                    "date_precision": f"start:{start_precision}|end:{end_precision}",
+                    "district_source": item["district_source"],
+                    "district_resolution_confidence": item["district_resolution_confidence"],
+                    "district_resolution_evidence": item["district_resolution_evidence"],
+                    "state_resolution_source": item["resolution_source"],
+                    "state_resolution_evidence": item["resolution_evidence"],
+                    "aoi_level": "district",
+                    "aoi_match_status": "unresolved" if missing else "pending",
+                }
+            )
+
+    result = pd.DataFrame(records)
+    if result.empty:
+        return pd.DataFrame(
+            columns=[
+                "event_district_id", "event_id", "source_record_id", "state", "district",
+                "start_date", "end_date", "district_source",
+                "date_precision",
+                "district_resolution_confidence", "district_resolution_evidence",
+                "state_resolution_source", "state_resolution_evidence", "aoi_level",
+                "aoi_match_status",
+            ]
+        )
+    result = result.sort_values(
+        ["start_date", "source_record_id", "state", "district"],
+        key=lambda values: values.map(normalize_name) if values.name in {"state", "district"} else values,
+    ).reset_index(drop=True)
+    if result["event_district_id"].duplicated().any():
+        duplicate_ids = result.loc[result["event_district_id"].duplicated(keep=False), "event_district_id"].tolist()
+        raise ValueError(f"Duplicate event_district_id values produced: {duplicate_ids}")
+    return result
+
+
 def build_summary(base_path: Path, base: pd.DataFrame, full: pd.DataFrame) -> dict[str, Any]:
     coverage = (
         full.groupby("source_record_id", sort=True)
@@ -406,6 +656,12 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", type=Path, default=data_path("emdat_base"))
     parser.add_argument("--events-output", type=Path, default=data_path("events"))
+    parser.add_argument(
+        "--event-district-output",
+        type=Path,
+        default=data_path("event_districts"),
+        help="Bounded event × district registry (includes explicit unresolved rows)",
+    )
     parser.add_argument("--full-output", type=Path, help="Optional full-fidelity state-event CSV")
     parser.add_argument("--summary-output", type=Path, help="Optional derivation summary JSON")
     parser.add_argument("--dry-run", action="store_true")
@@ -417,17 +673,27 @@ def main(argv: Iterable[str] | None = None) -> int:
     try:
         base, _info = load_official_workbook(args.base)
         full, registry = build_state_events(base)
+        event_districts = build_event_districts(base, registry)
         summary = build_summary(args.base, base, full)
         print(f"Official source records: {len(base)}")
         print(f"Original columns preserved: {len(base.columns)}")
         print(f"State-event rows: {len(full)}")
         print(f"Unique states/UTs: {full['state'].nunique()}")
+        print(f"Event × district rows: {len(event_districts)}")
+        print(
+            "District rows with resolved names: "
+            f"{int((event_districts['district'] != 'district_missing').sum())}"
+            f"; unresolved: {int((event_districts['district'] == 'district_missing').sum())}"
+        )
         if args.dry_run:
             return 0
 
         args.events_output.parent.mkdir(parents=True, exist_ok=True)
         registry.to_csv(args.events_output, index=False)
         print(f"Wrote event registry: {args.events_output}")
+        args.event_district_output.parent.mkdir(parents=True, exist_ok=True)
+        event_districts.to_csv(args.event_district_output, index=False)
+        print(f"Wrote event × district registry: {args.event_district_output} ({len(event_districts)} rows)")
         if args.full_output:
             args.full_output.parent.mkdir(parents=True, exist_ok=True)
             full.to_csv(args.full_output, index=False)
