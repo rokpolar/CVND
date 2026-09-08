@@ -41,8 +41,8 @@ def ensure_gee() -> None:
 #
 # Track B — SITS-Extreme-VAE data preparation
 #   Output: data/cache/district/sits_patches/<event_district_id>.h5
-#   Next:   Upload to Google Drive → run sits_inference.ipynb on Colab GPU
-#           → place score NPZs in data/cache/district/sits_scores/
+#   Next:   run src/run_sits_inference.py locally when the verified checkpoint
+#           is available, then place score NPZs in data/cache/district/sits_scores/
 #           → merge_results.py → district_flood_combined.csv → build_flood_area_table.py
 #
 # Citation: Fang & Azizpour (WACV 2025) — MIT license
@@ -945,6 +945,7 @@ def prepare_sits_patch(row):
             meta.attrs['state']       = state
             meta.attrs['district']    = str(row['district'])
             meta.attrs['start_date']  = start_str
+            meta.attrs['geometry_id'] = str(row.get('geometry_id', ''))
             meta.attrs['bands']       = ','.join(SITS_BANDS)
             meta.attrs['n_pre']       = SITS_N_PRE
             meta.attrs['patch_size']  = P
@@ -1118,7 +1119,7 @@ if __name__ == '__main__':
         print(f"Index: {SITS_INDEX_CSV}")
         print(f"\nNext steps:")
         print(f"  1. Upload {SITS_OUTPUT_DIR}/ to Google Drive")
-        print('  2. Score patches with a separately supplied, validated SITS model; no scorer/weights are bundled.')
+        print('  2. Run src/run_sits_inference.py locally when the verified checkpoint is available.')
         print(f"  3. Place score NPZs in {data_path('district_sits_scores')}/")
         print(f"  4. Run merge_results.py → build_flood_area_table.py → join_district_flood_articles.py")
 

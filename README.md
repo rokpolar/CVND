@@ -51,7 +51,15 @@ SKIP_GEE=1 SKIP_ARTICLES=1 SKIP_COVARIATES=1 bash scripts/run_pipeline.sh
 
 `PYTHON` may select an existing environment. `SETUP_DEPS=0` is the default. `SKIP_GEE=1` and `SKIP_ARTICLES=1` are the defaults, requiring previously generated **district** artifacts. `SKIP_COVARIATES=1` reuses district covariates; `SKIP_ANALYSIS=1` stops after joining. Missing required files fail; skipping does not manufacture observations. `SATELLITE_TRACK=A` is the explicit default; `both` also prepares SITS patches.
 
-The repository does **not** contain `run_sits_inference.py`, trained SITS weights, or an executable scoring notebook. This refactor does not invent a model. Baseline S1/S2 works without SITS; external district SITS scoring remains optional and requires documented model provenance and district-keyed scores before merging. Old state score files are incompatible and must not be copied into the district cache.
+Track B stores completed HDF5 patches under `data/cache/district/sits_patches/`. When the local upstream checkpoint is available, `src/run_sits_inference.py` scores those patches on CPU or GPU and writes provenance-bearing NPZ files under `data/cache/district/sits_scores/`; HDF5 inputs are retained. The checkpoint is checksum-verified and is never downloaded by the pipeline. Baseline S1/S2 remains usable without SITS, and old state score files are incompatible with the district cache.
+
+```bash
+# Prepare or resume district SITS patches.
+venv/bin/python src/satellite.py --track B
+
+# Score completed patches with the local CPU/GPU model.
+venv/bin/python src/run_sits_inference.py
+```
 
 Required external inputs/services:
 

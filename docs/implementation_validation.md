@@ -1,6 +1,6 @@
 # District refactor: implementation and validation
 
-Validated on 2026-09-08 in the local `rokpolar/CVND` checkout. No GitHub push or publication was performed. The pre-existing local changes to `classify_event_articles.py` were preserved.
+Validated on 2026-09-08 in the local `rokpolar/CVND` checkout. The pre-existing local changes to `classify_event_articles.py` were preserved.
 
 ## A. What changed
 
@@ -17,7 +17,7 @@ Validated on 2026-09-08 in the local `rokpolar/CVND` checkout. No GitHub push or
 | `README.md`, `data/README.md`, `docs/district_methodology.md` | Research question, methods, actual input schemas, run instructions, output contracts and limitations. Prior state docs clearly labeled legacy. |
 | `tests/test_district_*.py`, `tests/test_coverage_disparity.py` | Registry, Census, AOI, cache, article attribution/missingness, join and statistical regression tests. |
 
-`src/run_sits_inference.py` and trained SITS weights were absent in the original repository. No substitute model was invented. Default execution uses the existing Track A S1/S2 stack; optional Track B prepares patches for externally supplied SITS inference.
+The remote branch added `src/run_sits_inference.py` and the vendor model implementation after the district refactor. The scorer now writes district-keyed, provenance-bearing NPZ files when the verified local checkpoint is present. Default execution still uses the existing Track A S1/S2 stack; Track B is optional and requires the local upstream checkpoint.
 
 ## B. Final pipeline
 

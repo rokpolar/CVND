@@ -41,6 +41,9 @@ if [[ "$SKIP_COVARIATES" != 1 ]]; then run src/build_district_covariates.py; fi
 if [[ "$SKIP_GEE" != 1 ]]; then
   run event_aoi_area.py
   run src/satellite.py --track "$SATELLITE_TRACK"
+  if [[ "$SATELLITE_TRACK" == "B" || "$SATELLITE_TRACK" == "both" ]]; then
+    run src/run_sits_inference.py
+  fi
   run post_cloud.py
 else
   echo 'Using district satellite caches only; missing artifacts fail explicitly.'

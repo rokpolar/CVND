@@ -11,7 +11,7 @@ CVND 파이프라인(홍수 침수 면적과 헤리스틱 기사 수 집계)의 
 | --- | --- | --- |
 | 연구자 (Researcher) | 주 액터 | 파이프라인 실행, 파라미터(SKIP 플래그) 설정, 결과 해석 |
 | Google Earth Engine | 외부 시스템 | Sentinel-1/2 영상 및 침수 탐지 연산 |
-| Colab (SITS inference) | 외부 시스템 | SITS-VAE 추론으로 패치 점수 생성 |
+| 로컬 GPU/CPU | 로컬 시스템 | SITS-VAE 추론으로 패치 점수 생성 |
 | GDELT BigQuery | 외부 시스템 | 다국어 기사 URL·메타데이터 제공(본문 미포함) |
 | EM-DAT | 외부 데이터 | 재난 목록 |
 
@@ -21,7 +21,7 @@ CVND 파이프라인(홍수 침수 면적과 헤리스틱 기사 수 집계)의 
 flowchart LR
   R(["연구자"])
   GEE(["Google Earth Engine"])
-  COLAB(["Colab SITS"])
+  LOCAL(["Local SITS"])
   BQ(["GDELT BigQuery"])
   EMDAT(["EM-DAT"])
 
@@ -48,8 +48,8 @@ flowchart LR
 
   UC1 --- EMDAT
   UC2 --- GEE
-  UC2 --- COLAB
-  UC3 --- COLAB
+  UC2 --- LOCAL
+  UC3 --- LOCAL
   UC5 --- BQ
   UC6 --- BQ
 ```
@@ -71,12 +71,12 @@ flowchart LR
 
 | 항목 | 내용 |
 | --- | --- |
-| 액터 | 연구자, Google Earth Engine, Colab |
-| 목적 | 이벤트별 침수 범위 산출 및 SITS 학습용 패치 생성 |
+| 액터 | 연구자, Google Earth Engine, 로컬 GPU/CPU |
+| 목적 | 이벤트별 침수 범위 산출, 로컬 H5 보존 및 SITS 점수 생성 |
 | 사전조건 | GEE 인증, `.env`의 `GEE_PROJECT_ID` |
-| 주 흐름 | Track A(S1/S2 Otsu) → `data/cache/flood_extent.csv`; Track B(state AOI 패치) → Colab 추론 → `data/cache/sits_scores/` |
+| 주 흐름 | Track A(S1/S2 Otsu) → `flood_extent.csv`; Track B → 로컬 H5 영구 저장 → 로컬 추론 → `sits_scores/` |
 | 예외 | 구름 과다 시 광학 대신 레이더(S1) 경로 사용 |
-| 구현 | `src/satellite.py` |
+| 구현 | `src/satellite.py`, `src/run_sits_inference.py` |
 
 ### UC-03 침수 면적 통합
 

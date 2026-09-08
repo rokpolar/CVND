@@ -7,7 +7,8 @@ __pycache__/
 .DS_Store
 # large generated SITS patch files (h5) + SITS outputs
 data/sits_patches/
-data/cache/sits_patches/
+data/cache/
+SITS-ExtremeEvents-main/
 data/sits_vae_results.csv
 data/e02_sits_map.png
 # Natural Earth cache (downloadable)
