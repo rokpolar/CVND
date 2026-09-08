@@ -1,4 +1,10 @@
-import ee
+# Earth Engine is intentionally imported without initializing a session.  This
+# module is also imported by schema/unit tests and by the AOI metadata steps,
+# neither of which should require credentials.
+try:
+    import ee
+except ImportError:  # pragma: no cover - only exercised in minimal installs
+    ee = None
 import pandas as pd
 import numpy as np
 import h5py
@@ -8,37 +14,46 @@ import time
 import requests
 import json
 import os
+import re
+import unicodedata
 import warnings
-warnings.filterwarnings('ignore')
+from pathlib import Path
+
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
 from gee_config import initialize_gee
 from cvnd_layout import data_path
-initialize_gee()
+
+
+def ensure_gee() -> None:
+    """Initialize Earth Engine only for a call that actually needs it."""
+    if ee is None:
+        raise RuntimeError("Earth Engine is required for satellite operations")
+    initialize_gee()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # satellite.py — CVND Flood Detection Pipeline (optional; SKIP_GEE=1 by default)
 # ───────────────────────────────────────────────────────────────────────────────
 # Track A — Otsu bi-temporal (S1 + S2) baseline
-#   Output: data/cache/flood_extent.csv
+#   Output: data/cache/district/flood_extent.csv (primary; state path is legacy)
 #
 # Track B — SITS-Extreme-VAE data preparation
-#   Output: data/cache/sits_patches/<event_id>.h5
+#   Output: data/cache/district/sits_patches/<event_district_id>.h5
 #   Next:   Upload to Google Drive → run sits_inference.ipynb on Colab GPU
-#           → place score NPZs in data/cache/sits_scores/
-#           → merge_results.py → flood_combined.csv → compute_population.py
+#           → place score NPZs in data/cache/district/sits_scores/
+#           → merge_results.py → district_flood_combined.csv → build_flood_area_table.py
 #
 # Citation: Fang & Azizpour (WACV 2025) — MIT license
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ── Checkpoint paths ──────────────────────────────────────────────────────────
-CHECKPOINT_A    = str(data_path("satellite_checkpoint_a"))
-CHECKPOINT_B    = str(data_path("satellite_checkpoint_b"))
-FLOOD_EXTENT_CSV = str(data_path("flood_extent"))
-EVENTS_CSV = str(data_path("events"))
-SITS_INDEX_CSV = str(data_path("sits_patches_index"))
+CHECKPOINT_A    = str(data_path("district_satellite_checkpoint_a"))
+CHECKPOINT_B    = str(data_path("district_satellite_checkpoint_b"))
+FLOOD_EXTENT_CSV = str(data_path("district_flood_extent"))
+EVENTS_CSV = str(data_path("event_districts"))
+SITS_INDEX_CSV = str(data_path("district_sits_patches_index"))
 
 # ── Track B config ────────────────────────────────────────────────────────────
 SITS_BANDS      = ['B4', 'B3', 'B2', 'B8']   # RGB (B4,B3,B2) for the model + B8 for NDWI
@@ -46,9 +61,9 @@ SITS_PATCH_SIZE = 64
 SITS_N_PRE      = 4          # baseline t1..t4 (same-season composites); t5 = event month
 SITS_NORM       = 10000.0
 SITS_CLOUD_MAX  = 80
-SITS_OUTPUT_DIR = str(data_path("sits_patches"))
+SITS_OUTPUT_DIR = str(data_path("district_sits_patches"))
 
-# Tiling (whole-state-AOI) settings
+# Tiling (whole-district-AOI) settings
 SITS_BLOCK_PATCHES = 16     # download block = 16*64 = 1024 px/side (keeps NPY request small)
 SITS_KEEP_VALID    = 0.70   # keep a 64x64 tile only if >= this fraction is cloud/nodata-free in EVERY timestep
 
@@ -168,6 +183,13 @@ def check_image_count(collection, label, event_id, min_required=1):
     return count
 
 
+def _area_value_km2(stats: dict, band: str) -> float | None:
+    """Convert a reduceRegion result while preserving null as no observation."""
+    if not stats or stats.get(band) is None:
+        return None
+    return round(float(stats[band]) / 1e6, 2)
+
+
 def detect_flood_s2(region, start_date):
     """Sentinel-2 NDWI. Returns (new_flood_km2, pre_water_km2, during_water_km2, n_imgs),
     or (None, None, None, 0) if cloud-blind (no post imagery)."""
@@ -191,6 +213,11 @@ def detect_flood_s2(region, start_date):
     n_post   = post_col.size().getInfo()
     if n_post == 0:
         return None, None, None, 0
+    n_pre = s2.filterDate(pre_start, pre_end).size().getInfo()
+    if n_pre == 0:
+        # A post image alone cannot identify *new* water; retaining None keeps
+        # cloud/data absence distinct from an observed zero-area result.
+        return None, None, None, n_post
 
     def ndwi_median(col):
         return col.map(lambda i: i.normalizedDifference(['B3', 'B8'])
@@ -200,10 +227,10 @@ def detect_flood_s2(region, start_date):
     post_ndwi = ndwi_median(post_col)
 
     def area_km2(mask):
-        m2 = (mask.rename('w').multiply(ee.Image.pixelArea()).reduceRegion(
+        stats = (mask.rename('w').multiply(ee.Image.pixelArea()).reduceRegion(
             reducer=ee.Reducer.sum(), geometry=region, scale=30, maxPixels=1e9)
-            .getInfo().get('w', 0) or 0)
-        return round(m2 / 1e6, 2)
+            .getInfo())
+        return _area_value_km2(stats, 'w')
 
     flood  = area_km2(post_ndwi.gt(0).And(pre_ndwi.lte(0)))   # new flood (during - pre)
     pre    = area_km2(pre_ndwi.gt(0))                          # water before the flood
@@ -222,34 +249,175 @@ def get_masks(region):
     return permanent, flat, india
 
 
-def get_region(row):
-    """Event AOI = the named state/UT polygon (FAO GAUL 2015 level-1).
-    Shared by Track A (bi-temporal) and Track B (SITS) so both use a consistent AOI.
-    The canonical registry is state-level, so point-selected district polygons
-    would silently analyze only the district containing a state's bbox centre.
+GAUL_STATE_ALIASES = {
+    'Odisha': 'Orissa',
+    'Jammu and Kashmir': 'Jammu and Kashmir',
+}
+
+
+def _row_key(row) -> str:
+    """Return the spatially scoped key while retaining state compatibility."""
+    value = row.get('event_district_id') if hasattr(row, 'get') else None
+    if value is not None and str(value).strip() and str(value) != 'nan':
+        return str(value)
+    return str(row.get('event_id'))
+
+
+def _cache_identity_matches(entry, row) -> bool:
+    """Reject cache entries for a reused key whose source row changed."""
+    for field in ('event_id', 'source_record_id', 'state', 'district', 'start_date'):
+        expected = row.get(field)
+        cached = entry.get(field) if hasattr(entry, 'get') else None
+        if cached is None or (isinstance(cached, float) and pd.isna(cached)):
+            return False
+        if str(cached).strip() != str(expected).strip():
+            return False
+    return True
+
+
+def _h5_identity_matches(path, row) -> bool:
+    """Check Track-B metadata before resuming a partial district cache."""
+    try:
+        with h5py.File(path, 'r') as handle:
+            attrs = handle['meta'].attrs
+            return all(str(attrs.get(field, '')).strip() == str(row.get(field, '')).strip()
+                       for field in ('event_id', 'source_record_id', 'state', 'district', 'start_date'))
+    except (OSError, KeyError, TypeError):
+        return False
+
+
+def _is_district_row(row) -> bool:
+    level = str(row.get('aoi_level', '')).strip().lower()
+    key = row.get('event_district_id') if hasattr(row, 'get') else None
+    district = str(row.get('district', '')).strip()
+    state = str(row.get('state', '')).strip()
+    # The event-district key is authoritative even when the district happens
+    # to have the same spelling as its state or is currently unresolved. Any
+    # nonempty key must therefore stay on the level-2 path and may fail
+    # explicitly; it must never trigger a state fallback.
+    return level in {'district', 'level2', 'gaul2'} or (
+        key is not None and str(key).strip().lower() not in {'', 'nan', 'none'}
+    )
+
+
+def _normalized_name(value: object) -> str:
+    text = unicodedata.normalize('NFKC', str(value or '')).casefold()
+    return re.sub(r'[\W_]+', ' ', text, flags=re.UNICODE).strip()
+
+
+def _feature_collection_for_aoi(row):
+    """Build an exact GAUL collection for a state or district AOI.
+
+    District matching deliberately requires both ADM1 and ADM2.  We inspect the
+    cardinality before returning a geometry so an absent or ambiguous district
+    cannot silently fall back to a state polygon.
     """
-    gaul_names = {
-        'Odisha': 'Orissa',
-    }
-    state = str(row['state'])
-    gaul_name = gaul_names.get(state, state)
+    if ee is None:
+        raise RuntimeError("Earth Engine is required to resolve an AOI")
+    state = str(row.get('state', '')).strip()
+    gaul_state = GAUL_STATE_ALIASES.get(state, state)
+    if not state or state.lower() == 'nan':
+        raise ValueError('state is missing')
+    if _is_district_row(row):
+        district = str(row.get('district', '')).strip()
+        if not district or district.lower() in {'nan', 'missing', 'district_missing'}:
+            raise ValueError('district is missing for district AOI')
+        # GAUL's names are case-sensitive in ee.Filter.eq.  The first filter is
+        # exact; a small deterministic case/space normalization is used only to
+        # compare returned candidates, never to pick an arbitrary fuzzy match.
+        collection = (ee.FeatureCollection('FAO/GAUL/2015/level2')
+                      .filter(ee.Filter.eq('ADM0_NAME', 'India'))
+                      .filter(ee.Filter.eq('ADM1_NAME', gaul_state)))
+        candidates = collection.filter(ee.Filter.eq('ADM2_NAME', district))
+        count = int(candidates.size().getInfo())
+        if count != 1:
+            # Some exports differ only in capitalization.  Accept a unique
+            # normalized-name candidate, but keep state and level-2 constraints.
+            all_candidates = collection.getInfo().get('features', [])
+            matching = [f for f in all_candidates
+                        if _normalized_name(f.get('properties', {}).get('ADM2_NAME'))
+                        == _normalized_name(district)]
+            if len(matching) != 1:
+                raise ValueError(
+                    f"district AOI match failed for {state}/{district}: {count} exact candidates"
+                )
+            gid = matching[0].get('properties', {}).get('ADM2_CODE')
+            candidates = collection.filter(ee.Filter.eq('ADM2_CODE', gid)) if gid else None
+            if candidates is None or int(candidates.size().getInfo()) != 1:
+                raise ValueError(f"district AOI match is ambiguous for {state}/{district}")
+        return candidates
+
     return (ee.FeatureCollection('FAO/GAUL/2015/level1')
             .filter(ee.Filter.eq('ADM0_NAME', 'India'))
-            .filter(ee.Filter.eq('ADM1_NAME', gaul_name))
-            .geometry())
+            .filter(ee.Filter.eq('ADM1_NAME', gaul_state)))
+
+
+def resolve_aoi(row) -> dict:
+    """Resolve an event row to a strict AOI and provenance metadata.
+
+    The returned geometry is a server-side EE geometry; callers that only need
+    a status can catch the explicit ``ValueError`` without creating a fallback.
+    """
+    collection = _feature_collection_for_aoi(row)
+    count = int(collection.size().getInfo())
+    level = 'district' if _is_district_row(row) else 'state'
+    if count != 1:
+        raise ValueError(f"{level} AOI match failed: expected one feature, got {count}")
+    feature = ee.Feature(collection.first())
+    props = feature.toDictionary().getInfo()
+    geometry = feature.geometry()
+    identifier = props.get('ADM2_CODE' if level == 'district' else 'ADM1_CODE')
+    if identifier is None:
+        identifier = f"GAUL:India|{row.get('state')}|{row.get('district', '') if level == 'district' else ''}"
+    return {
+        'geometry': geometry,
+        'aoi_level': level,
+        'aoi_source': 'FAO/GAUL/2015/level2' if level == 'district' else 'FAO/GAUL/2015/level1',
+        'aoi_match_status': 'matched',
+        'geometry_id': str(identifier),
+        'aoi_area_km2': float(geometry.area(maxError=1000).getInfo()) / 1e6,
+    }
+
+
+def get_region(row):
+    """Return the strictly matched state or district GAUL geometry.
+
+    State-level rows remain supported for legacy analyses; district rows never
+    fall back to a state polygon when level-2 matching fails.
+    """
+    return resolve_aoi(row)['geometry']
 
 
 def detect_flood_baseline(row):
     """Track A: Otsu bi-temporal baseline (S1 SAR + S2 NDWI)."""
     event_id = row['event_id']
     state    = row['state']
-    print(f"\n  [Track A] [{event_id}] {state} (state AOI) "
+    key      = _row_key(row)
+    district = row.get('district', '')
+    level    = 'district' if _is_district_row(row) else 'state'
+    print(f"\n  [Track A] [{key}] {state}/{district} ({level} AOI) "
           f"({row['start_date']})")
+
+    context = {
+        'event_district_id': row.get('event_district_id') if level == 'district' else None,
+        'event_id': event_id,
+        'source_record_id': row.get('source_record_id'),
+        'start_date': row.get('start_date'),
+        'state': state,
+        'district': district,
+        'aoi_level': level,
+        'aoi_source': 'FAO/GAUL/2015/level2' if level == 'district' else 'FAO/GAUL/2015/level1',
+        'aoi_match_status': 'failed',
+        'geometry_id': None,
+        'aoi_area_km2': None,
+    }
 
     try:
         # bbox   = [float(x) for x in row['bbox'].split(',')]   # old loose state bbox
         # region = ee.Geometry.Rectangle(bbox)                  # (old) loose bbox
-        region = get_region(row)                                # state AOI (shared with Track B)
+        aoi = resolve_aoi(row)
+        region = aoi['geometry']
+        context.update({k: v for k, v in aoi.items() if k != 'geometry'})
 
         pre_start  = ee.Date(row['start_date']).advance(-30, 'day')
         pre_end    = ee.Date(row['start_date'])
@@ -282,7 +450,7 @@ def detect_flood_baseline(row):
             # Use S2 if available, else None
             fallback = s2_area if (s2_area is not None and s2_area > 0) else None
             return {
-                'event_id': event_id, 'state': state,
+                **context,
                 'affected_area_km2': fallback,      # pipeline-standard column name
                 'area_s1_km2': None,
                 'area_s2_km2': s2_area,
@@ -309,19 +477,21 @@ def detect_flood_baseline(row):
             reducer=ee.Reducer.sum(), geometry=region,
             scale=30, maxPixels=1e9
         )
-        area_m2  = area_stats.getInfo().get('flood', 0) or 0
-        area_km2 = round(area_m2 / 1e6, 2)
+        area_values = area_stats.getInfo()
+        area_km2 = _area_value_km2(area_values, 'flood')
         print(f"    S1 Otsu ({threshold:.2f} dB): {area_km2} km²")
 
         # FIX: S2=0.0 (clear, no water) ≠ S2=None (cloud-blind)
         # Only prefer S2 if it actually detected water (>0)
-        combined = s2_area if (s2_area is not None and s2_area > 0) else area_km2
-        status   = 'OK' if (area_km2 > 0 or (s2_area or 0) > 0) else 'ZERO_AREA'
+        combined = s2_area if s2_area is not None else area_km2
+        status   = 'OK' if combined is not None and combined > 0 else (
+            'ZERO_AREA' if combined is not None else 'FAILED_NO_VALID_PIXELS'
+        )
 
         print(f"    Combined area: {combined} km²  (status={status})")
 
         return {
-            'event_id': event_id, 'state': state,
+            **context,
             'affected_area_km2': combined,          # pipeline-standard column name
             'area_s1_km2': area_km2,
             'area_s2_km2': s2_area,
@@ -337,7 +507,7 @@ def detect_flood_baseline(row):
     except Exception as e:
         print(f"    ERROR: {e}")
         return {
-            'event_id': event_id, 'state': state,
+            **context,
             'affected_area_km2': None,
             'area_s1_km2': None, 'area_s2_km2': None,
             'ndwi_flood_area_km2': None,
@@ -418,6 +588,7 @@ def _extract_patch_sits(image, lat, lon):
 def prepare_sits_patch(row):
     """Track B: prepare one event's S2 time series as HDF5 patch."""
     event_id  = row['event_id']
+    analysis_key = _row_key(row)
     state     = row['state']
     lat       = float(row['lat'])
     lon       = float(row['lon'])
@@ -716,7 +887,7 @@ def prepare_sits_patch(row):
     event_id  = row['event_id']
     state     = row['state']
     start_str = row['start_date']
-    print(f"\n  [Track B] [{event_id}] {state} (state AOI) — {start_str}")
+    print(f"\n  [Track B] [{analysis_key}] {state}/{row.get('district', '')} AOI — {start_str}")
 
     region   = get_region(row)
     s2       = _get_s2_sits(region)
@@ -743,13 +914,16 @@ def prepare_sits_patch(row):
     images = [im.clip(region) for im in images]   # outside the state AOI is masked
 
     os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
-    out_path = os.path.join(SITS_OUTPUT_DIR, f'{event_id}.h5')
+    out_path = os.path.join(SITS_OUTPUT_DIR, f'{analysis_key}.h5')
     blocks_ckpt = out_path + '.blocks.json'
     P, B = SITS_PATCH_SIZE, len(SITS_BANDS)
 
     # Block-level resume: continue if a partial h5 + its block checkpoint both exist
     done_blocks = set()
     resume = os.path.exists(out_path) and os.path.exists(blocks_ckpt)
+    if resume and not _h5_identity_matches(out_path, row):
+        print("    cache identity changed or metadata incomplete -> restarting H5")
+        resume = False
     if resume:
         with open(blocks_ckpt) as bf:
             done_blocks = set(json.load(bf))
@@ -766,6 +940,8 @@ def prepare_sits_patch(row):
             f.create_dataset('coords', shape=(0, 4), maxshape=(None, 4), dtype='float64')
             meta = f.create_group('meta')
             meta.attrs['event_id']    = event_id
+            meta.attrs['event_district_id'] = str(row.get('event_district_id', ''))
+            meta.attrs['source_record_id'] = str(row.get('source_record_id', ''))
             meta.attrs['state']       = state
             meta.attrs['district']    = str(row['district'])
             meta.attrs['start_date']  = start_str
@@ -805,9 +981,13 @@ if __name__ == '__main__':
     print(f"  Running: Track {args.track.upper()}")
     print("=" * 65)
 
+    ensure_gee()
+
     events = pd.read_csv(EVENTS_CSV)
+    events['_analysis_key'] = events.apply(_row_key, axis=1)
+    event_by_key = {_row_key(row): row for _, row in events.iterrows()}
     if args.events:
-        events = events[events['event_id'].isin(args.events)]
+        events = events[events['_analysis_key'].isin(args.events) | events['event_id'].isin(args.events)]
         print(f"  Filtered to events: {args.events}")
     if args.reverse:
         events = events.iloc[::-1]
@@ -823,6 +1003,13 @@ if __name__ == '__main__':
         print("─" * 65)
 
         completed_a = load_checkpoint(CHECKPOINT_A)
+        stale_a = [key for key, entry in completed_a.items()
+                   if key not in event_by_key or not _cache_identity_matches(entry, event_by_key[key])
+                   or str(entry.get('baseline_status', entry.get('status', ''))).startswith('ERROR')]
+        for key in stale_a:
+            del completed_a[key]
+        if stale_a:
+            print(f"Discarded {len(stale_a)} stale Track-A cache entries")
 
         # Seed with existing flood_extent.csv if checkpoint is empty
         if not completed_a and os.path.exists(FLOOD_EXTENT_CSV):
@@ -830,18 +1017,20 @@ if __name__ == '__main__':
             # Only seed if it has the new column schema
             if 'affected_area_km2' in existing.columns:
                 for _, r in existing.iterrows():
-                    completed_a[r['event_id']] = r.to_dict()
+                    key = _row_key(r)
+                    if key in event_by_key and _cache_identity_matches(r, event_by_key[key]) and not str(r.get('baseline_status', '')).startswith('ERROR'):
+                        completed_a[key] = r.to_dict()
                 save_checkpoint(completed_a, CHECKPOINT_A)
                 print(f"Seeded {len(completed_a)} events from existing "
                       f"flood_extent.csv")
 
         done_a     = set(completed_a.keys())
-        remaining_a = events[~events['event_id'].isin(done_a)]
+        remaining_a = events[~events['_analysis_key'].isin(done_a)]
         print(f"Already done: {len(done_a)} | Remaining: {len(remaining_a)}\n")
 
         for i, (_, row) in enumerate(remaining_a.iterrows(), 1):
             result = detect_flood_baseline(row)
-            completed_a[row['event_id']] = result
+            completed_a[_row_key(row)] = result
             save_checkpoint(completed_a, CHECKPOINT_A)
 
             if (len(done_a) + i) % 10 == 0:
@@ -851,7 +1040,9 @@ if __name__ == '__main__':
                       f"{len(done_a)+i}/{len(events)} done")
 
         df_a = pd.DataFrame(list(completed_a.values()))
-        df_a = df_a.sort_values('event_id').reset_index(drop=True)
+        sort_cols = [c for c in ['event_district_id', 'event_id'] if c in df_a.columns]
+        if sort_cols:
+            df_a = df_a.sort_values(sort_cols, na_position='last').reset_index(drop=True)
         df_a.to_csv(FLOOD_EXTENT_CSV, index=False)
 
         ok_a = df_a[df_a['baseline_status'].isin(['OK', 'ZERO_AREA',
@@ -874,32 +1065,52 @@ if __name__ == '__main__':
         print("─" * 65)
 
         completed_b = load_checkpoint(CHECKPOINT_B)
+        stale_b = [key for key, entry in completed_b.items()
+                   if key not in event_by_key or not _cache_identity_matches(entry, event_by_key[key])
+                   or str(entry.get('baseline_status', entry.get('status', ''))).startswith('ERROR')]
+        for key in stale_b:
+            del completed_b[key]
+        if stale_b:
+            print(f"Discarded {len(stale_b)} stale Track-B cache entries")
         done_b      = set(completed_b.keys())
-        remaining_b = events[~events['event_id'].isin(done_b)]
+        remaining_b = events[~events['_analysis_key'].isin(done_b)]
         print(f"Already done: {len(done_b)} | Remaining: {len(remaining_b)}\n")
 
         for _, row in remaining_b.iterrows():
-            ev = row['event_id']
+            ev = _row_key(row)
             try:
                 res = prepare_sits_patch(row)
             except Exception as e:
                 print(f"  ERROR {ev}: {e}")
-                completed_b[ev] = {'event_id': ev, 'h5_path': None, 'status': f'ERROR: {e}'}
+                completed_b[ev] = {'event_district_id': row.get('event_district_id'),
+                                   'event_id': row['event_id'], 'source_record_id': row.get('source_record_id'),
+                                   'state': row.get('state'), 'district': row.get('district'),
+                                   'start_date': row.get('start_date'), 'h5_path': None,
+                                   'status': f'ERROR: {e}'}
                 save_checkpoint(completed_b, CHECKPOINT_B)
                 continue
             if res is None:                        # no clear baseline / no post -> cloudy, don't retry
-                completed_b[ev] = {'event_id': ev, 'h5_path': None, 'status': 'SKIPPED_CLOUDY'}
+                completed_b[ev] = {'event_district_id': row.get('event_district_id'),
+                                   'event_id': row['event_id'], 'source_record_id': row.get('source_record_id'),
+                                   'state': row.get('state'), 'district': row.get('district'),
+                                   'start_date': row.get('start_date'), 'h5_path': None,
+                                   'status': 'SKIPPED_CLOUDY'}
                 save_checkpoint(completed_b, CHECKPOINT_B)
                 continue
             path, complete = res
             if not complete:                       # some blocks failed -> NOT marked done, retry next run
                 print(f"  {ev}: incomplete (failed blocks) -> will retry on re-run")
                 continue
-            completed_b[ev] = {'event_id': ev, 'h5_path': path, 'status': 'OK'}
+            completed_b[ev] = {'event_district_id': row.get('event_district_id'),
+                               'event_id': row['event_id'], 'source_record_id': row.get('source_record_id'),
+                               'state': row.get('state'), 'district': row.get('district'),
+                               'start_date': row.get('start_date'), 'h5_path': path, 'status': 'OK'}
             save_checkpoint(completed_b, CHECKPOINT_B)
 
         df_b = pd.DataFrame(list(completed_b.values()))
-        df_b = df_b.sort_values('event_id').reset_index(drop=True)
+        sort_cols = [c for c in ['event_district_id', 'event_id'] if c in df_b.columns]
+        if sort_cols:
+            df_b = df_b.sort_values(sort_cols, na_position='last').reset_index(drop=True)
         df_b.to_csv(SITS_INDEX_CSV, index=False)
 
         ok_b = df_b[df_b['status'] == 'OK']
@@ -907,9 +1118,9 @@ if __name__ == '__main__':
         print(f"Index: {SITS_INDEX_CSV}")
         print(f"\nNext steps:")
         print(f"  1. Upload {SITS_OUTPUT_DIR}/ to Google Drive")
-        print(f"  2. Run sits_inference.ipynb on Colab (T4 GPU)")
-        print(f"  3. Place score NPZs in {data_path('sits_scores')}/")
-        print(f"  4. Run merge_results.py → compute_population.py → join_flood_articles.py")
+        print('  2. Score patches with a separately supplied, validated SITS model; no scorer/weights are bundled.')
+        print(f"  3. Place score NPZs in {data_path('district_sits_scores')}/")
+        print(f"  4. Run merge_results.py → build_flood_area_table.py → join_district_flood_articles.py")
 
     # ── Summary ───────────────────────────────────────────────────────────────
     print("\n" + "=" * 65)
