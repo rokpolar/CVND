@@ -1,5 +1,5 @@
 """
-compute_population.py — event-level flood area table for the primary stack.
+compute_population.py — legacy state-level flood area compatibility wrapper.
 
 Build data/intermediate/severity_raw.csv from state-AOI flood merge results.
 Population exposure columns are not computed here; use join_flood_articles.py
@@ -26,6 +26,17 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cvnd_layout import data_path  # noqa: E402
+
+
+def from_district_flood_combined() -> pd.DataFrame:
+    """Compatibility entry point for the new district flood-area builder.
+
+    The implementation lives in ``build_flood_area_table.py``; this function
+    keeps callers of the historical module from accidentally rebuilding a
+    state-scaled table for a district registry.
+    """
+    from build_flood_area_table import main as build_main
+    return build_main()
 
 STATE_ALIASES = {
     "jammu and kashmir": "Jammu and Kashmir",
@@ -203,6 +214,13 @@ def from_legacy_flood_area(state_area: dict[str, int]) -> pd.DataFrame:
 
 
 def main():
+    district_registry = data_path("event_districts")
+    district_combined = data_path("district_flood_combined")
+    if district_registry.exists() and district_combined.exists():
+        print("District registry detected; delegating to build_flood_area_table.py")
+        from_district_flood_combined()
+        return
+
     print("=" * 60)
     print("BUILD EVENT FLOOD AREA TABLE (severity_raw)")
     print("=" * 60)
@@ -212,7 +230,7 @@ def main():
     legacy_path = data_path("flood_area_results")
 
     if combined_path.exists():
-        print(f"Using PRIMARY input: {combined_path} (state AOI)")
+        print(f"Using LEGACY state input: {combined_path} (state AOI)")
         out = from_flood_combined(state_area)
     elif legacy_path.exists():
         print(f"WARNING: {combined_path.name} missing — legacy {legacy_path}")

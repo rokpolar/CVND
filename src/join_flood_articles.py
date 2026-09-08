@@ -1,5 +1,6 @@
 """
-join_flood_articles.py — join event flood area with heuristic article counts.
+join_flood_articles.py — LEGACY state-event join.
+Primary: use join_district_flood_articles.py for the strict district contract.
 
 Inputs:
     data/intermediate/severity_raw.csv
