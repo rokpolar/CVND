@@ -40,11 +40,11 @@ from cvnd_layout import data_path  # noqa: E402
 RESULT_NAME = 'sar_flood_area.csv'
 PROGRESS_DIR = 'sar_progress'
 
-# Bump whenever a change makes previously computed areas incomparable, e.g. a new
-# mask, a different scale, another checkpoint. Progress and results carry the
-# version they were produced under, and anything older is recomputed instead of
-# silently mixed with new numbers -- the exact failure this pipeline exists to
-# remove. No manual deleting of state.
+# Recorded with every result so a number can be traced to how it was measured.
+# It does NOT decide what re-runs -- that is --force, so re-measuring stays a
+# deliberate act. A run that finds several versions in one file says so, because
+# areas from different methods are not comparable, which is the failure this
+# pipeline exists to remove.
 #   1: first streaming version, no terrain mask
 #   2: slope < SLOPE_MAX_DEG gate; steep pixels excluded from counts and from
 #      observed area (v1 reported 899 km2 of flood in Sikkim, which holds only
@@ -88,8 +88,11 @@ def load_progress(state_dir, event_id):
         print(f"  WARN unreadable progress for {event_id}; starting over")
         return load_progress(Path(state_dir) / '__missing__', event_id)
     if raw.get('method_version') != METHOD_VERSION:
-        print(f"  {event_id}: state from method v{raw.get('method_version')} "
-              f"!= v{METHOD_VERSION} -> recomputing")
+        # Block counts and masks differ between versions, so resuming on top of
+        # them would blend two methods inside one event. The event restarts; the
+        # decision to re-measure a *finished* event is --force.
+        print(f"  {event_id}: partial state from method "
+              f"v{raw.get('method_version')} != v{METHOD_VERSION} -> restarting")
         return _fresh_state()
     raw.setdefault('failed_blocks', [])
     raw.setdefault('total_blocks', None)
@@ -129,16 +132,29 @@ def append_result(state_dir, row):
 
 
 def finished_events(state_dir):
-    """Events already done UNDER THE CURRENT METHOD. Rows from an older version
-    are ignored so a method change re-runs them without anyone deleting files."""
+    """Every event with a result row, whatever method version produced it.
+
+    Re-measuring is --force, not something a version bump does behind your back:
+    a long run should not silently restart because a constant changed. Mixing is
+    surfaced instead -- see stale_versions().
+    """
     path = Path(state_dir) / RESULT_NAME
     if not path.exists():
         return set()
+    return set(pd.read_csv(path)['event_id'].astype(str))
+
+
+def stale_versions(state_dir):
+    """Ids whose result came from a different method version. Empty is good."""
+    path = Path(state_dir) / RESULT_NAME
+    if not path.exists():
+        return {}
     df = pd.read_csv(path)
     if 'method_version' not in df.columns:
-        return set()
-    df = df[df['method_version'] == METHOD_VERSION]
-    return set(df['event_id'].astype(str))
+        return {'(no version recorded)': sorted(df['event_id'].astype(str))}
+    old = df[df['method_version'] != METHOD_VERSION]
+    return {v: sorted(g['event_id'].astype(str))
+            for v, g in old.groupby('method_version')}
 
 
 def reset_event(state_dir, event_id):
@@ -392,6 +408,12 @@ def main():
 
     print(f"state dir : {args.state_dir}")
     print(f"finished  : {len(already)} | to process: {len(events)}")
+    stale = stale_versions(args.state_dir)
+    if stale:
+        n = sum(len(v) for v in stale.values())
+        print(f"WARN {n} result(s) measured by another method version "
+              f"{ {k: len(v) for k, v in stale.items()} }; areas from different "
+              f"methods are not comparable. Re-measure with --force.")
     if events.empty:
         print_results(args.state_dir)
         return
@@ -417,7 +439,8 @@ def main():
 
 
 SUMMARY_COLS = ['event_id', 'state', 'start_date', 'flood_km2', 'observed_km2',
-                'flood_frac_observed', 'blocks_done', 'is_control', 'status']
+                'flood_frac_observed', 'blocks_done', 'is_control',
+                'method_version', 'status']
 
 
 def print_results(state_dir):

@@ -205,21 +205,36 @@ class ResultTests(unittest.TestCase):
             sfa.append_result(tmp, self._row("E001", 1.0))
             self.assertEqual(sfa.finished_events(tmp), {"E001"})
 
-    def test_results_from_an_older_method_do_not_count_as_finished(self):
-        """Changing the method must re-run every event without anyone having to
-        delete files by hand -- mixing versions in one column is exactly the
-        measurement inconsistency this pipeline exists to remove."""
+    def test_an_older_version_still_counts_as_finished(self):
+        """A version bump must not silently restart a long run. Re-measuring is
+        --force; the mismatch is reported, not acted on."""
         with tempfile.TemporaryDirectory() as tmp:
             sfa.append_result(tmp, self._row("E001", 1.0,
                                              version=sfa.METHOD_VERSION - 1))
             sfa.append_result(tmp, self._row("E002", 2.0))
-            self.assertEqual(sfa.finished_events(tmp), {"E002"})
+            self.assertEqual(sfa.finished_events(tmp), {"E001", "E002"})
 
-    def test_results_without_a_version_column_are_ignored(self):
+    def test_mixed_versions_are_reported(self):
+        """Areas measured by different methods are not comparable, so a run has
+        to say when its results file holds more than one."""
+        with tempfile.TemporaryDirectory() as tmp:
+            sfa.append_result(tmp, self._row("E001", 1.0,
+                                             version=sfa.METHOD_VERSION - 1))
+            sfa.append_result(tmp, self._row("E002", 2.0))
+            stale = sfa.stale_versions(tmp)
+            self.assertEqual(stale, {sfa.METHOD_VERSION - 1: ["E001"]})
+
+    def test_no_warning_when_versions_agree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            sfa.append_result(tmp, self._row("E002", 2.0))
+            self.assertEqual(sfa.stale_versions(tmp), {})
+
+    def test_results_without_a_version_column_are_flagged(self):
         with tempfile.TemporaryDirectory() as tmp:
             pd.DataFrame([{"event_id": "E001", "flood_km2": 1.0}]).to_csv(
                 Path(tmp) / sfa.RESULT_NAME, index=False)
-            self.assertEqual(sfa.finished_events(tmp), set())
+            self.assertEqual(sfa.finished_events(tmp), {"E001"})
+            self.assertIn("(no version recorded)", sfa.stale_versions(tmp))
 
     def test_reset_clears_both_progress_and_result(self):
         """--force must drop both: a leftover result row marks the event finished
