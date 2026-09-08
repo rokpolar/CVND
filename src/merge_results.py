@@ -1,9 +1,10 @@
 """
-merge_results.py — combine SITS (AI) + NDWI + S1 (bi-temporal) into a per-event flood area.
+merge_results.py — combine SITS (AI) + NDWI + S1 (bi-temporal) into a per-event-AOI flood area.
 
 Inputs:
-  data/cache/sits_scores/{event}.npz   (Track B: SITS score + NDWI per patch)
-  data/cache/flood_extent.csv          (Track A: S1/S2 state-AOI results)
+  data/cache/district/sits_scores/{event_district_id}.npz
+                                      (Track B: SITS score + NDWI per patch)
+  data/cache/district/flood_extent.csv (Track A: S1/S2 district-AOI results)
 
 Per event:
   1. SITS is patch-level (a 0.4096 km2 tile is flagged whole even if only a sliver is water),
@@ -23,7 +24,7 @@ Per event:
      Events with 0 SITS patches (fully clouded on the flood date) are pulled from Track A
      and routed to S1 (or Track A NDWI if no S1) -- not dropped.
 
-Output: data/intermediate/flood_combined.csv
+Output: data/intermediate/district_flood_combined.csv
 Run:    python src/merge_results.py     (numpy + pandas only; no model / GEE)
 """
 import glob
@@ -37,17 +38,24 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cvnd_config import CLOUD_MAX_PCT  # noqa: E402
 from cvnd_layout import data_path  # noqa: E402
 
-SCORES_DIR = str(data_path("sits_scores"))
-TRACK_A_CSV = str(data_path("flood_extent"))
-OUT_CSV = str(data_path("flood_combined"))
+
+def _analysis_key(row) -> str:
+    value = row.get('event_district_id') if hasattr(row, 'get') else None
+    if value is not None and str(value).strip() not in {'', 'nan', 'None'}:
+        return str(value)
+    return str(row.get('event_id'))
+
+SCORES_DIR = str(data_path("district_sits_scores"))
+TRACK_A_CSV = str(data_path("district_flood_extent"))
+OUT_CSV = str(data_path("district_flood_combined"))
 
 PATCH_KM2 = (64 * 10 / 1000) ** 2   # 0.4096 km2 per patch
 PX_KM2 = (10 / 1000) ** 2           # 1e-4 km2 per pixel
 FLOOD_MIN_PX = 205                  # a patch is an "NDWI flood" patch if >= 5% (205/4096) is new water
 MIN_POS = 20                        # need this many NDWI-flood (and non-flood) patches to calibrate
 J_MIN = 0.15                        # min Youden's J (SITS-NDWI agreement) to use the SITS+NDWI fusion
-POST_CLOUD_CSV = str(data_path("post_cloud"))
-AOI_AREA_CSV = str(data_path("event_aoi_area"))
+POST_CLOUD_CSV = str(data_path("district_post_cloud"))
+AOI_AREA_CSV = str(data_path("district_aoi_area"))
 
 
 def _otsu(x):
@@ -101,13 +109,28 @@ def sits_threshold(scores, ndwi_flood):
     return _otsu(scores), 'otsu'                    # too few NDWI positives -> plain Otsu
 
 
+def validate_district_scores(archive, row):
+    """External scores must prove the same district/geometry and model source."""
+    for field in ['event_district_id', 'event_id', 'source_record_id', 'state', 'district', 'start_date', 'geometry_id']:
+        if field not in archive or str(np.asarray(archive[field]).item()) != str(row.get(field)):
+            raise ValueError(f'SITS cache missing or stale district provenance: {field}; regenerate district scores')
+    for field in ['model_id', 'weights_sha256', 'patches_sha256']:
+        if field not in archive or not str(np.asarray(archive[field]).item()).strip():
+            raise ValueError(f'SITS score archive requires {field} provenance from external inference')
+    scores, water = archive['scores'], archive['ndwi_flood']
+    if scores.ndim != 1 or water.shape != scores.shape or not np.isfinite(scores).all() or not np.isfinite(water).all():
+        raise ValueError('SITS scores and NDWI pixel counts must be equal-length finite vectors')
+    if (scores < 0).any() or (scores > 1).any() or (water < 0).any() or (water > 4096).any():
+        raise ValueError('Invalid SITS score range or NDWI patch pixel count')
+
+
 def main():
-    # Track A (S1 + optical availability); may be missing/stale -> handle gracefully
+    # Validate district files again in the downstream area-table builder.
     ta = {}
     if os.path.exists(TRACK_A_CSV):
         dfa = pd.read_csv(TRACK_A_CSV)
         for _, r in dfa.iterrows():
-            ta[r['event_id']] = r
+            ta[_analysis_key(r)] = r
     else:
         print(f"WARN: {TRACK_A_CSV} missing -> no S1 / cloud routing (re-run Track A)")
 
@@ -115,7 +138,7 @@ def main():
     pcloud = {}
     if os.path.exists(POST_CLOUD_CSV):
         dfc = pd.read_csv(POST_CLOUD_CSV)
-        pcloud = dict(zip(dfc['event_id'], dfc['cloud_pct']))
+        pcloud = {_analysis_key(r): r.get('cloud_pct') for _, r in dfc.iterrows()}
     else:
         print(f"WARN: {POST_CLOUD_CSV} missing -> no cloud-fraction routing (run post_cloud.py)")
 
@@ -123,12 +146,22 @@ def main():
     aoi_areas = {}
     if os.path.exists(AOI_AREA_CSV):
         dfd = pd.read_csv(AOI_AREA_CSV)
-        aoi_areas = dict(zip(dfd['event_id'], dfd['aoi_km2']))
+        aoi_areas = {_analysis_key(r): r.get('aoi_area_km2', r.get('aoi_km2'))
+                     for _, r in dfd.iterrows()}
     else:
         print(f"WARN: {AOI_AREA_CSV} missing -> no flood_ratio (run event_aoi_area.py)")
 
     npz = {os.path.basename(f)[:-4]: f
            for f in glob.glob(os.path.join(SCORES_DIR, '*.npz'))}
+    district_mode = any(
+        str(r.get('event_district_id', '')).strip().lower() not in {'', 'nan', 'none'}
+        for r in ta.values()
+    )
+    if district_mode:
+        # A parent event cache is a state-level artifact. Never union it into a
+        # district run where it could be mistaken for one district's score.
+        district_keys = set(ta)
+        npz = {key: path for key, path in npz.items() if key in district_keys}
     # union: every event with a SITS score OR a Track A row (cloud-blind 0-patch events
     # have no .npz but still have S1/NDWI in Track A -> route them to S1, don't drop them)
     all_events = sorted(set(npz) | set(ta))
@@ -136,11 +169,21 @@ def main():
     rows = []
     for ev in all_events:
         a = ta.get(ev, {})
+        is_district = bool(str(a.get('event_district_id', '')).strip()
+                           and str(a.get('event_district_id')) != 'nan')
+        # A failed district AOI is an explicit missing observation.  Never use
+        # stale state values as a district result.
+        aoi_status = str(a.get('aoi_match_status', '')).lower()
+        aoi_failed = is_district and aoi_status not in {'matched', 'exact', 'ok'}
         s1_area = a.get('area_s1_km2', None)
         s2_area = a.get('area_s2_km2', None)                # Track A optical (NDWI over state AOI)
+        if aoi_failed:
+            s1_area, s2_area = None, None
         optical_ok = pd.notna(s2_area) and float(a.get('s2_post_images', 0) or 0) > 0
 
-        d = np.load(npz[ev]) if ev in npz else None
+        d = np.load(npz[ev], allow_pickle=False) if ev in npz and not aoi_failed else None
+        if d is not None and is_district:
+            validate_district_scores(d, a)
         has_sits = d is not None and len(d['scores']) > 0   # empty npz = 0 patches = cloud-blind
 
         if has_sits:
@@ -170,7 +213,7 @@ def main():
             # If the flood-date S2 composite was mostly cloud (> CLOUD_MAX_PCT of the
             # AOI unseen), the optical number misses most of the ground -> radar.
             cl = pcloud.get(ev)
-            if cl is not None and cl >= CLOUD_MAX_PCT:
+            if (is_district and pd.isna(cl)) or (cl is not None and cl >= CLOUD_MAX_PCT):
                 if s1_area is not None and pd.notna(s1_area):
                     combined, source = float(s1_area), f'S1(cloud>{CLOUD_MAX_PCT})'
                 else:                       # too cloudy for optical AND no radar -> unmeasurable
@@ -183,7 +226,7 @@ def main():
             ndwi_area = float(s2_area) if pd.notna(s2_area) else None   # Track A NDWI, if any
             optical = False
             cl = pcloud.get(ev)
-            too_cloudy = cl is not None and cl >= CLOUD_MAX_PCT
+            too_cloudy = (is_district and pd.isna(cl)) or (cl is not None and cl >= CLOUD_MAX_PCT)
             if s1_area is not None and pd.notna(s1_area):    # cloud-blind -> radar
                 combined, source = float(s1_area), 'S1(cloud)'
             elif ndwi_area is not None and not too_cloudy:   # no S1, but optical mostly saw it
@@ -192,11 +235,24 @@ def main():
             else:
                 combined, source = None, 'none'             # no usable measurement at all
 
+        if d is not None:
+            d.close()
         aoi_km2 = aoi_areas.get(ev)
+        if aoi_failed:
+            combined, source = None, 'AOI_FAILED'
+            optical = False
         ratio = (round(combined / aoi_km2, 4)
                  if (combined is not None and aoi_km2 and aoi_km2 > 0) else None)
         rows.append({
-            'event_id': ev,
+            'event_district_id': a.get('event_district_id'),
+            'event_id': a.get('event_id', ev),
+            'source_record_id': a.get('source_record_id'),
+            'state': a.get('state'),
+            'district': a.get('district'),
+            'aoi_level': a.get('aoi_level', 'district' if is_district else 'state'),
+            'aoi_source': a.get('aoi_source'),
+            'aoi_match_status': a.get('aoi_match_status', 'unknown'),
+            'geometry_id': a.get('geometry_id'),
             'sits_detect_km2': round(sits_area, 2) if sits_area is not None else None,  # SITS tile extent (NOT area)
             'sits_threshold': round(thr, 3) if thr is not None else None,
             'sits_method': method,
@@ -205,7 +261,8 @@ def main():
             'optical_available': optical,
             'cloud_pct': pcloud.get(ev),                    # flood-date cloud over state AOI (QA)
             'combined_km2': round(combined, 2) if combined is not None else None,
-            'aoi_km2': round(float(aoi_km2), 1) if aoi_km2 else None,
+            'aoi_km2': round(float(aoi_km2), 1) if aoi_km2 is not None and pd.notna(aoi_km2) else None,
+            'aoi_area_km2': round(float(aoi_km2), 1) if aoi_km2 is not None and pd.notna(aoi_km2) else None,
             'flood_ratio': ratio,
             'combined_source': source,
         })
@@ -215,6 +272,7 @@ def main():
               f"s1={s1_area}  -> combined={_c} ({source})")
 
     if rows:
+        os.makedirs(os.path.dirname(OUT_CSV) or '.', exist_ok=True)
         pd.DataFrame(rows).to_csv(OUT_CSV, index=False)
         print(f"\nSaved -> {OUT_CSV}  ({len(rows)} events)")
 
