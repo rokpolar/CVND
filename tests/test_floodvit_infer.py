@@ -79,6 +79,29 @@ class PreprocessTests(unittest.TestCase):
         self.assertEqual(fi.preprocess(self._patch()).dtype, np.float32)
 
 
+class LoadModelTests(unittest.TestCase):
+    """The checkpoint is a pickled nn.Module, so Kuro Siwo's classes have to be
+    importable. Colab wipes /content each session and torch then raises a bare
+    'No module named models', which says nothing about the missing clone."""
+
+    def test_missing_repo_names_the_problem(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(FileNotFoundError) as cm:
+                fi.load_model("weights.pt", tmp, device="cpu")
+            msg = str(cm.exception)
+            self.assertIn("models/", msg)
+            self.assertIn("git clone", msg)
+
+    def test_missing_checkpoint_is_reported(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "models").mkdir()
+            with self.assertRaises(FileNotFoundError) as cm:
+                fi.load_model(str(Path(tmp) / "nope.pt"), tmp, device="cpu")
+            self.assertIn("checkpoint not found", str(cm.exception))
+
+
 class CountingTests(unittest.TestCase):
     def test_counts_each_class(self):
         pred = np.array([[0, 1], [2, 2]])
