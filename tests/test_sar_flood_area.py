@@ -159,10 +159,26 @@ class ControlRunTests(unittest.TestCase):
         self.assertNotEqual(sfa.control_id("E104", -365),
                             sfa.control_id("E104", -730))
 
+    def test_repeat_cycle_constant(self):
+        """Sentinel-1 revisits the same relative orbit every 12 days. A control
+        offset off that cycle lands on other orbits, so it measures different
+        ground from a different look angle -- measured on Bihar, a -365 day
+        control drew blocks from {158,12,19,85} while the event used
+        {121,158,12,19}."""
+        self.assertEqual(sfa.S1_REPEAT_DAYS, 12)
+
+    def test_useful_offsets_are_on_cycle(self):
+        for days in (-360, -216, -12, -720):
+            self.assertEqual(days % sfa.S1_REPEAT_DAYS, 0, days)
+
+    def test_the_offsets_already_used_were_off_cycle(self):
+        for days in (-365, -214):
+            self.assertNotEqual(days % sfa.S1_REPEAT_DAYS, 0, days)
+
     def test_shift_date_keeps_the_season(self):
         """A year back, not six months: SAR backscatter is seasonal, so a control
         from a different season would differ for reasons other than flooding."""
-        self.assertEqual(sfa.shift_date("2020-05-24", -365), "2019-05-25")
+        self.assertEqual(sfa.shift_date("2020-05-24", -360), "2019-05-30")
 
     def test_control_and_event_coexist_in_results(self):
         with tempfile.TemporaryDirectory() as tmp:

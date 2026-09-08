@@ -112,6 +112,17 @@ class LoadModelTests(unittest.TestCase):
             self.assertIn("checkpoint not found", str(cm.exception))
 
 
+class PatchSizeTests(unittest.TestCase):
+    def test_wrong_patch_size_is_refused(self):
+        """The ViT slices its position embedding to however many tokens arrive,
+        so a smaller patch does not raise -- it reshapes onto the wrong grid and
+        returns a plausible, wrong mask."""
+        small = np.zeros((1, fi.N_CHANNELS, 64, 64), dtype=np.float32)
+        with self.assertRaises(ValueError) as cm:
+            fi.predict(None, small, device="cpu")
+        self.assertIn("224", str(cm.exception))
+
+
 class CountingTests(unittest.TestCase):
     def test_counts_each_class(self):
         pred = np.array([[0, 1], [2, 2]])

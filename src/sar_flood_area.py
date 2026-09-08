@@ -38,6 +38,13 @@ import sar_patches as sp  # noqa: E402
 from cvnd_layout import data_path  # noqa: E402
 
 MAX_REPEATED_ERRORS = 3
+
+# Sentinel-1's repeat cycle. A control offset that is not a multiple of this
+# lands on different relative orbits, so the control measures different ground
+# from a different look angle and the two flood fractions are not comparable.
+# Measured: a -365 day control over Bihar drew its blocks from orbits
+# {158,12,19,85} while the event used {121,158,12,19}.
+S1_REPEAT_DAYS = 12
 RESULT_NAME = 'sar_flood_area.csv'
 PROGRESS_DIR = 'sar_progress'
 
@@ -67,7 +74,14 @@ PROGRESS_DIR = 'sar_progress'
 #      a slice and reported it as the state. Acquisitions are also grouped by
 #      time gap rather than calendar date (two Bihar frames land at 00:03 and
 #      00:04 UTC, so a slightly earlier pass would split across midnight).
-METHOD_VERSION = 7
+#   8: blocks requested in the event's UTM zone. mosaic() drops the source
+#      projection, so GEE laid a grid square in DEGREES: 9.93 m north-south but
+#      9.02 m east-west over Bihar, a 7-11% area error that grows with latitude,
+#      and the native 10 m imagery was resampled onto it before the speckle
+#      filter and the model. Also: int16 overflow above sigma0 3.28 turned the
+#      brightest targets negative, no-data decoded to the darkest possible value
+#      instead of the clamp, and the validity mask included the `angle` band.
+METHOD_VERSION = 8
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -380,6 +394,11 @@ def main():
                    help='skip the Lee filter. Kuro Siwo trained on speckle-'
                         'filtered imagery, so this is for measuring the effect '
                         'of the filter, not for production runs.')
+    p.add_argument('--allow-off-cycle-control', action='store_true',
+                   help='permit a control offset that is not a multiple of 12 '
+                        'days. Off-cycle controls fall on different relative '
+                        'orbits and measure different ground, so the comparison '
+                        'is not like for like.')
     p.add_argument('--control-offset-days', type=int, default=None,
                    help='run the same AOI shifted by this many days instead of '
                         'the real onset, e.g. -365 for the same week a year '
@@ -404,6 +423,17 @@ def main():
                         'this automatically for method changes; use --force for '
                         'a one-off redo (a suspect result, a new checkpoint).')
     args = p.parse_args()
+
+    off = args.control_offset_days
+    if off is not None and off % S1_REPEAT_DAYS != 0:
+        nearest = round(off / S1_REPEAT_DAYS) * S1_REPEAT_DAYS
+        msg = (f"control offset {off} is not a multiple of the {S1_REPEAT_DAYS}-day "
+               f"Sentinel-1 repeat cycle, so the control would fall on different "
+               f"relative orbits than the event and measure different ground. "
+               f"Use {nearest}.")
+        if not args.allow_off_cycle_control:
+            sys.exit(msg + "  (--allow-off-cycle-control to override)")
+        print("WARN " + msg)
 
     if args.reset:
         print(f"state dir : {args.state_dir}")

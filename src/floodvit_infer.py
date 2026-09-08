@@ -131,9 +131,17 @@ def load_model(checkpoint, kuro_siwo_repo, device='cuda'):
 
 def predict(model, patches, device='cuda', batch_size=32, amp=True):
     """(N, 6, 224, 224) raw patches -> (N, 224, 224) class ids."""
+    x = preprocess(patches)
+    # FinetunerSegmentation.forward hardcodes img_size=224 and reshapes the
+    # token sequence to 14x14. A differently sized patch would not raise -- the
+    # ViT slices pos_embedding to however many tokens arrive -- it would just
+    # reshape them onto the wrong grid and return a plausible, wrong mask.
+    if x.shape[2:] != (PATCH_PX, PATCH_PX):
+        raise ValueError(
+            f"patches must be {PATCH_PX}x{PATCH_PX}, got {x.shape[2:]}")
+
     import torch
 
-    x = preprocess(patches)
     out = np.empty((x.shape[0], x.shape[2], x.shape[3]), dtype=np.uint8)
     with torch.inference_mode():
         for i in range(0, len(x), batch_size):

@@ -66,21 +66,34 @@ class SpeckleTests(unittest.TestCase):
 
 
 class GridTests(unittest.TestCase):
-    def test_patch_spans_expected_ground_distance(self):
-        dlat, dlon, _, _ = sp.grid_dims(77.0, 23.0, 84.0, 30.0, 224, 10)
-        self.assertAlmostEqual(dlat * 110540.0, 224 * 10, delta=1.0)
+    """The grid is metres in the same UTM CRS the blocks are downloaded in. In
+    degrees, each block was a lat/lon rectangle whose projected bounding box
+    overlapped its neighbours', so adjacent blocks could count the same ground
+    twice and leave slivers between them uncounted."""
 
-    def test_longitude_step_widens_toward_the_pole(self):
-        """Degrees of longitude shrink with latitude, so the step must grow."""
-        _, dlon_south, _, _ = sp.grid_dims(77.0, 8.0, 78.0, 9.0, 224, 10)
-        _, dlon_north, _, _ = sp.grid_dims(77.0, 34.0, 78.0, 35.0, 224, 10)
-        self.assertGreater(dlon_north, dlon_south)
+    def test_grid_counts_whole_patches(self):
+        rows, cols = sp.grid_dims(0, 0, 224 * 10 * 3, 224 * 10 * 2)
+        self.assertEqual((rows, cols), (2, 3))
+
+    def test_partial_patch_is_not_counted(self):
+        side = 224 * 10
+        rows, cols = sp.grid_dims(0, 0, side * 2 + 1, side + side // 2)
+        self.assertEqual((rows, cols), (1, 2))
+
+    def test_no_latitude_term_remains(self):
+        """A metric grid must give the same answer wherever it sits."""
+        side = 224 * 10
+        south = sp.grid_dims(0, 0, side * 4, side * 4)
+        north = sp.grid_dims(500_000, 3_700_000,
+                             500_000 + side * 4, 3_700_000 + side * 4)
+        self.assertEqual(south, north)
 
     def test_coarser_scale_needs_fewer_patches(self):
-        _, _, r10, c10 = sp.grid_dims(77.0, 23.0, 84.0, 30.0, 224, 10)
-        _, _, r20, c20 = sp.grid_dims(77.0, 23.0, 84.0, 30.0, 224, 20)
-        self.assertAlmostEqual(r10 / r20, 2.0, delta=0.05)
-        self.assertAlmostEqual(c10 / c20, 2.0, delta=0.05)
+        side = 224 * 10 * 4
+        r10, c10 = sp.grid_dims(0, 0, side, side, 224, 10)
+        r20, c20 = sp.grid_dims(0, 0, side, side, 224, 20)
+        self.assertEqual((r10, c10), (4, 4))
+        self.assertEqual((r20, c20), (2, 2))
 
     def test_block_request_stays_under_the_gee_limit(self):
         """GEE rejects a getDownloadURL response over 48 MiB (50,331,648 bytes).
@@ -132,6 +145,61 @@ class GridTests(unittest.TestCase):
     def test_validity_ignores_the_angle_band(self):
         src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
         self.assertIn("image.select(SAR_POLARISATIONS).mask()", src)
+
+
+class ValidityThresholdTests(unittest.TestCase):
+    def test_threshold_leaves_little_room_for_invented_pixels(self):
+        """No-data is filled with the clamp, a guess either way. At 0.70 almost a
+        third of a patch fed to the model could be invented."""
+        self.assertGreaterEqual(sp.SAR_KEEP_VALID, 0.9)
+        self.assertLessEqual(sp.SAR_KEEP_VALID, 1.0)
+
+
+class ProjectionTests(unittest.TestCase):
+    """mosaic() drops the source projection: it reports EPSG:4326 with a 1-degree
+    transform, so getDownloadURL(scale=10) lays a grid square in DEGREES. At
+    Bihar's latitude that is 9.93 m north-south and 9.02 m east-west -- 89.6 m2
+    per pixel against the 100 assumed, an 11% area error growing with latitude --
+    and the native UTM imagery is resampled onto that skewed grid before either
+    the speckle filter or the model sees it."""
+
+    def test_utm_zone_from_longitude(self):
+        cases = {77.0: 43, 84.5: 45, 92.9: 46, 71.35: 42}
+        for lon, zone in cases.items():
+            class FakeRegion:
+                def centroid(self, _):
+                    return self
+
+                def coordinates(self):
+                    return self
+
+                def getInfo(self, _lon=lon):
+                    return [_lon, 25.0]
+            self.assertEqual(sp.utm_crs(FakeRegion()), f"EPSG:326{zone:02d}")
+
+    def test_southern_hemisphere_uses_327xx(self):
+        class FakeRegion:
+            def centroid(self, _):
+                return self
+
+            def coordinates(self):
+                return self
+
+            def getInfo(self):
+                return [77.0, -25.0]
+        self.assertTrue(sp.utm_crs(FakeRegion()).startswith("EPSG:327"))
+
+    def test_download_pins_the_crs(self):
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertIn("params['crs'] = crs", src)
+
+    def test_filter_runs_on_the_pinned_grid(self):
+        """reduceNeighborhood works in the image's projection, so on a mosaic's
+        default 1-degree grid a 3x3 window is not 3x3 native pixels."""
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        i_proj = src.index("setDefaultProjection")
+        i_lee = src.index("sar = lee_filter(sar)")
+        self.assertLess(i_proj, i_lee)
 
 
 class OrbitSourceTests(unittest.TestCase):
