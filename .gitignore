@@ -31,3 +31,8 @@ data/intermediate/article_retrieval_qc_by_event.csv
 data/intermediate/article_retrieval_qc_by_year.csv
 data/intermediate/article_retrieval_unresolved.csv.gz
 data/results/event_articles.csv.gz
+
+# District artifacts are isolated; raw Census is a required external input.
+data/cache/district/
+data/intermediate/district_gdelt.articles.jsonl.gz
+data/intermediate/district_gdelt.manifest.json
