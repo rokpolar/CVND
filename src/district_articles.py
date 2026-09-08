@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """Collect and count GDELT articles for the CVND district primary unit.
 
-This module intentionally sits beside the legacy state collector.  The state
-collector has a wider, inclusive compatibility window; district analysis has
-one fixed window (onset <= publication < onset + 14 days) and requires an
+District analysis has one fixed window (onset <= publication < onset + 14 days)
+and requires an
 explicit district location in the GKG location block or, when requested, the
 article title.  A state match by itself can never create a district article.
 
 The module also contains the small deterministic heuristic export used by the
-district primary analysis.  It reuses ``classify_event_articles``' keyword
-lexicon and emits one row for every registry row, including zero and missing
-observations.
+district primary analysis.  It uses the district-local keyword lexicon and
+emits one row for every registry row, including zero and missing observations.
 """
 
 from __future__ import annotations
@@ -33,7 +31,7 @@ from typing import Any, Iterable, Iterator, Mapping, Sequence
 import pandas as pd
 
 from cvnd_layout import ROOT, data_path
-from collect_gdelt import (
+from gdelt_backend import (
     GKG_TABLE,
     INDIA_MEDIA_LANGUAGES,
     STRICT_FLOOD_THEMES,
@@ -45,6 +43,7 @@ from collect_gdelt import (
     _sql_string,
     coalesce_query_ranges,
 )
+from district_heuristics import classify_heuristic
 from district_keys import is_missing_name, make_event_district_id, normalize_name
 
 
@@ -664,7 +663,6 @@ def _load_article_database_bodies(path: Path | None) -> dict[str, tuple[str, str
 
 
 def _heuristic_for_article(row: Mapping[str, Any], bodies: Mapping[str, tuple[str, str, str | None]]) -> str:
-    from classify_event_articles import classify_heuristic
     url = clean_scalar(row.get("url"))
     body_record = bodies.get(url)
     if body_record is None:
@@ -807,8 +805,8 @@ def write_district_counts(counts: pd.DataFrame, output: Path) -> None:
         raise
 
 
-# Short names make the district entry point easy to exercise beside the legacy
-# collect_gdelt.prepare_event_windows/build_query API.
+# Short names keep the district entry point easy to exercise beside the backend
+# SQL helper API.
 prepare_event_windows = prepare_district_windows
 build_query = build_district_query
 
@@ -887,7 +885,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         raise FileExistsError(f"SQL output exists: {args.sql_output}; pass --overwrite")
     _atomic_write(args.sql_output, sql)
     if args.estimate:
-        from collect_gdelt import estimate_query
+        from gdelt_backend import estimate_query
         processed, project = estimate_query(sql, args.billing_project)
         print(f'District BigQuery dry run: {processed:,} bytes ({processed / 1024**4:.3f} TiB), project={project}')
         if processed > int(args.maximum_tib_billed * 1024**4):

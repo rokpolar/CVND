@@ -14,7 +14,7 @@ Missing flood measurement is NA. An observed zero can be retained if the AOI, va
 
 ## Article assignment
 
-Use a fixed half-open fourteen-day window in UTC and no anticipation period. Structured location evidence must explicitly identify the district and disambiguate the state. Optional title evidence must explicitly mention the district and state and is recorded. State-only mentions are excluded. Match multiple districts only when each has explicit evidence. Deduplicate normalized URL/state/district and select nearest onset, with deterministic ties. Classification cannot re-expand a URL into every overlapping state event, unlike the legacy classifier.
+Use a fixed half-open fourteen-day window in UTC and no anticipation period. Structured location evidence must explicitly identify the district and disambiguate the state. Optional title evidence must explicitly mention the district and state and is recorded. State-only mentions are excluded. Match multiple districts only when each has explicit evidence. Deduplicate normalized URL/state/district and select nearest onset, with deterministic ties. Classification remains attached to the district observation and cannot re-expand a URL into overlapping parent events.
 
 The primary relevance decision is the existing multilingual flood-keyword heuristic on successfully retrieved text. It does not prove event-specific semantic relevance, and event onset proximity is a deterministic assignment rule rather than truth. Future human validation should estimate errors by district, language, time and urbanization before strong scientific conclusions.
 

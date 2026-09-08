@@ -158,7 +158,7 @@ def main():
         for r in ta.values()
     )
     if district_mode:
-        # A parent event cache is a state-level artifact. Never union it into a
+        # A parent-event cache is not a district artifact. Never union it into a
         # district run where it could be mistaken for one district's score.
         district_keys = set(ta)
         npz = {key: path for key, path in npz.items() if key in district_keys}

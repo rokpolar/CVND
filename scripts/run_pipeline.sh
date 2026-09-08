@@ -53,7 +53,7 @@ fi
 run src/merge_results.py
 run src/build_flood_area_table.py
 if [[ "$SKIP_ARTICLES" != 1 ]]; then
-  run src/collect_gdelt.py --spatial-unit district --execute --overwrite
+  run src/district_articles.py --execute --overwrite
   article_input="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_gdelt_articles'))")"
   article_database="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_article_database'))")"
   run src/download_articles.py "$article_input" --output "$article_database"
