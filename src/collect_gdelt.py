@@ -673,6 +673,16 @@ def _csv_values(values: str | None) -> tuple[str, ...]:
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--spatial-unit",
+        choices=("state", "district"),
+        default="state",
+        help=(
+            "Collection unit. 'state' preserves the legacy collector; "
+            "'district' dispatches to src/district_articles.py with the "
+            "fixed 14-day district-primary contract."
+        ),
+    )
     parser.add_argument("--events", type=Path, default=data_path("events"))
     parser.add_argument("--sql-output", type=Path, default=data_path("gdelt_sql"))
     parser.add_argument("--output", type=Path, default=data_path("gdelt_bq"))
@@ -725,7 +735,26 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: Iterable[str] | None = None) -> int:
-    args = parse_args(argv)
+    argv_list = list(argv) if argv is not None else sys.argv[1:]
+    args = parse_args(argv_list)
+    if args.spatial_unit == "district":
+        # Keep one discoverable CLI while leaving all state defaults and SQL
+        # semantics intact.  The district module has its own output contract.
+        from district_articles import main as district_main
+
+        forwarded: list[str] = []
+        skip_value = False
+        for value in argv_list:
+            if skip_value:
+                skip_value = False
+                continue
+            if value == "--spatial-unit":
+                skip_value = True
+                continue
+            if value.startswith("--spatial-unit="):
+                continue
+            forwarded.append(str(value))
+        return district_main(forwarded)
     try:
         events = pd.read_csv(args.events)
         if args.event_id:
