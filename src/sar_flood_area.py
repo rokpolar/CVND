@@ -61,7 +61,12 @@ PROGRESS_DIR = 'sar_progress'
 #      is stored as two scenes, so v5 picked two frames of the same pass as the
 #      two pre-event timesteps. Also refuses to record an event as finished
 #      unless every block in its AOI was classified.
-METHOD_VERSION = 6
+#   7: blocks assigned per relative orbit. One orbit covers at most 66% of
+#      Bihar and the orbit passing first after onset covered 15%, so v6 measured
+#      a slice and reported it as the state. Acquisitions are also grouped by
+#      time gap rather than calendar date (two Bihar frames land at 00:03 and
+#      00:04 UTC, so a slightly earlier pass would split across midnight).
+METHOD_VERSION = 7
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -212,19 +217,21 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
 
     print(f"\n[{event_id}] {row['state']} — {row['start_date']}")
     region = sat.get_region(row)
-    images, meta = sp.pick_triplet(region, row['start_date'])
-    if images is None:
-        print(f"  skip: {meta}")
+    sources, err = sp.orbit_sources(region, row['start_date'])
+    if err:
+        print(f"  skip: {err}")
         return {'event_id': event_id, 'state': row['state'],
-                'status': f'SKIPPED: {meta}', 'flood_km2': None,
+                'status': f'SKIPPED: {err}', 'flood_km2': None,
                 'is_control': control_offset is not None,
                 'control_offset_days': control_offset,
                 'method_version': METHOD_VERSION}
-    print(f"  orbit {meta['relative_orbit']} {meta['orbit_pass']} | "
-          f"pre {meta['pre_1_date']}, {meta['pre_2_date']} -> "
-          f"post {meta['post_date']}")
+    for s in sources:
+        m = s['meta']
+        print(f"  orbit {s['orbit']:>3} {s['pass']:<10} {s['coverage_km2']:>8,.0f} km2 | "
+              f"pre {m['pre_1_date']}, {m['pre_2_date']} -> post {m['post_date']}")
 
-    images = [im.clip(region) for im in images]
+    for s in sources:
+        s['images'] = [im.clip(region) for im in s['images']]
     state = load_progress(state_dir, event_id)
     done = set(state['done_blocks'])
     counts = dict(state['counts'])
@@ -237,7 +244,7 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
     started = time.time()
     total_blocks = state.get('total_blocks')
     for block_id, patches, coords, valid in sp.iter_patch_blocks(
-            images, region, done, flat=sp.terrain_mask(), speckle=speckle):
+            sources, region, done, flat=sp.terrain_mask(), speckle=speckle):
         if block_id == '__total__':
             total_blocks = patches
             state['total_blocks'] = total_blocks
@@ -310,7 +317,16 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
         'speckle_filter': 'lee3x3' if speckle else 'none',
         'method_version': METHOD_VERSION,
         'status': 'OK',
-        **meta,
+        # One AOI can need several orbits; record which, and the dates of the
+        # best-covering one, so a result can be traced back to its imagery.
+        'orbits': '|'.join(str(s['orbit']) for s in sources),
+        'n_orbits': len(sources),
+        # Blocks come from different orbits, so post-event imagery is not one
+        # date. Record the span: a wide one means parts of the AOI were seen days
+        # apart, which matters while water is receding.
+        'post_date_first': min(s['meta']['post_date'] for s in sources),
+        'post_date_last': max(s['meta']['post_date'] for s in sources),
+        **sources[0]['meta'],
     }
 
 

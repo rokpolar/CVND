@@ -111,27 +111,69 @@ class GridTests(unittest.TestCase):
         self.assertLess(1.0 / sp.SAR_SCALE_FACTOR, 0.0215 / 100)
 
 
-class AppendTests(unittest.TestCase):
-    def test_append_grows_both_datasets(self):
-        import numpy as np
-        import tempfile
-        import h5py
+class OrbitSourceTests(unittest.TestCase):
+    """One relative orbit does not cover a large AOI: over Bihar the best reaches
+    66% and the orbit that passes first after onset reaches 15%. Blocks are
+    therefore assigned per orbit, best-covering first, so each is measured once
+    and from one viewing geometry."""
 
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "t.h5"
-            P, C = 8, sp.SAR_CHANNELS
-            with h5py.File(path, "w") as f:
-                f.create_dataset("patches", shape=(0, C, P, P),
-                                 maxshape=(None, C, P, P), dtype="float32")
-                f.create_dataset("coords", shape=(0, 4),
-                                 maxshape=(None, 4), dtype="float64")
-                sp._append(f, np.zeros((3, C, P, P), "float32"),
-                           np.zeros((3, 4), "float64"))
-                sp._append(f, np.ones((2, C, P, P), "float32"),
-                           np.ones((2, 4), "float64"))
-                self.assertEqual(f["patches"].shape[0], 5)
-                self.assertEqual(f["coords"].shape[0], 5)
-                self.assertEqual(f["patches"][4, 0, 0, 0], 1.0)
+    def test_iter_takes_sources_not_a_single_triplet(self):
+        import inspect
+        params = list(inspect.signature(sp.iter_patch_blocks).parameters)
+        self.assertEqual(params[0], "sources")
+
+    def test_single_triplet_entry_point_is_gone(self):
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertNotIn("def pick_triplet(", src)
+        self.assertIn("def orbit_sources(", src)
+
+    def test_acquisitions_group_by_time_gap(self):
+        """Two Bihar frames land at 00:03 and 00:04 UTC. Grouping by calendar
+        date would split a pass twenty minutes earlier across midnight."""
+        import pandas as pd
+
+        class FakeCol:
+            def __init__(self, stamps):
+                self._s = stamps
+
+            def aggregate_array(self, _):
+                return self
+
+            def getInfo(self):
+                return self._s
+
+        base = int(pd.Timestamp("2024-09-22T00:03:00Z").value // 10 ** 6)
+        same_pass = [base, base + 60_000]                 # one minute apart
+        self.assertEqual(len(sp.acquisitions(FakeCol(same_pass))), 1)
+
+        twelve_days = [base, base + 12 * 86_400_000]
+        self.assertEqual(len(sp.acquisitions(FakeCol(twelve_days))), 2)
+
+    def test_acquisition_spanning_midnight_stays_one(self):
+        import pandas as pd
+
+        class FakeCol:
+            def __init__(self, stamps):
+                self._s = stamps
+
+            def aggregate_array(self, _):
+                return self
+
+            def getInfo(self):
+                return self._s
+
+        before = int(pd.Timestamp("2024-09-21T23:59:00Z").value // 10 ** 6)
+        after = int(pd.Timestamp("2024-09-22T00:01:00Z").value // 10 ** 6)
+        self.assertEqual(len(sp.acquisitions(FakeCol([before, after]))), 1)
+
+
+class NoStorageTests(unittest.TestCase):
+    def test_patch_storage_path_is_gone(self):
+        """Keeping patches means ~3.9 TB, and two code paths that must tile
+        identically drift apart. Only the streaming consumer remains."""
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        for gone in ("def prepare_event(", "def _tile_region(", "h5py"):
+            self.assertNotIn(gone, src)
 
 
 if __name__ == "__main__":
