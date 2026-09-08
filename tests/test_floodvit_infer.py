@@ -51,6 +51,16 @@ class PreprocessTests(unittest.TestCase):
         self.assertAlmostEqual(float(out[0, 0].min()),
                                (0.0 - fi.MEAN[0]) / fi.STD[0], places=4)
 
+    def test_no_data_must_not_read_as_water(self):
+        """SAR no-data is missing signal, not a dark surface. Feeding it as 0
+        makes the darkest possible pixel -- indistinguishable from water -- so it
+        arrives as NaN and is filled with the clamp, matching Kuro Siwo."""
+        x = self._patch()
+        x[0, :, :4, :4] = np.nan
+        out = fi.preprocess(x)
+        water_like = (0.0 - fi.MEAN[0]) / fi.STD[0]
+        self.assertGreater(float(out[0, 0, 0, 0]), water_like)
+
     def test_nan_becomes_clamp_not_zero(self):
         """Dataset.concat does nan_to_num(image, CLAMP): NaN means 'no return',
         which is bright, not dark. Mapping it to 0 would look like water."""

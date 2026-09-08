@@ -114,7 +114,13 @@ SPECKLE_ENL = 4.4
 # std, below anything the model can notice. Same trick the optical pipeline
 # already used (SITS_NORM). It also keeps the request well inside GEE's 48 MiB
 # cap: the Lee filter's float64 output reached 72 MB and every block failed.
-SAR_SCALE_FACTOR = 10000
+# The model clamps at 0.15 before normalising, so nothing above that survives
+# anyway -- clamping here removes an overflow instead of losing information.
+# Sigma0 reaches 225 over Bihar's built-up areas; at 1/10000 that wrapped past
+# int16 and came back NEGATIVE, turning the brightest targets in the scene into
+# the darkest, which reads as water. Clamped, the range fits with room to spare.
+SAR_CLAMP = 0.15
+SAR_SCALE_FACTOR = 200000        # 0.15 * 200000 = 30000 < 32767
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Acquisition selection
@@ -257,12 +263,16 @@ def _download_block(image, region_block, extra=None, speckle=True):
     Order-preserving. `extra` carries the terrain mask on the first request only,
     so the static mask costs no separate round trip.
     """
-    valid = image.mask().reduce(ee.Reducer.min()).rename('valid').toByte()
+    # Validity from the polarisations actually used. S1_GRD_FLOAT also carries an
+    # `angle` band whose coverage differs, and including it mislabels good pixels.
+    valid = (image.select(SAR_POLARISATIONS).mask()
+             .reduce(ee.Reducer.min()).rename('valid').toByte())
     sar = image.select(SAR_POLARISATIONS).toFloat()
     if speckle:
-        sar = lee_filter(sar)
-    # int16 transfer encoding; decoded on arrival. See SAR_SCALE_FACTOR.
-    stack = sar.multiply(SAR_SCALE_FACTOR).toInt16().addBands(valid)
+        sar = lee_filter(sar)          # filter the real values, then clamp
+    # int16 transfer encoding; decoded on arrival. See SAR_CLAMP/SAR_SCALE_FACTOR.
+    stack = (sar.clamp(0.0, SAR_CLAMP)
+             .multiply(SAR_SCALE_FACTOR).toInt16().addBands(valid))
     if extra is not None:
         stack = stack.addBands(extra.toByte())
     url = stack.getDownloadURL({'region': region_block,
@@ -407,10 +417,21 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
                 if flat_band is not None:              # then narrow to flat ground
                     vmask = vmask & (arrs[0]['flat'][rs:rs + P, cs:cs + P] > 0)
                 # (post VV,VH, pre1 VV,VH, pre2 VV,VH) -- the model's 6 channels
-                # back to linear sigma0 from the int16 transfer encoding
-                chans = [a[b][rs:rs + P, cs:cs + P].astype(np.float32)
-                         / SAR_SCALE_FACTOR
-                         for a in arrs for b in SAR_POLARISATIONS]
+                # Back to linear sigma0 from the int16 transfer encoding, with
+                # each scene's own no-data set to NaN. Masked pixels arrive as
+                # the int16 sentinel, which decodes to -3.2768 and then clips to
+                # 0 -- the darkest possible value, which is exactly what water
+                # looks like to the model. Kuro Siwo fills no-data with the clamp
+                # instead (nan_to_num(image, CLAMP)), and preprocess() does the
+                # same with NaN, so hand it NaN rather than a fake dark pixel.
+                chans = []
+                for a in arrs:
+                    bad = a['valid'][rs:rs + P, cs:cs + P] == 0
+                    for b in SAR_POLARISATIONS:
+                        ch = a[b][rs:rs + P, cs:cs + P].astype(np.float32)
+                        ch /= SAR_SCALE_FACTOR
+                        ch[bad] = np.nan
+                        chans.append(ch)
                 batch.append(np.stack(chans))
                 valids.append(vmask)
                 coords.append([(bi + r) * P, (bj + c) * P,
