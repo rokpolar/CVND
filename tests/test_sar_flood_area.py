@@ -250,6 +250,27 @@ class ResultTests(unittest.TestCase):
             self.assertEqual(sfa.finished_events(tmp), {"E002"})
             self.assertTrue(sfa.progress_path(tmp, "E002").exists() is False)
 
+    def test_drop_result_keeps_progress(self):
+        """--redo: the blocks are still good, only the result is wrong. Deleting
+        an hour of classified blocks to rewrite one row is pure loss."""
+        with tempfile.TemporaryDirectory() as tmp:
+            sfa.save_progress(tmp, "E203", sfa._fresh_state())
+            sfa.append_result(tmp, self._row("E203", 5.0))
+            self.assertTrue(sfa.drop_result(tmp, "E203"))
+            self.assertTrue(sfa.progress_path(tmp, "E203").exists())
+            self.assertEqual(sfa.finished_events(tmp), set())
+
+    def test_drop_result_reports_when_there_was_none(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertFalse(sfa.drop_result(tmp, "E999"))
+
+    def test_reset_drops_progress_too(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            sfa.save_progress(tmp, "E203", sfa._fresh_state())
+            sfa.append_result(tmp, self._row("E203", 5.0))
+            sfa.reset_event(tmp, "E203")
+            self.assertFalse(sfa.progress_path(tmp, "E203").exists())
+
     def test_reset_on_unknown_event_is_harmless(self):
         with tempfile.TemporaryDirectory() as tmp:
             sfa.append_result(tmp, self._row("E002", 2.0))
