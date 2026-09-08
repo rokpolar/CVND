@@ -95,11 +95,24 @@ def load_model(checkpoint, kuro_siwo_repo, device='cuda'):
     state_dict, so Kuro Siwo's package must be importable for the classes to
     resolve -- hence kuro_siwo_repo on sys.path.
     """
-    import torch
-
+    # Paths are checked before importing torch, so the failure names the missing
+    # clone rather than dying on an unrelated import.
     repo = os.path.abspath(kuro_siwo_repo)
+    if not os.path.isdir(os.path.join(repo, 'models')):
+        raise FileNotFoundError(
+            f"Kuro Siwo repo not found at {repo} (no models/ directory).\n"
+            "The checkpoint is a pickled nn.Module, so its classes must be "
+            "importable; without the repo torch raises a bare "
+            "'No module named models'.\n"
+            "Colab wipes /content on every new session -- re-clone with:\n"
+            "  git clone -q https://github.com/Orion-AI-Lab/KuroSiwo.git "
+            f"{repo}")
+    if not os.path.exists(checkpoint):
+        raise FileNotFoundError(f"checkpoint not found: {checkpoint}")
     if repo not in sys.path:
         sys.path.insert(0, repo)
+
+    import torch
 
     model = torch.load(checkpoint, map_location=device, weights_only=False)
     cfg = getattr(model, 'configs', {}) or {}
