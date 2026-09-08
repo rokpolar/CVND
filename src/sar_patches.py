@@ -28,22 +28,16 @@ Values are LINEAR sigma0, not dB: Kuro Siwo's SNAP graph sets
 clamp 0.15) only makes sense on a linear scale. So this module pulls
 COPERNICUS/S1_GRD_FLOAT, which is already linear, rather than S1_GRD (dB).
 
-Two deliberate differences from Kuro Siwo's own preprocessing
--------------------------------------------------------------
-1. No speckle filter. Their SNAP graph applies Lee Sigma 3x3; Earth Engine has
-   no Lee Sigma, and substituting a different filter would shift the value
-   distribution the released normalisation constants were fitted on. Left off so
-   the difference is a known, testable one rather than a hidden approximation.
-2. GEE's S1_GRD_FLOAT is already orbit-corrected, thermal-noise-removed,
-   border-noise-removed, calibrated and terrain-corrected against SRTM -- the
-   same chain minus the filter.
+Difference from Kuro Siwo's own preprocessing
+---------------------------------------------
+Their SNAP graph applies Lee Sigma 3x3; Earth Engine has no Lee Sigma, so
+lee_filter() below is the classic Lee filter it derives from. Everything else
+matches: GEE's S1_GRD_FLOAT is already orbit-corrected, thermal-noise-removed,
+border-noise-removed, calibrated and terrain-corrected against SRTM.
 
-Both belong in the paper's limitations until measured.
-
-Output: one HDF5 per event under data/cache/sar_patches/<event_id>.h5
-    patches (N, 6, 224, 224) float32   post VV,VH then pre1 VV,VH then pre2 VV,VH
-    coords  (N, 4) float64             row, col, lat, lon
-Run: python src/sar_patches.py --events E001 E002
+This module only acquires and tiles. It does not store patches: at whole-state
+AOIs that is ~3.9 TB, and the areas are what the study needs. sar_flood_area.py
+consumes iter_patch_blocks(), classifies each block and discards it.
 """
 
 from __future__ import annotations
@@ -55,7 +49,6 @@ import os
 import sys
 import time
 
-import h5py
 import numpy as np
 import pandas as pd
 import requests
@@ -66,7 +59,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import ee  # noqa: E402
 
-from cvnd_layout import data_path  # noqa: E402
 
 
 def _sat():
@@ -124,12 +116,6 @@ SPECKLE_ENL = 4.4
 # cap: the Lee filter's float64 output reached 72 MB and every block failed.
 SAR_SCALE_FACTOR = 10000
 
-OUTPUT_DIR = str(data_path("sar_patches"))
-INDEX_CSV = str(data_path("sar_patches_index"))
-CHECKPOINT = str(data_path("sar_checkpoint"))
-EVENTS_CSV = str(data_path("events"))
-
-
 # ══════════════════════════════════════════════════════════════════════════════
 # Acquisition selection
 # ══════════════════════════════════════════════════════════════════════════════
@@ -143,108 +129,108 @@ def sar_collection(region):
             .filterBounds(region))
 
 
-def acquisition_dates(col):
-    """Distinct acquisition dates in a collection, oldest first.
+def acquisitions(col, gap_hours=2):
+    """Distinct acquisitions, oldest first, as (label, first_ms, last_ms).
 
-    Sentinel-1 stores one scene per frame, and a 250 km swath does not cover a
-    large state: Bihar (94,466 km2) is only 7% inside a single frame, and one
-    pass over it is recorded as two scenes seconds apart. Treating scenes as
-    timesteps therefore picked two frames of the SAME pass as pre_event_1 and
-    pre_event_2 -- no time difference at all, and 93% of the AOI missing. Dates
-    are the unit of time here, not scenes.
+    Grouped by time gap, not by calendar date. Sentinel-1 records one scene per
+    frame and a 250 km swath does not cover a large state, so a single pass over
+    Bihar arrives as two scenes seconds apart -- treating scenes as timesteps
+    once picked two frames of the SAME pass as pre_event_1 and pre_event_2, with
+    no time difference between them at all. Calendar dates are not safe either:
+    those two Bihar frames land at 00:03 and 00:04 UTC, so a pass twenty minutes
+    earlier would straddle midnight and split into two "dates".
     """
-    stamps = col.aggregate_array('system:time_start').getInfo() or []
-    return sorted({pd.to_datetime(ms, unit='ms').strftime('%Y-%m-%d')
-                   for ms in stamps})
+    stamps = sorted(col.aggregate_array('system:time_start').getInfo() or [])
+    groups = []
+    for ms in stamps:
+        if groups and ms - groups[-1][-1] <= gap_hours * 3600_000:
+            groups[-1].append(ms)
+        else:
+            groups.append([ms])
+    return [(pd.to_datetime(g[0], unit='ms').strftime('%Y-%m-%d'), g[0], g[-1])
+            for g in groups]
 
 
-def mosaic_on(col, date_str):
-    """All frames acquired on one date, joined into a single image."""
-    day = ee.Date(date_str)
-    return col.filterDate(day, day.advance(1, 'day')).mosaic()
+def mosaic_acquisition(col, acq):
+    """Every frame of one acquisition, joined into a single image."""
+    _, first_ms, last_ms = acq
+    return col.filterDate(ee.Date(first_ms - 1000),
+                          ee.Date(last_ms + 1000)).mosaic()
 
 
-def pick_triplet(region, start_date):
-    """Choose (post_event, pre_event_1, pre_event_2) from ONE relative orbit.
+def orbit_sources(region, start_date):
+    """One before/after triplet per relative orbit that can supply three passes.
 
-    SAR backscatter depends on look direction and incidence angle, so comparing
-    scenes from different relative orbits registers geometry as change. Kuro Siwo
-    builds its triplets from a single track for this reason; anything else feeds
-    the model a difference it was never trained to ignore.
+    No single orbit covers a large AOI. Over Bihar the best reaches 66% of the
+    state and the orbit that happens to pass first after onset reaches 15%, so
+    measuring from one orbit measures a slice and calls it the state. Backscatter
+    depends on look direction, so orbits cannot be merged into one timestep
+    either -- each keeps its own triplet, and blocks are assigned to whichever
+    orbit sees them.
 
-    Each timestep is a mosaic of every frame from that date, so the AOI is
-    covered whatever its size, and the three timesteps are three distinct dates.
-
-    Returns (images, meta) ordered post, pre_event_1, pre_event_2 to match the
-    trainer's channel layout, or (None, reason) when the track is too sparse.
+    Returns (sources, error). Sources are ordered by post-event date, earliest
+    first; each is {'orbit', 'pass', 'images', 'footprint', 'coverage_km2',
+    'meta'} with images ordered post, pre_event_1, pre_event_2.
     """
     col = sar_collection(region)
-    post_col = (col.filterDate(ee.Date(start_date),
-                               ee.Date(start_date).advance(POST_WINDOW_DAYS, 'day'))
-                .sort('system:time_start'))
-    if post_col.size().getInfo() == 0:
-        return None, 'NO_POST_SCENE'
+    window = col.filterDate(ee.Date(start_date),
+                            ee.Date(start_date).advance(POST_WINDOW_DAYS, 'day'))
+    orbits = sorted(set(window.aggregate_array('relativeOrbitNumber_start')
+                        .getInfo() or []))
+    if not orbits:
+        return [], 'NO_POST_SCENE'
 
-    info = ee.Image(post_col.first()).getInfo()['properties']
-    orbit = info['relativeOrbitNumber_start']
-    passdir = info['orbitProperties_pass']
+    sources = []
+    for orbit in orbits:
+        track = col.filter(ee.Filter.eq('relativeOrbitNumber_start', orbit))
+        post_acqs = acquisitions(
+            track.filterDate(ee.Date(start_date),
+                             ee.Date(start_date).advance(POST_WINDOW_DAYS, 'day')))
+        pre_track = track.filterDate(
+            ee.Date(start_date).advance(-PRE_SEARCH_DAYS, 'day'),
+            ee.Date(start_date))
+        pre_acqs = acquisitions(pre_track)
+        if not post_acqs or len(pre_acqs) < SAR_N_PRE:
+            continue
 
-    track = (col
-             .filter(ee.Filter.eq('relativeOrbitNumber_start', orbit))
-             .filter(ee.Filter.eq('orbitProperties_pass', passdir)))
+        post, pre_1, pre_2 = post_acqs[0], pre_acqs[-SAR_N_PRE], pre_acqs[-1]
+        # The post pass's own footprint bounds what this orbit can measure.
+        foot = (track.filterDate(ee.Date(post[1] - 1000), ee.Date(post[2] + 1000))
+                .geometry().dissolve(1000).intersection(region, 1000))
+        sources.append({
+            'orbit': int(orbit),
+            'pass': ee.Image(track.first()).get('orbitProperties_pass').getInfo(),
+            'images': [mosaic_acquisition(track, post),
+                       mosaic_acquisition(pre_track, pre_1),
+                       mosaic_acquisition(pre_track, pre_2)],
+            'footprint': foot,
+            'coverage_km2': foot.area(1000).getInfo() / 1e6,
+            'meta': {'pre_1_date': pre_1[0], 'pre_2_date': pre_2[0],
+                     'post_date': post[0],
+                     'post_lag_days': (pd.Timestamp(post[0])
+                                       - pd.Timestamp(pre_2[0])).days},
+        })
 
-    post_dates = acquisition_dates(
-        track.filterDate(ee.Date(start_date),
-                         ee.Date(start_date).advance(POST_WINDOW_DAYS, 'day')))
-    if not post_dates:
-        return None, f'NO_POST_DATE_ON_ORBIT_{orbit}'
-    post_date = post_dates[0]                      # first pass after onset
-
-    pre_track = track.filterDate(
-        ee.Date(start_date).advance(-PRE_SEARCH_DAYS, 'day'), ee.Date(start_date))
-    pre_dates = acquisition_dates(pre_track)
-    if len(pre_dates) < SAR_N_PRE:
-        return None, (f'ONLY_{len(pre_dates)}_PRE_DATES_ON_ORBIT_{orbit}')
-    pre_1, pre_2 = pre_dates[-SAR_N_PRE:]          # two most recent, oldest first
-
-    images = [mosaic_on(track, post_date),
-              mosaic_on(pre_track, pre_1),
-              mosaic_on(pre_track, pre_2)]
-    meta = {
-        'relative_orbit': int(orbit),
-        'orbit_pass': passdir,
-        'pre_1_date': pre_1,
-        'pre_2_date': pre_2,
-        'post_date': post_date,
-        'post_lag_days': (pd.Timestamp(post_date) - pd.Timestamp(pre_2)).days,
-        'n_pre_dates': len(pre_dates),
-    }
-    return images, meta
-
-
-def _iso(ms):
-    return pd.to_datetime(ms, unit='ms').strftime('%Y-%m-%d')
+    if not sources:
+        return [], f'NO_USABLE_ORBIT (checked {len(orbits)})'
+    # Earliest post-event pass first, coverage only as a tie-break. Sorting by
+    # coverage alone hands most of Bihar to orbit 85, whose post pass is ten days
+    # after onset -- by then the water has moved. Orbit 121 sees 59% of the state
+    # one day after onset, so timing has to lead.
+    sources.sort(key=lambda d: (d['meta']['post_date'], -d['coverage_km2']))
+    return sources, None
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Download
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _append(hdf, patches, coords):
-    """Grow the resizable datasets by one block's worth of patches."""
-    for name, val in (('patches', patches), ('coords', coords)):
-        ds = hdf[name]
-        n0 = ds.shape[0]
-        ds.resize(n0 + val.shape[0], axis=0)
-        ds[n0:] = val
-
-
 def lee_filter(img, window=SPECKLE_WINDOW, enl=SPECKLE_ENL):
     """Classic Lee speckle filter on linear-power SAR.
 
     Speckle is multiplicative, so the filter blends the local mean toward the raw
     pixel by how much of the local variance looks like real signal rather than
-    noise. Flat, uniform ground gets smoothed hard (b -> 0); edges and bright
+    noise. Flat, uniform ground is smoothed hard (b -> 0) while edges and bright
     targets keep their value (b -> 1), which is why a plain blur is not a
     substitute.
     """
@@ -308,7 +294,7 @@ def grid_dims(minx, miny, maxx, maxy, patch_px, scale_m):
     return dlat, dlon, int((maxy - miny) / dlat), int((maxx - minx) / dlon)
 
 
-def iter_patch_blocks(images, region, skip=frozenset(), flat=None, speckle=True):
+def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True):
     """Yield (block_id, patches, coords, valid) per downloadable block of the AOI.
 
     A generator so the same tiling and download logic serves both consumers: the
@@ -319,6 +305,10 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None, speckle=True)
 
     `speckle` applies the Lee filter to match Kuro Siwo's own preprocessing.
     Left switchable so its effect can be measured rather than assumed.
+
+    `sources` is the per-orbit list from orbit_sources(). Each block is served by
+    the best-covering orbit that sees it, so one AOI can span several orbits
+    without any block being measured twice or from mixed viewing geometry.
 
     `flat` is a terrain mask downloaded as an extra band, NOT applied to the
     imagery. Patches are kept on data coverage alone; the returned `valid` mask
@@ -361,11 +351,24 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None, speckle=True)
         fc = (flat.rename('f').unmask(0)
               .reduceRegions(fc, ee.Reducer.max(), 200)
               .filter(ee.Filter.gt('max', 0)))
-    inside = set(fc.aggregate_array('i').getInfo())
+
+    # Assign each block to the orbit that sees it, best-covering orbit first, so
+    # every block is measured from a single consistent viewing geometry and no
+    # block is measured twice where footprints overlap.
+    assigned, claimed = {}, set()
+    for si, src in enumerate(sources):
+        ids = set(fc.filterBounds(src['footprint']).aggregate_array('i').getInfo())
+        for i in ids - claimed:
+            assigned[i] = si
+        claimed |= ids
+    inside = set(assigned)
     todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks)
             if i in inside and i not in skip]
+    per_orbit = {src['orbit']: sum(1 for v in assigned.values() if v == si)
+                 for si, src in enumerate(sources)}
     print(f"    tiling: {npx_}x{npy_} patches @{SAR_SCALE_M}m, "
-          f"{len(inside)}/{len(all_blocks)} blocks in AOI, {len(todo)} to download")
+          f"{len(inside)} blocks assigned across {len(sources)} orbit(s) "
+          f"{per_orbit}, {len(todo)} to download")
 
     yield ('__total__', len(inside), len(todo), None)
 
@@ -375,6 +378,7 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None, speckle=True)
         lon0, lat_top = minx + bj * dlon, maxy - bi * dlat
         block = ee.Geometry.Rectangle([lon0, maxy - pi * dlat,
                                        minx + pj * dlon, lat_top])
+        images = sources[assigned[i]]['images']
         try:
             with ThreadPoolExecutor(max_workers=len(images)) as ex:
                 arrs = list(ex.map(
@@ -424,131 +428,3 @@ def iter_patch_blocks(images, region, skip=frozenset(), flat=None, speckle=True)
                    np.empty((0, 4), dtype='float64'),
                    np.empty((0, P, P), dtype=bool))
         bar.set_postfix(blk=i)
-
-
-def _tile_region(images, region, hdf, done_blocks, blocks_ckpt):
-    """Consume iter_patch_blocks, writing every kept patch to the open HDF5."""
-    failed = 0
-    total = 0
-    for block_id, patches, coords, _valid in iter_patch_blocks(
-            images, region, done_blocks, flat=terrain_mask(), speckle=True):
-        if block_id == '__total__':
-            total = patches
-            continue
-        if patches is None:                 # download failed -> retry next run
-            failed += 1
-            continue
-        if len(patches):
-            _append(hdf, patches, coords)
-        done_blocks.add(block_id)
-        _sat()._save_block_progress(blocks_ckpt, done_blocks, total, failed)
-    return hdf['patches'].shape[0], failed
-
-
-def prepare_event(row):
-    """Download one event's SAR patch stack. Returns (path, complete) or None."""
-    sat = _sat()
-    sat.ensure_gee() if hasattr(sat, 'ensure_gee') else None
-    event_id, state = row['event_id'], row['state']
-    print(f"\n  [SAR] [{event_id}] {state} — {row['start_date']}")
-
-    region = sat.get_region(row)
-    images, meta = pick_triplet(region, row['start_date'])
-    if images is None:
-        print(f"    -> skip: {meta}")
-        return None, meta
-    print(f"    orbit {meta['relative_orbit']} {meta['orbit_pass']} | "
-          f"pre {meta['pre_1_date']}, {meta['pre_2_date']} -> post {meta['post_date']} "
-          f"(+{meta['post_lag_days']}d)")
-
-    images = [im.clip(region) for im in images]
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    out_path = os.path.join(OUTPUT_DIR, f'{event_id}.h5')
-    blocks_ckpt = out_path + '.blocks.json'
-    P = SAR_PATCH_SIZE
-
-    done_blocks = set()
-    resume = os.path.exists(out_path) and os.path.exists(blocks_ckpt)
-    if resume:
-        done_blocks, prev_total = _sat()._load_block_progress(blocks_ckpt)
-        print(f"    resuming: {len(done_blocks)}"
-              f"{f'/{prev_total}' if prev_total else ''} blocks done")
-
-    with h5py.File(out_path, 'a' if resume else 'w') as f:
-        if not resume:
-            f.create_dataset('patches', shape=(0, SAR_CHANNELS, P, P),
-                             maxshape=(None, SAR_CHANNELS, P, P), dtype='float32',
-                             chunks=(1, SAR_CHANNELS, P, P))
-            f.create_dataset('coords', shape=(0, 4), maxshape=(None, 4), dtype='float64')
-            g = f.create_group('meta')
-            g.attrs['event_id'] = event_id
-            g.attrs['state'] = str(state)
-            g.attrs['start_date'] = row['start_date']
-            g.attrs['channels'] = 'post_VV,post_VH,pre1_VV,pre1_VH,pre2_VV,pre2_VH'
-            g.attrs['scale_m'] = SAR_SCALE_M
-            g.attrs['patch_size'] = P
-            g.attrs['scale'] = 'linear_sigma0'
-            g.attrs['speckle_filter'] = 'none'
-            for k, v in meta.items():
-                g.attrs[k] = v
-        n, failed = _tile_region(images, region, f, done_blocks, blocks_ckpt)
-
-    complete = failed == 0
-    if complete and os.path.exists(blocks_ckpt):
-        os.remove(blocks_ckpt)
-    print(f"    Saved: {out_path}  [{n} patches, {failed} blocks failed]")
-    return (out_path, complete), meta
-
-
-def main():
-    import argparse
-    p = argparse.ArgumentParser(description=__doc__,
-                                formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--events', nargs='*', default=None, help='only these event_ids')
-    p.add_argument('--checkpoint', default=None, help='checkpoint path (parallel runs)')
-    p.add_argument('--index', default=None, help='index CSV path (parallel runs)')
-    args = p.parse_args()
-
-    ckpt_path = args.checkpoint or CHECKPOINT
-    index_path = args.index or INDEX_CSV
-
-    events = pd.read_csv(EVENTS_CSV)
-    if args.events:
-        events = events[events['event_id'].isin(args.events)]
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    for target in (ckpt_path, index_path):
-        os.makedirs(os.path.dirname(target), exist_ok=True)
-
-    done = _sat().load_checkpoint(ckpt_path)
-    remaining = events[~events['event_id'].isin(set(done))]
-    print(f"Already done: {len(done)} | Remaining: {len(remaining)}")
-
-    for _, row in remaining.iterrows():
-        ev = row['event_id']
-        try:
-            res, meta = prepare_event(row)
-        except Exception as e:
-            print(f"  ERROR {ev}: {e}")
-            done[ev] = {'event_id': ev, 'h5_path': None, 'status': f'ERROR: {e}'}
-            _sat().save_checkpoint(done, ckpt_path)
-            continue
-        if res is None:
-            done[ev] = {'event_id': ev, 'h5_path': None, 'status': f'SKIPPED: {meta}'}
-            _sat().save_checkpoint(done, ckpt_path)
-            continue
-        path, complete = res
-        if not complete:
-            print(f"  {ev}: incomplete -> will retry on re-run")
-            continue
-        done[ev] = {'event_id': ev, 'h5_path': path, 'status': 'OK', **meta}
-        _sat().save_checkpoint(done, ckpt_path)
-
-    if done:
-        pd.DataFrame(list(done.values())).sort_values('event_id').to_csv(
-            index_path, index=False)
-        ok = sum(1 for v in done.values() if v.get('status') == 'OK')
-        print(f"\nComplete: {ok}/{len(events)}   index -> {index_path}")
-
-
-if __name__ == '__main__':
-    main()
