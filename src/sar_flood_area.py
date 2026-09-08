@@ -157,20 +157,34 @@ def stale_versions(state_dir):
             for v, g in old.groupby('method_version')}
 
 
-def reset_event(state_dir, event_id):
-    """Forget one event: drop its progress and its result row.
+def drop_result(state_dir, event_id):
+    """Remove only the result row, keeping the per-block progress.
 
-    Used by --force. Both have to go together -- leaving the result row would
-    mark the event finished again on the next run, and leaving the progress file
-    would resume on top of counts from the run being discarded.
+    For an event whose result is wrong but whose downloaded blocks are still
+    valid -- a run that reached 96% and died before writing, say. Deleting the
+    progress too would throw away an hour of classified blocks for nothing.
+    """
+    path = Path(state_dir) / RESULT_NAME
+    if not path.exists():
+        return False
+    df = pd.read_csv(path)
+    keep = df[df['event_id'].astype(str) != str(event_id)]
+    if len(keep) == len(df):
+        return False
+    keep.to_csv(path, index=False)
+    return True
+
+
+def reset_event(state_dir, event_id):
+    """Forget one event completely: progress and result row.
+
+    Used by --force, for when the measurement itself changed. Both have to go
+    together -- leaving the result row would mark the event finished again on
+    the next run, and leaving the progress would resume on top of counts from
+    the run being discarded. Use --redo when the blocks are still good.
     """
     progress_path(state_dir, event_id).unlink(missing_ok=True)
-    path = Path(state_dir) / RESULT_NAME
-    if path.exists():
-        df = pd.read_csv(path)
-        keep = df[df['event_id'].astype(str) != str(event_id)]
-        if len(keep) != len(df):
-            keep.to_csv(path, index=False)
+    drop_result(state_dir, event_id)
 
 
 def reset_summary(state_dir, ids):
@@ -377,6 +391,12 @@ def main():
                         'exit without running. Ids are as they appear in the '
                         'results file, so control runs are given in full, e.g. '
                         '"E104#ctrl-365d". Pass "all" to clear everything.')
+    p.add_argument('--redo', action='store_true',
+                   help='drop the result row but keep downloaded progress, then '
+                        'carry on from where the blocks left off. For a run that '
+                        'died before writing its result. --force instead throws '
+                        'the blocks away too, which is only right when the '
+                        'measurement changed.')
     p.add_argument('--force', action='store_true',
                    help='recompute the selected events even if already finished, '
                         'discarding their saved progress. METHOD_VERSION handles '
@@ -397,10 +417,19 @@ def main():
                 else control_id(ev, args.control_offset_days))
 
     already = finished_events(args.state_dir)
-    if args.force:
+    if args.force or args.redo:
+        kept = 0
         for ev in events['event_id'].astype(str):
-            reset_event(args.state_dir, run_id(ev))
-        print(f"forced redo of {len(events)} event(s)")
+            rid = run_id(ev)
+            if args.force:
+                reset_event(args.state_dir, rid)
+            else:
+                drop_result(args.state_dir, rid)
+                kept += progress_path(args.state_dir, rid).exists()
+        if args.force:
+            print(f"forced redo of {len(events)} event(s), progress discarded")
+        else:
+            print(f"redoing {len(events)} event(s), progress kept for {kept}")
     else:
         events = events[~events['event_id'].astype(str).map(run_id).isin(already)]
     if args.limit:
