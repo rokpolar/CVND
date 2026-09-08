@@ -99,16 +99,39 @@ class GridTests(unittest.TestCase):
         self.assertGreater(px * px * (len(sp.SAR_POLARISATIONS) * 8 + 2),
                            48 * 1024 * 1024)
 
+    def test_no_data_is_handed_over_as_nan(self):
+        """The int16 sentinel decodes to -3.2768 and would clip to 0, the
+        darkest possible value. NaN lets preprocess fill it with the clamp."""
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertIn("ch[bad] = np.nan", src)
+
     def test_transfer_encoding_round_trips(self):
         src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
         self.assertIn("multiply(SAR_SCALE_FACTOR).toInt16()", src)
-        self.assertIn("/ SAR_SCALE_FACTOR", src)
+        self.assertIn("/= SAR_SCALE_FACTOR", src)
 
-    def test_scale_factor_fits_int16_and_keeps_precision(self):
-        """Clamped at 0.15 downstream, so the encoded value must not overflow,
-        and one step must stay far below the normalisation std (0.0215 for VH)."""
-        self.assertLess(0.15 * sp.SAR_SCALE_FACTOR, 32767)
-        self.assertLess(1.0 / sp.SAR_SCALE_FACTOR, 0.0215 / 100)
+    def test_clamp_matches_the_model(self):
+        """Clamping at download is only safe because the model clamps to the same
+        value; a mismatch would silently throw away signal it would have used."""
+        import floodvit_infer as fi
+        self.assertEqual(sp.SAR_CLAMP, fi.CLAMP)
+
+    def test_encoded_clamp_fits_int16(self):
+        """Sigma0 reaches 225 over built-up Bihar. Unclamped at 1/10000 that
+        wrapped past int16 into negatives -- the brightest pixels in the scene
+        became the darkest, which reads as water."""
+        self.assertLess(sp.SAR_CLAMP * sp.SAR_SCALE_FACTOR, 32767)
+
+    def test_precision_is_far_below_the_normalisation_std(self):
+        self.assertLess(1.0 / sp.SAR_SCALE_FACTOR, 0.0215 / 1000)
+
+    def test_values_are_clamped_before_encoding(self):
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertIn("clamp(0.0, SAR_CLAMP)", src)
+
+    def test_validity_ignores_the_angle_band(self):
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertIn("image.select(SAR_POLARISATIONS).mask()", src)
 
 
 class OrbitSourceTests(unittest.TestCase):

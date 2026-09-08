@@ -1176,10 +1176,98 @@
       "synthetic": true,
       "telemetry_status": "unmatched_stop",
       "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
+    },
+    {
+      "agent_id": "ab1ebd9b8a531ed2c",
+      "agent_type": "untracked-native-fork",
+      "started_at": "2026-09-08T06:21:32.672Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-09-08T06:21:32.672Z",
+      "synthetic": true,
+      "telemetry_status": "unmatched_stop",
+      "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
+    },
+    {
+      "agent_id": "a5abbb1ff35f04046",
+      "agent_type": "untracked-native-fork",
+      "started_at": "2026-09-08T06:30:46.774Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-09-08T06:30:46.774Z",
+      "synthetic": true,
+      "telemetry_status": "unmatched_stop",
+      "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
+    },
+    {
+      "agent_id": "a5c305f55f8a3828e",
+      "agent_type": "untracked-native-fork",
+      "started_at": "2026-09-08T06:32:05.606Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-09-08T06:32:05.606Z",
+      "synthetic": true,
+      "telemetry_status": "unmatched_stop",
+      "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
+    },
+    {
+      "agent_id": "aecbb28470a067d13",
+      "agent_type": "untracked-native-fork",
+      "started_at": "2026-09-08T06:39:48.265Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-09-08T06:39:48.265Z",
+      "synthetic": true,
+      "telemetry_status": "unmatched_stop",
+      "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
+    },
+    {
+      "agent_id": "a6e8fc167a3ed3928",
+      "agent_type": "untracked-native-fork",
+      "started_at": "2026-09-08T07:03:55.764Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-09-08T07:03:55.764Z",
+      "synthetic": true,
+      "telemetry_status": "unmatched_stop",
+      "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
+    },
+    {
+      "agent_id": "ab945edf471cbc85a",
+      "agent_type": "untracked-native-fork",
+      "started_at": "2026-09-08T12:25:34.806Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-09-08T12:25:34.806Z",
+      "synthetic": true,
+      "telemetry_status": "unmatched_stop",
+      "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
+    },
+    {
+      "agent_id": "aa745359387e42857",
+      "agent_type": "untracked-native-fork",
+      "started_at": "2026-09-08T12:31:50.881Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-09-08T12:31:50.881Z",
+      "synthetic": true,
+      "telemetry_status": "unmatched_stop",
+      "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
+    },
+    {
+      "agent_id": "a7be4b60cad852809",
+      "agent_type": "untracked-native-fork",
+      "started_at": "2026-09-08T12:41:34.998Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-09-08T12:41:34.998Z",
+      "synthetic": true,
+      "telemetry_status": "unmatched_stop",
+      "telemetry_note": "SubagentStop arrived without a matching SubagentStart; native Agent/Task start telemetry was not observed."
     }
   ],
   "total_spawned": 0,
-  "total_completed": 107,
+  "total_completed": 115,
   "total_failed": 0,
-  "last_updated": "2026-09-08T02:43:54.305Z"
+  "last_updated": "2026-09-08T12:41:35.006Z"
 }

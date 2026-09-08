@@ -37,6 +37,7 @@ import floodvit_infer as fvi  # noqa: E402
 import sar_patches as sp  # noqa: E402
 from cvnd_layout import data_path  # noqa: E402
 
+MAX_REPEATED_ERRORS = 3
 RESULT_NAME = 'sar_flood_area.csv'
 PROGRESS_DIR = 'sar_progress'
 
@@ -447,20 +448,39 @@ def main():
         print_results(args.state_dir)
         return
 
+    if args.device.startswith('cuda'):
+        import torch
+        if not torch.cuda.is_available():
+            sys.exit(
+                "no GPU on this runtime. Colab takes the GPU back when its quota\n"
+                "runs out; change the runtime type, wait, or pass --device cpu\n"
+                "(ViT-Large on CPU is minutes per block, so only for a few events).")
+
     model = fvi.load_model(args.checkpoint, args.kuro_siwo_repo, args.device)
     print(f"model     : {args.checkpoint} on {args.device}\n")
 
+    # A run of 204 events must not spend itself on an error that cannot clear by
+    # itself. Expired credentials or a revoked project fail identically on every
+    # event -- when that happened, 189 events scrolled past in seconds.
+    repeated, last_error = 0, None
     for _, row in events.iterrows():
         try:
             result = process_event(row, model, args.state_dir,
                                    args.device, args.batch_size,
                                    control_offset=args.control_offset_days,
                                    speckle=not args.no_speckle_filter)
+            repeated, last_error = 0, None
         except KeyboardInterrupt:
             print("\ninterrupted — progress saved, re-run to resume")
             return
         except Exception as e:
             print(f"  ERROR {row['event_id']}: {e}")
+            repeated = repeated + 1 if str(e) == last_error else 1
+            last_error = str(e)
+            if repeated >= MAX_REPEATED_ERRORS:
+                print(f"\nsame error {repeated} times in a row — stopping. "
+                      f"It will not fix itself by moving to the next event.")
+                break
             continue
         if result is not None:
             append_result(args.state_dir, result)
