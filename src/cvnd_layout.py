@@ -94,6 +94,8 @@ DATA_FILES.update({
     "district_selection_bias": "results/district_selection_bias.csv",
     "coverage_model_results": "results/coverage_model_results.csv",
     "coverage_predictions": "results/coverage_predictions.csv",
+    "coverage_scores": "results/coverage_scores.csv",
+    "coverage_oof_diagnostics": "results/coverage_oof_diagnostics.csv",
 })
 
 OUTPUT_FILES: dict[str, str] = {
@@ -101,6 +103,10 @@ OUTPUT_FILES: dict[str, str] = {
     "urbanization_adjusted_coverage": "urbanization_adjusted_coverage.png",
     "paper_results": "paper_results.md",
     "coverage_summary": "coverage_summary.json",
+    "coverage_scoring_summary": "coverage_scoring_summary.json",
+    "coverage_scoring_report": "coverage_scoring_report.md",
+    "coverage_scoring_actual_vs_expected": "coverage_scoring_actual_vs_expected.png",
+    "coverage_scoring_calibration": "coverage_scoring_calibration.png",
 }
 
 

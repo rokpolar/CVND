@@ -18,7 +18,8 @@ trafilatura>=2.0,<3
 beautifulsoup4>=4.12,<5
 lxml>=5,<7
 scipy
-statsmodels
+# Preserve the patsy design_info API used by H1/H2 adjusted predictions.
+statsmodels>=0.14.6,<0.15
 matplotlib
 seaborn
 scikit-learn

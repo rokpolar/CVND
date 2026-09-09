@@ -60,7 +60,10 @@ if [[ "$SKIP_ARTICLES" != 1 ]]; then
 fi
 run src/district_articles.py --counts-only
 run src/join_district_flood_articles.py
-if [[ "$SKIP_ANALYSIS" != 1 ]]; then run src/analyze_coverage_disparity.py; fi
+if [[ "$SKIP_ANALYSIS" != 1 ]]; then
+  run src/analyze_coverage_disparity.py
+  run src/score_coverage.py
+fi
 if [[ "$DRY_RUN" == 1 ]]; then
   echo 'Offline validation (no queries, downloads, model fitting, or artifact replacement):'
   "$PYTHON" src/build_emdat_events.py --dry-run
