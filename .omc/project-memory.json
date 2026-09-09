@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1788887436263,
+  "lastScanned": 1788985205360,
   "projectRoot": "C:\\IndiaCVND",
   "techStack": {
     "languages": [
@@ -50,7 +50,7 @@
       "path": "data",
       "purpose": "Data files",
       "fileCount": 1,
-      "lastAccessed": 1788887436128,
+      "lastAccessed": 1788985205256,
       "keyFiles": [
         "README.md"
       ]
@@ -59,7 +59,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 2,
-      "lastAccessed": 1788887436129,
+      "lastAccessed": 1788985205257,
       "keyFiles": [
         "gdelt_collection.md",
         "use_cases.md"
@@ -69,7 +69,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 2,
-      "lastAccessed": 1788887436130,
+      "lastAccessed": 1788985205259,
       "keyFiles": [
         "download_patches.py",
         "run_pipeline.sh"
@@ -78,34 +78,34 @@
     "src": {
       "path": "src",
       "purpose": "Source code",
-      "fileCount": 17,
-      "lastAccessed": 1788887436132,
+      "fileCount": 18,
+      "lastAccessed": 1788985205262,
       "keyFiles": [
         "build_emdat_events.py",
         "collect_emdat.py",
         "collect_gdelt.py",
-        "compute_expected_coverage.py",
-        "compute_mss.py"
+        "compare_pipelines.py",
+        "compute_expected_coverage.py"
       ]
     },
     "tests": {
       "path": "tests",
       "purpose": "Test files",
-      "fileCount": 10,
-      "lastAccessed": 1788887436134,
+      "fileCount": 11,
+      "lastAccessed": 1788985205263,
       "keyFiles": [
         "test_build_emdat_events.py",
         "test_collect_emdat.py",
         "test_collect_gdelt.py",
-        "test_compute_mss.py",
-        "test_floodvit_infer.py"
+        "test_compare_pipelines.py",
+        "test_compute_mss.py"
       ]
     },
     "__pycache__": {
       "path": "__pycache__",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1788887436136,
+      "lastAccessed": 1788985205264,
       "keyFiles": [
         "estimate_blocks.cpython-313.pyc",
         "event_aoi_area.cpython-313.pyc",
@@ -127,6 +127,12 @@
       "type": "file"
     },
     {
+      "path": "src/compare_pipelines.py",
+      "accessCount": 8,
+      "lastAccessed": 1788988176875,
+      "type": "file"
+    },
+    {
       "path": "src/floodvit_infer.py",
       "accessCount": 5,
       "lastAccessed": 1788873517282,
@@ -136,6 +142,18 @@
       "path": "src/satellite.py",
       "accessCount": 4,
       "lastAccessed": 1788769136328,
+      "type": "file"
+    },
+    {
+      "path": "src/validate_floodvit.py",
+      "accessCount": 2,
+      "lastAccessed": 1788985252603,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_compare_pipelines.py",
+      "accessCount": 2,
+      "lastAccessed": 1788988137329,
       "type": "file"
     },
     {
@@ -169,27 +187,9 @@
       "type": "file"
     },
     {
-      "path": "src/validate_floodvit.py",
-      "accessCount": 1,
-      "lastAccessed": 1788871227215,
-      "type": "file"
-    },
-    {
       "path": "tests/test_validate_floodvit.py",
       "accessCount": 1,
       "lastAccessed": 1788871249845,
-      "type": "file"
-    },
-    {
-      "path": "src/compare_pipelines.py",
-      "accessCount": 1,
-      "lastAccessed": 1788983348176,
-      "type": "file"
-    },
-    {
-      "path": "tests/test_compare_pipelines.py",
-      "accessCount": 1,
-      "lastAccessed": 1788983408495,
       "type": "file"
     }
   ],

@@ -89,5 +89,58 @@ class ChannelTests(unittest.TestCase):
         self.assertIn("ch[bad] = np.nan", src)
 
 
+class AlignmentTests(unittest.TestCase):
+    """Earth Engine anchors its pixel grid to the CRS origin, not to the corner
+    of the rectangle we request, so our download can land off the grid SNAP
+    wrote their GeoTIFF on. A shifted patch loses precision AND recall together
+    -- the exact shape of the measured gap -- so it has to be ruled out before
+    blaming the Lee filter or the encoding."""
+
+    @staticmethod
+    def _field(seed=0, n=64):
+        return np.random.RandomState(seed).rand(n, n).astype(np.float32)
+
+    def test_identical_arrays_align_at_zero(self):
+        a = self._field()
+        dy, dx, r_best, r_zero = cp.best_shift(a, a.copy(), radius=4)
+        self.assertEqual((dy, dx), (0, 0))
+        self.assertAlmostEqual(r_best, 1.0, places=5)
+        self.assertAlmostEqual(r_zero, 1.0, places=5)
+
+    def test_known_shift_is_recovered(self):
+        """b[i+dy, j+dx] == a[i, j] must come back as (dy, dx), with the sign
+        that says how far OUR patch sits from THEIRS."""
+        a = self._field()
+        for dy, dx in ((3, -2), (-1, 4), (0, 2)):
+            b = np.roll(a, shift=(dy, dx), axis=(0, 1))
+            got = cp.best_shift(a, b, radius=5)
+            self.assertEqual(got[:2], (dy, dx), msg=f"expected {(dy, dx)}")
+
+    def test_unrelated_scenes_score_low_everywhere(self):
+        """A different acquisition must not be reported as a grid offset; it is
+        a different bug (date or orbit selection) and a different fix."""
+        a, b = self._field(0), self._field(1)
+        self.assertLess(cp.best_shift(a, b, radius=3)[2], 0.5)
+
+    def test_no_data_does_not_crash_or_count(self):
+        a = self._field()
+        b = a.copy()
+        b[:32] = np.nan
+        dy, dx, r_best, _ = cp.best_shift(a, b, radius=3)
+        self.assertEqual((dy, dx), (0, 0))
+        self.assertGreater(r_best, 0.9)
+
+    def test_all_nan_returns_nan_not_a_false_alignment(self):
+        a = self._field()
+        b = np.full_like(a, np.nan)
+        self.assertTrue(np.isnan(cp.best_shift(a, b, radius=2)[2]))
+
+    def test_report_calls_the_grids_aligned_only_when_they_are(self):
+        aligned = [(0, 0, 0.95, 0.95)] * 9 + [(1, 0, 0.9, 0.8)]
+        self.assertTrue(cp.report_alignment(aligned))
+        off = [(2, -1, 0.93, 0.31)] * 10
+        self.assertFalse(cp.report_alignment(off))
+
+
 if __name__ == "__main__":
     unittest.main()
