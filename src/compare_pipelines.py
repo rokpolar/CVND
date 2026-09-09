@@ -46,6 +46,102 @@ import floodvit_infer as fvi  # noqa: E402
 import sar_patches as sp  # noqa: E402
 import validate_floodvit as vf  # noqa: E402
 
+# How far to look for a grid offset, in pixels. Earth Engine anchors its pixel
+# grid to the CRS origin, not to the corner of the rectangle we ask for, so our
+# download can land a few metres off the grid SNAP wrote their GeoTIFF on. Two
+# pixels is already enough to wreck a per-pixel score against their labels.
+SHIFT_SEARCH = 8
+
+
+def _corr(x, y):
+    """Pearson correlation over the pixels finite in both; NaN if too few."""
+    m = np.isfinite(x) & np.isfinite(y)
+    if int(m.sum()) < 100:
+        return float('nan')
+    x, y = x[m], y[m]
+    x = x - x.mean()
+    y = y - y.mean()
+    d = float(np.sqrt((x * x).sum() * (y * y).sum()))
+    return float((x * y).sum() / d) if d else float('nan')
+
+
+def best_shift(a, b, radius=SHIFT_SEARCH):
+    """(dy, dx, r_best, r_zero) -- the offset at which b lines up with a.
+
+    Both arrays are the POST acquisition. Ours is searched from their post date,
+    so channel 0 is the same satellite pass over the same ground and the two
+    should agree up to preprocessing. That makes this a clean test:
+
+        (0, 0), r high      grids agree -- a bad score is NOT misalignment, so
+                            the damage is in the chain itself
+        (dy, dx) non-zero   our pixels sit off theirs by that much, and every
+                            comparison against their labels scores wrong ground
+        r low everywhere    not even the same acquisition -- our date or orbit
+                            selection picked a different pass
+    """
+    H, W = a.shape
+    # NaN, not -inf: a patch with no usable overlap must not come back looking
+    # like a confident match at (0, 0) and inflate the aligned count.
+    best = (0, 0, float('nan'))
+    r_zero = float('nan')
+    for dy in range(-radius, radius + 1):
+        for dx in range(-radius, radius + 1):
+            i0, i1 = max(0, -dy), min(H, H - dy)
+            j0, j1 = max(0, -dx), min(W, W - dx)
+            if i1 - i0 < H // 2 or j1 - j0 < W // 2:
+                continue
+            r = _corr(a[i0:i1, j0:j1], b[i0 + dy:i1 + dy, j0 + dx:j1 + dx])
+            if dy == 0 and dx == 0:
+                r_zero = r
+            if np.isfinite(r) and (not np.isfinite(best[2]) or r > best[2]):
+                best = (dy, dx, r)
+    return best[0], best[1], best[2], r_zero
+
+
+def report_alignment(shifts):
+    """Print what the offsets say, and return True if the grids agree."""
+    from collections import Counter
+
+    # A sample with no measurable overlap says nothing about the grid; counting
+    # its placeholder (0, 0) would read as agreement.
+    dropped = len(shifts) - len([s for s in shifts if np.isfinite(s[2])])
+    shifts = [s for s in shifts if np.isfinite(s[2])]
+    if dropped:
+        print(f'\n{dropped} sample(s) had too little overlap to align')
+    if not shifts:
+        print('no sample could be aligned; nothing to say about the grid')
+        return False
+
+    dy = np.array([s[0] for s in shifts])
+    dx = np.array([s[1] for s in shifts])
+    r_best = np.array([s[2] for s in shifts])
+    r_zero = np.array([s[3] for s in shifts])
+    agree = int(((dy == 0) & (dx == 0)).sum())
+
+    print(f'\ngrid alignment, post VV, ours vs theirs '
+          f'(+/-{SHIFT_SEARCH}px, {len(shifts)} samples)')
+    common = Counter(zip(dy.tolist(), dx.tolist())).most_common(3)
+    print('  shifts: ' + ', '.join(f'(dy{d0:+d},dx{d1:+d}) x{n}'
+                                   for (d0, d1), n in common))
+    print(f'  aligned at (0,0): {agree}/{len(shifts)}')
+    print(f'  correlation at (0,0) {np.nanmedian(r_zero):.3f}, '
+          f'at best shift {np.nanmedian(r_best):.3f}')
+    if max(abs(dy).max(), abs(dx).max()) >= SHIFT_SEARCH:
+        print(f'  note: some samples peaked at the edge of the +/-{SHIFT_SEARCH}px '
+              'window, so the real offset may be larger')
+
+    aligned = agree >= 0.8 * len(shifts)
+    if np.nanmedian(r_best) < 0.5:
+        print('  -> low correlation even at the best shift: channel 0 is not the '
+              'same acquisition as theirs. Date/orbit selection is the bug.')
+    elif not aligned:
+        print('  -> our download sits off their grid, so the scores below compare '
+              'shifted ground and understate us. Fix with crsTransform.')
+    else:
+        print('  -> grids agree, so the gap below is real damage from the chain '
+              '(Lee filter, mosaic, int16), not misalignment.')
+    return aligned
+
 
 def read_geo(path):
     """(crs, transform, width, height) of a GeoTIFF, without GDAL."""
@@ -136,7 +232,7 @@ def main():
 
     model = fvi.load_model(args.checkpoint, args.kuro_siwo_repo, args.device)
 
-    theirs, ours, labels, valids = [], [], [], []
+    theirs, ours, labels, valids, shifts = [], [], [], [], []
     skipped = {}
     for i, d in enumerate(samples, 1):
         try:
@@ -156,7 +252,14 @@ def main():
             continue
         if i <= 3:
             print(f"  {os.path.basename(d)[:8]}: post {info['post_date']} "
-                  f"orbit {info['orbit']} | their dates {info['meta']}")
+                  f"orbit {info['orbit']} | our dates {info['meta']}")
+
+        # Both sides clamped the same way before correlating: ours is already
+        # cut at CLAMP on download, so leaving theirs uncut would let bright
+        # targets dominate the match and hide a real offset.
+        shifts.append(best_shift(
+            np.clip(t_patch[0, :fvi.PATCH_PX, :fvi.PATCH_PX], 0, fvi.CLAMP),
+            np.clip(o_patch[0], 0, fvi.CLAMP)))
 
         # Both must be scored on the same pixels: theirs is the reference grid,
         # ours is resampled to the same footprint, and only pixels valid in both
@@ -180,6 +283,8 @@ def main():
     label = np.stack(labels)
     valid = np.stack(valids)
     print(f'\ncompared on {len(ours)} samples, {int(valid.sum()):,} shared pixels')
+
+    report_alignment(shifts)
 
     for name, batch in (('Kuro Siwo (SNAP)', np.stack(theirs)),
                         ('ours (Earth Engine)', np.stack(ours))):
