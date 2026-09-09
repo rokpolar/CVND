@@ -1,0 +1,153 @@
+{
+  "n_total": 495,
+  "n_analyzable": 0,
+  "n_excluded": 495,
+  "districts": 0,
+  "parent_events": 0,
+  "source_flood_events": 0,
+  "spearman": {
+    "rho": null,
+    "p_value": null
+  },
+  "distributions": {
+    "flood_area_km2": {
+      "count": 0.0,
+      "mean": null,
+      "std": null,
+      "min": null,
+      "25%": null,
+      "50%": null,
+      "75%": null,
+      "max": null
+    },
+    "article_count": {
+      "count": 0.0,
+      "mean": null,
+      "std": null,
+      "min": null,
+      "25%": null,
+      "50%": null,
+      "75%": null,
+      "max": null
+    },
+    "urban_population_share": {
+      "count": 0.0,
+      "mean": null,
+      "std": null,
+      "min": null,
+      "25%": null,
+      "50%": null,
+      "75%": null,
+      "max": null
+    }
+  },
+  "missing_counts": {
+    "flood_area_km2": 495,
+    "article_count": 495,
+    "urban_population_share": 227
+  },
+  "exclusion_counts": {
+    "district_aoi_unmatched": 495,
+    "satellite_missing_or_invalid": 495,
+    "aoi_area_invalid": 495,
+    "article_collection_incomplete": 495,
+    "article_count_missing_or_invalid": 495,
+    "district_unresolved": 244,
+    "census_unmatched": 227,
+    "census_invalid": 227,
+    "census_population_inconsistent": 227
+  },
+  "model_status": {
+    "model_1": "insufficient sample: N=0 < 20",
+    "model_2": "insufficient sample: N=0 < 20",
+    "model_3": "insufficient sample: fewer than two years",
+    "source_event_robustness": "insufficient sample: 0 multi-district source events, 0 rows; require >= 10 groups and >= 5*(groups+3) rows",
+    "exposed_population_robustness": "not implemented: no verified flood-mask \u00d7 gridded-population input contract; area \u00d7 average density is never used"
+  },
+  "formulas": {
+    "model_1": "article_count ~ log_flood_area",
+    "model_2": "article_count ~ log_flood_area + urban_population_share",
+    "model_3": "article_count ~ log_flood_area + urban_population_share + C(year)"
+  },
+  "article_count_variance": null,
+  "article_count_mean": null,
+  "stage_qc": {
+    "district_extraction": {
+      "success": 251,
+      "total": 495,
+      "rate": 0.5070707071
+    },
+    "district_aoi_match": {
+      "success": 0,
+      "total": 495,
+      "rate": 0.0
+    },
+    "census_match": {
+      "success": 268,
+      "total": 495,
+      "rate": 0.5414141414
+    },
+    "satellite_observation": {
+      "success": 0,
+      "total": 495,
+      "rate": 0.0
+    },
+    "gdelt_collection": {
+      "success": 0,
+      "total": 495,
+      "rate": 0.0
+    },
+    "article_observation": {
+      "success": 0,
+      "total": 495,
+      "rate": 0.0
+    },
+    "final_analyzable": {
+      "success": 0,
+      "total": 495,
+      "rate": 0.0
+    }
+  },
+  "available_input_distributions": {
+    "flood_area_km2": {
+      "count": 0.0,
+      "mean": null,
+      "std": null,
+      "min": null,
+      "25%": null,
+      "50%": null,
+      "75%": null,
+      "max": null
+    },
+    "article_count": {
+      "count": 0.0,
+      "mean": null,
+      "std": null,
+      "min": null,
+      "25%": null,
+      "50%": null,
+      "75%": null,
+      "max": null
+    },
+    "urban_population_share": {
+      "count": 268.0,
+      "mean": 0.2199141353,
+      "std": 0.2078716145,
+      "min": 0.0128852985,
+      "25%": 0.0876401087,
+      "50%": 0.1384471152,
+      "75%": 0.2814836728,
+      "max": 1.0
+    }
+  },
+  "estimated_dispersion": {},
+  "warnings": [
+    "Associational analysis: flood extent does not control all disaster impacts, outlet availability, population size, or media access.",
+    "Census 2011 and GAUL 2015 may not represent event-year district boundaries or urbanization.",
+    "GDELT-indexed district-explicit coverage is not all disaster reporting; location extraction and language coverage can affect selection.",
+    "District rows within a source flood and repeated districts may be dependent; state clustering is only a partial correction.",
+    "35 registry onset dates are month-imputed; their 14-day news windows have timing uncertainty.",
+    "district-based urbanization tercile cutpoints: [0.1099145490441051, 0.2512582435829237]; unknown Census matches cannot be assigned an urbanization level"
+  ],
+  "conclusion_candidate": "Insufficient valid data or stable model fits to assess H1 and H2. No empirical conclusion is available."
+}
