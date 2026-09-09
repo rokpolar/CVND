@@ -88,3 +88,45 @@ The official Census file is now available; it is no longer a missing requirement
 No empirical H1/H2 conclusion is available yet. Matching excludes ambiguous and medium-confidence location candidates; spelling/history crosswalks remain intentionally empty. Census 2011, GAUL 2015 and event-year district boundaries may differ even when labels match; exact names are not proof of stable boundaries. Unmatched districts' urbanization is unknown. Current exclusion rates are all 100% because external observation stages have not run, so they do not yet diagnose differential matching bias.
 
 GDELT language/location extraction, original-page survival, incomplete body retrieval, event-window assignment and keyword relevance can introduce selection/measurement error. A single inaccessible candidate makes the strict final article observation incomplete; this conservative rule may materially reduce the sample and should be reported. The seven-day baseline satellite composite and fourteen-day news/SITS windows differ. Satellite detections are not ground-truth damage measures. The model controls observed flood area, not total damage or population size; it cannot establish intent or causality. State clustering does not fully resolve source-event/repeated-district dependence.
+
+## H. Relative coverage scorer implementation and validation (2026-09-10)
+
+Implemented directly without sub-agents. Actual starting HEAD matched the requested review commit `52ac4b5f328949ac74cf942b1738c273eed26aed`; the working tree was initially clean. Prior sections describe the earlier refactor and its historical test environment. The results below describe this implementation's separate local run.
+
+Changed files:
+
+- Added `src/score_coverage.py`: strict input validation, deterministic source GroupKFold OOF NB2, inclusive discrete-tail candidates, prediction intervals, diagnostics-only Poisson, optional no-population NB2, stale-output invalidation and CLI.
+- Added `tests/test_coverage_scoring.py`: 23 synthetic/mechanical and CLI tests, including coefficient/alpha recovery, held-out outcome isolation, all-row preservation, train gates, rank/convergence/covariance/nonfinite-prediction failures, common-success metrics, source macro averaging, sensitivity, extrapolation and zero-count tails.
+- Added `docs/coverage_scoring_methodology.md`; updated `README.md`, this validation record, `src/cvnd_layout.py` and `scripts/run_pipeline.sh`.
+- Constrained `requirements.txt` to `statsmodels>=0.14.6,<0.15`: installing unconstrained 0.15.0 switched the default formula backend and broke the existing H1/H2 `design_info`/patsy adjusted-prediction interface. Existing analysis code, formulas and prediction meaning were preserved; the validated environment uses 0.14.6.
+
+The host default Python lacked NumPy. A temporary environment was created at `/tmp/cvnd-scoring-venv`; public Python dependencies were installed there. No paid query, research-data download or authentication was performed. Validated numerical environment: Python 3.14.7, NumPy 2.5.3, pandas 3.0.5, SciPy 1.18.1, statsmodels 0.14.6, scikit-learn 1.9.0 and matplotlib 3.11.1. The exact installed scoring library versions are recorded in the real-input summary.
+
+Commands executed (use `PATH=/tmp/cvnd-scoring-venv/bin:$PATH` and `MPLCONFIGDIR=/tmp/cvnd-matplotlib` for this local environment):
+
+```bash
+python -m unittest discover -s tests
+python -m compileall -q src tests
+bash -n scripts/run_pipeline.sh
+PYTHON=/tmp/cvnd-scoring-venv/bin/python bash scripts/run_pipeline.sh --dry-run
+git diff --check
+python src/score_coverage.py --input data/results/district_flood_articles.csv \
+  --results-dir /tmp/cvnd-scoring-audit/results \
+  --output-dir /tmp/cvnd-scoring-audit/outputs --sensitivity-no-population
+```
+
+Full suite: **104 discovered test cases, 103 passed, 1 skipped**. The skipped module is the existing optional SITS test module because torch is absent from the temporary environment; its underlying tests were not executed. An intentional invalid-date fixture triggers pandas' date-format warning; it does not fail the test. Compilation, shell syntax, offline dry-run and whitespace checks passed. Dry-run and `SKIP_ANALYSIS=1` behavior are also asserted by the scorer tests. The downloader tests use mocked/local fixtures; no live article collection was run. Initial failures were resolved before the successful final run; the older 122-test count above is historical and is not claimed for this environment.
+
+Actual input was re-read and hashed, not inferred from an old report:
+
+- `data/results/district_flood_articles.csv`: **495 total rows, 75 source IDs, 0 eligible rows, 0 eligible sources**.
+- `article_count` and `flood_area_km2`: each missing on all 495 rows.
+- SHA-256: `a78ef32ec942501c5b38c644b58edaec74e8de7b245386645aba37e387f28fcc`.
+- Actual scorer run returned `insufficient_data`, 0 scored rows. Both default main scoring and requested sensitivity use no fabricated data. No fit, empirical performance, coefficient, or regional ranking was produced.
+- The output CSV was compared against all original input columns using `pandas.testing.assert_frame_equal`: every row, value and exclusion reason was preserved. All classes are `not_scored`; numerical scores are missing. JSON is valid with null metrics. The output hash matches the input bytes.
+- Six real-input artifacts were generated only under `/tmp/cvnd-scoring-audit/{results,outputs}`. Existing H1/H2 outputs and raw/intermediate files were unchanged.
+- Empty-data and populated synthetic figure generation were tested; an actual empty-data panel and a synthetic calibration panel were visually inspected. Populated synthetic QA files live separately under `/tmp/cvnd-scoring-synthetic-qa` and are not research results.
+
+Remaining external dependencies are measured district AOI/satellite observations and completed district GDELT/article-body collection under the existing matching, provenance and quality rules. Census is available locally. New authentication/collection was not attempted, so prior credential failures in section F were not revalidated. Missing data cannot be repaired by changing the score model or inserting zeros.
+
+Relative candidate labels remain exploratory under observed GDELT/body/heuristic coverage. They estimate neither socially deserved reporting nor causal discrimination or intent. Plug-in prediction intervals omit beta/alpha uncertainty, repeated districts and shared sources limit independence assumptions, and candidate labels are not multiplicity-adjusted discoveries.
