@@ -82,3 +82,21 @@ Required external inputs/services:
 The report only supports statements about **similar observed flood extent**. It cannot establish intentional neglect, causal discrimination, or equal total damage. Census 2011 predates many floods, GAUL 2015 boundaries can differ from Census/GADM, EM-DAT onset dates may be month-imputed, and news/satellite completeness can depend on geography. Selection QC reports excluded proportions by known urbanization tercile; districts without Census matches have unknown urbanization and cannot enter that comparison. Population size is deliberately not controlled in the short primary specification; it remains a potential explanation for the association.
 
 State-only area, article-classification, and join entry points were removed. The primary workflow is district-only: `district_articles.py` applies the multilingual heuristic and `join_district_flood_articles.py --audit-missing` records absent satellite/article artifacts as NA, never zero. An analysis report on this audit states N=0 and unavailable models.
+
+## Relative coverage candidates (separate from H1/H2)
+
+`src/score_coverage.py` predicts observed article counts using source-group five-fold OOF NB2 with estimated alpha:
+`article_count ~ log1p(flood_area_km2) + log(total_population / 1_000_000) + (year - 2020)`.
+Population has an estimated coefficient; no offset is used. A globally single-year sample omits the year term. Existing H1/H2 formulas and adjusted-mean predictions are unchanged.
+
+```bash
+python src/score_coverage.py --input data/results/district_flood_articles.csv \
+  --results-dir /tmp/cvnd-scoring-audit/results \
+  --output-dir /tmp/cvnd-scoring-audit/outputs
+# Optional separate NB2 population sensitivity:
+python src/score_coverage.py --sensitivity-no-population
+```
+
+The pipeline runs the scorer after H1/H2 analysis; `SKIP_ANALYSIS=1` skips both. Offline `--dry-run` only prints its command. Outputs are `coverage_scores.csv`, `coverage_oof_diagnostics.csv` in results, and `coverage_scoring_summary.json`, `coverage_scoring_report.md`, `coverage_scoring_actual_vs_expected.png`, `coverage_scoring_calibration.png` in outputs. All input rows and exclusion reasons are retained. No-data runs produce `insufficient_data` and missing scores, never invented observations.
+
+Relative under/over candidates use inclusive NB2 lower/upper tail probabilities and observed-minus-expected direction. These are exploratory alerts about measured GDELT coverage, not deserved coverage or causal/intentional neglect. The central 90% count prediction interval is a plug-in approximation excluding parameter uncertainty. Poisson is diagnostic only. See [scoring methodology](docs/coverage_scoring_methodology.md) for gates, contracts, diagnostics, sensitivity and interpretation limits.
