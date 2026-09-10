@@ -53,7 +53,8 @@ from cvnd_config import (  # noqa: E402
     MEDIA_WINDOW_DAYS,
     MONSOON_MONTHS,
 )
-from cvnd_layout import data_path, output_path  # noqa: E402
+from cvnd_layout import data_path, output_path, ensure_printable_output  # noqa: E402
+import state_income  # noqa: E402
 
 
 def load_quarantine_ids(path: os.PathLike | str | None = None) -> set[str]:
@@ -88,8 +89,55 @@ def attach_deaths_from_emdat(events: pd.DataFrame) -> pd.Series:
     return deaths
 
 
+def report_overlapping_events(df: pd.DataFrame) -> list[tuple[str, str]]:
+    """Name events that share a state and an overlapping date range.
+
+    EM-DAT sometimes holds two records for the same state whose windows nest --
+    Gujarat 2017-06-01..06-30 (DisNo 2017-0257) inside 2017-06-01..08-31
+    (2017-0294), and four more pairs all starting 2021-06-01. They are kept as
+    separate events, but the two sides of the comparison then disagree:
+
+      * severity is measured over EACH event's own window, so both cover the
+        overlap, and
+      * collect_gdelt assigns a URL to one event only, breaking ties by
+        onset_distance then onset_date then event_id -- so the lower event_id
+        takes every article in the overlap and the other gets none of them.
+
+    The longer event therefore carries flood area from a period whose coverage was
+    credited to its twin. Reported, not corrected: merging or dropping one of each
+    pair is a decision about the sample, not a bug to patch here.
+    """
+    pairs: list[tuple[str, str]] = []
+    for _, grp in df.groupby("state"):
+        rows = grp.sort_values("onset_date")
+        for i in range(len(rows)):
+            a = rows.iloc[i]
+            a_end = pd.to_datetime(a.get("end_date"), errors="coerce")
+            if pd.isna(a_end):
+                a_end = a["onset_date"]
+            for j in range(i + 1, len(rows)):
+                b = rows.iloc[j]
+                if b["onset_date"] > a_end:
+                    break
+                pairs.append((str(a["event_id"]), str(b["event_id"])))
+    if pairs:
+        print(f"NOTE: {len(pairs)} event pair(s) share a state and overlapping "
+              "dates, so their severity windows overlap while their article "
+              "counts do not (collect_gdelt gives the overlap to the lower "
+              "event_id):")
+        for a, b in pairs:
+            print(f"    {a} <-> {b}")
+    return pairs
+
+
 def build_analysis_frame() -> pd.DataFrame:
     events = pd.read_csv(data_path("events"))
+    # The recorded income_group is a hand-written label that does not track
+    # income: Sikkim (3rd highest per-capita GSDP in India) was "Low", as were
+    # Himachal, Uttarakhand, Arunachal and Mizoram, while Kerala outranked a
+    # "High" state and was "Middle". Since the headline contrast asks whether
+    # poorer states are under-covered, it has to be regressed on income.
+    events = state_income.apply_income_group(events)
     sev = pd.read_csv(data_path("severity_raw"))[
         ["event_id", "adjusted_flood_area_km2", "population_exposed"]
     ]
@@ -126,18 +174,41 @@ def build_analysis_frame() -> pd.DataFrame:
         df = df[~df["event_id"].isin(quarantine_ids)].copy()
 
     before = len(df)
-    # Never impute missing media as zero
-    df = df.dropna(
-        subset=[
-            "n_articles_window",
-            "population_exposed",
-            "affected_area_km2",
-            "onset_year",
-            "monsoon_flag",
-        ]
-    )
-    print(f"Dropped {before - len(df)} rows with missing media/severity "
-          f"(no zero-imputation)")
+    # Never impute missing media as zero. Note this does NOT drop zero-coverage
+    # events: compute_mss.py fills total_articles with 0 for every event in the
+    # registry, so an event with no articles arrives as 0, not as NaN.
+    required = [
+        "n_articles_window",
+        "population_exposed",
+        "affected_area_km2",
+        "onset_year",
+        "monsoon_flag",
+    ]
+    # Reported per column, and by year. One aggregate count hid what is actually
+    # being selected on: in practice the drops come from the severity columns --
+    # events the satellite could not measure -- and measurability is not random
+    # across years (Sentinel-1 coverage of India is thinner in 2015-2016), so the
+    # analysis sample is a biased subset unless this is watched.
+    missing = {c: int(df[c].isna().sum()) for c in required if df[c].isna().any()}
+    dropped = df[df[required].isna().any(axis=1)]
+    df = df.dropna(subset=required)
+    print(f"Dropped {before - len(df)} of {before} rows with missing "
+          f"media/severity (no zero-imputation)")
+    if missing:
+        for col, n in sorted(missing.items(), key=lambda kv: -kv[1]):
+            print(f"    {col}: {n} missing")
+    if len(dropped):
+        by_year = dropped["onset_year"].value_counts().sort_index()
+        print("    dropped by onset year: "
+              + ", ".join(f"{int(y)}:{int(n)}" for y, n in by_year.items()))
+        kept_years = df["onset_year"].value_counts()
+        lost = [int(y) for y, n in by_year.items()
+                if kept_years.get(y, 0) == 0]
+        if lost:
+            print(f"    WARNING: years {lost} lost every event. The sample no "
+                  "longer spans the study period, and coverage norms change over "
+                  "time, so this is a confound rather than just a smaller n.")
+    report_overlapping_events(df)
     print(f"Analysis rows: {len(df)}")
     return df.reset_index(drop=True)
 
@@ -166,10 +237,31 @@ def fit_negbin(
     if not np.isfinite(alpha) or alpha <= 0:
         alpha = 1.0
     model = sm.GLM(y, X, family=sm.families.NegativeBinomial(alpha=alpha))
-    return model.fit(cov_type="cluster", cov_kwds={"groups": groups})
+    fitted = model.fit(cov_type="cluster", cov_kwds={"groups": groups})
+    # Carried on the result so it can reach the output. The dispersion is a fitted
+    # quantity of the model and every standard error depends on it, but it lived
+    # only in this local and never appeared anywhere -- leaving the headline
+    # regression unreproducible from the artifacts alone.
+    fitted.nb_alpha = alpha
+    return fitted
 
 
 def choose_severity_proxy(df: pd.DataFrame, include_deaths: bool) -> str:
+    """Pick the severity column by AIC.
+
+    Note what the two candidates are. compute_population derives
+
+        population_exposed = (flood_km2 / state_area_km2) * state_population
+
+    so log1p(population_exposed) is log1p(affected_area_km2) plus a per-state
+    constant, log(population density). The model clusters by state but has no
+    state fixed effect, so these are not two independent measurements of severity
+    -- they are the same measurement with and without a density weight. A lower
+    AIC for population_exposed therefore says that state population density helps
+    predict article counts, which it plausibly does for reasons that have nothing
+    to do with flood severity (denser states have more outlets). Read the choice
+    that way rather than as "this proxy measures severity better".
+    """
     y = df["n_articles_window"].astype(float)
     groups = df["state"]
     candidates = {
@@ -347,10 +439,18 @@ def write_markdown_report(
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     generated = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    # Canonical order, plus any category actually present. A fixed
+    # ["High","Middle","Low"] silently dropped rows in any other group -- events
+    # in states with no per-capita GSDP are labelled 'Unknown' by state_income,
+    # and they would have vanished from the report without a word.
+    order = [g for g in ("High", "Middle", "Low")
+             if g in set(out["income_group"])]
+    order += sorted(set(out["income_group"]) - set(order))
+
     income_means = (
         out.groupby("income_group")["log_ratio"]
         .agg(mean="mean", median="median", std="std", n="count")
-        .reindex(["High", "Middle", "Low"])
+        .reindex(order)
         .reset_index()
     )
 
@@ -362,7 +462,7 @@ def write_markdown_report(
     under_by_income = (
         out.groupby("income_group")["under_flag"]
         .agg(n_under="sum", n="count", share="mean")
-        .reindex(["High", "Middle", "Low"])
+        .reindex(order)
         .reset_index()
     )
 
@@ -402,7 +502,8 @@ Generated: `{generated}`
 | MSS / PSS | Retained as metadata when available |
 | Severity proxy (AIC) | `{severity_col}` |
 | Flood area source | `affected_area_km2` (= `severity_raw.adjusted_flood_area_km2` / flood_combined) |
-| Deaths handling | Option C: `log1p(deaths)` with `fillna(0)`; `deaths_missing` metadata only (not in NegBin) |
+| Deaths handling | {"Option C: `log1p(deaths)` with `fillna(0)` AS A COVARIATE; `deaths_missing` metadata only" if include_deaths else "**Not a covariate** (`--include-deaths` off); deaths are metadata only"} |
+| NB2 dispersion α | {getattr(result, "nb_alpha", float("nan")):.4f} (MLE; GLM `scale` is 1.0 for this family and is not the dispersion) |
 | Deaths missing (metadata) | {int(out['deaths_missing'].sum()) if 'deaths_missing' in out.columns else 'n/a'} / {len(out)} |
 | N events | {len(out)} |
 | NegBin AIC | {float(result.aic):.1f} |
@@ -494,6 +595,7 @@ R² = {income_summary["r2"]:.4f}
 
 
 def main() -> None:
+    ensure_printable_output()
     print("=" * 60)
     print("EXPECTED COVERAGE — sparse Negative-Binomial")
     print("=" * 60)
@@ -522,11 +624,20 @@ def main() -> None:
 
     print("\n[Primary NegBin / GLM cluster-robust by state]")
     print(result.summary2())
+    print(f"NB2 dispersion alpha = {getattr(result, 'nb_alpha', float('nan')):.4f} "
+          f"(estimated by MLE; GLM reports scale={result.scale:g} for this family, "
+          "which is not the dispersion)")
 
     mu = np.asarray(result.fittedvalues, dtype=float)
     mu = np.clip(mu, 1e-8, None)
     log_ratio = np.log((y.values + LOG_RATIO_EPS) / (mu + LOG_RATIO_EPS))
-    pearson = (y.values - mu) / np.sqrt(mu + result.scale * mu ** 2 + 1e-12)
+    # statsmodels' own Pearson residual, not a hand-rolled one. The NB2 variance
+    # is mu + alpha*mu^2, but GLM reports `scale` as exactly 1.0 for the negative
+    # binomial family, so `mu + result.scale * mu**2` silently assumed alpha = 1
+    # no matter what fit_negbin estimated. Measured on simulated NB2 data with
+    # alpha 0.621: the hand-rolled residual differed from the correct one by up to
+    # 0.884 and its spread was 0.893 instead of 1.043.
+    pearson = np.asarray(result.resid_pearson, dtype=float)
 
     out_cols = [
         "event_id",
@@ -548,6 +659,7 @@ def main() -> None:
 
     out = df[out_cols].copy()
     out["severity_proxy"] = severity_col
+    out["nb_alpha"] = getattr(result, "nb_alpha", float("nan"))
     out["observed"] = y.values
     out["expected"] = mu
     out["log_ratio"] = log_ratio
@@ -556,13 +668,26 @@ def main() -> None:
     out["under_flag"] = out["log_ratio"] < 0
     out["over_flag"] = out["log_ratio"] > 0
     out["severity_tier"] = severity_tier_tertile(out["log_ratio"])
-    out["rank_undercovered"] = out["log_ratio"].rank(method="average", ascending=True).astype(int)
+    # method="min", not "average": an average rank of 3.5 truncated to 3 under
+    # .astype(int), so tied events shared a rank and the next rank vanished --
+    # the column stopped being a ranking. "min" is competition ranking and is
+    # already integral.
+    out["rank_undercovered"] = (
+        out["log_ratio"].rank(method="min", ascending=True).astype(int)
+    )
 
-    # Severe tertile low should sit inside absolute under-coverage
+    # The bottom tertile of log_ratio is only a subset of log_ratio < 0 when at
+    # least a third of events are under-covered, which is a property of the data,
+    # not an invariant of the code. Raising here aborted the whole run over a
+    # legitimate distribution, so it reports instead.
     low_mask = out["severity_tier"] == "low"
     if low_mask.any() and not bool(out.loc[low_mask, "under_flag"].all()):
-        raise AssertionError(
-            "severity_tier==low is not a subset of under_flag (log_ratio<0); check tier cutpoints"
+        n_bad = int((~out.loc[low_mask, "under_flag"]).sum())
+        print(
+            f"NOTE: {n_bad} of {int(low_mask.sum())} events in the lowest "
+            "severity_tier have log_ratio >= 0, so the tertile cut sits above "
+            "zero: fewer than a third of events are under-covered. The tier is "
+            "relative and under_flag is absolute; they are not nested here."
         )
 
     out = out.sort_values("log_ratio")

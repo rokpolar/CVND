@@ -35,7 +35,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cvnd_config import CLOUD_MAX_PCT  # noqa: E402
-from cvnd_layout import data_path  # noqa: E402
+from cvnd_layout import data_path, ensure_printable_output  # noqa: E402
 
 SCORES_DIR = str(data_path("sits_scores"))
 TRACK_A_CSV = str(data_path("flood_extent"))
@@ -48,6 +48,45 @@ MIN_POS = 20                        # need this many NDWI-flood (and non-flood) 
 J_MIN = 0.15                        # min Youden's J (SITS-NDWI agreement) to use the SITS+NDWI fusion
 POST_CLOUD_CSV = str(data_path("post_cloud"))
 AOI_AREA_CSV = str(data_path("event_aoi_area"))
+SAR_CSV = str(data_path("sar_flood_area"))
+
+
+def load_floodvit(path=SAR_CSV):
+    """{event_id: flood_km2} from sar_flood_area.py, best method version only.
+
+    This is the measurement the whole SAR switch was for, and until it is read
+    here it does not reach the paper at all: severity came from the old
+    threshold S1 and NDWI paths below.
+
+    Controls are excluded -- they are the same AOI at a no-flood date, evidence
+    about the method rather than events in the study. Rows with a status other
+    than OK, or that stopped before every block was classified, are dropped: a
+    partial run reports a smaller area for the same flood, which is
+    indistinguishable downstream from a smaller flood.
+    """
+    if not os.path.exists(path):
+        return {}, None
+    df = pd.read_csv(path)
+    if df.empty or 'flood_km2' not in df.columns:
+        return {}, None
+    if 'is_control' in df.columns:
+        df = df[~df['is_control'].fillna(False).astype(bool)]
+    if 'status' in df.columns:
+        df = df[df['status'].astype(str) == 'OK']
+    if {'blocks_done', 'blocks_total'} <= set(df.columns):
+        full = df['blocks_total'].isna() | (df['blocks_done'] >= df['blocks_total'])
+        df = df[full]
+    df = df[df['flood_km2'].notna()]
+    if df.empty:
+        return {}, None
+    version = None
+    if 'method_version' in df.columns:
+        # Areas from different method versions are not comparable -- that is the
+        # whole reason the version is recorded -- so keep only the newest.
+        version = int(df['method_version'].max())
+        df = df[df['method_version'] == version]
+    df = df.drop_duplicates('event_id', keep='last')
+    return dict(zip(df['event_id'], df['flood_km2'].astype(float))), version
 
 
 def _otsu(x):
@@ -61,13 +100,15 @@ def _otsu(x):
     w0 = np.cumsum(hist)
     w1 = total - w0
     csum = np.cumsum(hist * centers)
-    mu_total = csum[-1] / total
     with np.errstate(divide='ignore', invalid='ignore'):
         mu0 = csum / w0
         mu1 = (csum[-1] - csum) / w1
         var_between = w0 * w1 * (mu0 - mu1) ** 2
     var_between = np.nan_to_num(var_between)
-    return float(centers[int(np.argmax(var_between))])
+    # edges[i+1], not centers[i]: w0 is a cumulative sum through bin i, so bin i
+    # belongs to class 0, while callers select class 1 with `scores > t`. Returning
+    # the bin centre put the upper half of that bin on the wrong side of the cut.
+    return float(edges[int(np.argmax(var_between)) + 1])
 
 
 def _youden(scores, labels):
@@ -101,7 +142,35 @@ def sits_threshold(scores, ndwi_flood):
     return _otsu(scores), 'otsu'                    # too few NDWI positives -> plain Otsu
 
 
+def summarise_sources(out):
+    """How many events each measurement method supplied, and whether that mixes.
+
+    Printed rather than buried in the CSV because a mixed column is the failure
+    that matters most here: severity measured by different methods is not
+    comparable between events, and the fallback methods are selected by cloud
+    cover, which tracks rainfall and therefore severity itself.
+    """
+    counts = out['combined_source'].value_counts()
+    lines = ['measurement method per event:']
+    lines += [f'  {k:<26}{n:>5}' for k, n in counts.items()]
+    other = int(counts.drop(labels=['FloodViT'], errors='ignore')
+                .drop(labels=['none'], errors='ignore').sum())
+    if 'FloodViT' in counts and other:
+        lines.append(
+            f'WARNING: {other} event(s) are not measured by FloodViT. Areas from '
+            'different methods are not comparable, and which method an event '
+            'falls back to depends on cloud cover, which tracks rainfall and so '
+            'tracks severity. Measure them with sar_flood_area.py, or drop them '
+            'from the analysis -- do not mix them in.')
+    elif 'FloodViT' not in counts:
+        lines.append(
+            'WARNING: no event is measured by FloodViT, so the severity column is '
+            'entirely the old cloud-routed threshold/NDWI mixture.')
+    return '\n'.join(lines)
+
+
 def main():
+    ensure_printable_output()
     # Track A (S1 + optical availability); may be missing/stale -> handle gracefully
     ta = {}
     if os.path.exists(TRACK_A_CSV):
@@ -131,7 +200,18 @@ def main():
            for f in glob.glob(os.path.join(SCORES_DIR, '*.npz'))}
     # union: every event with a SITS score OR a Track A row (cloud-blind 0-patch events
     # have no .npz but still have S1/NDWI in Track A -> route them to S1, don't drop them)
-    all_events = sorted(set(npz) | set(ta))
+    floodvit, fv_version = load_floodvit()
+    if floodvit:
+        print(f"FloodViT: {len(floodvit)} events from {SAR_CSV} "
+              f"(method version {fv_version})")
+    else:
+        print(f"WARN: no usable FloodViT areas at {SAR_CSV} -> severity falls "
+              "back to the threshold S1 / NDWI paths, whose method is chosen by "
+              "cloud cover (run sar_flood_area.py and copy its CSV here)")
+
+    # Events with a FloodViT area but no SITS score and no Track A row would
+    # otherwise be dropped before the loop even sees them.
+    all_events = sorted(set(npz) | set(ta) | set(floodvit))
 
     rows = []
     for ev in all_events:
@@ -192,11 +272,22 @@ def main():
             else:
                 combined, source = None, 'none'             # no usable measurement at all
 
+        # FloodViT overrides every branch above. Those branches pick a method by
+        # cloud cover, and cloud cover during the monsoon tracks rainfall, which
+        # tracks flood severity -- so the measurement method was correlated with
+        # the quantity being measured. Radar sees through cloud, so one method
+        # covers every event and that correlation is gone. The other columns stay
+        # for comparison.
+        fv_area = floodvit.get(ev)
+        if fv_area is not None:
+            combined, source = float(fv_area), 'FloodViT'
+
         aoi_km2 = aoi_areas.get(ev)
         ratio = (round(combined / aoi_km2, 4)
                  if (combined is not None and aoi_km2 and aoi_km2 > 0) else None)
         rows.append({
             'event_id': ev,
+            'floodvit_km2': round(fv_area, 2) if fv_area is not None else None,
             'sits_detect_km2': round(sits_area, 2) if sits_area is not None else None,  # SITS tile extent (NOT area)
             'sits_threshold': round(thr, 3) if thr is not None else None,
             'sits_method': method,
@@ -215,8 +306,10 @@ def main():
               f"s1={s1_area}  -> combined={_c} ({source})")
 
     if rows:
-        pd.DataFrame(rows).to_csv(OUT_CSV, index=False)
+        out = pd.DataFrame(rows)
+        out.to_csv(OUT_CSV, index=False)
         print(f"\nSaved -> {OUT_CSV}  ({len(rows)} events)")
+        print(summarise_sources(out))
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ Two explanations fit that, and they lead in opposite directions:
 
 This script separates them. It runs OUR preprocessing and OUR predict() over
 Kuro Siwo's own test patches, which come with expert labels. If the reported F1
-(~0.80 flood, mIoU 0.76 for their best model) is roughly reproduced, our
+(0.787 flood F1 for THIS checkpoint, Table 2) is roughly reproduced, our
 inference path is sound and the problem is domain transfer. If it is not, the
 fault is on our side and no amount of re-running India will help.
 
@@ -50,12 +50,21 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from cvnd_layout import ensure_printable_output  # noqa: E402
+
 import floodvit_infer as fvi  # noqa: E402
 
 # Their label masks use 3 for invalid; the trainer passes ignore_index=3 to every
 # metric, so those pixels must be excluded here too or the scores are not
 # comparable to the paper's.
 IGNORE_INDEX = 3
+
+# Kuro Siwo (NeurIPS 2024 D&B) Table 2, GRD track, flood-class F1:
+#   UNet-ResNet50 0.8012 | FloodViT 0.7870 | FloodViT-FT 0.7835 | SNUNet-CD 0.7426
+# floodvit.pt is the FloodViT row -- the frozen-encoder variant, which the paper
+# reports as slightly BETTER than the partly-finetuned FloodViT-FT. Its stored
+# config says linear_eval: True for that reason, not because it is a weak model.
+FLOODVIT_F1 = 0.787
 
 BAND_FILES = [('MS1_IVV', 'MS1_IVH'),      # post   -> channels 0,1
               ('SL1_IVV', 'SL1_IVH'),      # pre_1  -> channels 2,3
@@ -123,6 +132,7 @@ def score(pred, label, valid):
 
 
 def main():
+    ensure_printable_output()
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--data-root', required=True,
@@ -172,14 +182,22 @@ def main():
               f"{r['f1']:>8.3f}{r['iou']:>8.3f}{r['n_true']:>12,}{r['n_pred']:>12,}")
 
     f1 = rows['flood']['f1']
-    print("\npaper's best (UNet-ResNet50): flood F1 0.801, mIoU 0.762")
-    if f1 >= 0.6:
-        print(f"flood F1 {f1:.3f} -- inference path reproduces their data, so the "
-              "India result is domain transfer, not a bug in this pipeline.")
+    print(f"\nKuro Siwo Table 2 (GRD), flood-class F1: FloodViT {FLOODVIT_F1:.3f} "
+          f"-- the checkpoint being run here. UNet-ResNet50 0.801 is the paper's "
+          f"best and SNUNet-CD 0.743 its weakest; FloodViT is second of four.")
+    # Compared against FloodViT's OWN number, not the paper's best: scoring this
+    # checkpoint against a different architecture's row made it look 10 points
+    # worse than it is. The bar is loose because their figure is on their test
+    # split (activations 321, 561, 445, 562, 411, 277 per the checkpoint's stored
+    # config) and any sample set we can obtain is a different, usually harder one.
+    if f1 >= FLOODVIT_F1 - 0.15:
+        print(f"flood F1 {f1:.3f} -- within range of the published {FLOODVIT_F1:.3f}, "
+              "so preprocessing, channel order and checkpoint loading are sound "
+              "and a bad India result is not coming from this path.")
     else:
-        print(f"flood F1 {f1:.3f} -- the model does not work even on the data it "
-              "was trained and evaluated on, so the fault is on our side: "
-              "preprocessing, channel order, or how the checkpoint is loaded.")
+        print(f"flood F1 {f1:.3f} -- far below the published {FLOODVIT_F1:.3f} on "
+              "their own data, so the fault is on our side: preprocessing, "
+              "channel order, or how the checkpoint is loaded.")
 
 
 if __name__ == '__main__':

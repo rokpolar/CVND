@@ -60,5 +60,33 @@ class ComputeMssTests(unittest.TestCase):
             self.assertEqual(result.loc["E002", "MSS"], 0.0)
 
 
+class ComponentIndependenceTests(unittest.TestCase):
+    """S_vol and S_sov are both monotone functions of total_articles, so article
+    volume carries W_VOL + W_SOV of the score rather than W_VOL. Pinned here
+    because the redundancy is invisible in the output -- four columns, four
+    weights, two dimensions."""
+
+    def test_dividing_by_a_constant_does_not_change_minmax(self):
+        s = pd.Series([0.0, 3.0, 10.0, 42.0])
+        direct = compute_mss.minmax_series(s)
+        scaled = compute_mss.minmax_series(s / 1234.0)
+        pd.testing.assert_series_equal(direct, scaled)
+
+    def test_sov_is_documented_as_dependent_on_volume(self):
+        src = (Path(__file__).resolve().parents[1] / "src" / "compute_mss.py"
+               ).read_text(encoding="utf-8")
+        i = src.index('df["S_sov"]')
+        self.assertIn("NOT an independent dimension", src[max(0, i - 900):i])
+
+    def test_minmax_of_a_constant_series_is_zero_not_nan(self):
+        out = compute_mss.minmax_series(pd.Series([5.0, 5.0, 5.0]))
+        self.assertTrue((out == 0.0).all())
+        self.assertFalse(out.isna().any())
+
+    def test_minmax_handles_an_empty_series(self):
+        out = compute_mss.minmax_series(pd.Series([], dtype=float))
+        self.assertEqual(len(out), 0)
+
+
 if __name__ == "__main__":
     unittest.main()

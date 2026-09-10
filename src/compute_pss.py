@@ -8,6 +8,20 @@ PSS = 0.5 * MinMax(log1p(affected_area_km2))
     + 0.5 * MinMax(log1p(population_exposed))
 
 `affected_area_km2` is an alias of `adjusted_flood_area_km2` from severity_raw.
+
+The two components are not independent. compute_population derives
+
+    population_exposed = (flood_km2 / state_area_km2) * state_population
+
+so log1p(population_exposed) is log1p(affected_area_km2) plus a per-state
+constant, log(population density). Expanding the formula, PSS is therefore
+
+    log(flood area)  +  half a state-density term
+
+-- flood area enters twice, and the area/population weights do not trade off two
+dimensions of severity the way the expression suggests. The numbers below are
+still a monotone function of flood area within a state; read them that way, and do
+not treat PSS_W_AREA / PSS_W_POP as independent levers.
 """
 
 from __future__ import annotations
@@ -26,10 +40,11 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cvnd_config import PSS_W_AREA, PSS_W_POP  # noqa: E402
-from cvnd_layout import data_path  # noqa: E402
+from cvnd_layout import data_path, ensure_printable_output  # noqa: E402
 
 
 def main() -> None:
+    ensure_printable_output()
     df = pd.read_csv(data_path("severity_raw"))
     df["affected_area_km2"] = df["adjusted_flood_area_km2"]
     df = df.dropna(subset=["affected_area_km2", "population_exposed"])

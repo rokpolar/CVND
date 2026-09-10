@@ -35,7 +35,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import floodvit_infer as fvi  # noqa: E402
 import sar_patches as sp  # noqa: E402
-from cvnd_layout import data_path  # noqa: E402
+from cvnd_layout import data_path, ensure_printable_output  # noqa: E402
 
 MAX_REPEATED_ERRORS = 3
 
@@ -81,7 +81,26 @@ PROGRESS_DIR = 'sar_progress'
 #      filter and the model. Also: int16 overflow above sigma0 3.28 turned the
 #      brightest targets negative, no-data decoded to the darkest possible value
 #      instead of the clamp, and the validity mask included the `angle` band.
-METHOD_VERSION = 8
+#   9: pre-event scenes were the wrong way round. Kuro Siwo's grid dictionary
+#      (pickle/KuroV2_grid_dict.gz) dates SL1 after SL2 in all 31,707 records,
+#      so pre_event_1 is the pass CLOSEST to the flood -- v1-v8 put the older
+#      scene in channels 2,3 and the newer in 4,5, the reverse of the training
+#      layout. Nothing raised: the model returns a plausible mask either way,
+#      and validate_floodvit.py reads their files directly so it never saw the
+#      swap (flood F1 0.701 there against 0.313 through this path).
+#  10: the post-event window follows the event's own end_date and up to
+#      SAR_MAX_POST passes are read, keeping the largest flood each patch showed.
+#      v1-v9 took the FIRST pass within 14 days of start_date, but half the 204
+#      events last longer than that (median span 14.5 d, mean 35.2, max 167) and
+#      21 carry `start:month` precision, so their start_date is the 1st while the
+#      flood runs to month end. Severe floods last longer, so the old rule
+#      under-measured exactly the largest events -- a bias pointing straight at
+#      the relationship this study exists to estimate. The window is capped at
+#      MEDIA_WINDOW_DAYS so severity and article counts cover the same period.
+#      Also records per-patch counts, so an event and its control are compared
+#      over the ground BOTH observed: their own denominators differed by 24% over
+#      Bihar (61,229 vs 80,692 km2) against a gap of about one point.
+METHOD_VERSION = 10
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -101,13 +120,17 @@ def load_progress(state_dir, event_id):
         raw = json.loads(p.read_text())
     except (json.JSONDecodeError, OSError):
         print(f"  WARN unreadable progress for {event_id}; starting over")
-        return load_progress(Path(state_dir) / '__missing__', event_id)
+        patch_counts_path(state_dir, event_id).unlink(missing_ok=True)
+        return _fresh_state()
     if raw.get('method_version') != METHOD_VERSION:
         # Block counts and masks differ between versions, so resuming on top of
         # them would blend two methods inside one event. The event restarts; the
         # decision to re-measure a *finished* event is --force.
         print(f"  {event_id}: partial state from method "
               f"v{raw.get('method_version')} != v{METHOD_VERSION} -> restarting")
+        # The per-patch file is append-only, so restarting without clearing it
+        # would stack v10 rows on top of v9 counts for the same patches.
+        patch_counts_path(state_dir, event_id).unlink(missing_ok=True)
         return _fresh_state()
     raw.setdefault('failed_blocks', [])
     raw.setdefault('total_blocks', None)
@@ -131,6 +154,115 @@ def save_progress(state_dir, event_id, state):
 
 def _zero_counts():
     return {'no_water_px': 0, 'permanent_water_px': 0, 'flood_px': 0}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Per-patch counts
+#
+# An event and its control do NOT observe the same ground. Over Bihar the event
+# saw 61,229 km2 and the control 80,692 km2 -- a 24% difference in the
+# denominator against a gap of about 1 percentage point in the thing being
+# measured. Subtracting two fractions computed over different land says nothing.
+#
+# The difference is not whole blocks (the orbit assignment matched); it is which
+# patches cleared SAR_KEEP_VALID, which depends on each pass's own no-data. So
+# the fix has to be per patch, not per block: record every kept patch by its
+# position in the AOI-wide grid, then compare an event and a control only over
+# the patches BOTH of them kept.
+# ══════════════════════════════════════════════════════════════════════════════
+
+PATCH_DIR = 'sar_patch_counts'
+PATCH_COLS = ['block_id', 'patch_row', 'patch_col', 'flood_px',
+              'permanent_water_px', 'valid_px']
+
+
+def peak_counts(preds, valid):
+    """Per-patch peak flood and permanent-water pixel counts across passes.
+
+    `preds` is an iterable of (n_patches, H, W) class-id arrays, one per
+    post-event pass over the same patches; it may be a generator so only one
+    pass's prediction is held at a time. `valid` is the shared (n, H, W) mask.
+
+    Peak, not the first pass and not a union: flood extent means the most water
+    the event showed on ground that every pass saw. A union across passes would
+    accumulate each pass's false positives instead.
+    """
+    flood = perm = None
+    for pred in preds:
+        pred = np.asarray(pred).copy()
+        # Masked pixels (steep ground, missing data) still get a class, so force
+        # them to "no water" before counting. Otherwise the terrain gate would
+        # only shrink the patch set, not the false positives inside it.
+        pred[~valid] = fvi.CLASS_NO_WATER
+        f = (pred == fvi.CLASS_FLOOD).sum(axis=(1, 2))
+        p = (pred == fvi.CLASS_PERMANENT_WATER).sum(axis=(1, 2))
+        flood = f if flood is None else np.maximum(flood, f)
+        perm = p if perm is None else np.maximum(perm, p)
+    if flood is None:
+        n = len(valid)
+        return np.zeros(n, dtype=int), np.zeros(n, dtype=int)
+    return flood, perm
+
+
+def patch_counts_path(state_dir, event_id):
+    return Path(state_dir) / PATCH_DIR / f'{event_id}.csv'
+
+
+def append_patch_counts(state_dir, event_id, rows):
+    """Append one block's per-patch counts. Written before progress is saved.
+
+    Append-only so a killed session costs one block, not the file. A block
+    re-run after an interrupted save appends its patches twice; load_patch_counts
+    keeps the last row per patch, so the duplicate is harmless.
+    """
+    if not len(rows):
+        return
+    p = patch_counts_path(state_dir, event_id)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    df = pd.DataFrame(rows, columns=PATCH_COLS)
+    df.to_csv(p, mode='a', header=not p.exists(), index=False)
+
+
+def load_patch_counts(state_dir, event_id):
+    """Per-patch counts for one event, one row per patch position."""
+    p = patch_counts_path(state_dir, event_id)
+    if not p.exists():
+        return None
+    try:
+        df = pd.read_csv(p)
+    except (OSError, pd.errors.ParserError, pd.errors.EmptyDataError):
+        return None
+    if df.empty or not set(PATCH_COLS) <= set(df.columns):
+        return None
+    return df.drop_duplicates(['patch_row', 'patch_col'], keep='last')
+
+
+def shared_ground(event_df, control_df):
+    """Flood fractions for an event and its control over the patches both kept.
+
+    Returns (event_frac, control_frac, shared_km2, event_only_km2,
+    control_only_km2) or None when they share nothing.
+    """
+    if event_df is None or control_df is None:
+        return None
+    key = ['patch_row', 'patch_col']
+    both = event_df.merge(control_df, on=key, suffixes=('_e', '_c'))
+    if both.empty:
+        return None
+    # Validity differs per pass even inside a shared patch, so the common ground
+    # is the smaller of the two valid-pixel counts, not either one alone.
+    common = np.minimum(both['valid_px_e'], both['valid_px_c'])
+    denom = float(common.sum())
+    if denom <= 0:
+        return None
+    scale = fvi.px_to_km2(1, sp.SAR_SCALE_M)
+    # Flood counts are capped at the common validity: a patch cannot contribute
+    # more flood than the ground both runs actually saw.
+    e_flood = float(np.minimum(both['flood_px_e'], common).sum())
+    c_flood = float(np.minimum(both['flood_px_c'], common).sum())
+    return (e_flood / denom, c_flood / denom, denom * scale,
+            float(event_df['valid_px'].sum() - denom) * scale,
+            float(control_df['valid_px'].sum() - denom) * scale)
 
 
 def append_result(state_dir, row):
@@ -199,6 +331,9 @@ def reset_event(state_dir, event_id):
     the run being discarded. Use --redo when the blocks are still good.
     """
     progress_path(state_dir, event_id).unlink(missing_ok=True)
+    # The patch file is append-only: left behind, the next run would stack new
+    # rows on counts from the method being discarded.
+    patch_counts_path(state_dir, event_id).unlink(missing_ok=True)
     drop_result(state_dir, event_id)
 
 
@@ -254,6 +389,11 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
     row = row.copy()
     event_id = str(row['event_id'])
     if control_offset is not None:
+        # end_date moves with start_date: it now sets the length of the
+        # post-event search window, so shifting only the start would give the
+        # control a different-length window and a different number of passes.
+        if row.get('end_date') not in (None, '') and pd.notna(row.get('end_date')):
+            row['end_date'] = shift_date(row['end_date'], control_offset)
         row['start_date'] = shift_date(row['start_date'], control_offset)
         event_id = control_id(event_id, control_offset)
     sat = sp._sat()
@@ -262,7 +402,8 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
 
     print(f"\n[{event_id}] {row['state']} — {row['start_date']}")
     region = sat.get_region(row)
-    sources, err = sp.orbit_sources(region, row['start_date'])
+    sources, err = sp.orbit_sources(region, row['start_date'],
+                                    row.get('end_date'))
     if err:
         print(f"  skip: {err}")
         return {'event_id': event_id, 'state': row['state'],
@@ -273,10 +414,14 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
     for s in sources:
         m = s['meta']
         print(f"  orbit {s['orbit']:>3} {s['pass']:<10} {s['coverage_km2']:>8,.0f} km2 | "
-              f"pre {m['pre_1_date']}, {m['pre_2_date']} -> post {m['post_date']}")
+              f"pre {m['pre_1_date']}, {m['pre_2_date']} -> post "
+              f"{', '.join(m['post_dates'])}")
+    print(f"  post-event window: {sources[0]['meta']['window_days']} days "
+          f"({row['start_date']} .. {row.get('end_date')})")
 
     for s in sources:
-        s['images'] = [im.clip(region) for im in s['images']]
+        s['posts'] = [im.clip(region) for im in s['posts']]
+        s['pres'] = [im.clip(region) for im in s['pres']]
     state = load_progress(state_dir, event_id)
     done = set(state['done_blocks'])
     counts = dict(state['counts'])
@@ -288,25 +433,38 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
 
     started = time.time()
     total_blocks = state.get('total_blocks')
-    for block_id, patches, coords, valid in sp.iter_patch_blocks(
+    for block_id, batches, coords, valid in sp.iter_patch_blocks(
             sources, region, done, flat=sp.terrain_mask(), speckle=speckle):
         if block_id == '__total__':
-            total_blocks = patches
+            total_blocks = batches
             state['total_blocks'] = total_blocks
             continue
-        if patches is None:                      # download failed; retry next run
+        if batches is None:                      # download failed; retry next run
             failed.add(block_id)
             continue
-        if len(patches):
-            pred = fvi.predict(model, patches, device=device, batch_size=batch_size)
-            # Masked pixels (steep ground, missing data) still get a class, so
-            # force them to "no water" before counting. Otherwise the terrain gate
-            # would only shrink the patch set, not the false positives inside it.
-            pred[~valid] = fvi.CLASS_NO_WATER
-            for k, v in fvi.count_classes(pred).items():
-                counts[k] += v
-            n_patches += len(patches)
+        if len(coords):
+            # One classification per post-event pass, over the same patches with
+            # the same validity; a generator so only one pass's prediction is in
+            # memory at a time.
+            flood, perm = peak_counts(
+                (fvi.predict(model, b, device=device, batch_size=batch_size)
+                 for b in batches), valid)
+            counts['flood_px'] += int(flood.sum())
+            counts['permanent_water_px'] += int(perm.sum())
+            # The two maxima are taken independently and can be reached on
+            # different passes, so this is "valid pixels never called water",
+            # floored at zero rather than allowed to go negative.
+            counts['no_water_px'] += max(
+                0, int(valid.sum()) - int(flood.sum()) - int(perm.sum()))
+            n_patches += len(coords)
             valid_px += int(valid.sum())
+            # Recorded before the progress save, so a patch file is never
+            # missing rows for a block that progress already calls done.
+            per_patch = valid.reshape(len(valid), -1).sum(axis=1)
+            append_patch_counts(state_dir, event_id, [
+                (block_id, int(coords[j][0]), int(coords[j][1]),
+                 int(flood[j]), int(perm[j]), int(per_patch[j]))
+                for j in range(len(coords))])
         done.add(block_id)
         failed.discard(block_id)
         state.update({'done_blocks': sorted(done), 'counts': counts,
@@ -366,18 +524,23 @@ def process_event(row, model, state_dir, device, batch_size, control_offset=None
         # best-covering one, so a result can be traced back to its imagery.
         'orbits': '|'.join(str(s['orbit']) for s in sources),
         'n_orbits': len(sources),
-        # Blocks come from different orbits, so post-event imagery is not one
-        # date. Record the span: a wide one means parts of the AOI were seen days
-        # apart, which matters while water is receding.
-        'post_date_first': min(s['meta']['post_date'] for s in sources),
-        'post_date_last': max(s['meta']['post_date'] for s in sources),
-        **sources[0]['meta'],
+        # Blocks come from different orbits and each orbit is read at several
+        # dates, so post-event imagery is not one date. Record the whole span: a
+        # wide one means parts of the AOI were seen days apart, which matters
+        # while water is receding.
+        **{**sources[0]['meta'],
+           # a list would land in the CSV as a python repr
+           'post_dates': '|'.join(sources[0]['meta']['post_dates'])},
+        'post_date_first': min(d for s in sources for d in s['meta']['post_dates']),
+        'post_date_last': max(d for s in sources for d in s['meta']['post_dates']),
+        'n_post_total': sum(s['meta']['n_post'] for s in sources),
     }
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main():
+    ensure_printable_output()
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--state-dir', default=str(data_path('flood_extent').parent),
@@ -536,15 +699,22 @@ def print_results(state_dir):
     cols = [c for c in SUMMARY_COLS if c in df.columns]
     print(df[cols].to_string(index=False))
     if {'is_control', 'flood_frac_observed'} <= set(df.columns):
-        _print_control_comparison(df)
+        _print_control_comparison(df, state_dir)
 
 
-def _print_control_comparison(df):
+def _print_control_comparison(df, state_dir=None):
     """Event flood fraction against its own no-flood baseline.
 
     The fraction alone says nothing: FloodViT called 46% of flat Sikkim flooded
     during an event and 35% a year earlier with no flood at all. Only the gap
     between the two is evidence that the model saw the event.
+
+    And the gap only means something over the SAME ground. Each run keeps
+    whichever patches its own passes saw, so the two denominators differ -- 61,229
+    km2 against 80,692 km2 over Bihar, a 24% difference against a gap of about
+    one point. Where the per-patch files exist the fractions are recomputed over
+    the patches both runs kept; the whole-AOI numbers stay alongside, marked, so
+    the difference between them is visible rather than assumed away.
     """
     ctrl = df[df['is_control'].fillna(False).astype(bool)]
     rows = []
@@ -558,12 +728,29 @@ def _print_control_comparison(df):
         gap = None
         if pd.notna(e['flood_frac_observed']) and pd.notna(c['flood_frac_observed']):
             gap = round(e['flood_frac_observed'] - c['flood_frac_observed'], 4)
-        rows.append({'event_id': base, 'state': e.get('state'),
-                     'event_frac': e['flood_frac_observed'],
-                     'control_frac': c['flood_frac_observed'], 'gap': gap})
+        row = {'event_id': base, 'state': e.get('state'),
+               'event_frac': e['flood_frac_observed'],
+               'control_frac': c['flood_frac_observed'], 'gap': gap,
+               'ground': 'each own'}
+        if state_dir is not None:
+            shared = shared_ground(load_patch_counts(state_dir, base),
+                                   load_patch_counts(state_dir, str(c['event_id'])))
+            if shared is not None:
+                e_frac, c_frac, km2, e_only, c_only = shared
+                row.update({'event_frac': round(e_frac, 5),
+                            'control_frac': round(c_frac, 5),
+                            'gap': round(e_frac - c_frac, 4),
+                            'ground': 'shared',
+                            'shared_km2': round(km2, 1),
+                            'dropped_km2': round(e_only + c_only, 1)})
+        rows.append(row)
     if rows:
         print("\nevent vs control (a high fraction means nothing without the gap):")
         print(pd.DataFrame(rows).to_string(index=False))
+        if any(r['ground'] == 'each own' for r in rows):
+            print("  'each own' rows compare fractions over different ground and "
+                  "are not evidence either way -- re-run so the per-patch files "
+                  "exist for both sides.")
 
 
 if __name__ == '__main__':

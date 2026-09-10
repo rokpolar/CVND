@@ -132,8 +132,9 @@ class CountingTests(unittest.TestCase):
         self.assertEqual(c['flood_px'], 2)
 
     def test_permanent_water_is_not_counted_as_flood(self):
-        """The model separates the two, so no JRC mask is needed downstream --
-        but only if we count class 2 alone."""
+        """Class 1 exists, so counting 1 and 2 together would report every river
+        as flood. It separates them imperfectly (F1 0.410 on their own labels),
+        which is a question about accuracy, not about which id to count."""
         pred = np.full((10, 10), fi.CLASS_PERMANENT_WATER)
         self.assertEqual(fi.count_classes(pred)['flood_px'], 0)
 

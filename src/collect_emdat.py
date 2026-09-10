@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from cvnd_layout import ROOT, data_path
+from cvnd_layout import ROOT, data_path, ensure_printable_output
 
 
 API_URL = "https://api.emdat.be/v1"
@@ -369,6 +369,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    ensure_printable_output()
     args = parse_args(argv)
     try:
         first_query = build_query(

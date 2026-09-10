@@ -22,8 +22,11 @@ order is post-first. Feeding pre-first silently produces plausible-looking but
 wrong masks, which is why it is asserted here.
 
 Output classes (num_classes: 3): 0 = no water, 1 = permanent water, 2 = flood.
-Flood AREA counts class 2 only -- permanent water is excluded by the model
-itself, so no JRC mask is needed.
+Flood AREA counts class 2 only. The model does carry a separate permanent-water
+class, but it is not strong: on 200 of Kuro Siwo's own labelled patches it
+reached F1 0.410 against flood's 0.701, so some standing water does land in
+class 2. Whether a JRC permanent-water mask is needed on top is open -- it is
+not settled by the model having the class.
 
 Run on a GPU. ViT-Large over millions of patches is not a CPU job.
 """

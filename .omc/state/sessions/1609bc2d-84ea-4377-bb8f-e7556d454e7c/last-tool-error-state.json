@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"python -c \\\"\\nimport pandas as pd, sys\\nsys.path.insert(0,'src')\\nimport importlib.util\\nspec = importlib.util.spec_from_file_location('b','src/build_emdat_events.py')\\nm = importlib.util....",
+  "error": "Exit code 1\nTraceback (most recent call last):\r\n  File \"<string>\", line 6, in <module>\r\n    m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)\r\n                                               ~~~~~~~~~~~~~~~~~~~~~~~^^^\r\n  File \"<frozen importlib._bootstrap_external>\", line 1026, in exec_module\r\n  File \"<frozen importlib._bootstrap>\", line 488, in _call_with_frames_removed\r\n  File \"C:\\IndiaCVND\\src/build_emdat_events.py\", line 32, in <module>\r\n    @dataclass(frozen=True)\r\n     ~...",
+  "timestamp": "2026-09-09T23:35:24.865Z",
+  "retry_count": 1
+}
