@@ -24,7 +24,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cvnd_layout import data_path  # noqa: E402
+from cvnd_layout import data_path, ensure_printable_output  # noqa: E402
 
 STATE_ALIASES = {
     "jammu and kashmir": "Jammu and Kashmir",
@@ -127,19 +127,33 @@ def from_flood_combined(
         if not pd.isna(flood_ratio):
             flood_ratio = float(min(max(flood_ratio, 0.0), 1.0))
 
-        if area_km2 and state_pop:
-            exposed = round((flood_km2 / area_km2) * state_pop)
-            exposure_rate = (
-                round(flood_ratio, 6)
-                if flood_ratio is not None and not pd.isna(flood_ratio)
-                else round(min(flood_km2 / area_km2, 1.0), 6)
-            )
+        # One flooded fraction, used for both outputs. They were computed from
+        # different denominators -- exposure_rate from aoi_km2 (when present) and
+        # population_exposed from state_area_km2 -- so exposure_rate * population
+        # did not equal population_exposed, and the two disagreed by however much
+        # the GAUL polygon differs from the official state area.
+        # state_area_km2, because the population it is multiplied by is the
+        # official state's. aoi_km2 is the GAUL polygon the satellite actually
+        # measured and is meant to BE the state, so a material difference is a
+        # data problem to surface rather than a denominator to switch to.
+        denom = float(area_km2) if area_km2 else None
+        if denom and not pd.isna(aoi_km2) and float(aoi_km2) > 0 \
+                and abs(float(aoi_km2) - denom) > 0.05 * denom:
+            warnings.append(
+                f"AOI AREA DIFFERS FROM STATE AREA by "
+                f"{abs(float(aoi_km2) - denom) / denom:.0%} "
+                f"(aoi {float(aoi_km2):.0f} vs state {denom:.0f}); flood was "
+                "measured over the AOI but exposure is scaled by state area")
+        if denom and state_pop:
+            fraction = min(max(flood_km2 / denom, 0.0), 1.0)
+            exposure_rate = round(fraction, 6)
+            exposed = round(fraction * state_pop)
         else:
             exposed = None
             exposure_rate = None
             if not state_pop:
                 warnings.append(f"NO POPULATION DATA for '{canonical}'")
-            if not area_km2:
+            if not denom:
                 warnings.append(f"NO AREA DATA for '{canonical}'")
 
         if flood_km2 == 0:
@@ -254,6 +268,7 @@ def from_legacy_flood_area(
 
 
 def main():
+    ensure_printable_output()
     print("=" * 60)
     print("COMPUTE POPULATION / SEVERITY RAW")
     print("=" * 60)

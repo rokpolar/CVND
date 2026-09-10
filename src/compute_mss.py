@@ -23,7 +23,8 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cvnd_config import MEDIA_WINDOW_DAYS  # noqa: E402
-from cvnd_layout import data_path  # noqa: E402
+from cvnd_layout import data_path, ensure_printable_output  # noqa: E402
+import state_income  # noqa: E402
 
 MSS_FEATURES = ["S_vol", "S_sov", "S_TTFR", "S_CD"]
 AHP_LABELS = MSS_FEATURES
@@ -155,6 +156,7 @@ def weights_vector(ahp: dict) -> np.ndarray:
 
 
 def main() -> None:
+    ensure_printable_output()
     print("=" * 60)
     print("COMPUTE MEDIA SALIENCE SCORE (MSS)")
     print("=" * 60)
@@ -219,7 +221,10 @@ def main() -> None:
         .rename(columns={"article_count": "en_articles"})
     )
 
-    events = pd.read_csv(data_path("events"))[
+    # Same correction as compute_expected_coverage: the recorded income_group is
+    # a hand-written label that does not track per-capita GSDP, and MSS is broken
+    # down by it below. Derived in one place so the two never disagree.
+    events = state_income.apply_income_group(pd.read_csv(data_path("events")))[
         ["event_id", "state", "start_date", "income_group"]
     ]
     events["onset_date"] = pd.to_datetime(events["start_date"])
@@ -255,6 +260,14 @@ def main() -> None:
         df["vol_scaled"] = df["total_articles"].astype(float)
 
     df["S_vol"] = minmax_series(df["vol_scaled"]).round(4)
+    # S_sov is NOT an independent dimension. N_total is one global constant, and
+    # min-max scaling is invariant to dividing by a positive constant, so
+    # minmax(total_articles / N_total) == minmax(total_articles) exactly. When the
+    # skew test above sends S_vol down the log1p branch the two differ only in
+    # curvature; both are monotone in total_articles. The AHP and entropy weights
+    # below treat them as separate criteria, which means article volume carries
+    # W_VOL + W_SOV of the score rather than W_VOL. A genuine share-of-voice term
+    # would normalise within a period or a state, not against a single total.
     if N_total > 0:
         df["S_sov"] = minmax_series(df["total_articles"] / N_total).round(4)
     else:

@@ -42,6 +42,8 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from cvnd_layout import ensure_printable_output  # noqa: E402
+
 import floodvit_infer as fvi  # noqa: E402
 import sar_patches as sp  # noqa: E402
 import validate_floodvit as vf  # noqa: E402
@@ -179,12 +181,14 @@ def ours_for_sample(sample_dir, speckle=True):
 
     rect, post_date, crs = sample_footprint(sample_dir)
     start = ee.Date(post_date).advance(-1, 'day').format('YYYY-MM-dd').getInfo()
-    sources, err = sp.orbit_sources(rect, start)
+    sources, err = sp.orbit_sources(rect, start, max_post=1)
     if err:
         return None, err, post_date
 
     src = sources[0]
-    images = [im.clip(rect) for im in src['images']]
+    # One post pass only: the sample's labels describe THEIR post acquisition, so
+    # a peak taken over later passes would be scored against the wrong day.
+    images = [im.clip(rect) for im in [src['posts'][0]] + list(src['pres'])]
     arrs = [sp._download_block(im, rect, speckle=speckle, crs=crs)
             for im in images]
 
@@ -208,6 +212,7 @@ def ours_for_sample(sample_dir, speckle=True):
 
 
 def main():
+    ensure_printable_output()
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--data-root', required=True)

@@ -79,6 +79,14 @@ def _otsu_from_hist(h):
         return None, 0.0
     counts  = np.array(h['histogram'], dtype=float)
     buckets = np.array(h['bucketMeans'], dtype=float)
+    # Bucket width, so the threshold can be returned as the CLASS BOUNDARY rather
+    # than the winning bucket's centre. The loop below puts bucket i in class 0,
+    # and the caller selects water with `.lt(threshold)`; handing back the centre
+    # dropped the upper half of that bucket from the water class on every event.
+    width = h.get('bucketWidth')
+    if width is None:
+        width = float(buckets[1] - buckets[0]) if len(buckets) > 1 else 0.0
+    width = float(width)
     total   = counts.sum()
     if total == 0:
         return None, 0.0
@@ -97,7 +105,10 @@ def _otsu_from_hist(h):
         mu1   = (total_mean - w0 * mu0) / w1
         var   = w0 * w1 * (mu0 - mu1) ** 2
         if var > best_var:
-            best_var, best_t = var, buckets[i]
+            # Upper edge of the winning bucket: class 0 is buckets[0..i], so the
+            # boundary that `.lt(t)` must use sits above bucket i, not at its
+            # centre.
+            best_var, best_t = var, buckets[i] + width / 2.0
     sep = best_var / total_var
     return (float(best_t) if best_t is not None else None), sep
 

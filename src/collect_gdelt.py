@@ -21,7 +21,7 @@ from typing import Any, Iterable
 
 import pandas as pd
 
-from cvnd_layout import data_path
+from cvnd_layout import data_path, ensure_printable_output
 
 
 GKG_TABLE = "gdelt-bq.gdeltv2.gkg_partitioned"
@@ -485,6 +485,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: Iterable[str] | None = None) -> int:
+    ensure_printable_output()
     args = parse_args(argv)
     try:
         events = pd.read_csv(args.events)

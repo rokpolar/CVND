@@ -14,12 +14,18 @@ CLOUD_MAX_PCT = 60
 COLOR_UNDER = "#FF0000"
 COLOR_MID = "#FFE600"
 COLOR_OVER = "#00FF00"
+COLOR_UNKNOWN = "#9E9E9E"
 COLORS_INCOME = {
     "High": COLOR_OVER,
     "Middle": COLOR_MID,
     "Low": COLOR_UNDER,
+    # state_income labels states with no per-capita GSDP 'Unknown'. visualize.py
+    # builds a pd.Categorical from INCOME_ORDER, and a value outside the
+    # categories becomes NaN -- so without this entry those events would drop out
+    # of every figure with nothing said.
+    "Unknown": COLOR_UNKNOWN,
 }
-INCOME_ORDER = ["High", "Middle", "Low"]
+INCOME_ORDER = ["High", "Middle", "Low", "Unknown"]
 
 LOG_RATIO_CMAP_STOPS = [
     (0.0, COLOR_UNDER),

@@ -10,7 +10,34 @@ Resolve data artifacts by logical key via data_path(key). Tier layout:
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+
+
+def ensure_printable_output() -> None:
+    """Stop a legacy console encoding from killing the run.
+
+    The Windows console defaults to a legacy codepage (cp949 on the machine this
+    is developed on), where printing an em dash or "km²" raises
+    UnicodeEncodeError. That made `--help` exit with a traceback on every script,
+    and killed a local run on the FIRST event, because the per-event status line
+    in sar_flood_area.py contains an em dash. Colab is UTF-8 and never saw it.
+
+    UTF-8 first, since that renders correctly on Colab, on Windows Terminal and
+    through a pipe. `errors="replace"` is set either way, so a console that truly
+    cannot encode a character prints a placeholder instead of aborting the run.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:          # already wrapped or detached
+            continue
+        for kwargs in ({"encoding": "utf-8", "errors": "replace"},
+                       {"errors": "replace"}):
+            try:
+                reconfigure(**kwargs)
+                break
+            except (ValueError, OSError, LookupError):
+                continue
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -45,6 +72,10 @@ DATA_FILES: dict[str, str] = {
     "sar_patches": "cache/sar_patches",
     "sar_patches_index": "cache/sar_patches_index.csv",
     "sar_checkpoint": "cache/sar_checkpoint.json",
+    # Per-event flood area from sar_flood_area.py (Kuro Siwo FloodViT over S1).
+    # Written to the run's --state-dir, which is a Drive folder on Colab; copy it
+    # here so merge_results.py can pick it up.
+    "sar_flood_area": "cache/sar_flood_area.csv",
     "ne_india_states": "cache/ne_india_states.gpkg",
     # intermediate
     "flood_combined": "intermediate/flood_combined.csv",

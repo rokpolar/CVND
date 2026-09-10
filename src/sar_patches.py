@@ -20,8 +20,13 @@ and SSLDataset does the same (`cat((flood, pre_event_1, pre_event_2))`).
 That `inputs` list selects WHICH acquisitions to use, not their order.
 So the six channels are:
     0,1  post_event  VV, VH
-    2,3  pre_event_1 VV, VH   (older pre-event scene)
-    4,5  pre_event_2 VV, VH   (newer pre-event scene)
+    2,3  pre_event_1 VV, VH   (the pre-event pass CLOSER to the flood)
+    4,5  pre_event_2 VV, VH   (the earlier one)
+
+Which pre-event scene is which is not a naming detail: their own grid dictionary
+(pickle/KuroV2_grid_dict.gz) carries a source_date per acquisition, and in all
+31,707 records SL1 is NEWER than SL2 -- median gap 12 days, one repeat cycle.
+Handing the model the older scene as pre_event_1 swaps channels 2,3 with 4,5.
 
 Values are LINEAR sigma0, not dB: Kuro Siwo's SNAP graph sets
 `outputImageScaleInDb=false`, and its normalisation (mean [0.0953, 0.0264],
@@ -58,6 +63,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import ee  # noqa: E402
 
+from cvnd_config import MEDIA_WINDOW_DAYS  # noqa: E402
+
 
 
 def _sat():
@@ -79,7 +86,25 @@ SAR_SCALE_M = 10              # SNAP graph: pixelSpacingInMeter 10.0
 SAR_CHANNELS = (SAR_N_PRE + 1) * len(SAR_POLARISATIONS)   # 6
 
 # ── acquisition search windows ────────────────────────────────────────────────
-POST_WINDOW_DAYS = 14         # first usable acquisition after onset
+# Half of the 204 events outlast 14 days (median span 14.5, mean 35.2, max 167;
+# 68 events run past 30 days and 19 past 90). Taking only the first pass after
+# onset measured days 1-14 of a 74-day flood, and 21 events carry
+# `start:month` precision so their start_date is the 1st of the month while the
+# flood runs to the end of it. Worse, that error is not random: severe floods
+# last longer, so the largest events were the most likely to be measured before
+# their peak -- which pushes the severity proxy DOWN exactly where severity is
+# highest and flattens the very relationship the study measures.
+# So the window follows the event's own end_date, and several post-event passes
+# are read rather than one.
+# The ceiling is the media window, so severity and coverage describe the SAME
+# period -- that equality is the whole comparison the study makes. It costs
+# nothing: the number of downloads is SAR_MAX_POST either way, and the window only
+# decides which passes those are. A shorter ceiling truncated severity for 56 of
+# the 204 events (27.5%) while their coverage kept accumulating to day 93; at 93
+# both sides truncate at the same place and only 16 events (7.8%) run past it.
+POST_WINDOW_DAYS = 14         # minimum window, for events recorded as a single day
+POST_WINDOW_CAP_DAYS = MEDIA_WINDOW_DAYS
+SAR_MAX_POST = 3              # post-event passes read per orbit
 PRE_SEARCH_DAYS = 90          # look this far back for the two pre-event scenes
 
 # ── tiling ────────────────────────────────────────────────────────────────────
@@ -160,6 +185,64 @@ def acquisitions(col, gap_hours=2):
             for g in groups]
 
 
+def post_window_days(start_date, end_date=None, minimum=POST_WINDOW_DAYS,
+                     cap=POST_WINDOW_CAP_DAYS):
+    """How many days after onset to search for post-event passes.
+
+    The event's own end_date sets it, floored at `minimum` so a one-day record
+    still gets a pass at all (the repeat cycle is 12 days) and capped at the media
+    window so severity and article counts describe the same period. The cap is not
+    about cost: the number of downloads is SAR_MAX_POST either way.
+
+    An absent or malformed end_date falls back to the minimum rather than
+    guessing -- NaT, NaN, '' and unparseable strings all land there.
+    """
+    if end_date is None or (isinstance(end_date, float) and end_date != end_date):
+        return minimum
+    try:
+        span = (pd.Timestamp(end_date) - pd.Timestamp(start_date)).days
+    except (ValueError, TypeError):
+        return minimum
+    if span != span or span <= 0:
+        return minimum
+    return int(min(max(span, minimum), cap))
+
+
+def pick_posts(post_acqs, max_post=SAR_MAX_POST):
+    """Up to `max_post` post-event passes spread across the window.
+
+    Both ends are always included -- the first pass after onset and the last one
+    inside the window -- with the rest spaced evenly between. Reading only the
+    first pass is what measured the start of a flood instead of its peak.
+    """
+    if max_post < 1:
+        raise ValueError('max_post must be at least 1')
+    if len(post_acqs) <= max_post:
+        return list(post_acqs)
+    if max_post == 1:
+        return [post_acqs[0]]
+    last = len(post_acqs) - 1
+    idx = sorted({int(round(i * last / (max_post - 1))) for i in range(max_post)})
+    return [post_acqs[i] for i in idx]
+
+
+def order_acquisitions(post_acqs, pre_acqs, max_post=SAR_MAX_POST):
+    """(posts, pre_event_1, pre_event_2) out of two oldest-first lists.
+
+    pre_event_1 is the LAST pass before onset and pre_event_2 the one before it.
+    Kuro Siwo's own grid dictionary (pickle/KuroV2_grid_dict.gz) carries a
+    source_date per acquisition and SL1 is newer than SL2 in all 31,707 records,
+    median gap 12 days. Reversing the two hands the model the opposite of its
+    training layout in channels 2,3 and 4,5, which produces a plausible but
+    wrong mask with nothing to raise an error.
+
+    Kept separate from orbit_sources so the rules can be tested without Earth
+    Engine -- the pre-event order was wrong here for every India measurement
+    taken up to method version 8.
+    """
+    return pick_posts(post_acqs, max_post), pre_acqs[-1], pre_acqs[-SAR_N_PRE]
+
+
 def mosaic_acquisition(col, acq):
     """Every frame of one acquisition, joined into a single image."""
     _, first_ms, last_ms = acq
@@ -167,66 +250,114 @@ def mosaic_acquisition(col, acq):
                           ee.Date(last_ms + 1000)).mosaic()
 
 
-def orbit_sources(region, start_date):
-    """One before/after triplet per relative orbit that can supply three passes.
+def orbit_sources(region, start_date, end_date=None, max_post=SAR_MAX_POST):
+    """Post-event passes plus two pre-event scenes, per relative orbit.
 
     No single orbit covers a large AOI. Over Bihar the best reaches 66% of the
     state and the orbit that happens to pass first after onset reaches 15%, so
     measuring from one orbit measures a slice and calls it the state. Backscatter
     depends on look direction, so orbits cannot be merged into one timestep
-    either -- each keeps its own triplet, and blocks are assigned to whichever
+    either -- each keeps its own scenes, and blocks are assigned to whichever
     orbit sees them.
 
-    Returns (sources, error). Sources are ordered by post-event date, earliest
-    first; each is {'orbit', 'pass', 'images', 'footprint', 'coverage_km2',
-    'meta'} with images ordered post, pre_event_1, pre_event_2.
+    `end_date` opens the post-event window to the length of the event; without
+    it the window is POST_WINDOW_DAYS, which measured the first two weeks of
+    floods that ran for months.
+
+    Returns (sources, error). Sources are ordered by coverage, largest first;
+    each is {'orbit', 'pass', 'posts', 'pres', 'footprint',
+    'coverage_km2', 'meta'} -- `posts` is up to max_post post-event images,
+    oldest first, and `pres` is [pre_event_1, pre_event_2].
     """
     col = sar_collection(region)
+    win = post_window_days(start_date, end_date)
     window = col.filterDate(ee.Date(start_date),
-                            ee.Date(start_date).advance(POST_WINDOW_DAYS, 'day'))
+                            ee.Date(start_date).advance(win, 'day'))
     orbits = sorted(set(window.aggregate_array('relativeOrbitNumber_start')
                         .getInfo() or []))
     if not orbits:
-        return [], 'NO_POST_SCENE'
+        # Say WHICH reason. 42 of the 204 events fall in 2015-2016, when
+        # Sentinel-1 was a single satellite with thinner coverage of India, and a
+        # bare NO_POST_SCENE cannot distinguish "nothing flew over" from "it flew
+        # but recorded VV only" -- the model needs VH, so the second is a hard
+        # limit of the data and the first might be fixed by a wider window.
+        # Only runs on the failure path, so it costs nothing in the normal case.
+        try:
+            vv_only = (ee.ImageCollection('COPERNICUS/S1_GRD_FLOAT')
+                       .filter(ee.Filter.eq('instrumentMode', 'IW'))
+                       .filterBounds(region)
+                       .filterDate(ee.Date(start_date),
+                                   ee.Date(start_date).advance(win, 'day'))
+                       .size().getInfo())
+        except Exception:
+            vv_only = None
+        if vv_only:
+            return [], (f'NO_DUAL_POL ({vv_only} IW scene(s) in the window, none '
+                        'with both VV and VH; FloodViT needs VH)')
+        return [], f'NO_POST_SCENE (no IW scene in {win} days)'
 
-    sources = []
+    sources, shortfall = [], []
     for orbit in orbits:
         track = col.filter(ee.Filter.eq('relativeOrbitNumber_start', orbit))
         post_acqs = acquisitions(
             track.filterDate(ee.Date(start_date),
-                             ee.Date(start_date).advance(POST_WINDOW_DAYS, 'day')))
+                             ee.Date(start_date).advance(win, 'day')))
         pre_track = track.filterDate(
             ee.Date(start_date).advance(-PRE_SEARCH_DAYS, 'day'),
             ee.Date(start_date))
         pre_acqs = acquisitions(pre_track)
         if not post_acqs or len(pre_acqs) < SAR_N_PRE:
+            # Recorded so the failure message below can name the reason: a
+            # missing post pass and a missing pre-event baseline need different
+            # answers (a wider post window vs a longer PRE_SEARCH_DAYS).
+            shortfall.append(f'orbit {int(orbit)}: '
+                             f'{len(post_acqs)} post, {len(pre_acqs)} pre '
+                             f'(need {SAR_N_PRE})')
             continue
 
-        post, pre_1, pre_2 = post_acqs[0], pre_acqs[-SAR_N_PRE], pre_acqs[-1]
-        # The post pass's own footprint bounds what this orbit can measure.
+        posts, pre_1, pre_2 = order_acquisitions(post_acqs, pre_acqs, max_post)
+        # The first post pass's footprint bounds what this orbit can measure.
+        # Later passes of the same relative orbit repeat the same track, and a
+        # patch is kept only where every pass is valid, so frame-edge drift
+        # narrows the count rather than inventing coverage.
+        post = posts[0]
         foot = (track.filterDate(ee.Date(post[1] - 1000), ee.Date(post[2] + 1000))
                 .geometry().dissolve(1000).intersection(region, 1000))
         sources.append({
             'orbit': int(orbit),
             'pass': ee.Image(track.first()).get('orbitProperties_pass').getInfo(),
-            'images': [mosaic_acquisition(track, post),
-                       mosaic_acquisition(pre_track, pre_1),
-                       mosaic_acquisition(pre_track, pre_2)],
+            'posts': [mosaic_acquisition(track, p) for p in posts],
+            'pres': [mosaic_acquisition(pre_track, pre_1),
+                     mosaic_acquisition(pre_track, pre_2)],
             'footprint': foot,
             'coverage_km2': foot.area(1000).getInfo() / 1e6,
+            # post_lag_days is the gap to the LAST pre-event pass, which is the
+            # baseline the change is measured against -- pre_event_1 now that
+            # the two are the right way round.
             'meta': {'pre_1_date': pre_1[0], 'pre_2_date': pre_2[0],
                      'post_date': post[0],
+                     # every pass read, so a reported area can be traced to the
+                     # dates it was measured on rather than just the first one
+                     'post_dates': [p[0] for p in posts],
+                     'n_post': len(posts),
+                     'window_days': win,
                      'post_lag_days': (pd.Timestamp(post[0])
-                                       - pd.Timestamp(pre_2[0])).days},
+                                       - pd.Timestamp(pre_1[0])).days},
         })
 
     if not sources:
-        return [], f'NO_USABLE_ORBIT (checked {len(orbits)})'
-    # Earliest post-event pass first, coverage only as a tie-break. Sorting by
-    # coverage alone hands most of Bihar to orbit 85, whose post pass is ten days
-    # after onset -- by then the water has moved. Orbit 121 sees 59% of the state
-    # one day after onset, so timing has to lead.
-    sources.sort(key=lambda d: (d['meta']['post_date'], -d['coverage_km2']))
+        return [], (f'NO_USABLE_ORBIT (checked {len(orbits)}; '
+                    f'{"; ".join(shortfall[:4])})')
+    # Best-covering orbit first, earliest post pass as the tie-break.
+    #
+    # Up to method version 9 this was the other way round: earliest post date
+    # led, because an orbit whose single post pass fell ten days after onset
+    # measured water that had already moved, and orbit 121 saw 59% of Bihar one
+    # day after onset. With several passes read per orbit across the whole event
+    # window, every orbit now samples the same period, so that reason is gone --
+    # and coverage-first keeps more of the AOI under one viewing geometry, which
+    # is the remaining thing that differs between orbits.
+    sources.sort(key=lambda d: (-d['coverage_km2'], d['meta']['post_date']))
     return sources, None
 
 
@@ -282,16 +413,19 @@ def _download_block(image, region_block, extra=None, speckle=True, crs=None):
     Order-preserving. `extra` carries the terrain mask on the first request only,
     so the static mask costs no separate round trip.
     """
+    img = image.select(SAR_POLARISATIONS)
+    if crs:
+        # Pin the grid before anything reads neighbours or masks: reduceNeighborhood
+        # works in the image's projection, so on a mosaic's default 1-degree grid a
+        # "3x3" window is not 3x3 native pixels. Pinned here rather than on the SAR
+        # bands alone so the validity mask is resampled on the same grid as the
+        # values it describes -- otherwise the two disagree along swath edges and
+        # pixels get counted as observed that were not.
+        img = img.setDefaultProjection(crs, None, SAR_SCALE_M)
     # Validity from the polarisations actually used. S1_GRD_FLOAT also carries an
     # `angle` band whose coverage differs, and including it mislabels good pixels.
-    valid = (image.select(SAR_POLARISATIONS).mask()
-             .reduce(ee.Reducer.min()).rename('valid').toByte())
-    sar = image.select(SAR_POLARISATIONS).toFloat()
-    if crs:
-        # Pin the grid before filtering: reduceNeighborhood works in the image's
-        # projection, so on a mosaic's default 1-degree grid a "3x3" window is
-        # not 3x3 native pixels.
-        sar = sar.setDefaultProjection(crs, None, SAR_SCALE_M)
+    valid = img.mask().reduce(ee.Reducer.min()).rename('valid').toByte()
+    sar = img.toFloat()
     if speckle:
         sar = lee_filter(sar)          # filter the real values, then clamp
     # int16 transfer encoding; decoded on arrival. See SAR_CLAMP/SAR_SCALE_FACTOR.
@@ -328,7 +462,14 @@ def grid_dims(minx, miny, maxx, maxy, patch_px=SAR_PATCH_SIZE,
 
 
 def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True):
-    """Yield (block_id, patches, coords, valid) per downloadable block of the AOI.
+    """Yield (block_id, batches, coords, valid) per downloadable block of the AOI.
+
+    `batches` is one (n_patches, 6, 224, 224) array per post-event pass, all over
+    the same patches in the same order, sharing `coords` and `valid`. The caller
+    classifies each and keeps the largest flood it saw: reading only the first
+    pass after onset measured the start of a flood rather than its peak, and half
+    of the events last longer than the old 14-day window.
+
 
     A generator so the same tiling and download logic serves both consumers: the
     one that writes patches to disk and the one that runs them through FloodViT
@@ -419,7 +560,9 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
     for i, bi, bj in bar:
         x0, y_top = minx + bj * patch_m, maxy - bi * patch_m
         block = blk_geom(bi, bj)
-        images = sources[assigned[i]]['images']
+        src = sources[assigned[i]]
+        images = list(src['posts']) + list(src['pres'])
+        n_post = len(src['posts'])
         try:
             with ThreadPoolExecutor(max_workers=len(images)) as ex:
                 arrs = list(ex.map(
@@ -436,34 +579,48 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
         H = min(a.shape[0] for a in arrs)
         W = min(a.shape[1] for a in arrs)
         rows, cols = H // P, W // P
+        pres = arrs[n_post:]
 
-        batch, coords, valids = [], [], []
+        def _chan(a, rs, cs):
+            """One acquisition's VV,VH for a patch, no-data as NaN.
+
+            Back to linear sigma0 from the int16 transfer encoding. Masked pixels
+            arrive as the int16 sentinel, which decodes to -3.2768 and then clips
+            to 0 -- the darkest possible value, which is exactly what water looks
+            like to the model. Kuro Siwo fills no-data with the clamp instead
+            (nan_to_num(image, CLAMP)) and preprocess() does the same with NaN,
+            so hand it NaN rather than a fake dark pixel.
+            """
+            bad = a['valid'][rs:rs + P, cs:cs + P] == 0
+            out = []
+            for b in SAR_POLARISATIONS:
+                ch = a[b][rs:rs + P, cs:cs + P].astype(np.float32)
+                ch /= SAR_SCALE_FACTOR
+                ch[bad] = np.nan
+                out.append(ch)
+            return out
+
+        # One batch per post-event pass; the two pre-event scenes are shared, so
+        # each batch is (that post VV,VH, pre1 VV,VH, pre2 VV,VH) -- the model's
+        # six channels. The caller reads the same ground at several dates and
+        # keeps the largest flood it saw, instead of whatever the first pass
+        # after onset happened to catch.
+        batches = [[] for _ in range(n_post)]
+        coords, valids = [], []
         for r in range(rows):
             for c in range(cols):
                 rs, cs = r * P, c * P
+                # Validity across EVERY pass, so all post dates describe the same
+                # ground and their flood counts are comparable to each other.
                 vmask = np.logical_and.reduce(
                     [a['valid'][rs:rs + P, cs:cs + P] > 0 for a in arrs])
                 if vmask.mean() < SAR_KEEP_VALID:      # data coverage only
                     continue
                 if flat_band is not None:              # then narrow to flat ground
                     vmask = vmask & (arrs[0]['flat'][rs:rs + P, cs:cs + P] > 0)
-                # (post VV,VH, pre1 VV,VH, pre2 VV,VH) -- the model's 6 channels
-                # Back to linear sigma0 from the int16 transfer encoding, with
-                # each scene's own no-data set to NaN. Masked pixels arrive as
-                # the int16 sentinel, which decodes to -3.2768 and then clips to
-                # 0 -- the darkest possible value, which is exactly what water
-                # looks like to the model. Kuro Siwo fills no-data with the clamp
-                # instead (nan_to_num(image, CLAMP)), and preprocess() does the
-                # same with NaN, so hand it NaN rather than a fake dark pixel.
-                chans = []
-                for a in arrs:
-                    bad = a['valid'][rs:rs + P, cs:cs + P] == 0
-                    for b in SAR_POLARISATIONS:
-                        ch = a[b][rs:rs + P, cs:cs + P].astype(np.float32)
-                        ch /= SAR_SCALE_FACTOR
-                        ch[bad] = np.nan
-                        chans.append(ch)
-                batch.append(np.stack(chans))
+                pre_ch = [ch for a in pres for ch in _chan(a, rs, cs)]
+                for k in range(n_post):
+                    batches[k].append(np.stack(_chan(arrs[k], rs, cs) + pre_ch))
                 valids.append(vmask)
                 # row, col in the AOI-wide patch grid, then the patch centre in
                 # projected metres (crs is recorded on the run, not per patch)
@@ -474,12 +631,12 @@ def iter_patch_blocks(sources, region, skip=frozenset(), flat=None, speckle=True
         # An empty (not None) array means "downloaded fine, nothing kept" --
         # e.g. an all-cloud/ocean block. None is reserved for download failure,
         # so a legitimately empty block is still marked done and never retried.
-        if batch:
-            yield (i, np.stack(batch), np.array(coords, dtype='float64'),
-                   np.stack(valids))
+        if coords:
+            yield (i, [np.stack(b) for b in batches],
+                   np.array(coords, dtype='float64'), np.stack(valids))
         else:
             yield (i,
-                   np.empty((0, SAR_CHANNELS, P, P), dtype=np.float32),
+                   [np.empty((0, SAR_CHANNELS, P, P), dtype=np.float32)],
                    np.empty((0, 4), dtype='float64'),
                    np.empty((0, P, P), dtype=bool))
         bar.set_postfix(blk=i)

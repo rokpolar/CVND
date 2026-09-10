@@ -44,6 +44,17 @@ class StateAoiPipelineTests(unittest.TestCase):
             self.assertEqual(result.loc[0, "population_exposed"], 500)
             self.assertNotIn("district_km2", result.columns)
 
+            # exposure_rate and population_exposed must come from the SAME
+            # flooded fraction. They were computed from different denominators
+            # (aoi_km2 vs state_area_km2), so rate * population did not equal
+            # the reported exposure -- by whatever the two areas differ by.
+            rate = result.loc[0, "exposure_rate"]
+            pop = 10_000
+            self.assertAlmostEqual(rate * pop,
+                                   result.loc[0, "population_exposed"], places=3)
+            # and the mismatch between AOI and state area is surfaced, not hidden
+            self.assertIn("AOI AREA DIFFERS", result.loc[0, "warnings"])
+
     def test_merge_results_emits_aoi_area(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

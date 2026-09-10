@@ -116,38 +116,80 @@
   "hotPaths": [
     {
       "path": "src/sar_patches.py",
-      "accessCount": 12,
-      "lastAccessed": 1788830136328,
+      "accessCount": 33,
+      "lastAccessed": 1788998521469,
       "type": "file"
     },
     {
       "path": "src/sar_flood_area.py",
-      "accessCount": 10,
-      "lastAccessed": 1788851003784,
+      "accessCount": 28,
+      "lastAccessed": 1788999061663,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_sar_patches.py",
+      "accessCount": 11,
+      "lastAccessed": 1788998529356,
       "type": "file"
     },
     {
       "path": "src/compare_pipelines.py",
-      "accessCount": 8,
-      "lastAccessed": 1788988176875,
+      "accessCount": 10,
+      "lastAccessed": 1788990935623,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_sar_flood_area.py",
+      "accessCount": 7,
+      "lastAccessed": 1788999097890,
       "type": "file"
     },
     {
       "path": "src/floodvit_infer.py",
-      "accessCount": 5,
-      "lastAccessed": 1788873517282,
+      "accessCount": 6,
+      "lastAccessed": 1788989156970,
       "type": "file"
     },
     {
       "path": "src/satellite.py",
-      "accessCount": 4,
-      "lastAccessed": 1788769136328,
+      "accessCount": 6,
+      "lastAccessed": 1788997765051,
+      "type": "file"
+    },
+    {
+      "path": "src/merge_results.py",
+      "accessCount": 6,
+      "lastAccessed": 1788997773459,
       "type": "file"
     },
     {
       "path": "src/validate_floodvit.py",
-      "accessCount": 2,
-      "lastAccessed": 1788985252603,
+      "accessCount": 5,
+      "lastAccessed": 1788990090864,
+      "type": "file"
+    },
+    {
+      "path": "src/cvnd_layout.py",
+      "accessCount": 4,
+      "lastAccessed": 1788998822452,
+      "type": "file"
+    },
+    {
+      "path": "src/compute_population.py",
+      "accessCount": 3,
+      "lastAccessed": 1788997561500,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_merge_results.py",
+      "accessCount": 3,
+      "lastAccessed": 1788997857933,
+      "type": "file"
+    },
+    {
+      "path": "src/compute_mss.py",
+      "accessCount": 3,
+      "lastAccessed": 1788998246558,
       "type": "file"
     },
     {
@@ -157,39 +199,69 @@
       "type": "file"
     },
     {
+      "path": "tests/test_floodvit_infer.py",
+      "accessCount": 2,
+      "lastAccessed": 1788989163937,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_state_aoi_pipeline.py",
+      "accessCount": 2,
+      "lastAccessed": 1788997587509,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_state_income.py",
+      "accessCount": 2,
+      "lastAccessed": 1788998029330,
+      "type": "file"
+    },
+    {
       "path": "scripts/download_patches.py",
       "accessCount": 1,
       "lastAccessed": 1788769181289,
       "type": "file"
     },
     {
-      "path": "src/cvnd_layout.py",
-      "accessCount": 1,
-      "lastAccessed": 1788787845671,
-      "type": "file"
-    },
-    {
-      "path": "tests/test_sar_patches.py",
-      "accessCount": 1,
-      "lastAccessed": 1788787985408,
-      "type": "file"
-    },
-    {
-      "path": "tests/test_floodvit_infer.py",
-      "accessCount": 1,
-      "lastAccessed": 1788791380097,
-      "type": "file"
-    },
-    {
-      "path": "tests/test_sar_flood_area.py",
-      "accessCount": 1,
-      "lastAccessed": 1788791626742,
-      "type": "file"
-    },
-    {
       "path": "tests/test_validate_floodvit.py",
       "accessCount": 1,
       "lastAccessed": 1788871249845,
+      "type": "file"
+    },
+    {
+      "path": "src/state_income.py",
+      "accessCount": 1,
+      "lastAccessed": 1788997004053,
+      "type": "file"
+    },
+    {
+      "path": "src/compute_pss.py",
+      "accessCount": 1,
+      "lastAccessed": 1788997677395,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_satellite.py",
+      "accessCount": 1,
+      "lastAccessed": 1788997833033,
+      "type": "file"
+    },
+    {
+      "path": "src/cvnd_config.py",
+      "accessCount": 1,
+      "lastAccessed": 1788998003390,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_compute_mss.py",
+      "accessCount": 1,
+      "lastAccessed": 1788998264986,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_cvnd_layout.py",
+      "accessCount": 1,
+      "lastAccessed": 1788998885582,
       "type": "file"
     }
   ],

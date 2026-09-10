@@ -143,8 +143,20 @@ class GridTests(unittest.TestCase):
         self.assertIn("clamp(0.0, SAR_CLAMP)", src)
 
     def test_validity_ignores_the_angle_band(self):
+        """S1_GRD_FLOAT carries an `angle` band whose coverage differs from the
+        polarisations', so a mask taken over all bands marks good pixels bad."""
         src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
-        self.assertIn("image.select(SAR_POLARISATIONS).mask()", src)
+        self.assertIn("img = image.select(SAR_POLARISATIONS)", src)
+        self.assertIn("valid = img.mask()", src)
+
+    def test_validity_is_pinned_to_the_same_grid_as_the_values(self):
+        """The mask has to be resampled on the grid it describes. Pinning only
+        the SAR bands left the two disagreeing along swath edges, so pixels
+        could be counted as observed that carried no signal."""
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        i_proj = src.index("img = img.setDefaultProjection")
+        self.assertLess(i_proj, src.index("valid = img.mask()"))
+        self.assertLess(i_proj, src.index("sar = lee_filter(sar)"))
 
 
 class ValidityThresholdTests(unittest.TestCase):
@@ -256,6 +268,176 @@ class OrbitSourceTests(unittest.TestCase):
         before = int(pd.Timestamp("2024-09-21T23:59:00Z").value // 10 ** 6)
         after = int(pd.Timestamp("2024-09-22T00:01:00Z").value // 10 ** 6)
         self.assertEqual(len(sp.acquisitions(FakeCol([before, after]))), 1)
+
+
+class PreEventOrderTests(unittest.TestCase):
+    """Kuro Siwo's grid dictionary dates SL1 (pre_event_1) AFTER SL2
+    (pre_event_2) in all 31,707 records, median gap 12 days -- one repeat cycle.
+    So pre_event_1 is the pass closest to the flood. This was backwards for
+    every India measurement taken: channels 2,3 held the older scene and 4,5 the
+    newer, the reverse of the training layout, and nothing raised an error --
+    validate_floodvit.py reads their files directly and so never saw it."""
+
+    @staticmethod
+    def _acq(date):
+        import pandas as pd
+        ms = int(pd.Timestamp(date).value // 10 ** 6)
+        return (date, ms, ms)
+
+    def test_pre_event_1_is_the_pass_closest_to_the_flood(self):
+        pre = [self._acq(d) for d in ("2024-08-01", "2024-08-13", "2024-08-25")]
+        post = [self._acq("2024-09-06"), self._acq("2024-09-18")]
+        posts, p1, p2 = sp.order_acquisitions(post, pre)
+        self.assertEqual(posts[0][0], "2024-09-06")   # first pass after onset
+        self.assertEqual(p1[0], "2024-08-25")         # newest pre -> channels 2,3
+        self.assertEqual(p2[0], "2024-08-13")         # older pre  -> channels 4,5
+
+    def test_pre_event_1_is_always_newer_than_pre_event_2(self):
+        pre = [self._acq(d) for d in ("2024-07-08", "2024-07-20", "2024-08-01",
+                                      "2024-08-13")]
+        _, p1, p2 = sp.order_acquisitions([self._acq("2024-08-25")], pre)
+        self.assertGreater(p1[1], p2[1])
+
+    def test_exactly_two_pre_events_still_orders_them(self):
+        pre = [self._acq("2024-08-01"), self._acq("2024-08-13")]
+        _, p1, p2 = sp.order_acquisitions([self._acq("2024-08-25")], pre)
+        self.assertEqual((p1[0], p2[0]), ("2024-08-13", "2024-08-01"))
+
+    def test_post_lag_is_measured_to_the_last_pre_event_pass(self):
+        """The baseline the change is read against is pre_event_1, so a lag
+        reported against pre_event_2 would overstate the gap by a cycle."""
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        i = src.index("'post_lag_days':")      # the assignment, not the comment
+        self.assertIn("pd.Timestamp(pre_1[0])", src[i:i + 200])
+
+
+class MeasurementWindowTests(unittest.TestCase):
+    """Half the 204 events outlast 14 days (median span 14.5, mean 35.2, max
+    167), and 21 carry `start:month` precision so their start_date is the 1st
+    while the flood runs to month end. Reading only the first pass after onset
+    measured the beginning of a flood, not its peak -- and because severe floods
+    last longer, it under-measured the largest events hardest, biasing the
+    severity proxy in the direction that flattens the study's own result."""
+
+    @staticmethod
+    def _acq(date):
+        import pandas as pd
+        ms = int(pd.Timestamp(date).value // 10 ** 6)
+        return (date, ms, ms)
+
+    def test_window_follows_the_event_end_date(self):
+        self.assertEqual(sp.post_window_days("2017-06-01", "2017-07-15"), 44)
+
+    def test_short_event_keeps_the_minimum_window(self):
+        """A one-day record still needs long enough to catch a pass at all: the
+        repeat cycle is 12 days, so a 1-day window would often find nothing."""
+        self.assertEqual(sp.post_window_days("2024-09-22", "2024-09-23"),
+                         sp.POST_WINDOW_DAYS)
+        self.assertGreaterEqual(sp.POST_WINDOW_DAYS, 12)
+
+    def test_longest_events_are_capped(self):
+        got = sp.post_window_days("2020-06-01", "2020-11-15")   # 167 days
+        self.assertEqual(got, sp.POST_WINDOW_CAP_DAYS)
+
+    def test_the_cap_equals_the_media_window(self):
+        """Severity and coverage have to describe the same period -- that
+        equality is the comparison the study makes. A shorter cap truncated
+        severity for 56 of 204 events while their article counts kept
+        accumulating to day 93, and it bought nothing: the download count is
+        SAR_MAX_POST either way."""
+        from cvnd_config import MEDIA_WINDOW_DAYS
+        self.assertEqual(sp.POST_WINDOW_CAP_DAYS, MEDIA_WINDOW_DAYS)
+
+    def test_missing_or_bad_end_date_falls_back(self):
+        """events.csv reaches here straight from read_csv, so a blank end_date is
+        a float NaN, and a parsed frame gives NaT. Neither may raise: the event
+        would be skipped for a formatting problem."""
+        import pandas as pd
+        for bad in (None, float("nan"), pd.NaT, "", "not-a-date", 0):
+            self.assertEqual(sp.post_window_days("2024-09-22", bad),
+                             sp.POST_WINDOW_DAYS, msg=repr(bad))
+
+    def test_end_before_start_falls_back(self):
+        self.assertEqual(sp.post_window_days("2024-09-22", "2024-09-01"),
+                         sp.POST_WINDOW_DAYS)
+
+    def test_passes_span_the_window_including_both_ends(self):
+        acqs = [self._acq(d) for d in ("2020-06-05", "2020-06-17", "2020-06-29",
+                                       "2020-07-11", "2020-07-23", "2020-08-04")]
+        got = [a[0] for a in sp.pick_posts(acqs, 3)]
+        self.assertEqual(got[0], "2020-06-05")     # onset
+        self.assertEqual(got[-1], "2020-08-04")    # end of window
+        self.assertEqual(len(got), 3)
+
+    def test_fewer_passes_than_asked_for_are_all_kept(self):
+        acqs = [self._acq("2024-09-22"), self._acq("2024-10-04")]
+        self.assertEqual(len(sp.pick_posts(acqs, 3)), 2)
+
+    def test_passes_stay_in_time_order(self):
+        acqs = [self._acq(d) for d in ("2020-06-05", "2020-06-17", "2020-06-29",
+                                       "2020-07-11", "2020-07-23")]
+        got = sp.pick_posts(acqs, 4)
+        self.assertEqual([a[1] for a in got], sorted(a[1] for a in got))
+
+    def test_one_pass_is_the_old_behaviour(self):
+        acqs = [self._acq(d) for d in ("2020-06-05", "2020-06-17")]
+        self.assertEqual(sp.pick_posts(acqs, 1), [acqs[0]])
+
+    def test_zero_passes_is_refused(self):
+        with self.assertRaises(ValueError):
+            sp.pick_posts([self._acq("2020-06-05")], 0)
+
+    def test_orbits_are_ordered_by_coverage_not_by_date(self):
+        """Blocks go to the first orbit in the list that sees them. Up to v9 the
+        earliest post pass led, because one pass ten days after onset measured
+        water that had moved. Now every orbit is read across the whole event
+        window, so coverage is what is left to choose on -- keeping more of the
+        AOI under a single viewing geometry."""
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        i = src.index("sources.sort(")
+        line = src[i:src.index("\n", i)]
+        self.assertIn("-d['coverage_km2']", line)
+        self.assertLess(line.index("coverage_km2"), line.index("post_date"))
+
+    def test_cost_per_block_is_bounded(self):
+        """Each block downloads every pass it uses, so the ceiling has to stay
+        small enough that a long event does not cost fourteen requests."""
+        self.assertLessEqual(sp.SAR_MAX_POST, 4)
+        self.assertGreaterEqual(sp.SAR_MAX_POST, 2)
+
+
+class SkipReasonTests(unittest.TestCase):
+    """42 of the 204 events fall in 2015-2016, when Sentinel-1 was one satellite
+    with thinner coverage of India. A bare NO_POST_SCENE could not distinguish
+    "nothing flew over" from "it flew but recorded VV only" -- the first might be
+    fixed by a wider window, the second is a hard limit of the data, because
+    FloodViT needs VH. They now report separately, and a missing pre-event
+    baseline is named too."""
+
+    def test_dual_pol_and_no_scene_are_distinct_reasons(self):
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertIn("NO_DUAL_POL", src)
+        self.assertIn("NO_POST_SCENE", src)
+
+    def test_the_dual_pol_probe_drops_the_vh_filter(self):
+        """It has to query WITHOUT the VH requirement, or it just repeats the
+        query that already returned nothing."""
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        i = src.index("NO_DUAL_POL")
+        probe = src[max(0, i - 1200):i]
+        self.assertIn("COPERNICUS/S1_GRD_FLOAT", probe)
+        self.assertNotIn("'VH'", probe)
+
+    def test_the_probe_only_runs_on_the_failure_path(self):
+        """It costs a round trip, so it must sit after the normal query failed."""
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertLess(src.index("if not orbits:"), src.index("NO_DUAL_POL"))
+
+    def test_orbit_shortfall_is_reported(self):
+        src = (ROOT / "src" / "sar_patches.py").read_text(encoding="utf-8")
+        self.assertIn("shortfall", src)
+        i = src.index("NO_USABLE_ORBIT")
+        self.assertIn("shortfall", src[i:i + 200])
 
 
 class NoStorageTests(unittest.TestCase):

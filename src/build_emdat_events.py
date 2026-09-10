@@ -22,7 +22,8 @@ from typing import Any, Iterable
 
 import pandas as pd
 
-from cvnd_layout import data_path
+from cvnd_layout import data_path, ensure_printable_output
+import state_income
 
 
 SOURCE_SHEET = "EM-DAT Data"
@@ -297,6 +298,11 @@ def build_state_events(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     source_columns = list(base.columns)
     records: list[dict[str, Any]] = []
     unresolved: list[str] = []
+    income_by_state = state_income.income_groups()
+    missing_income = sorted(set(STATE_PROFILES) - set(income_by_state))
+    if missing_income:
+        print(f"NOTE: no per-capita GSDP for {missing_income}; keeping the "
+              "hand-written income_group for those states only")
 
     for _, row in base.iterrows():
         states = resolve_states(row)
@@ -326,7 +332,12 @@ def build_state_events(base: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
                     "lon": profile.longitude,
                     "bbox": profile.bbox,
                     "aoi_level": "state",
-                    "income_group": profile.income_group,
+                    # Derived from per-capita GSDP, not from the string in
+                    # STATE_PROFILES: those labels were hand-written and did not
+                    # track income (Sikkim, 3rd highest per-capita in India, was
+                    # "Low"). See state_income.py.
+                    "income_group": income_by_state.get(
+                        state, profile.income_group),
                     "event_source": "emdat_official_state",
                     "source_record_id": str(row["DisNo."]),
                     "state_resolution_source": resolved["resolution_source"],
@@ -413,6 +424,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: Iterable[str] | None = None) -> int:
+    ensure_printable_output()
     args = parse_args(argv)
     try:
         base, _info = load_official_workbook(args.base)
