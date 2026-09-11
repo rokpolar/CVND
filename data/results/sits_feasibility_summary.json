@@ -1,0 +1,262 @@
+{
+  "probe_version": "feas-1",
+  "spec_version": "fs1-3016a20fd3ad",
+  "rows": 495,
+  "aoi_status": {
+    "matched": 255,
+    "unresolved": 152,
+    "failed": 88
+  },
+  "aoi_matched": 255,
+  "sources": {
+    "sr": {
+      "probed": 255,
+      "probe_errors": 0,
+      "unavailable": 162,
+      "unavailable_rate": 0.6353,
+      "reasons": {
+        "no_post_imagery": 148,
+        "no_pre_imagery": 10,
+        "no_retained_tiles": 4
+      },
+      "by_year": {
+        "2015": {
+          "n": 43,
+          "unavailable": 43,
+          "rate": 1.0
+        },
+        "2016": {
+          "n": 41,
+          "unavailable": 41,
+          "rate": 1.0
+        },
+        "2017": {
+          "n": 66,
+          "unavailable": 61,
+          "rate": 0.9242
+        },
+        "2018": {
+          "n": 10,
+          "unavailable": 9,
+          "rate": 0.9
+        },
+        "2019": {
+          "n": 36,
+          "unavailable": 6,
+          "rate": 0.1667
+        },
+        "2020": {
+          "n": 12,
+          "unavailable": 1,
+          "rate": 0.0833
+        },
+        "2021": {
+          "n": 22,
+          "unavailable": 0,
+          "rate": 0.0
+        },
+        "2022": {
+          "n": 4,
+          "unavailable": 0,
+          "rate": 0.0
+        },
+        "2023": {
+          "n": 7,
+          "unavailable": 1,
+          "rate": 0.1429
+        },
+        "2024": {
+          "n": 9,
+          "unavailable": 0,
+          "rate": 0.0
+        },
+        "2025": {
+          "n": 5,
+          "unavailable": 0,
+          "rate": 0.0
+        }
+      },
+      "by_state_unavailable_rate": {
+        "Andhra Pradesh": 0.4286,
+        "Assam": 0.8022,
+        "Bihar": 0.0769,
+        "Gujarat": 0.6842,
+        "Himachal Pradesh": 0.0,
+        "Karnataka": 0.2,
+        "Kerala": 0.2857,
+        "Madhya Pradesh": 1.0,
+        "Maharashtra": 0.6471,
+        "Manipur": 1.0,
+        "Meghalaya": 0.0,
+        "Odisha": 0.0,
+        "Rajasthan": 0.0,
+        "Tamil Nadu": 0.5455,
+        "Uttar Pradesh": 0.8125,
+        "Uttarakhand": 0.25,
+        "West Bengal": 1.0
+      },
+      "usable_frac_quantiles": {
+        "0.1": 0.0535,
+        "0.25": 0.1249,
+        "0.5": 0.2831,
+        "0.75": 0.5451,
+        "0.9": 0.7214
+      },
+      "paired_sample": {
+        "districts": 65,
+        "states": 12,
+        "min_area_km2": 1.0
+      },
+      "cost_ok_rows": {
+        "blocks": 10369,
+        "hours_at_block_seconds": 40.3,
+        "kept_tiles": 450358,
+        "h5_gb_current_layout": 156.8,
+        "h5_gb_planned_layout_uncompressed": 92.3
+      }
+    },
+    "l1c": {
+      "probed": 255,
+      "probe_errors": 0,
+      "unavailable": 103,
+      "unavailable_rate": 0.4039,
+      "reasons": {
+        "no_post_imagery": 91,
+        "no_retained_tiles": 5,
+        "no_pre_imagery": 5,
+        "no_clear_baseline": 2
+      },
+      "by_year": {
+        "2015": {
+          "n": 43,
+          "unavailable": 43,
+          "rate": 1.0
+        },
+        "2016": {
+          "n": 41,
+          "unavailable": 30,
+          "rate": 0.7317
+        },
+        "2017": {
+          "n": 66,
+          "unavailable": 26,
+          "rate": 0.3939
+        },
+        "2018": {
+          "n": 10,
+          "unavailable": 0,
+          "rate": 0.0
+        },
+        "2019": {
+          "n": 36,
+          "unavailable": 3,
+          "rate": 0.0833
+        },
+        "2020": {
+          "n": 12,
+          "unavailable": 1,
+          "rate": 0.0833
+        },
+        "2021": {
+          "n": 22,
+          "unavailable": 0,
+          "rate": 0.0
+        },
+        "2022": {
+          "n": 4,
+          "unavailable": 0,
+          "rate": 0.0
+        },
+        "2023": {
+          "n": 7,
+          "unavailable": 0,
+          "rate": 0.0
+        },
+        "2024": {
+          "n": 9,
+          "unavailable": 0,
+          "rate": 0.0
+        },
+        "2025": {
+          "n": 5,
+          "unavailable": 0,
+          "rate": 0.0
+        }
+      },
+      "by_state_unavailable_rate": {
+        "Andhra Pradesh": 0.4286,
+        "Assam": 0.6374,
+        "Bihar": 0.0769,
+        "Gujarat": 0.5263,
+        "Himachal Pradesh": 0.0,
+        "Karnataka": 0.0,
+        "Kerala": 0.0,
+        "Madhya Pradesh": 0.3125,
+        "Maharashtra": 0.4706,
+        "Manipur": 1.0,
+        "Meghalaya": 0.0,
+        "Odisha": 0.0,
+        "Rajasthan": 0.0,
+        "Tamil Nadu": 0.4545,
+        "Uttar Pradesh": 0.125,
+        "Uttarakhand": 0.25,
+        "West Bengal": 0.75
+      },
+      "usable_frac_quantiles": {
+        "0.1": 0.0013,
+        "0.25": 0.0212,
+        "0.5": 0.095,
+        "0.75": 0.3145,
+        "0.9": 0.6142
+      },
+      "paired_sample": {
+        "districts": 98,
+        "states": 14,
+        "min_area_km2": 1.0
+      },
+      "cost_ok_rows": {
+        "blocks": 15273,
+        "hours_at_block_seconds": 59.4,
+        "kept_tiles": 584536,
+        "h5_gb_current_layout": 203.5,
+        "h5_gb_planned_layout_uncompressed": 119.7
+      }
+    }
+  },
+  "sr_unavailable_rescued_by_l1c": {
+    "sr_unavailable": 162,
+    "rescued": 59,
+    "share": 0.3642
+  },
+  "sr_unavailable_in_sr_gap_years": {
+    "last_gap_year": 2018,
+    "rows": 154,
+    "share": 0.9506
+  },
+  "gate": {
+    "verdict": "consider_l1c",
+    "basis_source": "l1c",
+    "sr_unavailable_rate": 0.6353,
+    "max_unavailable_rate": 0.3,
+    "sr_unavailable_share_in_gap_years": 0.9506,
+    "l1c_unavailable_rate": 0.4039,
+    "l1c_still_above_max": true,
+    "l1c_rescue_share": 0.3642,
+    "converter_sample": "expected_sufficient",
+    "paired_districts": 98,
+    "paired_states": 14,
+    "min_districts": 30,
+    "min_states": 5
+  },
+  "registry_rows": 495,
+  "probed_rows": 495,
+  "fine_scale_note": "tile quantities are estimates from a coarser grid averaged to 640 m tiles; Track B is not reproduced",
+  "cloud_mask": {
+    "sr": "SCL exclude [3, 8, 9, 10, 11]",
+    "l1c": "s2cloudless probability < 40"
+  },
+  "h5_bytes_per_tile": {
+    "current": 348196,
+    "planned": 204840
+  }
+}
