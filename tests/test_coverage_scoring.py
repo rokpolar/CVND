@@ -34,7 +34,7 @@ def synthetic(n=750):
                          'start_date': [f'{yr}-03-01' for yr in year],
                          'article_count': y, 'flood_area_km2': np.expm1(flood),
                          'total_population': 1e6 * np.exp(pop), 'urban_population_share': .4,
-                         'satellite_source': [('S1', 'NDWI', 'SITS_NDWI')[i % 3] for i in range(n)],
+                         'satellite_source': [('S1_TO_SITS', 'SITS_NDWI_RESTORED', 'SITS_NDWI')[i % 3] for i in range(n)],
                          'analysis_eligible': True, 'exclusion_reason': ''})
 
 

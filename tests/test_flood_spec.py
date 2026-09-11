@@ -32,11 +32,49 @@ class MeasurementSpecTests(unittest.TestCase):
             replace(SPEC, post_composite="mean")
         with self.assertRaises(ValueError):
             replace(SPEC, pre_window_days=0)
+        for field, bad in [("pre_reference", "pre60d"), ("water_index", "awei"),
+                           ("grid_crs", "EPSG:4326"), ("reduce_split_m", 1000)]:
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                replace(SPEC, **{field: bad})
+
+    def test_measurement_constants_are_in_the_hash(self):
+        # C8: constants that change numbers invalidate caches when changed.
+        for field, value in [("sits_baseline_years", 2), ("sits_baseline_min_clear", 0.6),
+                             ("sits_youden_steps", 40), ("sits_score_otsu_bins", 32),
+                             ("sits_restore_gated_frac", 0.4), ("sits_usable_min_frac", 0.3),
+                             ("otsu_bucket_db", 0.25), ("worldcover_asset", "ESA/WorldCover/v100")]:
+            with self.subTest(field=field):
+                self.assertNotEqual(spec_version(replace(SPEC, **{field: value})), SPEC_VERSION)
+
+    def test_variants_differ_only_in_their_fields(self):
+        for name, overrides in flood_spec.SPEC_VARIANTS.items():
+            variant = flood_spec.variant_spec(name)
+            self.assertNotEqual(spec_version(variant), SPEC_VERSION)
+            self.assertEqual(replace(variant, **{k: getattr(SPEC, k) for k in overrides}), SPEC)
+        self.assertEqual(flood_spec.variant_spec("mndwi").water_bands, ("B3", "B11"))
+        with self.assertRaises(KeyError):
+            flood_spec.variant_spec("nope")
 
     def test_source_vocabulary(self):
-        self.assertEqual(flood_spec.MEASURED_SOURCES, ("S1", "NDWI", "SITS_NDWI", "SITS_NDWI_RESTORED"))
+        self.assertEqual(flood_spec.MEASURED_SOURCES, ("SITS_NDWI", "SITS_NDWI_RESTORED", "S1_TO_SITS", "S1"))
         self.assertNotIn("NONE", flood_spec.MEASURED_SOURCES)
-        self.assertEqual(len(set(flood_spec.COMBINED_COLUMNS)), len(flood_spec.COMBINED_COLUMNS))
+        self.assertIn(flood_spec.DEFAULT_ROUTING, flood_spec.ROUTING_MODES)
+        self.assertTrue(set(flood_spec.CONVERTING_DECISIONS) < set(flood_spec.CONVERTER_DECISIONS))
+        for columns in (flood_spec.COMBINED_COLUMNS, flood_spec.FLOOD_AREA_COLUMNS, flood_spec.TRACK_A_COLUMNS):
+            self.assertEqual(len(set(columns)), len(columns))
+
+    def test_pixel_new_water_definitions(self):
+        nodata = -32768
+        pre = np.array([-500, -500, 600, nodata, -500], dtype=np.int16)
+        post = np.array([800, -100, 800, 800, nodata], dtype=np.int16)
+        new, observed = flood_spec.ndwi_new_water(pre, post, nodata, 10000)
+        np.testing.assert_array_equal(new, [True, False, False, False, False])
+        np.testing.assert_array_equal(observed, [True, True, True, False, False])
+        s1_pre = np.array([-1000, -2000, nodata, -1000], dtype=np.int16)
+        s1_post = np.array([-2000, -2000, -2000, nodata], dtype=np.int16)
+        np.testing.assert_array_equal(flood_spec.s1_new_water(s1_pre, s1_post, nodata, 100, -15.0),
+                                      [True, False, False, False])
+        self.assertFalse(flood_spec.s1_new_water(s1_pre, s1_post, nodata, 100, None).any())
 
     def test_otsu_bimodal_histogram(self):
         centers = np.arange(-25.0, -5.0, 0.5)

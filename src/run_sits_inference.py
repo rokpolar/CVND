@@ -7,8 +7,11 @@ consumed by `merge_results.py`.
 
 Scores use the encoder mean (no sampling), so batch size, device and
 resumption change them only by floating-point rounding. NDWI areas are counted only on usable pixels
-(eligible, clear in every timestep, observed pre and post) and converted with
-each tile's pixel area, under the same flood_spec.SPEC as Track A.
+(eligible, inside the AOI, clear in every timestep, observed pre and post) and
+converted with each tile's pixel area, under the same flood_spec.SPEC as Track
+A. S1 new water is counted on the same usable pixels with the Otsu threshold
+Track B recorded (Track A's function on the same grid), which makes it S1's
+paired value for the SITS footprint; WorldCover strata are counted alongside.
 """
 
 from __future__ import annotations
@@ -31,9 +34,16 @@ except ImportError:  # area/QA helpers stay importable for audits and tests
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from dataclasses import dataclass  # noqa: E402
+
 from cvnd_layout import ROOT, data_path  # noqa: E402
 from district_keys import key_from_stem  # noqa: E402
-from flood_spec import SPEC, SPEC_VERSION  # noqa: E402
+from flood_spec import (H5_LAYOUT_VERSION, SPEC, SPEC_VERSION,  # noqa: E402
+                        ndwi_new_water, s1_new_water)
+
+SITS_NORM = 10000.0   # H5 reflectance is uint16 DN = reflectance × 10,000
+MEASUREMENT_DATASETS = ("mask", "ndwi_ref", "s1_ref", "landcover", "pixel_area_m2",
+                        "block_id", "block_stats")
 
 
 class StaleSpecError(ValueError):
@@ -179,19 +189,52 @@ def _band_indices(hdf: h5py.File) -> list[int]:
     return [bands.index(band) for band in ["B4", "B3", "B2"]]
 
 
-def check_measurement_layout(hdf: h5py.File) -> tuple[int, float]:
-    """Return (ndwi_nodata, ndwi_scale) or raise StaleSpecError."""
+def _attr_text(attrs, name: str) -> str:
+    value = attrs.get(name, "")
+    if isinstance(value, bytes):
+        return value.decode("utf-8")
+    return str(value)
+
+
+@dataclass(frozen=True)
+class Layout:
+    ndwi_nodata: int
+    ndwi_scale: float
+    s1_nodata: int
+    s1_scale: float
+    s1_threshold_db: float | None
+    builtup: int
+    cropland: int
+
+
+def check_measurement_layout(hdf: h5py.File) -> Layout:
+    """Return the measurement-layer encoding or raise StaleSpecError."""
     attrs = hdf["meta"].attrs
-    version = attrs.get("spec_version", "")
-    if isinstance(version, bytes):
-        version = version.decode("utf-8")
-    missing = [n for n in ("mask", "ndwi_ref", "pixel_area_m2") if n not in hdf]
-    if str(version) != SPEC_VERSION or missing:
+    version = _attr_text(attrs, "spec_version")
+    layout = _attr_text(attrs, "layout_version")
+    missing = [n for n in MEASUREMENT_DATASETS if n not in hdf]
+    if version != SPEC_VERSION or layout != H5_LAYOUT_VERSION or missing:
         raise StaleSpecError(
-            f"spec {version or 'missing'} (expected {SPEC_VERSION}); "
-            f"missing datasets {missing}; rerun satellite.py --track B"
+            f"spec {version or 'missing'} (expected {SPEC_VERSION}), layout "
+            f"{layout or 'missing'} (expected {H5_LAYOUT_VERSION}); missing datasets "
+            f"{missing}; rerun satellite.py --track B"
         )
-    return int(attrs["ndwi_nodata"]), float(attrs["ndwi_scale"])
+    threshold = float(attrs.get("s1_threshold_db", np.nan))
+    return Layout(int(attrs["ndwi_nodata"]), float(attrs["ndwi_scale"]),
+                  int(attrs["s1_nodata"]), float(attrs["s1_scale"]),
+                  threshold if np.isfinite(threshold) else None,
+                  SPEC.worldcover_builtup, SPEC.worldcover_cropland)
+
+
+def usable_pixels(ndwi_ref: np.ndarray, mask: np.ndarray, nodata: int) -> np.ndarray:
+    """Eligible, inside the AOI, clear in every timestep, NDWI observed pre and post."""
+    return (
+        (mask & 1).astype(bool)
+        & (mask & 2).astype(bool)
+        & (mask & 4).astype(bool)
+        & (ndwi_ref[:, 0] != nodata)
+        & (ndwi_ref[:, 1] != nodata)
+    )
 
 
 def _ndwi_counts(
@@ -200,27 +243,55 @@ def _ndwi_counts(
     """Per-patch (pre water, post water, new water, usable) pixel counts.
 
     ``ndwi_ref`` is (N, 2, H, W) pre/post NDWI ×scale; ``mask`` bit0 = eligible,
-    bit1 = clear in every model timestep. Every count is restricted to usable
-    pixels so the definition matches Track A's eligible new water.
+    bit1 = clear in every model timestep, bit2 = inside the AOI. Every count is
+    restricted to usable pixels so the definition matches Track A's eligible
+    new water.
     """
     pre, post = ndwi_ref[:, 0], ndwi_ref[:, 1]
     cut = SPEC.ndwi_water_gt * scale
-    usable = (
-        (mask & 1).astype(bool)
-        & (mask & 2).astype(bool)
-        & (pre != nodata)
-        & (post != nodata)
-    )
-    pre_water = (pre > cut) & usable
-    during = (post > cut) & usable
-    new_water = during & (pre <= cut)
+    usable = usable_pixels(ndwi_ref, mask, nodata)
+    new_water, _observed = ndwi_new_water(pre, post, nodata, scale)
     axes = (1, 2)
     return (
-        pre_water.sum(axis=axes, dtype=np.int32),
-        during.sum(axis=axes, dtype=np.int32),
-        new_water.sum(axis=axes, dtype=np.int32),
+        ((pre > cut) & usable).sum(axis=axes, dtype=np.int32),
+        ((post > cut) & usable).sum(axis=axes, dtype=np.int32),
+        (new_water & usable).sum(axis=axes, dtype=np.int32),
         usable.sum(axis=axes, dtype=np.int32),
     )
+
+
+PAIRED_COUNTS = ("s1_flood", "s1_flood_tile", "both_flood", "builtup_px", "cropland_px",
+                 "ndwi_flood_builtup", "s1_flood_builtup")
+
+
+def _paired_counts(ndwi_ref, s1_ref, mask, landcover, layout: Layout) -> dict:
+    """Per-patch S1 and land-cover pixel counts paired with the NDWI counts.
+
+    s1_flood / both_flood / strata are on the usable pixels (the paired
+    footprint C); s1_flood_tile is S1 new water on every eligible AOI pixel of
+    the tile, whatever the optical validity.
+    """
+    usable = usable_pixels(ndwi_ref, mask, layout.ndwi_nodata)
+    ndwi_new, _ = ndwi_new_water(ndwi_ref[:, 0], ndwi_ref[:, 1],
+                                 layout.ndwi_nodata, layout.ndwi_scale)
+    s1_new = s1_new_water(s1_ref[:, 0], s1_ref[:, 1], layout.s1_nodata,
+                          layout.s1_scale, layout.s1_threshold_db)
+    eligible_inside = (mask & 1).astype(bool) & (mask & 4).astype(bool)
+    builtup, cropland = landcover == layout.builtup, landcover == layout.cropland
+    axes = (1, 2)
+
+    def count(pixels):
+        return pixels.sum(axis=axes, dtype=np.int32)
+
+    return {
+        "s1_flood": count(s1_new & usable),
+        "s1_flood_tile": count(s1_new & eligible_inside),
+        "both_flood": count(s1_new & ndwi_new & usable),
+        "builtup_px": count(builtup & usable),
+        "cropland_px": count(cropland & usable),
+        "ndwi_flood_builtup": count(ndwi_new & usable & builtup),
+        "s1_flood_builtup": count(s1_new & usable & builtup),
+    }
 
 
 def _px_to_km2(pixels: np.ndarray, pixel_area_m2: np.ndarray) -> np.ndarray:
@@ -228,7 +299,8 @@ def _px_to_km2(pixels: np.ndarray, pixel_area_m2: np.ndarray) -> np.ndarray:
 
 
 def _normalize_rgb(array: np.ndarray, rgb_indices: list[int]) -> torch.Tensor:
-    rgb_dn = array[:, rgb_indices] * np.float32(10000.0)
+    """RaVAEn normalization of uint16 DN, clipped to the unit-reflectance range."""
+    rgb_dn = np.clip(array[:, rgb_indices].astype(np.float32), 0, SITS_NORM)
     rgb_dn = (
         rgb_dn - RGB_MEAN[None, :, None, None]
     ) / RGB_STD[None, :, None, None]
@@ -254,21 +326,22 @@ def infer_h5(
 ) -> int:
     score_parts: list[np.ndarray] = []
     count_parts: list[tuple[np.ndarray, ...]] = []
+    paired_parts: list[dict] = []
 
     with h5py.File(input_path, "r") as hdf:
-        nodata, ndwi_scale = check_measurement_layout(hdf)
+        layout = check_measurement_layout(hdf)
         pre_ds, post_ds = hdf["pre"], hdf["post"]
         n_pre = SPEC.sits_n_pre
+        tile_datasets = ("post", "mask", "ndwi_ref", "s1_ref", "landcover",
+                         "pixel_area_m2", "block_id", "coords")
         if (
-            pre_ds.shape[0] != post_ds.shape[0]
-            or pre_ds.shape[1] != n_pre
+            pre_ds.shape[1] != n_pre
             or post_ds.shape[1] != 1
-            or hdf["mask"].shape[0] != pre_ds.shape[0]
-            or hdf["ndwi_ref"].shape[0] != pre_ds.shape[0]
+            or any(hdf[name].shape[0] != pre_ds.shape[0] for name in tile_datasets)
         ):
             raise ValueError(
                 f"Unexpected H5 dimensions: pre={pre_ds.shape}, "
-                f"post={post_ds.shape}, mask={hdf['mask'].shape}"
+                + ", ".join(f"{name}={hdf[name].shape}" for name in tile_datasets)
             )
         rgb_indices = _band_indices(hdf)
         total = int(pre_ds.shape[0])
@@ -282,9 +355,13 @@ def infer_h5(
                 stop = min(start + batch_size, total)
                 pre = pre_ds[start:stop]
                 post = post_ds[start:stop, 0]
+                ndwi_ref, mask = hdf["ndwi_ref"][start:stop], hdf["mask"][start:stop]
                 count_parts.append(_ndwi_counts(
-                    hdf["ndwi_ref"][start:stop], hdf["mask"][start:stop],
-                    nodata, ndwi_scale,
+                    ndwi_ref, mask, layout.ndwi_nodata, layout.ndwi_scale,
+                ))
+                paired_parts.append(_paired_counts(
+                    ndwi_ref, hdf["s1_ref"][start:stop], mask,
+                    hdf["landcover"][start:stop], layout,
                 ))
 
                 tensors = [
@@ -308,21 +385,15 @@ def infer_h5(
                 )
 
         coords = hdf["coords"][:]
+        block_id = hdf["block_id"][:]
         attrs = hdf["meta"].attrs
-
-        def attr_text(name: str) -> str:
-            value = attrs.get(name, "")
-            if isinstance(value, bytes):
-                return value.decode("utf-8")
-            return str(value)
-
-        event_id = attr_text("event_id") or input_path.stem
-        event_district_id = attr_text("event_district_id")
-        source_record_id = attr_text("source_record_id")
-        state = attr_text("state")
-        district = attr_text("district")
-        start_date = attr_text("start_date")
-        geometry_id = attr_text("geometry_id")
+        event_id = _attr_text(attrs, "event_id") or input_path.stem
+        event_district_id = _attr_text(attrs, "event_district_id")
+        source_record_id = _attr_text(attrs, "source_record_id")
+        state = _attr_text(attrs, "state")
+        district = _attr_text(attrs, "district")
+        start_date = _attr_text(attrs, "start_date")
+        geometry_id = _attr_text(attrs, "geometry_id")
 
     scores = (
         np.concatenate(score_parts)
@@ -333,8 +404,11 @@ def infer_h5(
         ndwi_pre, ndwi_during, ndwi_flood, usable_px = (
             np.concatenate(parts) for parts in zip(*count_parts)
         )
+        paired = {name: np.concatenate([part[name] for part in paired_parts])
+                  for name in PAIRED_COUNTS}
     else:
         ndwi_pre = ndwi_during = ndwi_flood = usable_px = np.empty(0, dtype=np.int32)
+        paired = {name: np.empty(0, dtype=np.int32) for name in PAIRED_COUNTS}
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if patches_hash is None:
@@ -354,7 +428,15 @@ def infer_h5(
             tile_area_km2=_px_to_km2(
                 np.full(total, SPEC.sits_patch_pixels), pixel_area_m2
             ),
+            usable_km2=_px_to_km2(usable_px, pixel_area_m2),
+            **paired,
+            s1_flood_km2=_px_to_km2(paired["s1_flood"], pixel_area_m2),
+            s1_flood_tile_km2=_px_to_km2(paired["s1_flood_tile"], pixel_area_m2),
+            s1_threshold_db=np.array(
+                np.nan if layout.s1_threshold_db is None else layout.s1_threshold_db),
+            block_id=block_id,
             spec_version=np.array(SPEC_VERSION),
+            layout_version=np.array(H5_LAYOUT_VERSION),
             latent=np.array("mu"),
             coords=coords,
             event_id=np.array(event_id),
