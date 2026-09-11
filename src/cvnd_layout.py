@@ -47,7 +47,6 @@ DATA_FILES: dict[str, str] = {
     # intermediate
     "flood_combined": "intermediate/flood_combined.csv",
     "event_aoi_area": "intermediate/event_aoi_area.csv",
-    "post_cloud": "intermediate/post_cloud.csv",
     "severity_raw": "intermediate/severity_raw.csv",
     "event_relevance_database": "intermediate/gdelt_event_relevance.sqlite",
     "event_relevance_pilot_manifest": "intermediate/gdelt_event_relevance_pilot.csv",
@@ -72,7 +71,6 @@ DATA_FILES.update({
     "event_districts": "intermediate/event_districts.csv",
     "district_covariates": "intermediate/district_covariates.csv",
     "district_aoi": "intermediate/district_aoi.csv",
-    "district_aoi_area": "intermediate/district_aoi.csv",
     "district_satellite_checkpoint_a": "cache/district/satellite_checkpoint_a.json",
     "district_satellite_checkpoint_b": "cache/district/satellite_checkpoint_b.json",
     "district_flood_extent": "cache/district/flood_extent.csv",
@@ -80,7 +78,6 @@ DATA_FILES.update({
     "district_sits_patches_index": "cache/district/sits_patches_index.csv",
     "district_sits_scores": "cache/district/sits_scores",
     "district_flood_combined": "intermediate/district_flood_combined.csv",
-    "district_post_cloud": "intermediate/district_post_cloud.csv",
     "district_flood_area": "intermediate/district_flood_area.csv",
     "district_gdelt_sql": "intermediate/district_gdelt.sql",
     "district_gdelt_articles": "intermediate/district_gdelt.articles.jsonl.gz",

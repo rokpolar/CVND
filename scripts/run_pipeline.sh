@@ -39,17 +39,17 @@ echo "SKIP_GEE=$SKIP_GEE SKIP_ARTICLES=$SKIP_ARTICLES SKIP_COVARIATES=$SKIP_COVA
 run src/build_emdat_events.py
 if [[ "$SKIP_COVARIATES" != 1 ]]; then run src/build_district_covariates.py; fi
 if [[ "$SKIP_GEE" != 1 ]]; then
-  run event_aoi_area.py
+  run src/event_aoi_area.py
   run src/satellite.py --track "$SATELLITE_TRACK"
   if [[ "$SATELLITE_TRACK" == "B" || "$SATELLITE_TRACK" == "both" ]]; then
     run src/run_sits_inference.py
   fi
-  run post_cloud.py
 else
   echo 'Using district satellite caches only; missing artifacts fail explicitly.'
 fi
-# SITS scores are optional external inference artifacts. Track A preserves the
-# existing S1/S2 detection stack. Track B/both additionally prepares patches.
+# SITS scores are optional external inference artifacts. Track A measures S1/S2
+# new water and cloud QA under flood_spec.SPEC. Track B/both additionally
+# prepares patches.
 run src/merge_results.py
 run src/build_flood_area_table.py
 if [[ "$SKIP_ARTICLES" != 1 ]]; then

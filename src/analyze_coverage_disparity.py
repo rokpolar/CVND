@@ -17,12 +17,19 @@ import statsmodels.formula.api as smf
 from patsy import build_design_matrices
 
 from cvnd_layout import data_path, output_path
+from flood_spec import MEASURED_SOURCES, SATELLITE_SOURCES
 
 FORMULAS = {
     'model_1': 'article_count ~ log_flood_area',
     'model_2': 'article_count ~ log_flood_area + urban_population_share',
     'model_3': 'article_count ~ log_flood_area + urban_population_share + C(year)',
 }
+# Sensitivity only: never enters conclusion_candidate.
+SENSITIVITY_FORMULAS = {
+    'model_2_source_fe': FORMULAS['model_2'] + ' + C(satellite_source)',
+}
+SOURCE_NOTE = ('S1 and NDWI measure new water under the same measurement specification, but the sensors differ; '
+               'the satellite-source fixed effect and by-source subsamples are sensitivity analyses, not a correction.')
 # Fixed numerical eligibility rules, never tuned using coefficient direction.
 MIN_OBSERVATIONS = 20
 MIN_CLUSTERS = 20
@@ -31,13 +38,18 @@ RESULT_COLUMNS = ['model', 'term', 'se_type', 'coefficient', 'standard_error', '
 
 
 def prepare_analysis(table):
-    required = {'event_district_id', 'event_id', 'source_record_id', 'state', 'district', 'start_date', 'article_count', 'flood_area_km2', 'urban_population_share', 'analysis_eligible', 'exclusion_reason'}
+    required = {'event_district_id', 'event_id', 'source_record_id', 'state', 'district', 'start_date', 'article_count', 'flood_area_km2', 'urban_population_share', 'satellite_source', 'analysis_eligible', 'exclusion_reason'}
     if required - set(table.columns):
         raise ValueError(f'Analysis input missing columns: {sorted(required - set(table.columns))}; run district join first')
     if table['event_district_id'].isna().any() or table['event_district_id'].duplicated().any():
         raise ValueError('Analysis input requires unique nonempty event_district_id')
     data = table.copy()
     eligible = data['analysis_eligible'].astype(str).str.lower().isin(['true', '1'])
+    source = data['satellite_source']
+    if not (source.isna() | source.isin(SATELLITE_SOURCES)).all():
+        raise ValueError(f'satellite_source outside {SATELLITE_SOURCES}; rebuild the flood-area table')
+    if (eligible & ~source.isin(MEASURED_SOURCES)).any():
+        raise ValueError('Eligible rows require a measured satellite_source')
     for col in ['article_count', 'flood_area_km2', 'urban_population_share']:
         data[col] = pd.to_numeric(data[col], errors='coerce')
     valid = (np.isfinite(data[['article_count', 'flood_area_km2', 'urban_population_share']]).all(axis=1) & data['article_count'].ge(0) & data['article_count'].mod(1).eq(0) & data['flood_area_km2'].ge(0) & data['urban_population_share'].between(0, 1))
@@ -74,6 +86,60 @@ def fit_nb(data, formula):
     if result.params['alpha'] <= 0:
         raise ValueError('NB2 dispersion estimate is not positive')
     return result, list(dict.fromkeys(str(w.message) for w in caught))
+
+
+FIT_ERRORS = (ValueError, np.linalg.LinAlgError, FloatingPointError)
+
+
+def estimate(name, formula, data, rows, notes, inference):
+    """Fit one NB2 model and append ordinary rows, plus state-clustered rows when
+    the fixed cluster gate is met. Raises FIT_ERRORS when the model is not estimable."""
+    result, caught = fit_nb(data, formula)
+    rows.extend(coefficients(result, name))
+    notes.extend(f'{name}: {message}' for message in caught)
+    groups = data['state']
+    n_clusters = groups.nunique()
+    if n_clusters >= MIN_CLUSTERS and len(data) > 2 * n_clusters:
+        try:
+            from statsmodels.stats.sandwich_covariance import cov_cluster
+            covariance = cov_cluster(result, pd.factorize(groups)[0], use_correction=True)
+            if not np.isfinite(covariance).all() or (np.diag(covariance) <= 0).any():
+                raise ValueError('nonpositive/nonfinite clustered variance')
+            rows.extend(coefficients(result, name, covariance, 'state_clustered', n_clusters - 1))
+            inference[name] = (covariance, n_clusters - 1)
+        except (ValueError, np.linalg.LinAlgError) as exc:
+            notes.append(f'{name}: state-clustered SE unavailable: {exc}; ordinary SE used')
+    else:
+        notes.append(f'{name}: {n_clusters} state clusters / N={len(data)}; require >= {MIN_CLUSTERS} clusters and N > 2G; ordinary SE used and independence assumption is a limitation')
+    return result
+
+
+def source_sensitivity(sample, rows, notes, inference, statuses):
+    """Satellite-source fixed effect and by-source Model 2 subsamples (sensitivity only)."""
+    for name, formula in SENSITIVITY_FORMULAS.items():
+        if sample['satellite_source'].nunique() < 2:
+            statuses[name] = 'insufficient source variation: fewer than two satellite sources'
+            continue
+        try:
+            estimate(name, formula, sample, rows, notes, inference)
+            statuses[name] = 'estimated (sensitivity)'
+        except FIT_ERRORS as exc:
+            statuses[name] = str(exc)
+    parameters = len(FORMULAS['model_2'].split(' ~ ')[1].split(' + ')) + 1
+    minimum = max(MIN_OBSERVATIONS, 5 * (parameters + 1))
+    for source in MEASURED_SOURCES:
+        subset = sample[sample['satellite_source'] == source]
+        if subset.empty:
+            continue
+        name = f'model_2_by_source_{source}'
+        if len(subset) < minimum:
+            statuses[name] = f'insufficient sample: N={len(subset)} < {minimum}'
+            continue
+        try:
+            estimate(name, FORMULAS['model_2'], subset, rows, notes, inference)
+            statuses[name] = 'estimated (sensitivity)'
+        except FIT_ERRORS as exc:
+            statuses[name] = str(exc)
 
 
 def coefficients(result, name, covariance=None, se_type='ordinary', dof=None):
@@ -183,27 +249,12 @@ def analyze(table):
             statuses[name] = 'insufficient sample: fewer than two years'
             continue
         try:
-            result, caught = fit_nb(sample, formula)
-            fits[name] = result
-            rows.extend(coefficients(result, name))
+            fits[name] = estimate(name, formula, sample, rows, notes, inference)
             statuses[name] = 'estimated'
-            notes.extend(f'{name}: {message}' for message in caught)
-            groups = sample['state']
-            n_clusters = groups.nunique()
-            if n_clusters >= MIN_CLUSTERS and len(sample) > 2 * n_clusters:
-                try:
-                    from statsmodels.stats.sandwich_covariance import cov_cluster
-                    covariance = cov_cluster(result, pd.factorize(groups)[0], use_correction=True)
-                    if not np.isfinite(covariance).all() or (np.diag(covariance) <= 0).any():
-                        raise ValueError('nonpositive/nonfinite clustered variance')
-                    rows.extend(coefficients(result, name, covariance, 'state_clustered', n_clusters - 1))
-                    inference[name] = (covariance, n_clusters - 1)
-                except (ValueError, np.linalg.LinAlgError) as exc:
-                    notes.append(f'{name}: state-clustered SE unavailable: {exc}; ordinary SE used')
-            else:
-                notes.append(f'{name}: {n_clusters} state clusters / N={len(sample)}; require >= {MIN_CLUSTERS} clusters and N > 2G; ordinary SE used and independence assumption is a limitation')
-        except (ValueError, np.linalg.LinAlgError, FloatingPointError) as exc:
+        except FIT_ERRORS as exc:
             statuses[name] = str(exc)
+    source_sensitivity(sample, rows, notes, inference, statuses)
+    notes.append(SOURCE_NOTE)
     counts = sample.groupby('source_record_id')['district'].size()
     multi = sample[sample['source_record_id'].isin(counts[counts >= 2].index)]
     n_source = multi['source_record_id'].nunique()
@@ -215,7 +266,7 @@ def analyze(table):
             statuses['source_event_robustness'] = f'estimated secondary unconditional source fixed-effects NB2; {n_source} source events'
             notes.extend(caught)
             notes.append('Source fixed-effects NB2 is secondary and susceptible to incidental-parameter bias; ordinary SE are reported.')
-        except (ValueError, np.linalg.LinAlgError, FloatingPointError) as exc:
+        except FIT_ERRORS as exc:
             statuses['source_event_robustness'] = str(exc)
     else:
         statuses['source_event_robustness'] = f'insufficient sample: {n_source} multi-district source events, {len(multi)} rows; require >= {MIN_SOURCE_EVENTS} groups and >= 5*(groups+3) rows'
@@ -225,7 +276,7 @@ def analyze(table):
         rho, p = spearmanr(sample['flood_area_km2'], sample['article_count'])
         corr = {'rho': float(rho), 'p_value': float(p)}
     distribution_columns = ['flood_area_km2', 'article_count', 'urban_population_share']
-    summary = {'n_total': len(full), 'n_analyzable': len(sample), 'n_excluded': len(full) - len(sample), 'districts': len(sample[['state', 'district']].drop_duplicates()), 'parent_events': int(sample.event_id.nunique()), 'source_flood_events': int(sample.source_record_id.nunique()), 'spearman': corr, 'distributions': sample[distribution_columns].describe().to_dict(), 'missing_counts': {c: int(full[c].isna().sum()) for c in distribution_columns}, 'exclusion_counts': full['exclusion_reason'].fillna('').str.split(';').explode().loc[lambda s: s.ne('')].value_counts().to_dict(), 'model_status': statuses, 'formulas': FORMULAS, 'article_count_variance': float(sample.article_count.var()) if len(sample) > 1 else None, 'article_count_mean': float(sample.article_count.mean()) if len(sample) else None}
+    summary = {'n_total': len(full), 'n_analyzable': len(sample), 'n_excluded': len(full) - len(sample), 'districts': len(sample[['state', 'district']].drop_duplicates()), 'parent_events': int(sample.event_id.nunique()), 'source_flood_events': int(sample.source_record_id.nunique()), 'satellite_source_counts': {str(k): int(v) for k, v in sample['satellite_source'].value_counts().items()}, 'sensitivity_formulas': SENSITIVITY_FORMULAS, 'spearman': corr, 'distributions': sample[distribution_columns].describe().to_dict(), 'missing_counts': {c: int(full[c].isna().sum()) for c in distribution_columns}, 'exclusion_counts': full['exclusion_reason'].fillna('').str.split(';').explode().loc[lambda s: s.ne('')].value_counts().to_dict(), 'model_status': statuses, 'formulas': FORMULAS, 'article_count_variance': float(sample.article_count.var()) if len(sample) > 1 else None, 'article_count_mean': float(sample.article_count.mean()) if len(sample) else None}
     results = pd.DataFrame(rows, columns=RESULT_COLUMNS)
     bias, selection_note = selection_bias(full)
     notes.append(selection_note)

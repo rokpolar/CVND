@@ -34,6 +34,7 @@ def synthetic(n=750):
                          'start_date': [f'{yr}-03-01' for yr in year],
                          'article_count': y, 'flood_area_km2': np.expm1(flood),
                          'total_population': 1e6 * np.exp(pop), 'urban_population_share': .4,
+                         'satellite_source': [('S1', 'NDWI', 'SITS_NDWI')[i % 3] for i in range(n)],
                          'analysis_eligible': True, 'exclusion_reason': ''})
 
 
@@ -117,7 +118,8 @@ class ScoringTests(unittest.TestCase):
                    ('article_count', -1), ('article_count', .5), ('article_count', np.nan),
                    ('flood_area_km2', np.inf), ('flood_area_km2', -1),
                    ('start_date', 'bad'), ('urban_population_share', 2),
-                   ('exclusion_reason', 'failed'), ('analysis_eligible', 'maybe')]
+                   ('exclusion_reason', 'failed'), ('analysis_eligible', 'maybe'),
+                   ('satellite_source', 'S1(cloud)'), ('satellite_source', 'NONE')]
         for col, value in invalid:
             frame = self.table.copy()
             frame[col] = frame[col].astype(object)

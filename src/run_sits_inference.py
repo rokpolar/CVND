@@ -2,8 +2,13 @@
 
 The HDF5 inputs are never deleted. A file with a sibling .blocks.json is
 still being downloaded and is skipped. Each completed input produces one
-`data/cache/district/sits_scores/<event_district_id>.npz` file consumed by
-`merge_results.py`.
+`data/cache/district/sits_scores/<cache_stem(event_district_id)>.npz` file
+consumed by `merge_results.py`.
+
+Scores use the encoder mean (no sampling), so batch size, device and
+resumption change them only by floating-point rounding. NDWI areas are counted only on usable pixels
+(eligible, clear in every timestep, observed pre and post) and converted with
+each tile's pixel area, under the same flood_spec.SPEC as Track A.
 """
 
 from __future__ import annotations
@@ -16,14 +21,23 @@ from pathlib import Path
 
 import h5py
 import numpy as np
-import torch
-import torch.nn.functional as F
 from tqdm import tqdm
+
+try:
+    import torch
+    import torch.nn.functional as F
+except ImportError:  # area/QA helpers stay importable for audits and tests
+    torch = F = None
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cvnd_layout import ROOT, data_path  # noqa: E402
-from sits_extreme_vendor.vae_variants import build_model  # noqa: E402
+from district_keys import key_from_stem  # noqa: E402
+from flood_spec import SPEC, SPEC_VERSION  # noqa: E402
+
+
+class StaleSpecError(ValueError):
+    """The H5 was prepared under another measurement spec or old layout."""
 
 
 PATCH_DIR = data_path("district_sits_patches")
@@ -90,8 +104,14 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def ensure_checkpoint(path: Path, *, offline: bool = False) -> Path:
-    """Require and verify a checkpoint from the local upstream repository."""
+def ensure_checkpoint(
+    path: Path, *, offline: bool = False, expected_sha256: str | None = None
+) -> Path:
+    """Require and verify a checkpoint from the local upstream repository.
+
+    A file name outside the verified table is rejected unless the caller
+    supplies the expected SHA-256 explicitly.
+    """
     if not path.exists():
         raise FileNotFoundError(
             "Local SITS checkpoint not found: "
@@ -99,9 +119,14 @@ def ensure_checkpoint(path: Path, *, offline: bool = False) -> Path:
             "or pass --checkpoint."
         )
 
+    expected = expected_sha256 or CHECKPOINT_SHA256.get(path.name)
+    if expected is None:
+        raise RuntimeError(
+            f"Unverified SITS checkpoint name {path.name!r}; expected one of "
+            f"{sorted(CHECKPOINT_SHA256)} or pass --expected-sha256"
+        )
     actual = sha256_file(path)
-    expected = CHECKPOINT_SHA256.get(path.name)
-    if expected is not None and actual != expected:
+    if actual != expected.lower():
         raise RuntimeError(
             f"SITS checkpoint hash mismatch: expected {expected}, got {actual}"
         )
@@ -109,6 +134,8 @@ def ensure_checkpoint(path: Path, *, offline: bool = False) -> Path:
 
 
 def build_local_model(checkpoint: Path, device: torch.device) -> torch.nn.Module:
+    from sits_extreme_vendor.vae_variants import build_model
+
     model, _criterion = build_model(MODEL_CONFIG)
     try:
         payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
@@ -129,7 +156,7 @@ def complete_h5_files(
 ) -> list[Path]:
     files = []
     for path in sorted(patch_dir.glob("*.h5")):
-        if event_ids and path.stem not in event_ids:
+        if event_ids and key_from_stem(path.stem) not in event_ids:
             continue
         block_checkpoint = Path(str(path) + ".blocks.json")
         if block_checkpoint.exists():
@@ -139,7 +166,8 @@ def complete_h5_files(
     return files
 
 
-def _band_indices(hdf: h5py.File) -> tuple[list[int], int, int]:
+def _band_indices(hdf: h5py.File) -> list[int]:
+    """RGB band positions for the model input."""
     raw = hdf["meta"].attrs.get("bands", "")
     if isinstance(raw, bytes):
         raw = raw.decode("utf-8")
@@ -148,26 +176,55 @@ def _band_indices(hdf: h5py.File) -> tuple[list[int], int, int]:
     missing = [band for band in required if band not in bands]
     if missing:
         raise ValueError(f"H5 is missing required bands {missing}: found {bands}")
-    rgb = [bands.index(band) for band in ["B4", "B3", "B2"]]
-    return rgb, bands.index("B3"), bands.index("B8")
+    return [bands.index(band) for band in ["B4", "B3", "B2"]]
+
+
+def check_measurement_layout(hdf: h5py.File) -> tuple[int, float]:
+    """Return (ndwi_nodata, ndwi_scale) or raise StaleSpecError."""
+    attrs = hdf["meta"].attrs
+    version = attrs.get("spec_version", "")
+    if isinstance(version, bytes):
+        version = version.decode("utf-8")
+    missing = [n for n in ("mask", "ndwi_ref", "pixel_area_m2") if n not in hdf]
+    if str(version) != SPEC_VERSION or missing:
+        raise StaleSpecError(
+            f"spec {version or 'missing'} (expected {SPEC_VERSION}); "
+            f"missing datasets {missing}; rerun satellite.py --track B"
+        )
+    return int(attrs["ndwi_nodata"]), float(attrs["ndwi_scale"])
 
 
 def _ndwi_counts(
-    pre: np.ndarray, post: np.ndarray, green_idx: int, nir_idx: int
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Return per-patch pre-water, post-water and new-water pixel counts."""
-    eps = np.float32(1e-6)
-    pre_g, pre_n = pre[:, :, green_idx], pre[:, :, nir_idx]
-    post_g, post_n = post[:, green_idx], post[:, nir_idx]
-    pre_ndwi_each = (pre_g - pre_n) / (pre_g + pre_n + eps)
-    pre_ndwi = np.median(pre_ndwi_each, axis=1)
-    post_ndwi = (post_g - post_n) / (post_g + post_n + eps)
-    pre_water = (pre_ndwi > 0).sum(axis=(1, 2), dtype=np.int32)
-    during_water = (post_ndwi > 0).sum(axis=(1, 2), dtype=np.int32)
-    new_water = ((post_ndwi > 0) & (pre_ndwi <= 0)).sum(
-        axis=(1, 2), dtype=np.int32
+    ndwi_ref: np.ndarray, mask: np.ndarray, nodata: int, scale: float = 10000.0
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Per-patch (pre water, post water, new water, usable) pixel counts.
+
+    ``ndwi_ref`` is (N, 2, H, W) pre/post NDWI ×scale; ``mask`` bit0 = eligible,
+    bit1 = clear in every model timestep. Every count is restricted to usable
+    pixels so the definition matches Track A's eligible new water.
+    """
+    pre, post = ndwi_ref[:, 0], ndwi_ref[:, 1]
+    cut = SPEC.ndwi_water_gt * scale
+    usable = (
+        (mask & 1).astype(bool)
+        & (mask & 2).astype(bool)
+        & (pre != nodata)
+        & (post != nodata)
     )
-    return pre_water, during_water, new_water
+    pre_water = (pre > cut) & usable
+    during = (post > cut) & usable
+    new_water = during & (pre <= cut)
+    axes = (1, 2)
+    return (
+        pre_water.sum(axis=axes, dtype=np.int32),
+        during.sum(axis=axes, dtype=np.int32),
+        new_water.sum(axis=axes, dtype=np.int32),
+        usable.sum(axis=axes, dtype=np.int32),
+    )
+
+
+def _px_to_km2(pixels: np.ndarray, pixel_area_m2: np.ndarray) -> np.ndarray:
+    return pixels.astype(np.float64) * pixel_area_m2.astype(np.float64) / 1e6
 
 
 def _normalize_rgb(array: np.ndarray, rgb_indices: list[int]) -> torch.Tensor:
@@ -179,11 +236,11 @@ def _normalize_rgb(array: np.ndarray, rgb_indices: list[int]) -> torch.Tensor:
 
 
 def _latent(model: torch.nn.Module, image: torch.Tensor) -> torch.Tensor:
+    """Posterior mean. A reparameterized sample would make scores, the Youden
+    gate and therefore source routing depend on batch size and device."""
     embedding, _position_encodings = model.encoder(image)
     embedding = torch.flatten(embedding, start_dim=1)
-    mu = model.fc_mu(embedding)
-    log_var = model.fc_var(embedding)
-    return model.reparameterize(mu, log_var)
+    return model.fc_mu(embedding)
 
 
 def infer_h5(
@@ -196,27 +253,26 @@ def infer_h5(
     patches_hash: str | None = None,
 ) -> int:
     score_parts: list[np.ndarray] = []
-    pre_parts: list[np.ndarray] = []
-    during_parts: list[np.ndarray] = []
-    flood_parts: list[np.ndarray] = []
+    count_parts: list[tuple[np.ndarray, ...]] = []
 
     with h5py.File(input_path, "r") as hdf:
+        nodata, ndwi_scale = check_measurement_layout(hdf)
         pre_ds, post_ds = hdf["pre"], hdf["post"]
+        n_pre = SPEC.sits_n_pre
         if (
             pre_ds.shape[0] != post_ds.shape[0]
-            or pre_ds.shape[1] != 4
+            or pre_ds.shape[1] != n_pre
             or post_ds.shape[1] != 1
+            or hdf["mask"].shape[0] != pre_ds.shape[0]
+            or hdf["ndwi_ref"].shape[0] != pre_ds.shape[0]
         ):
             raise ValueError(
-                f"Unexpected H5 time dimensions: pre={pre_ds.shape}, "
-                f"post={post_ds.shape}"
+                f"Unexpected H5 dimensions: pre={pre_ds.shape}, "
+                f"post={post_ds.shape}, mask={hdf['mask'].shape}"
             )
-        rgb_indices, green_idx, nir_idx = _band_indices(hdf)
+        rgb_indices = _band_indices(hdf)
         total = int(pre_ds.shape[0])
-
-        torch.manual_seed(42)
-        if device.type == "cuda":
-            torch.cuda.manual_seed_all(42)
+        pixel_area_m2 = hdf["pixel_area_m2"][:]
 
         with torch.inference_mode():
             iterator = range(0, total, batch_size)
@@ -226,14 +282,14 @@ def infer_h5(
                 stop = min(start + batch_size, total)
                 pre = pre_ds[start:stop]
                 post = post_ds[start:stop, 0]
-                p, d, f = _ndwi_counts(pre, post, green_idx, nir_idx)
-                pre_parts.append(p)
-                during_parts.append(d)
-                flood_parts.append(f)
+                count_parts.append(_ndwi_counts(
+                    hdf["ndwi_ref"][start:stop], hdf["mask"][start:stop],
+                    nodata, ndwi_scale,
+                ))
 
                 tensors = [
                     _normalize_rgb(pre[:, timestep], rgb_indices).to(device)
-                    for timestep in range(4)
+                    for timestep in range(n_pre)
                 ]
                 post_tensor = _normalize_rgb(post, rgb_indices).to(device)
                 post_latent = _latent(model, post_tensor)
@@ -273,21 +329,12 @@ def infer_h5(
         if score_parts
         else np.empty(0, dtype=np.float32)
     )
-    ndwi_pre = (
-        np.concatenate(pre_parts)
-        if pre_parts
-        else np.empty(0, dtype=np.int32)
-    )
-    ndwi_during = (
-        np.concatenate(during_parts)
-        if during_parts
-        else np.empty(0, dtype=np.int32)
-    )
-    ndwi_flood = (
-        np.concatenate(flood_parts)
-        if flood_parts
-        else np.empty(0, dtype=np.int32)
-    )
+    if count_parts:
+        ndwi_pre, ndwi_during, ndwi_flood, usable_px = (
+            np.concatenate(parts) for parts in zip(*count_parts)
+        )
+    else:
+        ndwi_pre = ndwi_during = ndwi_flood = usable_px = np.empty(0, dtype=np.int32)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if patches_hash is None:
@@ -300,6 +347,15 @@ def infer_h5(
             ndwi_pre=ndwi_pre,
             ndwi_during=ndwi_during,
             ndwi_flood=ndwi_flood,
+            usable_px=usable_px,
+            ndwi_pre_km2=_px_to_km2(ndwi_pre, pixel_area_m2),
+            ndwi_during_km2=_px_to_km2(ndwi_during, pixel_area_m2),
+            ndwi_flood_km2=_px_to_km2(ndwi_flood, pixel_area_m2),
+            tile_area_km2=_px_to_km2(
+                np.full(total, SPEC.sits_patch_pixels), pixel_area_m2
+            ),
+            spec_version=np.array(SPEC_VERSION),
+            latent=np.array("mu"),
             coords=coords,
             event_id=np.array(event_id),
             event_district_id=np.array(event_district_id),
@@ -323,6 +379,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--events", nargs="*", help="Only infer selected event IDs")
     parser.add_argument("--checkpoint", type=Path, default=CHECKPOINT)
+    parser.add_argument(
+        "--expected-sha256",
+        help="Verify a checkpoint whose file name is not in the built-in table",
+    )
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument(
         "--device", choices=["auto", "cuda", "cpu"], default="auto"
@@ -353,7 +413,11 @@ def main() -> int:
         )
         return 0
 
-    checkpoint = ensure_checkpoint(args.checkpoint, offline=args.offline)
+    if torch is None:
+        raise RuntimeError("SITS inference requires PyTorch (pip install torch)")
+    checkpoint = ensure_checkpoint(
+        args.checkpoint, offline=args.offline, expected_sha256=args.expected_sha256
+    )
     if args.device == "auto":
         device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
@@ -368,24 +432,32 @@ def main() -> int:
     model = build_local_model(checkpoint, device)
     checkpoint_hash = sha256_file(checkpoint)
 
-    completed = 0
+    completed, stale = 0, []
     for input_path in pending:
         output_path = SCORE_DIR / f"{input_path.stem}.npz"
-        count = infer_h5(
-            input_path,
-            output_path,
-            model,
-            device,
-            args.batch_size,
-            checkpoint_hash,
-            patches_hash=sha256_file(input_path),
-        )
+        try:
+            count = infer_h5(
+                input_path,
+                output_path,
+                model,
+                device,
+                args.batch_size,
+                checkpoint_hash,
+                patches_hash=sha256_file(input_path),
+            )
+        except StaleSpecError as exc:
+            print(f"STALE SPEC {input_path.name}: {exc}")
+            stale.append(input_path.name)
+            continue
         completed += 1
         print(
             f"Saved {output_path} ({count} patches); kept {input_path}"
         )
 
     print(f"Local SITS inference complete: {completed} event(s)")
+    if stale:
+        print(f"Skipped {len(stale)} H5 file(s) prepared under another spec")
+        return 1
     return 0
 
 

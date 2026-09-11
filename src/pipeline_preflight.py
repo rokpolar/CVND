@@ -6,6 +6,10 @@ import sys
 
 import pandas as pd
 from cvnd_layout import data_path
+from flood_spec import SPEC_VERSION, stale_spec_mask
+
+# Satellite artifacts measured under flood_spec.SPEC; another spec_version is stale.
+SPEC_ARTIFACTS = {'district_aoi', 'district_flood_extent', 'district_flood_combined', 'district_flood_area'}
 
 
 def inspect_artifacts():
@@ -16,7 +20,8 @@ def inspect_artifacts():
         'district_covariates': ['state', 'district', 'urban_population_share', 'census_year'],
         'district_aoi': ['event_district_id', 'aoi_level', 'aoi_match_status', 'aoi_area_km2'],
         'district_flood_extent': ['event_district_id', 'aoi_level', 'aoi_match_status'],
-        'district_flood_area': ['event_district_id', 'flood_area_km2', 'satellite_status'],
+        'district_flood_combined': ['event_district_id', 'combined_km2', 'satellite_source', 'route_reason'],
+        'district_flood_area': ['event_district_id', 'flood_area_km2', 'satellite_status', 'satellite_source', 'spec_version'],
         'district_article_counts_heuristic': ['event_district_id', 'final_article_count', 'collection_status'],
     }
     rows = []
@@ -27,6 +32,14 @@ def inspect_artifacts():
         if path.exists() and columns:
             try:
                 frame = pd.read_csv(path)
+                if key in SPEC_ARTIFACTS:
+                    stale = stale_spec_mask(frame)
+                    if stale.any():
+                        versions = frame['spec_version'] if 'spec_version' in frame else pd.Series('missing', index=frame.index)
+                        found = sorted({str(v) for v in versions[stale]})
+                        rows.append({'artifact': key, 'path': str(path), 'status': 'stale_spec',
+                                     'details': f'{int(stale.sum())}/{len(frame)} rows not under {SPEC_VERSION}: {found[:3]}'})
+                        continue
                 missing = set(columns) - set(frame.columns)
                 if missing:
                     raise ValueError(f'missing columns {sorted(missing)}')
@@ -43,10 +56,10 @@ def inspect_artifacts():
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--strict', action='store_true', help='Exit nonzero if any required input/cache is unavailable')
+    parser.add_argument('--strict', action='store_true', help='Exit nonzero if any required input/cache is unavailable or stale')
     args = parser.parse_args(argv)
     rows = inspect_artifacts()
-    print(json.dumps({'spatial_unit': 'event × district', 'artifacts': rows}, indent=2))
+    print(json.dumps({'spatial_unit': 'event × district', 'spec_version': SPEC_VERSION, 'artifacts': rows}, indent=2))
     return int(args.strict and any(r['status'] != 'present' for r in rows))
 
 

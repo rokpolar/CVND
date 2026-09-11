@@ -47,6 +47,24 @@ class DistrictJoinTests(unittest.TestCase):
         self.assertTrue(pd.isna(table.loc[0, 'article_count']))
         self.assertEqual(table.loc[0, 'article_collection_status'], 'not_executed')
 
+    def test_invalid_satellite_source_excluded(self):
+        for source in ['S1(cloud)', 'NONE']:
+            with self.subTest(source=source):
+                table, _ = build_district_table(self.registry, self.flood.assign(satellite_source=source), self.articles, self.cov)
+                self.assertFalse(table.loc[0, 'analysis_eligible'])
+                self.assertIn('satellite_source_invalid', table.loc[0, 'exclusion_reason'])
+                self.assertTrue(pd.isna(table.loc[0, 'flood_area_km2']))
+
+    def test_satellite_source_and_route_reason_carried(self):
+        flood = self.flood.assign(satellite_source=['NDWI', 'NONE', 'S1'],
+                                  route_reason=['no_s1_ndwi', 'no_measurement', 'no_optical_s1'],
+                                  spec_version='fs1-test')
+        table, _ = build_district_table(self.registry, flood, self.articles, self.cov)
+        self.assertEqual(table['route_reason'].tolist(), ['no_s1_ndwi', 'no_measurement', 'no_optical_s1'])
+        self.assertEqual(table.loc[0, 'satellite_source'], 'NDWI')
+        self.assertEqual(table.loc[0, 'spec_version'], 'fs1-test')
+        self.assertEqual(qc_summary(table)['satellite_source_counts'], {'NDWI': 1})
+
     def test_invalid_flood_area_and_census_denominator_excluded(self):
         table, _ = build_district_table(self.registry, self.flood.assign(flood_area_km2=1000), self.articles, self.cov.assign(total_population=0))
         self.assertFalse(table.analysis_eligible.any())

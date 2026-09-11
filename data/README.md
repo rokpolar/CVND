@@ -20,13 +20,12 @@ Counts must be nonnegative and consistent (`total = urban + rural`). Zero denomi
 | --- | --- |
 | `intermediate/event_districts.csv` | `event_district_id` PK; parent `event_id`, `source_record_id`, state, district, start/end dates, district source/confidence/evidence, AOI level/status |
 | `intermediate/district_covariates.csv` | one state/district row; Census code, total/urban/rural population, continuous urban share, Census year/source, match status |
-| `intermediate/district_aoi.csv` | district PK, parent/source/geography, AOI level/source/match status, geometry ID, `aoi_area_km2`; failed matches retained |
-| `cache/district/flood_extent.csv` | district PK with identity/provenance, S1/S2 areas, image counts and detection status |
-| `cache/district/sits_patches/` | optional H5 patches with district and source/date identity; never state patches |
-| `cache/district/sits_scores/` | optional external NPZ SITS scores for those district patches; requires valid provenance |
-| `intermediate/district_post_cloud.csv` | district PK, post-image count, clear/cloud percentage, query status |
-| `intermediate/district_flood_combined.csv` | district PK, combined pixel flood area/source, AOI area, flood ratio, provenance |
-| `intermediate/district_flood_area.csv` | district PK, parent/source/geography/date, `flood_area_km2`, `flood_ratio`, `aoi_area_km2`, `satellite_source`, `satellite_status`, `aoi_match_status` |
+| `intermediate/district_aoi.csv` | district PK, parent/source/geography, AOI level/source/match status, geometry ID, geodesic `aoi_area_km2`, `spec_version`; failed matches retained |
+| `cache/district/flood_extent.csv` | district PK with identity/AOI provenance; `area_s1_km2`, `area_s2_km2`, `ndwi_pre_water_km2`, `ndwi_during_water_km2`, S1/S2 pre/post image counts, `cloud_pct` (share of the AOI never seen clear in the post window), `otsu_threshold_db`, `otsu_fallback_used`, `otsu_separability`, `s1_orbit` (ASCENDING/DESCENDING/BOTH), `baseline_status` (OK/NO_IMAGERY/ERROR: …), `spec_version` |
+| `cache/district/sits_patches/` | optional H5 patches named `cache_stem(event_district_id).h5` (percent-encoded; Windows-safe). Model inputs `pre`/`post`/`coords` plus measurement layers `mask` (bit0 eligible, bit1 clear in every timestep), `ndwi_ref` (pre/post NDWI ×1e4, nodata −32768), `pixel_area_m2`; meta `spec_version`; never state patches |
+| `cache/district/sits_scores/` | optional external NPZ SITS scores for those district patches: `scores` (encoder mean), per-tile `ndwi_flood`/`usable_px` pixel counts, `ndwi_flood_km2`, `ndwi_pre_km2`, `ndwi_during_km2`, `tile_area_km2`, `spec_version`; requires valid provenance |
+| `intermediate/district_flood_combined.csv` | district PK and AOI provenance; `combined_km2`; `satellite_source` (S1, NDWI, SITS_NDWI, SITS_NDWI_RESTORED, NONE); `route_reason`; `optical_footprint` (aoi or sits_tiles); every candidate area; SITS gate and footprint; cloud and Otsu QA; `aoi_area_km2`; `spec_version`. No flood ratio |
+| `intermediate/district_flood_area.csv` | district PK, parent/source/geography/date, `flood_area_km2`, `flood_ratio` (computed once from the AOI table), `aoi_area_km2`, `satellite_source`, `satellite_status` (observed/missing/failed_aoi), `aoi_match_status`, `route_reason`, `cloud_pct`, `otsu_fallback_used`, `s1_orbit`, `spec_version` |
 | `intermediate/district_gdelt.sql` | reproducible 14-day query and district assignment logic |
 | `intermediate/district_gdelt.articles.jsonl.gz` | district PK, parent/source/geography, URL, publication date, location evidence and GKG metadata |
 | `intermediate/district_gdelt.manifest.json` | spatial/window contract, collection completeness and provenance; needed to distinguish missing from zero |
@@ -95,8 +94,7 @@ The local SITS model checkpoint is loaded from
 | File | Key | Producer | Consumers |
 | --- | --- | --- | --- |
 | `district_flood_combined.csv` | `district_flood_combined` | `merge_results.py` | `build_flood_area_table.py` |
-| `district_aoi.csv` | `district_aoi` | `event_aoi_area.py` | `merge_results.py`, `build_flood_area_table.py` |
-| `district_post_cloud.csv` | `district_post_cloud` | `post_cloud.py` | `merge_results.py` |
+| `district_aoi.csv` | `district_aoi` | `src/event_aoi_area.py` | `build_flood_area_table.py` |
 | `district_flood_area.csv` | `district_flood_area` | `build_flood_area_table.py` | `join_district_flood_articles.py` |
 
 ### `results/`
