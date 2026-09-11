@@ -2,26 +2,19 @@
 
 District rows use an exact India/state/district GAUL level-2 match. A failed
 match is retained as ``aoi_match_status=failed`` and has no area; it is never
-replaced with a state polygon. State rows remain available for legacy runs.
+replaced with a state polygon. The area is geodesic (``geometry.area`` with the
+spec's ``aoi_max_error_m``) and is the denominator of ``flood_ratio``.
 """
 
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT / "src"))
-from cvnd_layout import data_path  # noqa: E402
-
-
-def _key(row) -> str:
-    value = row.get("event_district_id")
-    if value is not None and str(value).strip() not in {"", "nan", "None"}:
-        return str(value)
-    return str(row.get("event_id"))
+from cvnd_layout import data_path
+from district_keys import analysis_key
+from flood_spec import SPEC_VERSION
 
 
 def _registry() -> pd.DataFrame:
@@ -49,17 +42,16 @@ def resolve_rows(events: pd.DataFrame, sat_module) -> pd.DataFrame:
             "aoi_match_status": "failed",
             "geometry_id": None,
             "aoi_area_km2": None,
-            "aoi_km2": None,
+            "spec_version": SPEC_VERSION,
         }
         try:
             aoi = sat_module.resolve_aoi(row)
             rec.update({k: v for k, v in aoi.items() if k != "geometry"})
-            rec["aoi_km2"] = rec["aoi_area_km2"]
         except Exception as exc:
             rec["aoi_error"] = str(exc)
-            print(f"{_key(row)}: AOI failed: {exc}")
+            print(f"{analysis_key(row)}: AOI failed: {exc}")
         else:
-            print(f"{_key(row)}: {rec['aoi_area_km2']:.1f} km2 ({rec['aoi_level']})")
+            print(f"{analysis_key(row)}: {rec['aoi_area_km2']:.1f} km2 ({rec['aoi_level']})")
         rows.append(rec)
     return pd.DataFrame(rows)
 
@@ -67,17 +59,17 @@ def resolve_rows(events: pd.DataFrame, sat_module) -> pd.DataFrame:
 def main(event_ids: list[str] | None = None) -> None:
     events = _registry()
     if event_ids:
-        keys = events.apply(_key, axis=1)
+        keys = events.apply(analysis_key, axis=1)
         events = events[keys.isin(event_ids) | events["event_id"].astype(str).isin(event_ids)]
 
     # Defer the Earth Engine import and initialization to the actual AOI run.
     import satellite as sat
 
-    output = data_path("district_aoi_area")
+    output = data_path("district_aoi")
     output.parent.mkdir(parents=True, exist_ok=True)
     result = resolve_rows(events, sat)
     result.to_csv(output, index=False)
-    print(f"\nSaved -> {output} ({len(result)} events)")
+    print(f"\nSaved -> {output} ({len(result)} events, spec {SPEC_VERSION})")
     print(result["aoi_match_status"].value_counts(dropna=False).to_string())
 
 

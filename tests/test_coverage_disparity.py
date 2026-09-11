@@ -16,7 +16,7 @@ def synthetic(n=1500):
     mu = np.exp(-.5 + .6 * flood + 1.1 * urban)
     alpha = .7
     y = rng.negative_binomial(1 / alpha, 1 / (1 + alpha * mu))
-    return pd.DataFrame({'event_district_id': ['ED' + str(i) for i in range(n)], 'event_id': ['E' + str(i // 3) for i in range(n)], 'source_record_id': ['S' + str(i // 3) for i in range(n)], 'state': ['state' + str(i % 25) for i in range(n)], 'district': ['district' + str(i) for i in range(n)], 'start_date': ['2020-01-01' if i % 2 else '2021-01-01' for i in range(n)], 'article_count': y, 'flood_area_km2': np.expm1(flood), 'log_flood_area': flood, 'urban_population_share': urban, 'analysis_eligible': True, 'exclusion_reason': ''})
+    return pd.DataFrame({'event_district_id': ['ED' + str(i) for i in range(n)], 'event_id': ['E' + str(i // 3) for i in range(n)], 'source_record_id': ['S' + str(i // 3) for i in range(n)], 'state': ['state' + str(i % 25) for i in range(n)], 'district': ['district' + str(i) for i in range(n)], 'start_date': ['2020-01-01' if i % 2 else '2021-01-01' for i in range(n)], 'article_count': y, 'flood_area_km2': np.expm1(flood), 'log_flood_area': flood, 'urban_population_share': urban, 'satellite_source': [('S1', 'NDWI', 'SITS_NDWI')[i % 3] for i in range(n)], 'analysis_eligible': True, 'exclusion_reason': ''})
 
 
 class CoverageModelsTests(unittest.TestCase):
@@ -62,6 +62,22 @@ class CoverageModelsTests(unittest.TestCase):
         self.assertIn('insufficient sample', summary['model_status']['source_event_robustness'])
         self.assertIsNotNone(predictions)
         self.assertEqual(bias['rows'].sum(), 250)
+
+    def test_source_sensitivity_models_reported(self):
+        summary, results, _, _, _ = analyze(self.data.head(250))
+        statuses = summary['model_status']
+        self.assertEqual(statuses['model_2_source_fe'], 'estimated (sensitivity)')
+        self.assertIn('C(satellite_source)[T.S1]', set(results.term))
+        for source in ['S1', 'NDWI', 'SITS_NDWI']:
+            self.assertEqual(statuses[f'model_2_by_source_{source}'], 'estimated (sensitivity)')
+        self.assertEqual(summary['satellite_source_counts'], {'S1': 84, 'NDWI': 83, 'SITS_NDWI': 83})
+        self.assertTrue(any('not a correction' in note for note in summary['warnings']))
+        small, _, _, _, _ = analyze(self.data.head(40))
+        self.assertIn('insufficient sample', small['model_status']['model_2_by_source_S1'])
+        single, _, _, _, _ = analyze(self.data.head(250).assign(satellite_source='S1'))
+        self.assertIn('fewer than two', single['model_status']['model_2_source_fe'])
+        with self.assertRaisesRegex(ValueError, 'satellite_source'):
+            analyze(self.data.head(30).assign(satellite_source='S1(cloud)'))
 
     def test_no_data_is_reported_without_numeric_conclusion(self):
         table = self.data.head(5).assign(analysis_eligible=False, exclusion_reason='satellite_missing')

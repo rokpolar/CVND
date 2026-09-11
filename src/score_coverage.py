@@ -19,6 +19,7 @@ import statsmodels.formula.api as smf
 
 from analyze_coverage_disparity import MIN_OBSERVATIONS, fit_nb, prepare_analysis
 from cvnd_layout import ROOT, data_path, output_path
+from district_keys import AOI_MATCHED, SATELLITE_OBSERVED
 
 FORMULA = 'article_count ~ log_flood_area + log_population + year_c'
 NUMERIC_SCORES = ['expected_article_count_oof', 'alpha_oof', 'coverage_difference',
@@ -83,9 +84,10 @@ def prepare_scoring(table):
     if sources.isna().any() or sources.str.strip().eq('').any() or sources.ne(sources.str.strip()).any():
         raise ValueError('Eligible rows require nonempty source_record_id without surrounding whitespace')
     # Honor the join quality contract whenever its audit columns are supplied.
+    # prepare_analysis has already checked the satellite_source vocabulary.
     checks = {'district_match_status': ['high', 'exact', 'resolved', 'matched'],
-              'aoi_level': ['district'], 'aoi_match_status': ['matched', 'exact'],
-              'satellite_status': ['observed', 'ok', 'OK'],
+              'aoi_level': ['district'], 'aoi_match_status': sorted(AOI_MATCHED),
+              'satellite_status': sorted(SATELLITE_OBSERVED),
               'article_collection_status': ['complete'],
               'census_match_status': ['matched', 'exact', 'crosswalk', 'matched_crosswalk']}
     for column, allowed in checks.items():
@@ -240,6 +242,7 @@ def score_coverage(table, settings=None, sensitivity_no_population=False):
                'existing_nb_fit_guards': {'min_rows': MIN_OBSERVATIONS, 'rows_per_parameter': 5, 'require_outcome_variation': True},
                'variance': 'mu + alpha * mu^2; alpha estimated by maximum likelihood',
                'n_total': len(full), 'n_eligible': len(sample), 'n_sources': n_sources,
+               'satellite_source_counts': sample.satellite_source.value_counts().to_dict(),
                'n_input_sources': int(full.source_record_id.nunique()),
                'n_excluded': len(full) - len(sample), 'folds': [], 'limitations': LIMITATIONS,
                'exclusion_counts': full.exclusion_reason.fillna('').str.split(';').explode().loc[lambda x: x.ne('')].value_counts().to_dict(),

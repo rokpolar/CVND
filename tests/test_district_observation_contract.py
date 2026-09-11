@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 import district_articles as da
 from build_district_covariates import parse_census_table, project_to_events
 from build_flood_area_table import build_flood_area_table
+from flood_spec import SPEC_VERSION
 from join_district_flood_articles import build_district_table
 
 
@@ -95,8 +96,8 @@ class ObservationContractTests(unittest.TestCase):
         self.assertEqual(len(projected),2)
 
     def test_full_join_keeps_real_zero_and_excludes_missing(self):
-        combined = self.registry.copy().assign(combined_km2=[0,None],aoi_km2=100,aoi_match_status='matched',combined_source='S1')
-        aoi = self.registry.copy().assign(aoi_match_status='matched',aoi_area_km2=100)
+        combined = self.registry.copy().assign(combined_km2=[0,None],aoi_area_km2=100,aoi_match_status='matched',satellite_source=['S1','NONE'],spec_version=SPEC_VERSION)
+        aoi = self.registry.copy().assign(aoi_match_status='matched',aoi_area_km2=100,spec_version=SPEC_VERSION)
         flood = build_flood_area_table(combined,self.registry,aoi)
         articles = self.counts([])
         cov = parse_census_table(pd.DataFrame([dict(state='Odisha',district=d,total_population=100,urban_population=20,rural_population=80) for d in ['Puri','Cuttack']]))
