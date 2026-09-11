@@ -16,7 +16,7 @@ def synthetic(n=1500):
     mu = np.exp(-.5 + .6 * flood + 1.1 * urban)
     alpha = .7
     y = rng.negative_binomial(1 / alpha, 1 / (1 + alpha * mu))
-    return pd.DataFrame({'event_district_id': ['ED' + str(i) for i in range(n)], 'event_id': ['E' + str(i // 3) for i in range(n)], 'source_record_id': ['S' + str(i // 3) for i in range(n)], 'state': ['state' + str(i % 25) for i in range(n)], 'district': ['district' + str(i) for i in range(n)], 'start_date': ['2020-01-01' if i % 2 else '2021-01-01' for i in range(n)], 'article_count': y, 'flood_area_km2': np.expm1(flood), 'log_flood_area': flood, 'urban_population_share': urban, 'satellite_source': [('S1', 'NDWI', 'SITS_NDWI')[i % 3] for i in range(n)], 'analysis_eligible': True, 'exclusion_reason': ''})
+    return pd.DataFrame({'event_district_id': ['ED' + str(i) for i in range(n)], 'event_id': ['E' + str(i // 3) for i in range(n)], 'source_record_id': ['S' + str(i // 3) for i in range(n)], 'state': ['state' + str(i % 25) for i in range(n)], 'district': ['district' + str(i) for i in range(n)], 'start_date': ['2020-01-01' if i % 2 else '2021-01-01' for i in range(n)], 'article_count': y, 'flood_area_km2': np.expm1(flood), 'log_flood_area': flood, 'urban_population_share': urban, 'satellite_source': [('S1_TO_SITS', 'SITS_NDWI_RESTORED', 'SITS_NDWI')[i % 3] for i in range(n)], 'analysis_eligible': True, 'exclusion_reason': ''})
 
 
 class CoverageModelsTests(unittest.TestCase):
@@ -67,14 +67,15 @@ class CoverageModelsTests(unittest.TestCase):
         summary, results, _, _, _ = analyze(self.data.head(250))
         statuses = summary['model_status']
         self.assertEqual(statuses['model_2_source_fe'], 'estimated (sensitivity)')
-        self.assertIn('C(satellite_source)[T.S1]', set(results.term))
-        for source in ['S1', 'NDWI', 'SITS_NDWI']:
+        self.assertIn('C(satellite_source)[T.SITS_NDWI]', set(results.term))
+        for source in ['S1_TO_SITS', 'SITS_NDWI_RESTORED', 'SITS_NDWI']:
             self.assertEqual(statuses[f'model_2_by_source_{source}'], 'estimated (sensitivity)')
-        self.assertEqual(summary['satellite_source_counts'], {'S1': 84, 'NDWI': 83, 'SITS_NDWI': 83})
+        self.assertEqual(statuses['model_2_sits_only'], 'estimated (sensitivity)')
+        self.assertEqual(summary['satellite_source_counts'], {'S1_TO_SITS': 84, 'SITS_NDWI_RESTORED': 83, 'SITS_NDWI': 83})
         self.assertTrue(any('not a correction' in note for note in summary['warnings']))
         small, _, _, _, _ = analyze(self.data.head(40))
-        self.assertIn('insufficient sample', small['model_status']['model_2_by_source_S1'])
-        single, _, _, _, _ = analyze(self.data.head(250).assign(satellite_source='S1'))
+        self.assertIn('insufficient sample', small['model_status']['model_2_by_source_S1_TO_SITS'])
+        single, _, _, _, _ = analyze(self.data.head(250).assign(satellite_source='S1_TO_SITS'))
         self.assertIn('fewer than two', single['model_status']['model_2_source_fe'])
         with self.assertRaisesRegex(ValueError, 'satellite_source'):
             analyze(self.data.head(30).assign(satellite_source='S1(cloud)'))
@@ -87,6 +88,31 @@ class CoverageModelsTests(unittest.TestCase):
         self.assertIsNone(predictions)
         self.assertEqual(list(results.columns), RESULT_COLUMNS)
         self.assertIn('No empirical conclusion', summary['conclusion_candidate'])
+
+    def test_routing_comparison_definitions_and_verdict(self):
+        from analyze_coverage_disparity import prepare_analysis, routing_comparison
+        table = self.data.head(400).copy()
+        table['aoi_area_km2'] = 1e6
+        # Legacy areas: the same areas, except rows excluded at the satellite
+        # stage still carry a legacy area and enter definition (a).
+        table['legacy_flood_area_km2'] = table['flood_area_km2']
+        table.loc[table.index[:20], ['analysis_eligible', 'exclusion_reason']] = [False, 'satellite_missing_or_invalid']
+        table.loc[table.index[20:25], ['analysis_eligible', 'exclusion_reason']] = [False, 'census_unmatched']
+        key = 'event_district_id'
+        primary = table[[key]].assign(area_s1_km2=5.0, area_s2_km2=5.0)
+        variant = table[[key]].assign(area_s1_km2=5.0, area_s2_km2=2.4)   # optical halves
+        full, sample = prepare_analysis(table)
+        out = routing_comparison(full, sample, {'mndwi': (primary, variant)})
+        defs = out['definitions']
+        self.assertEqual(defs['b_primary']['n'], 375)
+        self.assertEqual(defs['a_legacy']['n'], 395)          # +20 satellite-stage rows, not census
+        self.assertEqual(defs['a_legacy_common']['n'], defs['b_primary_common']['n'])
+        self.assertEqual(defs['c_sits_only']['n'], int(sample['satellite_source'].str.startswith('SITS').sum()))
+        self.assertEqual(defs['d_mndwi']['status'], 'estimated')
+        self.assertIn(out['verdict']['result'], ('legacy result is robust to the routing change',
+                                                 'sensor mixing biased the legacy urbanization coefficient'))
+        self.assertAlmostEqual(defs['a_legacy_common']['urban_coefficient'],
+                               defs['b_primary_common']['urban_coefficient'])
 
     def test_terciles_are_based_on_unique_districts(self):
         data = self.data.head(30)

@@ -9,6 +9,7 @@ spec's ``aoi_max_error_m``) and is the denominator of ``flood_ratio``.
 from __future__ import annotations
 
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 
@@ -21,39 +22,46 @@ def _registry() -> pd.DataFrame:
     return pd.read_csv(data_path("event_districts"))
 
 
-def resolve_rows(events: pd.DataFrame, sat_module) -> pd.DataFrame:
-    """Resolve every registry row, preserving failures for QC and joins."""
+def _resolve_one(row, sat_module) -> dict:
+    district_value = row.get("event_district_id")
+    rec = {
+        "event_district_id": district_value,
+        "event_id": row.get("event_id"),
+        "source_record_id": row.get("source_record_id"),
+        "start_date": row.get("start_date"),
+        "state": row.get("state"),
+        "district": row.get("district"),
+        "aoi_level": "district" if str(row.get("aoi_level", "")).lower() == "district"
+        or (district_value is not None and str(district_value) not in {"", "nan", "None"})
+        else "state",
+        "aoi_source": None,
+        "aoi_match_status": "failed",
+        "geometry_id": None,
+        "aoi_area_km2": None,
+        "spec_version": SPEC_VERSION,
+    }
+    try:
+        aoi = sat_module.resolve_aoi(row)
+        rec.update({k: v for k, v in aoi.items() if k != "geometry"})
+    except Exception as exc:
+        rec["aoi_error"] = str(exc)
+        print(f"{analysis_key(row)}: AOI failed: {exc}")
+    else:
+        print(f"{analysis_key(row)}: {rec['aoi_area_km2']:.1f} km2 ({rec['aoi_level']})")
+    return rec
+
+
+def resolve_rows(events: pd.DataFrame, sat_module, workers: int = 4) -> pd.DataFrame:
+    """Resolve every registry row, preserving failures for QC and joins.
+
+    Rows are independent Earth Engine requests, resolved ``workers`` at a
+    time; the output keeps registry order.
+    """
     if hasattr(sat_module, "ensure_gee"):
         sat_module.ensure_gee()
-    rows = []
-    for _, row in events.iterrows():
-        district_value = row.get("event_district_id")
-        rec = {
-            "event_district_id": district_value,
-            "event_id": row.get("event_id"),
-            "source_record_id": row.get("source_record_id"),
-            "start_date": row.get("start_date"),
-            "state": row.get("state"),
-            "district": row.get("district"),
-            "aoi_level": "district" if str(row.get("aoi_level", "")).lower() == "district"
-            or (district_value is not None and str(district_value) not in {"", "nan", "None"})
-            else "state",
-            "aoi_source": None,
-            "aoi_match_status": "failed",
-            "geometry_id": None,
-            "aoi_area_km2": None,
-            "spec_version": SPEC_VERSION,
-        }
-        try:
-            aoi = sat_module.resolve_aoi(row)
-            rec.update({k: v for k, v in aoi.items() if k != "geometry"})
-        except Exception as exc:
-            rec["aoi_error"] = str(exc)
-            print(f"{analysis_key(row)}: AOI failed: {exc}")
-        else:
-            print(f"{analysis_key(row)}: {rec['aoi_area_km2']:.1f} km2 ({rec['aoi_level']})")
-        rows.append(rec)
-    return pd.DataFrame(rows)
+    rows = [row for _, row in events.iterrows()]
+    with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+        return pd.DataFrame(list(pool.map(lambda row: _resolve_one(row, sat_module), rows)))
 
 
 def main(event_ids: list[str] | None = None) -> None:

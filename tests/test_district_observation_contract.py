@@ -96,7 +96,7 @@ class ObservationContractTests(unittest.TestCase):
         self.assertEqual(len(projected),2)
 
     def test_full_join_keeps_real_zero_and_excludes_missing(self):
-        combined = self.registry.copy().assign(combined_km2=[0,None],aoi_area_km2=100,aoi_match_status='matched',satellite_source=['S1','NONE'],spec_version=SPEC_VERSION)
+        combined = self.registry.copy().assign(combined_km2=[0,None],aoi_area_km2=100,aoi_match_status='matched',satellite_source=['S1_TO_SITS','NONE'],spec_version=SPEC_VERSION)
         aoi = self.registry.copy().assign(aoi_match_status='matched',aoi_area_km2=100,spec_version=SPEC_VERSION)
         flood = build_flood_area_table(combined,self.registry,aoi)
         articles = self.counts([])

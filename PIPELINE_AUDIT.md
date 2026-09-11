@@ -240,6 +240,8 @@ SITS 점수의 임계값을 NDWI 라벨로 Youden J 최적화한 뒤, 통과하�
 - 임계값 5개에 대한 격자 민감도(예: J_MIN ∈ {0.1,0.15,0.2}, CLOUD ∈ {30,45,60})를 돌려 `log_ratio` 순위 상관을 보고. `CLOUD_MAX_PCT`는 `cvnd_paths.py`에도 `merge_results.py`에도 각각 정의되어 있어(중복 상수) 하나로 통합 필요.
 - 외부 검증: Sentinel Asia / UNOSAT / Copernicus EMS 홍수 델리니에이션이 있는 사건 몇 건과 면적 대조 → 최소한의 검증 근거 확보.
 
+**상태 (2026-09-12, refactor/satellite2)**: 수정안 B의 변형으로 구현. SITS가 primary이고 Track B는 모든 district에서 필수(`sits_status` pending → NA, 조용한 S1 fallback 없음). SITS 불가 district는 S1을 SITS-NDWI 척도로 변환(`S1_TO_SITS`); 변환기 채택 여부는 `compare_tracks.py`가 사전 등록 규칙(`flood_spec.ConverterRules`)으로 판정. 7-2의 임계값은 `SPEC`으로 이관되어 바꾸면 캐시가 무효화됨. 7-3의 restore 조건은 AOI 전체 S1이 아니라 같은 usable 픽셀 위 S1과 비교. 기존 라우팅은 `legacy_*` 컬럼과 `routing_comparison.json`으로 전후 비교. 외부 검증은 후속 과제(X1). 방법은 `docs/district_methodology.md` 참조.
+
 ---
 
 <a id="8"></a>
@@ -319,6 +321,8 @@ deaths.loc[i] = float(hits.max())
 - **B**: median → "침수 최대" 합성으로 전환(`ImageCollection.map(water_mask).max()`), 또는 개별 영상별 면적을 산출해 최댓값 사용. 부작용(구름 오탐)이 있으므로 SCL 마스크 강화 병행.
 - **C**: S2 경로에도 JRC 영구수역·경사 마스크를 동일 적용(코드 3줄), 궤도 필터 해제 후 궤도를 공변량으로.
 - SITS 채점 노트북과 `ndwi_flood` 정의를 리포에 커밋. 없으면 `flood_combined.csv`는 재현 불가 산출물입니다.
+
+**상태 (2026-09-12, refactor/satellite2)**: 창·해상도·합성·마스크는 이전 단계에서 `flood_spec.SPEC`으로 통일됨. 이번 단계에서 추가로: district별 UTM 10 m 격자 하나를 Track A 축소와 Track B 다운로드가 공유(타일 좌표 중복·위도 의존 손실 제거), 면적 합은 unweighted(가중 합이 재투영 마스크의 분수 가중치 때문에 하천 주변 픽셀을 부분만 세어 Darbhanga S1이 385 vs 760 km²로 과소), 대형 AOI는 격자 정렬 하위 사각형으로 분할 합산, Track B 재개 시 `block_id`로 중복 적재 제거, baseline에서 onset 월 제외, t5는 max-water와 같은 장면(qualityMosaic). B1(max 합성의 N 의존성)은 `n_post`와 첫 획득일만 기록하고 보류(X2).
 
 ---
 

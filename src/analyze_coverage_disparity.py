@@ -17,7 +17,8 @@ import statsmodels.formula.api as smf
 from patsy import build_design_matrices
 
 from cvnd_layout import data_path, output_path
-from flood_spec import MEASURED_SOURCES, SATELLITE_SOURCES
+from flood_spec import (CONVERTER_RULES, MEASURED_SOURCES, SATELLITE_SOURCES, SITS_SOURCES,
+                        SPEC_VARIANTS)
 
 FORMULAS = {
     'model_1': 'article_count ~ log_flood_area',
@@ -28,8 +29,19 @@ FORMULAS = {
 SENSITIVITY_FORMULAS = {
     'model_2_source_fe': FORMULAS['model_2'] + ' + C(satellite_source)',
 }
-SOURCE_NOTE = ('S1 and NDWI measure new water under the same measurement specification, but the sensors differ; '
-               'the satellite-source fixed effect and by-source subsamples are sensitivity analyses, not a correction.')
+SOURCE_NOTE = ('Flood area is Sentinel-1 new water over the eligible AOI for every district under the interim routing '
+               '(satellite_source S1), or, under sits_primary routing, SITS-NDWI on the retained clear tiles with Sentinel-1 '
+               'converted to the SITS-NDWI scale (S1_TO_SITS) where SITS cannot measure the district; the satellite-source '
+               'fixed effect, by-source and SITS-only subsamples are sensitivity analyses, not a correction.')
+# Exclusions that belong to the satellite stage: a routing definition with its
+# own area can make these rows analyzable.
+SATELLITE_EXCLUSIONS = {'satellite_missing_or_invalid', 'satellite_source_invalid', 'aoi_area_invalid'}
+ROUTING_NOTE = ('(a) legacy: pre-refactor routing (S1 whenever SITS was not run, a 60% cloud cut); (b) primary: the '
+                'current routing (interim S1 for every district, or SITS primary with S1_TO_SITS); (c) the primary sample '
+                'restricted to SITS sources (empty under the interim routing); (d) a Track A spec variant '
+                'applied as the relative change of the routed sensor (NDWI for SITS rows, S1 for S1_TO_SITS rows): '
+                'area_b x (variant + o) / (primary + o), a first-order approximation because Track B is not rerun '
+                'under variants. Robust when |coef_a - coef_b| < half the width of the 95% CI of (b).')
 # Fixed numerical eligibility rules, never tuned using coefficient direction.
 MIN_OBSERVATIONS = 20
 MIN_CLUSTERS = 20
@@ -127,11 +139,12 @@ def source_sensitivity(sample, rows, notes, inference, statuses):
             statuses[name] = str(exc)
     parameters = len(FORMULAS['model_2'].split(' ~ ')[1].split(' + ')) + 1
     minimum = max(MIN_OBSERVATIONS, 5 * (parameters + 1))
-    for source in MEASURED_SOURCES:
-        subset = sample[sample['satellite_source'] == source]
+    subsets = [(f'model_2_by_source_{source}', sample[sample['satellite_source'] == source])
+               for source in MEASURED_SOURCES]
+    subsets.append(('model_2_sits_only', sample[sample['satellite_source'].isin(SITS_SOURCES)]))
+    for name, subset in subsets:
         if subset.empty:
             continue
-        name = f'model_2_by_source_{source}'
         if len(subset) < minimum:
             statuses[name] = f'insufficient sample: N={len(subset)} < {minimum}'
             continue
@@ -140,6 +153,91 @@ def source_sensitivity(sample, rows, notes, inference, statuses):
             statuses[name] = 'estimated (sensitivity)'
         except FIT_ERRORS as exc:
             statuses[name] = str(exc)
+
+
+def definition_sample(full, area):
+    """Rows eligible on every stage but the satellite one, with ``area`` as the
+    flood area: the same registry, articles and Census rows for every routing."""
+    reasons = full['exclusion_reason'].fillna('').astype(str).str.split(';')
+    base = reasons.map(lambda items: {i for i in items if i} <= SATELLITE_EXCLUSIONS)
+    data = full.copy()
+    data['flood_area_km2'] = pd.to_numeric(area, errors='coerce')
+    for col in ['article_count', 'urban_population_share', 'aoi_area_km2']:
+        data[col] = pd.to_numeric(data[col], errors='coerce')
+    dates = pd.to_datetime(data['start_date'], errors='coerce')
+    ok = (base & np.isfinite(data[['article_count', 'flood_area_km2', 'urban_population_share']]).all(axis=1)
+          & data['article_count'].ge(0) & data['article_count'].mod(1).eq(0)
+          & data['flood_area_km2'].ge(0) & data['urban_population_share'].between(0, 1)
+          & dates.notna() & data['flood_area_km2'].le(data['aoi_area_km2']))
+    sample = data.loc[ok].copy()
+    sample['log_flood_area'] = np.log1p(sample['flood_area_km2'])
+    sample['year'] = dates.loc[ok].dt.year.astype(str)
+    return sample
+
+
+def variant_areas(sample, primary_track_a, variant_track_a, offset=CONVERTER_RULES.log_offset_km2):
+    """Primary areas scaled by the variant's relative change of the routed sensor."""
+    key = 'event_district_id'
+    cols = ['area_s1_km2', 'area_s2_km2']
+    joined = (sample[[key, 'flood_area_km2', 'satellite_source']]
+              .merge(primary_track_a[[key] + cols], on=key, how='left')
+              .merge(variant_track_a[[key] + cols], on=key, how='left', suffixes=('', '_variant')))
+    sensor = np.where(joined['satellite_source'].isin(SITS_SOURCES), 'area_s2_km2', 'area_s1_km2')
+    primary = np.where(sensor == 'area_s2_km2', joined['area_s2_km2'], joined['area_s1_km2']).astype(float)
+    variant = np.where(sensor == 'area_s2_km2', joined['area_s2_km2_variant'],
+                       joined['area_s1_km2_variant']).astype(float)
+    return pd.Series(joined['flood_area_km2'].to_numpy() * (variant + offset) / (primary + offset),
+                     index=sample.index)
+
+
+def _model_2_terms(data):
+    rows, notes, inference = [], [], {}
+    result = estimate('model_2', FORMULAS['model_2'], data, rows, notes, inference)
+    frame = pd.DataFrame(rows)
+    se = 'state_clustered' if (frame.se_type == 'state_clustered').any() else 'ordinary'
+    frame = frame[frame.se_type == se].set_index('term')
+    urban, flood = frame.loc['urban_population_share'], frame.loc['log_flood_area']
+    return {'status': 'estimated', 'n': int(result.nobs), 'se_type': se,
+            'urban_coefficient': float(urban.coefficient), 'urban_ci': [float(urban.ci_low), float(urban.ci_high)],
+            'urban_p': float(urban.p_value), 'log_area_coefficient': float(flood.coefficient),
+            'log_area_ci': [float(flood.ci_low), float(flood.ci_high)]}
+
+
+def routing_comparison(full, sample, variants=None):
+    """Model 2 under the legacy routing, the new routing, SITS only and spec variants."""
+    definitions = {'b_primary': sample,
+                   'c_sits_only': sample[sample['satellite_source'].isin(SITS_SOURCES)]}
+    if 'legacy_flood_area_km2' in full:
+        definitions['a_legacy'] = definition_sample(full, full['legacy_flood_area_km2'])
+    for name, (primary, variant) in (variants or {}).items():
+        scaled = sample.copy()
+        scaled['flood_area_km2'] = variant_areas(sample, primary, variant)
+        scaled = scaled[np.isfinite(scaled['flood_area_km2']) & scaled['flood_area_km2'].ge(0)]
+        scaled['log_flood_area'] = np.log1p(scaled['flood_area_km2'])
+        definitions[f'd_{name}'] = scaled
+    if 'a_legacy' in definitions:
+        common = set(definitions['a_legacy']['event_district_id']) & set(sample['event_district_id'])
+        definitions['a_legacy_common'] = definitions['a_legacy'][definitions['a_legacy']['event_district_id'].isin(common)]
+        definitions['b_primary_common'] = sample[sample['event_district_id'].isin(common)]
+    out = {'note': ROUTING_NOTE, 'variants_available': sorted((variants or {}).keys()),
+           'variants_defined': sorted(SPEC_VARIANTS), 'definitions': {}}
+    for name, data in definitions.items():
+        try:
+            out['definitions'][name] = _model_2_terms(data)
+        except FIT_ERRORS as exc:
+            out['definitions'][name] = {'status': str(exc), 'n': int(len(data))}
+    a, b = out['definitions'].get('a_legacy', {}), out['definitions'].get('b_primary', {})
+    if a.get('status') == 'estimated' and b.get('status') == 'estimated':
+        diff = abs(a['urban_coefficient'] - b['urban_coefficient'])
+        half_width = (b['urban_ci'][1] - b['urban_ci'][0]) / 2
+        out['verdict'] = {
+            'urban_coefficient_difference': diff, 'primary_ci_half_width': half_width,
+            'result': ('legacy result is robust to the routing change' if diff < half_width
+                       else 'sensor mixing biased the legacy urbanization coefficient'),
+        }
+    else:
+        out['verdict'] = {'result': 'not assessable: legacy or primary Model 2 not estimated'}
+    return out
 
 
 def coefficients(result, name, covariance=None, se_type='ordinary', dof=None):
@@ -339,6 +437,23 @@ def write_report(summary, results, bias, path):
     path.write_text('\n'.join(lines) + '\n')
 
 
+def load_variants():
+    """{variant: (primary Track A, variant Track A)} for variants that were run."""
+    from flood_spec import TEXT_DTYPES, spec_version, stale_spec_mask, variant_spec
+    primary_path = data_path('district_flood_extent')
+    if not primary_path.exists():
+        return {}
+    primary = pd.read_csv(primary_path, dtype=TEXT_DTYPES)
+    primary = primary.loc[~stale_spec_mask(primary)]
+    found = {}
+    for name in SPEC_VARIANTS:
+        path = data_path('district_flood_extent_variants') / f'flood_extent.{name}.csv'
+        if path.exists():
+            frame = pd.read_csv(path, dtype=TEXT_DTYPES)
+            found[name] = (primary, frame.loc[~stale_spec_mask(frame, spec_version(variant_spec(name)))])
+    return found
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, default=data_path('district_flood_articles'))
@@ -347,7 +462,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if not args.input.exists():
         raise FileNotFoundError(f'Missing {args.input}; run district join. No synthetic research results are generated.')
-    summary, results, sample, predictions, bias = analyze(pd.read_csv(args.input))
+    table = pd.read_csv(args.input)
+    summary, results, sample, predictions, bias = analyze(table)
+    full, _ = prepare_analysis(table)
+    comparison = routing_comparison(full, sample, load_variants())
     def out(key):
         path = output_path(key)
         return args.output_dir / path.name if args.output_dir else path
@@ -358,6 +476,9 @@ def main(argv=None):
         path = data(key)
         path.parent.mkdir(parents=True, exist_ok=True)
         frame.to_csv(path, index=False)
+    comparison_path = data('routing_comparison')
+    comparison_path.write_text(json.dumps(json.loads(pd.Series(comparison).to_json()), indent=2) + '\n')
+    print(f"Routing comparison: {comparison['verdict']['result']} -> {comparison_path}")
     pred_path = data('coverage_predictions')
     pred_path.parent.mkdir(parents=True, exist_ok=True)
     if predictions is not None:

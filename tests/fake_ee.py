@@ -76,16 +76,24 @@ class _Namespace:
 
 class FakeEE:
     NAMESPACES = ('Image', 'ImageCollection', 'FeatureCollection', 'Feature', 'Date',
-                  'Filter', 'Reducer', 'Terrain', 'Geometry', 'Dictionary', 'Number')
+                  'Filter', 'Reducer', 'Terrain', 'Geometry', 'Dictionary', 'Number',
+                  'Projection', 'Algorithms', 'ErrorMargin')
 
     def __init__(self, reduce: Callable[[FakeNode, dict], Any] | None = None,
                  size: Callable[[FakeNode], int] | None = None,
-                 orbits=('DESCENDING',), ring=None):
+                 orbits=('DESCENDING',), ring=None, centroid=(80.5, 20.5),
+                 utm_ring=None, aggregate: Callable[[FakeNode], list] | None = None):
         self.calls: list[Call] = []
         self.reduce_handler = reduce or (lambda node, kwargs: {})
         self.size_handler = size or (lambda node: 2)
+        self.aggregate_handler = aggregate or (lambda node: [])
         self.orbits = list(orbits)
         self.ring = ring or [[80.0, 20.0], [81.0, 20.0], [81.0, 21.0], [80.0, 21.0], [80.0, 20.0]]
+        self.centroid = list(centroid)
+        # A 3.2 km x 1.9 km box in metres: 5 x 3 tiles of 640 m.
+        self.utm_ring = utm_ring or [[500003.0, 2200001.0], [503197.0, 2200001.0],
+                                     [503197.0, 2201919.0], [500003.0, 2201919.0],
+                                     [500003.0, 2200001.0]]
         for name in self.NAMESPACES:
             setattr(self, name, _Namespace(self, name))
 
@@ -118,10 +126,20 @@ class FakeEE:
         if op == 'distinct':
             return list(self.orbits)
         if op == 'coordinates':
+            parent = node._parent
+            if parent is not None and parent._op == 'centroid':
+                return list(self.centroid)
+            if parent is not None and parent._op == 'bounds' and len(parent._args) > 1:
+                return [self.utm_ring]
             return [self.ring]
         if op == 'aggregate_array':
-            return []
-        if op in ('toDictionary', 'Dictionary'):
+            return self.aggregate_handler(node)
+        if op == 'Dictionary':
+            # ee.Dictionary({...}).getInfo(): resolve each member like getInfo.
+            members = node._args[0] if node._args else {}
+            return {k: self._info(v) if isinstance(v, FakeNode) else v
+                    for k, v in members.items()}
+        if op == 'toDictionary':
             return {}
         if op == 'area':
             return 1e6
@@ -136,5 +154,12 @@ class FakeEE:
 
 
 def reducer_kind(kwargs) -> str:
+    """'Reducer.sum' etc.; ``.unweighted()`` reports its base reducer."""
     reducer = kwargs.get('reducer')
+    if getattr(reducer, '_op', '') == 'unweighted':
+        reducer = reducer._parent
     return getattr(reducer, '_op', '')
+
+
+def is_unweighted(kwargs) -> bool:
+    return getattr(kwargs.get('reducer'), '_op', '') == 'unweighted'

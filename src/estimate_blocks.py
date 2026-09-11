@@ -1,6 +1,8 @@
 """Estimate Track B download blocks per event-district (no download; AOI bounds only).
 Run: python src/estimate_blocks.py                      # every registry row
      python src/estimate_blocks.py KEY [KEY ...]        # event_district_ids or event_ids
+Blocks are counted on the district's UTM measurement grid over the AOI bounding
+box, so the total is an upper bound (blocks outside the AOI are skipped).
 """
 import math
 import sys
@@ -26,7 +28,7 @@ def main(keys):
     for _, row in events.iterrows():
         key = analysis_key(row)
         try:
-            grid = sat.tile_grid(sat.get_region(row))
+            grid = sat.measurement_grid(sat.get_region(row))
             nb = math.ceil(grid.npx / B) * math.ceil(grid.npy / B)
             total += nb
             print(f"{key:<40}{f'{grid.npx}x{grid.npy}':>12}{nb:>8}{nb * 14 // 60:>7}")

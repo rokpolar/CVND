@@ -15,7 +15,10 @@ from flood_spec import MEASURED_SOURCES
 KEY = 'event_district_id'
 IDENTITY = ['event_id', 'source_record_id', 'state', 'district', 'start_date']
 FLOOD_COLUMNS = ['flood_area_km2', 'flood_ratio', 'aoi_area_km2', 'satellite_source', 'satellite_status', 'aoi_match_status']
-OPTIONAL_FLOOD_COLUMNS = ['geometry_id', 'aoi_source', 'route_reason', 'spec_version']
+OPTIONAL_FLOOD_COLUMNS = ['geometry_id', 'aoi_source', 'route_reason', 'spec_version',
+                          'sits_status', 'converter_decision', 'eligible_km2',
+                          'flood_ratio_eligible', 'legacy_flood_area_km2',
+                          'legacy_satellite_source']
 
 
 def require(frame, columns, label):

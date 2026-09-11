@@ -19,9 +19,11 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cvnd_layout import data_path  # noqa: E402
 from district_keys import AOI_MATCHED, analysis_key  # noqa: E402
-from flood_spec import FLOOD_AREA_COLUMNS, MEASURED_SOURCES, TEXT_DTYPES, require_spec  # noqa: E402
+from flood_spec import (FLOOD_AREA_COLUMNS, LEGACY_SATELLITE_SOURCES,  # noqa: E402
+                        MEASURED_SOURCES, TEXT_DTYPES, require_spec)
 
-PASSTHROUGH = ["route_reason", "cloud_pct", "otsu_fallback_used", "s1_orbit", "spec_version"]
+PASSTHROUGH = ["route_reason", "cloud_pct", "otsu_fallback_used", "s1_orbit",
+               "sits_status", "converter_decision", "spec_version"]
 
 
 def build_flood_area_table(combined: pd.DataFrame, registry: pd.DataFrame,
@@ -128,6 +130,13 @@ def build_flood_area_table(combined: pd.DataFrame, registry: pd.DataFrame,
     status[observed] = "observed"
     area = area.where(observed)
     ratio = (area / aoi_area.where(aoi_area > 0)).round(4)
+    eligible_area = pd.to_numeric(column("eligible_km2"), errors="coerce")
+    ratio_eligible = (area / eligible_area.where(eligible_area > 0)).round(4)
+    # The pre-refactor routing's area, under the same AOI rule, for the
+    # before/after comparison only.
+    legacy_source = column("legacy_satellite_source").fillna("NONE")
+    legacy_area = pd.to_numeric(column("legacy_combined_km2"), errors="coerce").where(
+        matched & legacy_source.isin(LEGACY_SATELLITE_SOURCES[:-1]))
 
     result = pd.DataFrame({
         "event_district_id": merged.get("event_district_id"),
@@ -149,6 +158,10 @@ def build_flood_area_table(combined: pd.DataFrame, registry: pd.DataFrame,
         "analysis_observation_status": area.map(
             lambda x: "observed_zero" if pd.notna(x) and float(x) == 0 else
             ("observed" if pd.notna(x) else "missing")),
+        "eligible_km2": eligible_area,
+        "flood_ratio_eligible": ratio_eligible,
+        "legacy_flood_area_km2": legacy_area,
+        "legacy_satellite_source": legacy_source.where(legacy_area.notna(), "NONE"),
         **{name: column(name) for name in PASSTHROUGH},
     })
     return result[list(FLOOD_AREA_COLUMNS)]
