@@ -1,0 +1,686 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "meghalaya": {
+      "url": "https://des.megplanning.gov.in/documents/shb-2023-Final-as-on-16-09-24.pdf",
+      "table": "Table 1.03; printed page 4; PDF page 25"
+    },
+    "nellore": {
+      "url": "https://spsnellore.ap.gov.in/history/"
+    },
+    "dang": {
+      "url": "https://dangs.nic.in/about-district/"
+    },
+    "prayagraj": {
+      "url": "https://prayagraj.nic.in/demography/"
+    },
+    "ayodhya": {
+      "url": "https://ayodhya.nic.in/hi/"
+    },
+    "amroha": {
+      "url": "https://amroha.nic.in/history/"
+    },
+    "kasganj": {
+      "url": "https://www.nmcg.nic.in/DmUlbsDetails.aspx"
+    },
+    "hathras": {
+      "url": "https://informatics.nic.in/news/298"
+    },
+    "narmadapuram": {
+      "url": "https://narmadapuram.nic.in/en/history/"
+    },
+    "ahilyanagar": {
+      "url": "https://maharashtratourism.gov.in/districts/ahilya-nagar/"
+    },
+    "sribhumi": {
+      "url": "https://sribhumi.assam.gov.in/about-us/district-profile"
+    },
+    "mangan": {
+      "url": "https://cdnbbsr.s3waas.gov.in/s3ec022b45e8d6abf59038a975faeeb6dc/uploads/2023/03/2023031530.pdf"
+    },
+    "kanker": {
+      "url": "https://kanker.gov.in/en/about-district/"
+    },
+    "telangana": {
+      "url": "https://www.telangana.gov.in/wp-content/uploads/2023/05/Telangana-Socio-Economic-Outlook-2023.pdf",
+      "table": "Annexure 18; printed page 268; PDF page 273"
+    },
+    "telangana_old": {
+      "url": "https://medchal-malkajgiri.telangana.gov.in/history/",
+      "table": "2016-10-11 reorganisation; population from local Census PCA 2011 workbook"
+    },
+    "assam": {
+      "url": "https://des.assam.gov.in/sites/default/files/swf_utility_folder/departments/ecostat_medhassu_in_oid_3/this_comm/statistical_abstract_assam_2021.pdf",
+      "table": "Table 1.02; printed page 4; PDF page 19"
+    },
+    "namsai": {
+      "url": "https://namsai.nic.in/demography/"
+    },
+    "balod": {
+      "url": "https://balod.gov.in/en/about-district/demography/"
+    }
+  },
+  "records": [
+    {
+      "state": "Meghalaya",
+      "district": "East Jaintia Hills",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 122939,
+      "rural_population": 122939,
+      "urban_population": 0,
+      "event_ids": [
+        "E181",
+        "E193"
+      ],
+      "source_id": "meghalaya",
+      "notes": "Statistical Handbook 2023 Table 1.03 (PDF page 25): Census 2011 retabulated to source district definitions. Uses state handbook totals rather than conflicting provisional district webpages.",
+      "valid_from": "2012-08-07"
+    },
+    {
+      "state": "Meghalaya",
+      "district": "South West Garo Hills",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 177556,
+      "rural_population": 177556,
+      "urban_population": 0,
+      "event_ids": [
+        "E181",
+        "E189",
+        "E193"
+      ],
+      "source_id": "meghalaya",
+      "notes": "Statistical Handbook 2023 Table 1.03 (PDF page 25): Census 2011 retabulated to source district definitions. Uses state handbook totals rather than conflicting provisional district webpages.",
+      "valid_from": "2012-08-07"
+    },
+    {
+      "state": "Meghalaya",
+      "district": "West Jaintia Hills",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 272185,
+      "rural_population": 243755,
+      "urban_population": 28430,
+      "event_ids": [
+        "E181",
+        "E193"
+      ],
+      "source_id": "meghalaya",
+      "notes": "Statistical Handbook 2023 Table 1.03 (PDF page 25): Census 2011 retabulated to source district definitions. Uses state handbook totals rather than conflicting provisional district webpages.",
+      "valid_from": "2012-08-07"
+    },
+    {
+      "state": "Meghalaya",
+      "district": "North Garo Hills",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 172119,
+      "rural_population": 152524,
+      "urban_population": 19595,
+      "event_ids": [
+        "E189",
+        "E193"
+      ],
+      "source_id": "meghalaya",
+      "notes": "Statistical Handbook 2023 Table 1.03 (PDF page 25): Census 2011 retabulated to source district definitions. Uses state handbook totals rather than conflicting provisional district webpages.",
+      "valid_from": "2012-08-07"
+    },
+    {
+      "state": "Meghalaya",
+      "district": "Eastern West Khasi Hills",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 114228,
+      "rural_population": 99865,
+      "urban_population": 14363,
+      "event_ids": [
+        "E193"
+      ],
+      "source_id": "meghalaya",
+      "notes": "Statistical Handbook 2023 Table 1.03 (PDF page 25): Census 2011 retabulated to source district definitions. Uses state handbook totals rather than conflicting provisional district webpages.",
+      "valid_from": "2021-11-10"
+    },
+    {
+      "state": "Meghalaya",
+      "district": "South West Khasi Hills",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 99171,
+      "rural_population": 99171,
+      "urban_population": 0,
+      "event_ids": [
+        "E193"
+      ],
+      "source_id": "meghalaya",
+      "notes": "Statistical Handbook 2023 Table 1.03 (PDF page 25): Census 2011 retabulated to source district definitions. Uses state handbook totals rather than conflicting provisional district webpages.",
+      "valid_from": "2012-08-07"
+    },
+    {
+      "state": "Andhra Pradesh",
+      "district": "Nellore",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Andhra Pradesh",
+      "census_district": "Sri Potti Sriramulu Nellore",
+      "event_ids": [
+        "E025",
+        "E118",
+        "E146"
+      ],
+      "source_id": "nellore",
+      "notes": "District renamed in 2008; all reviewed events predate the 2022 reorganisation.",
+      "valid_until": "2022-04-04"
+    },
+    {
+      "state": "Gujarat",
+      "district": "Dang",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Gujarat",
+      "census_district": "The Dangs",
+      "event_ids": [
+        "E150",
+        "E166"
+      ],
+      "source_id": "dang",
+      "notes": "Official district name Dang / The Dangs; unchanged Census 2011 population reference."
+    },
+    {
+      "state": "Uttar Pradesh",
+      "district": "Prayagraj",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Uttar Pradesh",
+      "census_district": "Allahabad",
+      "event_ids": [
+        "E036",
+        "E090",
+        "E183"
+      ],
+      "source_id": "prayagraj",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Uttar Pradesh",
+      "district": "Ayodhya",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Uttar Pradesh",
+      "census_district": "Faizabad",
+      "event_ids": [
+        "E054",
+        "E075",
+        "E077",
+        "E090",
+        "E116",
+        "E129",
+        "E159",
+        "E183"
+      ],
+      "source_id": "ayodhya",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Uttar Pradesh",
+      "district": "Amroha",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Uttar Pradesh",
+      "census_district": "Jyotiba Phule Nagar",
+      "event_ids": [
+        "E090"
+      ],
+      "source_id": "amroha",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Uttar Pradesh",
+      "district": "Kasganj",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Uttar Pradesh",
+      "census_district": "Kanshiram Nagar",
+      "event_ids": [
+        "E066",
+        "E077"
+      ],
+      "source_id": "kasganj",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Uttar Pradesh",
+      "district": "Hathras",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Uttar Pradesh",
+      "census_district": "Mahamaya Nagar",
+      "event_ids": [
+        "E183"
+      ],
+      "source_id": "hathras",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Madhya Pradesh",
+      "district": "Narmadapuram",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Madhya Pradesh",
+      "census_district": "Hoshangabad",
+      "event_ids": [
+        "E113",
+        "E152",
+        "E169"
+      ],
+      "source_id": "narmadapuram",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Maharashtra",
+      "district": "Ahilyanagar",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Maharashtra",
+      "census_district": "Ahmadnagar",
+      "event_ids": [
+        "E086"
+      ],
+      "source_id": "ahilyanagar",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Assam",
+      "district": "Sribhumi (Karimganj)",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Assam",
+      "census_district": "Karimganj",
+      "event_ids": [
+        "E191"
+      ],
+      "source_id": "sribhumi",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Sikkim",
+      "district": "Mangan",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Sikkim",
+      "census_district": "North District",
+      "event_ids": [
+        "E104",
+        "E161",
+        "E196"
+      ],
+      "source_id": "mangan",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Chhattisgarh",
+      "district": "Kanker",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Chhattisgarh",
+      "census_district": "Uttar Bastar Kanker",
+      "event_ids": [
+        "E109"
+      ],
+      "source_id": "kanker",
+      "notes": "Explicit district name equivalence; population retained from official 2011 PCA. Not an event-year population estimate."
+    },
+    {
+      "state": "Telangana",
+      "district": "Karimnagar",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Andhra Pradesh",
+      "census_district": "Karimnagar",
+      "event_ids": [
+        "E042"
+      ],
+      "source_id": "telangana_old",
+      "notes": "E042 predates 2016-10-11 district reorganisation. Use original 2011 Andhra Pradesh district, not smaller post-reorganisation district.",
+      "valid_until": "2016-10-11"
+    },
+    {
+      "state": "Telangana",
+      "district": "Medak",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Andhra Pradesh",
+      "census_district": "Medak",
+      "event_ids": [
+        "E042"
+      ],
+      "source_id": "telangana_old",
+      "notes": "E042 predates 2016-10-11 district reorganisation. Use original 2011 Andhra Pradesh district, not smaller post-reorganisation district.",
+      "valid_until": "2016-10-11"
+    },
+    {
+      "state": "Telangana",
+      "district": "Warangal",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Andhra Pradesh",
+      "census_district": "Warangal",
+      "event_ids": [
+        "E042"
+      ],
+      "source_id": "telangana_old",
+      "notes": "E042 predates 2016-10-11 district reorganisation. Use original 2011 Andhra Pradesh district, not smaller post-reorganisation district.",
+      "valid_until": "2016-10-11"
+    },
+    {
+      "state": "Telangana",
+      "district": "Hyderabad",
+      "census_year": 2011,
+      "method": "census_name_link",
+      "census_state": "Andhra Pradesh",
+      "census_district": "Hyderabad",
+      "event_ids": [
+        "E042",
+        "E121"
+      ],
+      "source_id": "telangana",
+      "notes": "Hyderabad district total 3943323 in official Telangana Annexure 18 agrees with original PCA Hyderabad; not Greater Hyderabad metropolitan population."
+    },
+    {
+      "state": "Telangana",
+      "district": "Mancherial",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 807037,
+      "rural_population": 453190,
+      "urban_population": 353847,
+      "event_ids": [
+        "E178"
+      ],
+      "source_id": "telangana",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-10-11"
+    },
+    {
+      "state": "Telangana",
+      "district": "Nirmal",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 709418,
+      "rural_population": 557736,
+      "urban_population": 151682,
+      "event_ids": [
+        "E178"
+      ],
+      "source_id": "telangana",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-10-11"
+    },
+    {
+      "state": "Telangana",
+      "district": "Jayashankar Bhupalpally",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 416763,
+      "rural_population": 374376,
+      "urban_population": 42387,
+      "event_ids": [
+        "E178"
+      ],
+      "source_id": "telangana",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2019-02-17"
+    },
+    {
+      "state": "Telangana",
+      "district": "Bhadradri Kothagudem",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 1069261,
+      "rural_population": 730178,
+      "urban_population": 339083,
+      "event_ids": [
+        "E178"
+      ],
+      "source_id": "telangana",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-10-11"
+    },
+    {
+      "state": "Telangana",
+      "district": "Mulugu",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 294671,
+      "rural_population": 283178,
+      "urban_population": 11493,
+      "event_ids": [
+        "E178"
+      ],
+      "source_id": "telangana",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2019-02-17"
+    },
+    {
+      "state": "Telangana",
+      "district": "Nalgonda",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 1618416,
+      "rural_population": 1250113,
+      "urban_population": 368303,
+      "event_ids": [
+        "E121"
+      ],
+      "source_id": "telangana",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-10-11"
+    },
+    {
+      "state": "Telangana",
+      "district": "Ranga Reddy",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 2426243,
+      "rural_population": 1026113,
+      "urban_population": 1400130,
+      "event_ids": [
+        "E121"
+      ],
+      "source_id": "telangana",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-10-11"
+    },
+    {
+      "state": "Assam",
+      "district": "Biswanath",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 612491,
+      "rural_population": 581123,
+      "urban_population": 31368,
+      "event_ids": [
+        "E047",
+        "E061",
+        "E069",
+        "E081",
+        "E107",
+        "E148",
+        "E180",
+        "E182"
+      ],
+      "source_id": "assam",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-01-01",
+      "geography_id": "assam:Biswanath"
+    },
+    {
+      "state": "Assam",
+      "district": "Charaideo",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 458615,
+      "rural_population": 428892,
+      "urban_population": 29723,
+      "event_ids": [
+        "E047",
+        "E051",
+        "E069",
+        "E081",
+        "E107"
+      ],
+      "source_id": "assam",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-01-01",
+      "geography_id": "assam:Charaideo"
+    },
+    {
+      "state": "Assam",
+      "district": "Hojai",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 931218,
+      "rural_population": 758868,
+      "urban_population": 172350,
+      "event_ids": [
+        "E047",
+        "E061",
+        "E069",
+        "E081",
+        "E107",
+        "E148"
+      ],
+      "source_id": "assam",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-01-01",
+      "geography_id": "assam:Hojai"
+    },
+    {
+      "state": "Assam",
+      "district": "Majuli",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 167304,
+      "rural_population": 167304,
+      "urban_population": 0,
+      "event_ids": [
+        "E047",
+        "E051",
+        "E069",
+        "E081",
+        "E107",
+        "E148",
+        "E180",
+        "E182"
+      ],
+      "source_id": "assam",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-01-01",
+      "geography_id": "assam:Majuli"
+    },
+    {
+      "state": "Assam",
+      "district": "South Salmara",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 555114,
+      "rural_population": 528952,
+      "urban_population": 26162,
+      "event_ids": [
+        "E047",
+        "E051",
+        "E081",
+        "E107",
+        "E148",
+        "E182"
+      ],
+      "source_id": "assam",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-01-01",
+      "geography_id": "assam:South Salmara"
+    },
+    {
+      "state": "Assam",
+      "district": "East Karbi Anglong",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 660955,
+      "rural_population": 565852,
+      "urban_population": 95103,
+      "event_ids": [
+        "E061",
+        "E069"
+      ],
+      "source_id": "assam",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-01-01",
+      "geography_id": "assam:East Karbi Anglong"
+    },
+    {
+      "state": "Assam",
+      "district": "West Karbi Anglong",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 295358,
+      "rural_population": 277495,
+      "urban_population": 17863,
+      "event_ids": [
+        "E061",
+        "E069",
+        "E081",
+        "E107",
+        "E148"
+      ],
+      "source_id": "assam",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-01-01",
+      "geography_id": "assam:West Karbi Anglong"
+    },
+    {
+      "state": "Assam",
+      "district": "West Karbi-Anglong",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 295358,
+      "rural_population": 277495,
+      "urban_population": 17863,
+      "event_ids": [
+        "E081"
+      ],
+      "source_id": "assam",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate.",
+      "valid_from": "2016-01-01",
+      "geography_id": "assam:West Karbi Anglong"
+    },
+    {
+      "state": "Arunachal Pradesh",
+      "district": "Namsai",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 95950,
+      "rural_population": 81704,
+      "urban_population": 14246,
+      "event_ids": [
+        "E031",
+        "E106",
+        "E190"
+      ],
+      "source_id": "namsai",
+      "notes": "Official 2011 population retabulated to the district definition in the cited source. No parent-district population substitution; not an event-year population estimate."
+    },
+    {
+      "state": "Chhattisgarh",
+      "district": "Balod",
+      "census_year": 2011,
+      "method": "official_retabulation",
+      "total_population": 826165,
+      "rural_population": 720667,
+      "urban_population": 105498,
+      "event_ids": [
+        "E109"
+      ],
+      "source_id": "balod",
+      "notes": "Official total and urban population; rural = total - urban (826165 - 105498). Census 2011; not current population."
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "license": "ODbL 1.0",
+  "attribution": "\u00a9 OpenStreetMap contributors",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "decisions": [
+    {
+      "state": "Assam",
+      "district": "Bajali",
+      "relation_id": 16704179,
+      "lgd_code": "739",
+      "file": "Bajali.json",
+      "sha256": "8cb1b5a0d2a764b23e0ccb0417c0416f22a66ff04331c63ca1d37ef8cbb8cb01",
+      "official_area_km2": 422.95,
+      "geometry_area_km2": 412.27491559461834,
+      "evidence": "https://bajali.assam.gov.in/about-us/about-district",
+      "source": "https://www.openstreetmap.org/relation/16704179",
+      "decision": "accepted_reference_boundary",
+      "snapshot_date": "2026-09-12",
+      "note": "OSM district relation with LGD code; present-day reference only, not event-year boundary equivalence. Published district area within 10%."
+    },
+    {
+      "state": "Assam",
+      "district": "Tamulpur",
+      "relation_id": 16702229,
+      "lgd_code": "756",
+      "file": "Tamulpur.json",
+      "sha256": "2d2926aa53838f0df6ee9b40c723eb2daf7a4bafbbf75528a64bd4c3eec49281",
+      "official_area_km2": null,
+      "geometry_area_km2": 858.4684625323207,
+      "evidence": "https://www.kharithi.bodoland.gov.in/tamulpur",
+      "source": "https://www.openstreetmap.org/relation/16702229",
+      "decision": "accepted_reference_boundary",
+      "snapshot_date": "2026-09-12",
+      "note": "OSM district relation with LGD code; present-day reference only, not event-year boundary equivalence. No authoritative area comparison available; lower confidence."
+    },
+    {
+      "state": "Meghalaya",
+      "district": "Eastern West Khasi Hills",
+      "relation_id": 14723470,
+      "lgd_code": "740",
+      "file": "Eastern_West_Khasi_Hills.json",
+      "sha256": "827fd131bafbdbbbf81e28421300da7604b44523d1f74da536f388d602fff10e",
+      "official_area_km2": 1145,
+      "geometry_area_km2": 1227.1569981583561,
+      "evidence": "https://easternwestkhasihills.meghalaya.gov.in/",
+      "source": "https://www.openstreetmap.org/relation/14723470",
+      "decision": "accepted_reference_boundary",
+      "snapshot_date": "2026-09-12",
+      "note": "OSM district relation with LGD code; present-day reference only, not event-year boundary equivalence. Published district area within 10%."
+    },
+    {
+      "state": "Sikkim",
+      "district": "Gyalshing",
+      "relation_id": 1790817,
+      "lgd_code": "228",
+      "file": "Gyalshing.json",
+      "sha256": "4c6b96740d4de71be332d15042acbdd148b39a025a7b9dc6760dc0e9a01407e9",
+      "official_area_km2": 872,
+      "geometry_area_km2": 905.4501672080548,
+      "evidence": "https://rmdd.sikkim.gov.in/storage/notification/notificationdoc-3IkbsZRQgLX9S6qmWGPHYR7pDjBujD1iCaeVgcf3.pdf",
+      "source": "https://www.openstreetmap.org/relation/1790817",
+      "decision": "accepted_reference_boundary",
+      "snapshot_date": "2026-09-12",
+      "note": "OSM district relation with LGD code; present-day reference only, not event-year boundary equivalence. Published district area within 10%."
+    },
+    {
+      "state": "Telangana",
+      "district": "Bhadradri Kothagudem",
+      "relation_id": 7698599,
+      "lgd_code": "690",
+      "file": "Bhadradri_Kothagudem.json",
+      "sha256": "a376d0c370782c7f65739f2dd49bf760717e36be549f615d7a9cda6d4dafb3bf",
+      "official_area_km2": 7483,
+      "geometry_area_km2": 7094.033142109466,
+      "evidence": "https://kothagudem.telangana.gov.in/demography/",
+      "source": "https://www.openstreetmap.org/relation/7698599",
+      "decision": "accepted_reference_boundary",
+      "snapshot_date": "2026-09-12",
+      "note": "OSM district relation with LGD code; present-day reference only, not event-year boundary equivalence. Published district area within 10%."
+    }
+  ],
+  "rejected": {
+    "Shamator": "OSM polygon 193 km2 versus official 469 km2; rejected incomplete extent.",
+    "Chumoukedima": "Conflicting published area and OSM polygon; not verified.",
+    "Itanagar Capital Region": "No district polygon returned."
+  }
+}

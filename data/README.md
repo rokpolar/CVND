@@ -18,7 +18,7 @@ Counts must be nonnegative and consistent (`total = urban + rural`). Zero denomi
 
 | Artifact | Key columns / contract |
 | --- | --- |
-| `intermediate/event_districts.csv` | `event_district_id` PK; parent `event_id`, `source_record_id`, state, district, start/end dates, district source/confidence/evidence, AOI level/status |
+| `intermediate/event_districts.csv` | `event_district_id` PK; parent `event_id`, `source_record_id`, state, district, start/end dates, district source/evidence, AOI level/status |
 | `intermediate/district_covariates.csv` | one state/district row; Census code, total/urban/rural population, continuous urban share, Census year/source, match status |
 | `intermediate/district_aoi.csv` | district PK, parent/source/geography, AOI level/source/match status, geometry ID, geodesic `aoi_area_km2`, `spec_version`; failed matches retained |
 | `cache/district/flood_extent.csv` | district PK with identity/AOI provenance; `area_s1_km2`, `area_s2_km2`, `ndwi_pre_water_km2`, `ndwi_during_water_km2`, S1/S2 pre/post image counts, `cloud_pct` (share of the AOI never seen clear in the post window), `otsu_threshold_db`, `otsu_fallback_used`, `otsu_separability`, `s1_orbit` (ASCENDING/DESCENDING/BOTH), `baseline_status` (OK/NO_IMAGERY/ERROR: …), `spec_version` |

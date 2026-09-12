@@ -1,0 +1,10 @@
+state,district,event_rows,status,gaul_name,gaul_code,candidates,source,note
+Chhattisgarh,Rajnandgaon,1,unique_spacing_match,Raj Nandgaon,70117,Raj Nandgaon,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Gujarat,Banaskantha,2,unique_spacing_match,Banas Kantha,17637,Banas Kantha,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Gujarat,Sabarkantha,2,unique_spacing_match,Sabar Kantha,17648,Sabar Kantha,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Haryana,Yamunanagar,2,unique_spacing_match,Yamuna Nagar,70138,Yamuna Nagar | Mahendragarh,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttar Pradesh,Barabanki,11,unique_spacing_match,Bara Banki,17896,Bara Banki,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttar Pradesh,Siddharthnagar,5,unique_spacing_match,Siddharth Nagar,70278,Siddharth Nagar | Shahjahanpur | Muzaffarnagar,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttarakhand,Dehradun,5,unique_spacing_match,Dehra Dun,17903,Dehra Dun,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttarakhand,Nainital,4,unique_spacing_match,Naini Tal,70285,Naini Tal,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttarakhand,Rudraprayag,2,unique_spacing_match,Rudra Prayag,70286,Rudra Prayag,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"

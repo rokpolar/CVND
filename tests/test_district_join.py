@@ -31,6 +31,12 @@ class DistrictJoinTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'unique'):
             build_district_table(self.registry, pd.concat([self.flood, self.flood.head(1)]), self.articles, self.cov)
 
+    def test_same_event_census_geography_aliases_are_excluded(self):
+        cov = self.cov.assign(census_district_code=['retabulated:alias', 'retabulated:alias', '003'])
+        table, _ = build_district_table(self.registry, self.flood, self.articles, cov)
+        self.assertEqual(table.census_match_status.tolist(), ['ambiguous', 'ambiguous', 'matched'])
+        self.assertFalse(table.iloc[:2].analysis_eligible.any())
+
     def test_ambiguous_census_is_excluded_and_not_arbitrarily_selected(self):
         table, _ = build_district_table(self.registry, self.flood, self.articles, pd.concat([self.cov, self.cov.head(1)]))
         self.assertEqual(table.loc[0, 'census_match_status'], 'ambiguous')

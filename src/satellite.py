@@ -523,6 +523,10 @@ def _cache_identity_matches(entry, row, expected_version=SPEC_VERSION) -> bool:
             return False
         if str(cached).strip() != str(expected).strip():
             return False
+    if entry.get('aoi_match_status') == 'matched':
+        from boundary_recovery import cache_reference_matches
+        if not cache_reference_matches(entry, row):
+            return False
     return True
 
 
@@ -539,6 +543,9 @@ def _h5_identity_matches(path, row, grid=None) -> bool:
                 return False
             if grid is not None and (str(attrs.get('crs', '')) != grid.crs or
                                      list(attrs.get('grid', [])) != [grid.x0, grid.y0, grid.npx, grid.npy]):
+                return False
+            from boundary_recovery import cache_reference_matches
+            if not cache_reference_matches(attrs, row):
                 return False
             return all(str(attrs.get(field, '')).strip() == str(row.get(field, '')).strip()
                        for field in _IDENTITY_FIELDS)
@@ -595,8 +602,8 @@ def _feature_collection_for_aoi(row, spec=SPEC):
         # normalized-name candidate, but keep state and level-2 constraints.
         all_candidates = collection.getInfo().get('features', [])
         matching = [f for f in all_candidates
-                    if _normalized_name(f.get('properties', {}).get('ADM2_NAME'))
-                    == _normalized_name(district)]
+                    if _normalized_name(f.get('properties', {}).get('ADM2_NAME')).replace(' ', '')
+                    == _normalized_name(district).replace(' ', '')]
         if len(matching) != 1:
             raise ValueError(
                 f"district AOI match failed for {state}/{district}: {count} exact candidates"
@@ -614,6 +621,13 @@ def resolve_aoi(row, spec=SPEC) -> dict:
     The returned geometry is a server-side EE geometry; callers that only need
     a status can catch the explicit ``ValueError`` without creating a fallback.
     """
+    if _is_district_row(row):
+        from boundary_recovery import resolve_reference_aoi
+        # An explicit, pinned district manifest; never a parent-state fallback.
+        # Same resolver is used by metadata, Track A and Track B.
+        reference = resolve_reference_aoi(row, ee, spec)
+        if reference is not None:
+            return reference
     collection = _feature_collection_for_aoi(row, spec)
     count = int(collection.size().getInfo())
     if count != 1:

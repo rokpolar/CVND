@@ -1,47 +1,97 @@
 event_district_id,event_id,source_record_id,state,district,start_date,candidate_article_count,heuristic_pass_count,final_article_count,count_source,collection_status,query_collection_status,missing_text_count,weak_text_count
-E001::district_missing,E001,2015-0107-IND,Jammu and Kashmir,district_missing,2015-03-20,0,0,,heuristic,missing,missing,0,0
+E001::anantnag,E001,2015-0107-IND,Jammu and Kashmir,Anantnag,2015-03-20,0,0,,heuristic,incomplete,incomplete,0,0
+E001::bandipora,E001,2015-0107-IND,Jammu and Kashmir,Bandipora,2015-03-20,1,1,,heuristic,incomplete,incomplete,0,0
+E001::baramulla,E001,2015-0107-IND,Jammu and Kashmir,Baramulla,2015-03-20,0,0,,heuristic,incomplete,incomplete,0,0
+E001::budgam,E001,2015-0107-IND,Jammu and Kashmir,Budgam,2015-03-20,2,2,,heuristic,incomplete,incomplete,0,0
+E001::ganderbal,E001,2015-0107-IND,Jammu and Kashmir,Ganderbal,2015-03-20,0,0,,heuristic,incomplete,incomplete,0,0
+E001::pulwama,E001,2015-0107-IND,Jammu and Kashmir,Pulwama,2015-03-20,0,0,,heuristic,incomplete,incomplete,0,0
+E001::shopian,E001,2015-0107-IND,Jammu and Kashmir,Shopian,2015-03-20,0,0,,heuristic,incomplete,incomplete,0,0
+E001::srinagar,E001,2015-0107-IND,Jammu and Kashmir,Srinagar,2015-03-20,4,4,,heuristic,incomplete,incomplete,0,0
 E002::virudhunagar,E002,2015-0207-IND,Tamil Nadu,Virudhunagar,2015-05-17,0,0,,heuristic,incomplete,incomplete,0,0
-E002::virudunagar,E002,2015-0207-IND,Tamil Nadu,Virudunagar,2015-05-17,0,0,,heuristic,incomplete,incomplete,0,0
 E003::amreli,E003,2015-0249-IND,Gujarat,Amreli,2015-06-19,6,6,,heuristic,incomplete,incomplete,0,0
 E003::morbi,E003,2015-0249-IND,Gujarat,Morbi,2015-06-19,0,0,,heuristic,incomplete,incomplete,0,0
 E003::rajkot,E003,2015-0249-IND,Gujarat,Rajkot,2015-06-19,0,0,,heuristic,incomplete,incomplete,0,0
 E003::surat,E003,2015-0249-IND,Gujarat,Surat,2015-06-19,0,0,,heuristic,incomplete,incomplete,0,0
 E003::tapi,E003,2015-0249-IND,Gujarat,Tapi,2015-06-19,0,0,,heuristic,incomplete,incomplete,0,0
-E004::district_missing,E004,2015-0249-IND,Maharashtra,district_missing,2015-06-19,0,0,,heuristic,missing,missing,0,0
-E005::darjiling,E005,2015-0253-IND,West Bengal,Darjiling,2015-06-23,0,0,,heuristic,incomplete,incomplete,0,0
-E006::district_missing,E006,2015-0333-IND,Arunachal Pradesh,district_missing,2015-07-07,0,0,,heuristic,missing,missing,0,0
-E007::district_missing,E007,2015-0333-IND,Haryana,district_missing,2015-07-07,0,0,,heuristic,missing,missing,0,0
-E008::district_missing,E008,2015-0333-IND,Himachal Pradesh,district_missing,2015-07-07,0,0,,heuristic,missing,missing,0,0
-E009::district_missing,E009,2015-0333-IND,Jammu and Kashmir,district_missing,2015-07-07,0,0,,heuristic,missing,missing,0,0
-E010::district_missing,E010,2015-0333-IND,Punjab,district_missing,2015-07-07,0,0,,heuristic,missing,missing,0,0
-E011::district_missing,E011,2015-0333-IND,Rajasthan,district_missing,2015-07-07,0,0,,heuristic,missing,missing,0,0
-E012::district_missing,E012,2015-0333-IND,Uttar Pradesh,district_missing,2015-07-07,0,0,,heuristic,missing,missing,0,0
-E013::district_missing,E013,2015-0333-IND,Uttarakhand,district_missing,2015-07-07,0,0,,heuristic,missing,missing,0,0
-E014::district_missing,E014,2015-0413-IND,Arunachal Pradesh,district_missing,2015-07-14,0,0,,heuristic,missing,missing,0,0
+E004::mumbai%20city,E004,2015-0249-IND,Maharashtra,Mumbai City,2015-06-19,0,0,,heuristic,incomplete,incomplete,0,0
+E004::mumbai%20suburban,E004,2015-0249-IND,Maharashtra,Mumbai Suburban,2015-06-19,0,0,,heuristic,incomplete,incomplete,0,0
+E004::palghar,E004,2015-0249-IND,Maharashtra,Palghar,2015-06-19,0,0,,heuristic,incomplete,incomplete,0,0
+E004::thane,E004,2015-0249-IND,Maharashtra,Thane,2015-06-19,0,0,,heuristic,incomplete,incomplete,0,0
+E005::darjeeling,E005,2015-0253-IND,West Bengal,Darjeeling,2015-06-23,0,0,,heuristic,incomplete,incomplete,0,0
+E008::kullu,E008,2015-0333-IND,Himachal Pradesh,Kullu,2015-07-07,0,0,,heuristic,incomplete,incomplete,0,0
+E008::mandi,E008,2015-0333-IND,Himachal Pradesh,Mandi,2015-07-07,0,0,,heuristic,incomplete,incomplete,0,0
+E009::anantnag,E009,2015-0333-IND,Jammu and Kashmir,Anantnag,2015-07-07,0,0,,heuristic,incomplete,incomplete,0,0
+E010::barnala,E010,2015-0333-IND,Punjab,Barnala,2015-07-07,0,0,,heuristic,incomplete,incomplete,0,0
+E012::barabanki,E012,2015-0333-IND,Uttar Pradesh,Barabanki,2015-07-07,0,0,,heuristic,incomplete,incomplete,0,0
+E013::nainital,E013,2015-0333-IND,Uttarakhand,Nainital,2015-07-07,0,0,,heuristic,incomplete,incomplete,0,0
+E014::east%20kameng,E014,2015-0413-IND,Arunachal Pradesh,East Kameng,2015-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E015::dhemaji,E015,2015-0413-IND,Assam,Dhemaji,2015-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E015::kokrajhar,E015,2015-0413-IND,Assam,Kokrajhar,2015-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E015::lakhimpur,E015,2015-0413-IND,Assam,Lakhimpur,2015-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E015::sonitpur,E015,2015-0413-IND,Assam,Sonitpur,2015-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E016::baksa,E016,2015-0317-IND,Assam,Baksa,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::barpeta,E016,2015-0317-IND,Assam,Barpeta,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::bongaigaon,E016,2015-0317-IND,Assam,Bongaigaon,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::cachar,E016,2015-0317-IND,Assam,Cachar,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::darrang,E016,2015-0317-IND,Assam,Darrang,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::dhemaji,E016,2015-0317-IND,Assam,Dhemaji,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::dhubri,E016,2015-0317-IND,Assam,Dhubri,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::dibrugarh,E016,2015-0317-IND,Assam,Dibrugarh,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::goalpara,E016,2015-0317-IND,Assam,Goalpara,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::jorhat,E016,2015-0317-IND,Assam,Jorhat,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::kamrup,E016,2015-0317-IND,Assam,Kamrup,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::karbi%20anglong,E016,2015-0317-IND,Assam,Karbi Anglong,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::kokrajhar,E016,2015-0317-IND,Assam,Kokrajhar,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::lakhimpur,E016,2015-0317-IND,Assam,Lakhimpur,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::morigaon,E016,2015-0317-IND,Assam,Morigaon,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::nagaon,E016,2015-0317-IND,Assam,Nagaon,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::nalbari,E016,2015-0317-IND,Assam,Nalbari,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::sonitpur,E016,2015-0317-IND,Assam,Sonitpur,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E016::tinsukia,E016,2015-0317-IND,Assam,Tinsukia,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E016::udalguri,E016,2015-0317-IND,Assam,Udalguri,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
-E017::banas%20kantha,E017,2015-0317-IND,Gujarat,Banas Kantha,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
-E017::kachchh,E017,2015-0317-IND,Gujarat,Kachchh,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E017::banaskantha,E017,2015-0317-IND,Gujarat,Banaskantha,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E017::kutch,E017,2015-0317-IND,Gujarat,Kutch,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E017::patan,E017,2015-0317-IND,Gujarat,Patan,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
-E018::district_missing,E018,2015-0317-IND,Madhya Pradesh,district_missing,2015-07-15,0,0,,heuristic,missing,missing,0,0
-E019::district_missing,E019,2015-0317-IND,Manipur,district_missing,2015-07-15,0,0,,heuristic,missing,missing,0,0
-E020::district_missing,E020,2015-0317-IND,Odisha,district_missing,2015-07-15,0,0,,heuristic,missing,missing,0,0
-E021::district_missing,E021,2015-0317-IND,Rajasthan,district_missing,2015-07-15,0,0,,heuristic,missing,missing,0,0
+E019::bishnupur,E019,2015-0317-IND,Manipur,Bishnupur,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E019::chandel,E019,2015-0317-IND,Manipur,Chandel,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E019::churachandpur,E019,2015-0317-IND,Manipur,Churachandpur,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E019::jiribam,E019,2015-0317-IND,Manipur,Jiribam,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E019::thoubal,E019,2015-0317-IND,Manipur,Thoubal,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E019::ukhrul,E019,2015-0317-IND,Manipur,Ukhrul,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E020::balasore,E020,2015-0317-IND,Odisha,Balasore,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E020::bhadrak,E020,2015-0317-IND,Odisha,Bhadrak,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E020::deogarh,E020,2015-0317-IND,Odisha,Deogarh,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E020::jajpur,E020,2015-0317-IND,Odisha,Jajpur,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E020::jharsuguda,E020,2015-0317-IND,Odisha,Jharsuguda,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E020::keonjhar,E020,2015-0317-IND,Odisha,Keonjhar,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E020::mayurbhanj,E020,2015-0317-IND,Odisha,Mayurbhanj,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E021::baran,E021,2015-0317-IND,Rajasthan,Baran,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E021::barmer,E021,2015-0317-IND,Rajasthan,Barmer,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E021::dungarpur,E021,2015-0317-IND,Rajasthan,Dungarpur,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E021::jalore,E021,2015-0317-IND,Rajasthan,Jalore,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E021::jhalawar,E021,2015-0317-IND,Rajasthan,Jhalawar,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E021::sirohi,E021,2015-0317-IND,Rajasthan,Sirohi,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E022::alipurduar,E022,2015-0317-IND,West Bengal,Alipurduar,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E022::jalpaiguri,E022,2015-0317-IND,West Bengal,Jalpaiguri,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
-E022::maldah,E022,2015-0317-IND,West Bengal,Maldah,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
-E023::district_missing,E023,2015-0374-IND,Assam,district_missing,2015-08-13,0,0,,heuristic,missing,missing,0,0
+E022::malda,E022,2015-0317-IND,West Bengal,Malda,2015-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E023::baksa,E023,2015-0374-IND,Assam,Baksa,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::barpeta,E023,2015-0374-IND,Assam,Barpeta,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::bongaigaon,E023,2015-0374-IND,Assam,Bongaigaon,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::cachar,E023,2015-0374-IND,Assam,Cachar,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::darrang,E023,2015-0374-IND,Assam,Darrang,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::dhemaji,E023,2015-0374-IND,Assam,Dhemaji,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::dibrugarh,E023,2015-0374-IND,Assam,Dibrugarh,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::goalpara,E023,2015-0374-IND,Assam,Goalpara,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::jorhat,E023,2015-0374-IND,Assam,Jorhat,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::kamrup,E023,2015-0374-IND,Assam,Kamrup,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::kokrajhar,E023,2015-0374-IND,Assam,Kokrajhar,2015-08-13,3,3,,heuristic,incomplete,incomplete,0,0
+E023::lakhimpur,E023,2015-0374-IND,Assam,Lakhimpur,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::morigaon,E023,2015-0374-IND,Assam,Morigaon,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::nagaon,E023,2015-0374-IND,Assam,Nagaon,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::nalbari,E023,2015-0374-IND,Assam,Nalbari,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::sonitpur,E023,2015-0374-IND,Assam,Sonitpur,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::tinsukia,E023,2015-0374-IND,Assam,Tinsukia,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
+E023::udalguri,E023,2015-0374-IND,Assam,Udalguri,2015-08-13,0,0,,heuristic,incomplete,incomplete,0,0
 E024::barpeta,E024,2015-0406-IND,Assam,Barpeta,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
 E024::bongaigaon,E024,2015-0406-IND,Assam,Bongaigaon,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
 E024::cachar,E024,2015-0406-IND,Assam,Cachar,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
@@ -53,28 +103,45 @@ E024::jorhat,E024,2015-0406-IND,Assam,Jorhat,2015-08-28,0,0,,heuristic,incomplet
 E024::kamrup,E024,2015-0406-IND,Assam,Kamrup,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
 E024::kokrajhar,E024,2015-0406-IND,Assam,Kokrajhar,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
 E024::lakhimpur,E024,2015-0406-IND,Assam,Lakhimpur,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
-E024::marigaon,E024,2015-0406-IND,Assam,Marigaon,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
+E024::morigaon,E024,2015-0406-IND,Assam,Morigaon,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
 E024::nalbari,E024,2015-0406-IND,Assam,Nalbari,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
-E024::sibsagar,E024,2015-0406-IND,Assam,Sibsagar,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
+E024::sivasagar,E024,2015-0406-IND,Assam,Sivasagar,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
 E024::sonitpur,E024,2015-0406-IND,Assam,Sonitpur,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
 E024::tinsukia,E024,2015-0406-IND,Assam,Tinsukia,2015-08-28,0,0,,heuristic,incomplete,incomplete,0,0
 E025::chittoor,E025,2015-0504-IND,Andhra Pradesh,Chittoor,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
 E025::nellore,E025,2015-0504-IND,Andhra Pradesh,Nellore,2015-11-08,1,1,,heuristic,incomplete,incomplete,0,0
 E025::prakasam,E025,2015-0504-IND,Andhra Pradesh,Prakasam,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
-E025::y.s.r.,E025,2015-0504-IND,Andhra Pradesh,Y.S.R.,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
-E026::district_missing,E026,2015-0504-IND,Puducherry,district_missing,2015-11-08,0,0,,heuristic,missing,missing,0,0
+E025::ysr%20kadapa,E025,2015-0504-IND,Andhra Pradesh,YSR Kadapa,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
+E026::puducherry,E026,2015-0504-IND,Puducherry,Puducherry,2015-11-08,7,4,,heuristic,incomplete,incomplete,3,0
 E027::chennai,E027,2015-0504-IND,Tamil Nadu,Chennai,2015-11-08,9,9,,heuristic,incomplete,incomplete,0,0
 E027::cuddalore,E027,2015-0504-IND,Tamil Nadu,Cuddalore,2015-11-08,1,1,,heuristic,incomplete,incomplete,0,0
 E027::kancheepuram,E027,2015-0504-IND,Tamil Nadu,Kancheepuram,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
-E027::nagappattinam,E027,2015-0504-IND,Tamil Nadu,Nagappattinam,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
+E027::nagapattinam,E027,2015-0504-IND,Tamil Nadu,Nagapattinam,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
 E027::thiruvallur,E027,2015-0504-IND,Tamil Nadu,Thiruvallur,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
 E027::thiruvarur,E027,2015-0504-IND,Tamil Nadu,Thiruvarur,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
 E027::viluppuram,E027,2015-0504-IND,Tamil Nadu,Viluppuram,2015-11-08,0,0,,heuristic,incomplete,incomplete,0,0
-E028::district_missing,E028,2016-0139-IND,Arunachal Pradesh,district_missing,2016-04-22,0,0,,heuristic,missing,missing,0,0
-E029::district_missing,E029,2016-0139-IND,Assam,district_missing,2016-04-22,0,0,,heuristic,missing,missing,0,0
-E030::district_missing,E030,2016-0139-IND,Nagaland,district_missing,2016-04-22,0,0,,heuristic,missing,missing,0,0
-E031::district_missing,E031,2016-0239-IND,Arunachal Pradesh,district_missing,2016-06-25,0,0,,heuristic,missing,missing,0,0
-E032::district_missing,E032,2016-0239-IND,Assam,district_missing,2016-06-25,0,0,,heuristic,missing,missing,0,0
+E028::tawang,E028,2016-0139-IND,Arunachal Pradesh,Tawang,2016-04-22,2,2,,heuristic,incomplete,incomplete,0,0
+E029::barpeta,E029,2016-0139-IND,Assam,Barpeta,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E029::bongaigaon,E029,2016-0139-IND,Assam,Bongaigaon,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E029::dhemaji,E029,2016-0139-IND,Assam,Dhemaji,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E029::dhubri,E029,2016-0139-IND,Assam,Dhubri,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E029::golaghat,E029,2016-0139-IND,Assam,Golaghat,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E029::jorhat,E029,2016-0139-IND,Assam,Jorhat,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E029::lakhimpur,E029,2016-0139-IND,Assam,Lakhimpur,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E030::mokokchung,E030,2016-0139-IND,Nagaland,Mokokchung,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E030::mon,E030,2016-0139-IND,Nagaland,Mon,2016-04-22,0,0,,heuristic,incomplete,incomplete,0,0
+E031::namsai,E031,2016-0239-IND,Arunachal Pradesh,Namsai,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::barpeta,E032,2016-0239-IND,Assam,Barpeta,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::bongaigaon,E032,2016-0239-IND,Assam,Bongaigaon,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::darrang,E032,2016-0239-IND,Assam,Darrang,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::dhemaji,E032,2016-0239-IND,Assam,Dhemaji,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::dhubri,E032,2016-0239-IND,Assam,Dhubri,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::goalpara,E032,2016-0239-IND,Assam,Goalpara,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::golaghat,E032,2016-0239-IND,Assam,Golaghat,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::jorhat,E032,2016-0239-IND,Assam,Jorhat,2016-06-25,1,1,,heuristic,incomplete,incomplete,0,0
+E032::lakhimpur,E032,2016-0239-IND,Assam,Lakhimpur,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::morigaon,E032,2016-0239-IND,Assam,Morigaon,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E032::sonitpur,E032,2016-0239-IND,Assam,Sonitpur,2016-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E033::chamoli,E033,2016-0239-IND,Uttarakhand,Chamoli,2016-06-25,4,4,,heuristic,incomplete,incomplete,0,0
 E033::pithoragarh,E033,2016-0239-IND,Uttarakhand,Pithoragarh,2016-06-25,2,2,,heuristic,incomplete,incomplete,0,0
 E034::agar%20malwa,E034,2016-0276-IND,Madhya Pradesh,Agar Malwa,2016-07-09,0,0,,heuristic,incomplete,incomplete,0,0
@@ -94,19 +161,43 @@ E034::seoni,E034,2016-0276-IND,Madhya Pradesh,Seoni,2016-07-09,0,0,,heuristic,in
 E034::shajapur,E034,2016-0276-IND,Madhya Pradesh,Shajapur,2016-07-09,0,0,,heuristic,incomplete,incomplete,0,0
 E034::tikamgarh,E034,2016-0276-IND,Madhya Pradesh,Tikamgarh,2016-07-09,0,0,,heuristic,incomplete,incomplete,0,0
 E034::vidisha,E034,2016-0276-IND,Madhya Pradesh,Vidisha,2016-07-09,1,1,,heuristic,incomplete,incomplete,0,0
-E035::district_missing,E035,2016-0271-IND,Bihar,district_missing,2016-07-15,0,0,,heuristic,missing,missing,0,0
-E036::district_missing,E036,2016-0271-IND,Uttar Pradesh,district_missing,2016-07-15,0,0,,heuristic,missing,missing,0,0
+E035::araria,E035,2016-0271-IND,Bihar,Araria,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::bhagalpur,E035,2016-0271-IND,Bihar,Bhagalpur,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::darbhanga,E035,2016-0271-IND,Bihar,Darbhanga,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::gopalganj,E035,2016-0271-IND,Bihar,Gopalganj,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::katihar,E035,2016-0271-IND,Bihar,Katihar,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::khagaria,E035,2016-0271-IND,Bihar,Khagaria,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::kishanganj,E035,2016-0271-IND,Bihar,Kishanganj,2016-07-15,1,1,,heuristic,incomplete,incomplete,0,0
+E035::madhepura,E035,2016-0271-IND,Bihar,Madhepura,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::muzaffarpur,E035,2016-0271-IND,Bihar,Muzaffarpur,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::purnea,E035,2016-0271-IND,Bihar,Purnea,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::saharsa,E035,2016-0271-IND,Bihar,Saharsa,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E035::supaul,E035,2016-0271-IND,Bihar,Supaul,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::bahraich,E036,2016-0271-IND,Uttar Pradesh,Bahraich,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::ballia,E036,2016-0271-IND,Uttar Pradesh,Ballia,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::banda,E036,2016-0271-IND,Uttar Pradesh,Banda,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::barabanki,E036,2016-0271-IND,Uttar Pradesh,Barabanki,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::basti,E036,2016-0271-IND,Uttar Pradesh,Basti,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::ghazipur,E036,2016-0271-IND,Uttar Pradesh,Ghazipur,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::jalaun,E036,2016-0271-IND,Uttar Pradesh,Jalaun,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::kushinagar,E036,2016-0271-IND,Uttar Pradesh,Kushinagar,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::lakhimpur%20kheri,E036,2016-0271-IND,Uttar Pradesh,Lakhimpur Kheri,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::mirzapur,E036,2016-0271-IND,Uttar Pradesh,Mirzapur,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::pilibhit,E036,2016-0271-IND,Uttar Pradesh,Pilibhit,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::prayagraj,E036,2016-0271-IND,Uttar Pradesh,Prayagraj,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::siddharthnagar,E036,2016-0271-IND,Uttar Pradesh,Siddharthnagar,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
+E036::varanasi,E036,2016-0271-IND,Uttar Pradesh,Varanasi,2016-07-15,0,0,,heuristic,incomplete,incomplete,0,0
 E037::golaghat,E037,2016-0554-IND,Assam,Golaghat,2016-07-17,0,0,,heuristic,incomplete,incomplete,0,0
 E037::jorhat,E037,2016-0554-IND,Assam,Jorhat,2016-07-17,3,3,,heuristic,incomplete,incomplete,0,0
 E038::barpeta,E038,2016-0267-IND,Assam,Barpeta,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
 E038::bongaigaon,E038,2016-0267-IND,Assam,Bongaigaon,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
 E038::darrang,E038,2016-0267-IND,Assam,Darrang,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
-E038::dhuburi,E038,2016-0267-IND,Assam,Dhuburi,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
+E038::dhubri,E038,2016-0267-IND,Assam,Dhubri,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
 E038::goalpara,E038,2016-0267-IND,Assam,Goalpara,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
 E038::golaghat,E038,2016-0267-IND,Assam,Golaghat,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
 E038::jorhat,E038,2016-0267-IND,Assam,Jorhat,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
 E038::lakhimpur,E038,2016-0267-IND,Assam,Lakhimpur,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
-E038::marigaon,E038,2016-0267-IND,Assam,Marigaon,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
+E038::morigaon,E038,2016-0267-IND,Assam,Morigaon,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
 E038::nalbari,E038,2016-0267-IND,Assam,Nalbari,2016-07-28,0,0,,heuristic,incomplete,incomplete,0,0
 E039::chhota%20udaipur,E039,2016-0304-IND,Gujarat,Chhota Udaipur,2016-08-01,0,0,,heuristic,incomplete,incomplete,0,0
 E039::navsari,E039,2016-0304-IND,Gujarat,Navsari,2016-08-01,0,0,,heuristic,incomplete,incomplete,0,0
@@ -122,36 +213,71 @@ E040::raigarh,E040,2016-0304-IND,Maharashtra,Raigarh,2016-08-01,0,0,,heuristic,i
 E040::ratnagiri,E040,2016-0304-IND,Maharashtra,Ratnagiri,2016-08-01,0,0,,heuristic,incomplete,incomplete,0,0
 E040::satara,E040,2016-0304-IND,Maharashtra,Satara,2016-08-01,0,0,,heuristic,incomplete,incomplete,0,0
 E040::thane,E040,2016-0304-IND,Maharashtra,Thane,2016-08-01,0,0,,heuristic,incomplete,incomplete,0,0
-E041::district_missing,E041,2016-0391-IND,Andhra Pradesh,district_missing,2016-09-21,0,0,,heuristic,missing,missing,0,0
-E042::district_missing,E042,2016-0391-IND,Telangana,district_missing,2016-09-21,0,0,,heuristic,missing,missing,0,0
-E043::district_missing,E043,2017-0257-IND,Gujarat,district_missing,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E044::banaskantha,E044,2017-0294-IND,Gujarat,Banaskantha,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E044::navsari,E044,2017-0294-IND,Gujarat,Navsari,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E044::patan,E044,2017-0294-IND,Gujarat,Patan,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E044::sabarkantha,E044,2017-0294-IND,Gujarat,Sabarkantha,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E044::surat,E044,2017-0294-IND,Gujarat,Surat,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E044::valsad,E044,2017-0294-IND,Gujarat,Valsad,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E045::barmer,E045,2017-0294-IND,Rajasthan,Barmer,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E045::jalore,E045,2017-0294-IND,Rajasthan,Jalore,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E045::pali,E045,2017-0294-IND,Rajasthan,Pali,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E045::sirohi,E045,2017-0294-IND,Rajasthan,Sirohi,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E045::udaipur,E045,2017-0294-IND,Rajasthan,Udaipur,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E046::kolkata,E046,2017-0294-IND,West Bengal,Kolkata,2017-06-01,0,0,,heuristic,missing,missing,0,0
-E047::darrang,E047,2017-0180-IND,Assam,Darrang,2017-06-04,0,0,,heuristic,missing,missing,0,0
-E047::karimganj,E047,2017-0180-IND,Assam,Karimganj,2017-06-04,0,0,,heuristic,missing,missing,0,0
-E047::lakhimpur,E047,2017-0180-IND,Assam,Lakhimpur,2017-06-04,0,0,,heuristic,missing,missing,0,0
-E048::district_missing,E048,2017-0180-IND,Jharkhand,district_missing,2017-06-04,0,0,,heuristic,missing,missing,0,0
-E049::district_missing,E049,2017-0180-IND,Manipur,district_missing,2017-06-04,0,0,,heuristic,missing,missing,0,0
-E050::district_missing,E050,2017-0180-IND,Nagaland,district_missing,2017-06-04,0,0,,heuristic,missing,missing,0,0
+E041::east%20godavari,E041,2016-0391-IND,Andhra Pradesh,East Godavari,2016-09-21,0,0,,heuristic,incomplete,incomplete,0,0
+E041::guntur,E041,2016-0391-IND,Andhra Pradesh,Guntur,2016-09-21,4,4,,heuristic,incomplete,incomplete,0,0
+E041::krishna,E041,2016-0391-IND,Andhra Pradesh,Krishna,2016-09-21,0,0,,heuristic,incomplete,incomplete,0,0
+E041::prakasam,E041,2016-0391-IND,Andhra Pradesh,Prakasam,2016-09-21,0,0,,heuristic,incomplete,incomplete,0,0
+E041::visakhapatnam,E041,2016-0391-IND,Andhra Pradesh,Visakhapatnam,2016-09-21,1,1,,heuristic,incomplete,incomplete,0,0
+E042::hyderabad,E042,2016-0391-IND,Telangana,Hyderabad,2016-09-21,7,6,,heuristic,incomplete,incomplete,0,0
+E042::karimnagar,E042,2016-0391-IND,Telangana,Karimnagar,2016-09-21,1,1,,heuristic,incomplete,incomplete,0,0
+E042::medak,E042,2016-0391-IND,Telangana,Medak,2016-09-21,0,0,,heuristic,incomplete,incomplete,0,0
+E042::warangal,E042,2016-0391-IND,Telangana,Warangal,2016-09-21,0,0,,heuristic,incomplete,incomplete,0,0
+E044::banaskantha,E044,2017-0294-IND,Gujarat,Banaskantha,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E044::navsari,E044,2017-0294-IND,Gujarat,Navsari,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E044::patan,E044,2017-0294-IND,Gujarat,Patan,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E044::sabarkantha,E044,2017-0294-IND,Gujarat,Sabarkantha,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E044::surat,E044,2017-0294-IND,Gujarat,Surat,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E044::valsad,E044,2017-0294-IND,Gujarat,Valsad,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E045::barmer,E045,2017-0294-IND,Rajasthan,Barmer,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E045::jalore,E045,2017-0294-IND,Rajasthan,Jalore,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E045::pali,E045,2017-0294-IND,Rajasthan,Pali,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E045::sirohi,E045,2017-0294-IND,Rajasthan,Sirohi,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E045::udaipur,E045,2017-0294-IND,Rajasthan,Udaipur,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E046::kolkata,E046,2017-0294-IND,West Bengal,Kolkata,2017-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E047::barpeta,E047,2017-0180-IND,Assam,Barpeta,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::biswanath,E047,2017-0180-IND,Assam,Biswanath,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::bongaigaon,E047,2017-0180-IND,Assam,Bongaigaon,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::cachar,E047,2017-0180-IND,Assam,Cachar,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::charaideo,E047,2017-0180-IND,Assam,Charaideo,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::chirang,E047,2017-0180-IND,Assam,Chirang,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::darrang,E047,2017-0180-IND,Assam,Darrang,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::dhemaji,E047,2017-0180-IND,Assam,Dhemaji,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::dhubri,E047,2017-0180-IND,Assam,Dhubri,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::dibrugarh,E047,2017-0180-IND,Assam,Dibrugarh,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::goalpara,E047,2017-0180-IND,Assam,Goalpara,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::golaghat,E047,2017-0180-IND,Assam,Golaghat,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::hailakandi,E047,2017-0180-IND,Assam,Hailakandi,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::hojai,E047,2017-0180-IND,Assam,Hojai,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::jorhat,E047,2017-0180-IND,Assam,Jorhat,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::kamrup,E047,2017-0180-IND,Assam,Kamrup,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::kamrup%20metropolitan,E047,2017-0180-IND,Assam,Kamrup Metropolitan,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::karbi%20anglong,E047,2017-0180-IND,Assam,Karbi Anglong,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::karimganj,E047,2017-0180-IND,Assam,Karimganj,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::kokrajhar,E047,2017-0180-IND,Assam,Kokrajhar,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::lakhimpur,E047,2017-0180-IND,Assam,Lakhimpur,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::majuli,E047,2017-0180-IND,Assam,Majuli,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::morigaon,E047,2017-0180-IND,Assam,Morigaon,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::nagaon,E047,2017-0180-IND,Assam,Nagaon,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::nalbari,E047,2017-0180-IND,Assam,Nalbari,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::sivasagar,E047,2017-0180-IND,Assam,Sivasagar,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::sonitpur,E047,2017-0180-IND,Assam,Sonitpur,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::south%20salmara,E047,2017-0180-IND,Assam,South Salmara,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::tinsukia,E047,2017-0180-IND,Assam,Tinsukia,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E047::udalguri,E047,2017-0180-IND,Assam,Udalguri,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E048::giridih,E048,2017-0180-IND,Jharkhand,Giridih,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E049::bishnupur,E049,2017-0180-IND,Manipur,Bishnupur,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E049::imphal%20east,E049,2017-0180-IND,Manipur,Imphal East,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E049::imphal%20west,E049,2017-0180-IND,Manipur,Imphal West,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E049::thoubal,E049,2017-0180-IND,Manipur,Thoubal,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
+E050::phek,E050,2017-0180-IND,Nagaland,Phek,2017-06-04,0,0,,heuristic,incomplete,incomplete,0,0
 E051::barpeta,E051,2017-0289-IND,Assam,Barpeta,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::bongaigaon,E051,2017-0289-IND,Assam,Bongaigaon,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::cachar,E051,2017-0289-IND,Assam,Cachar,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
-E051::charaideo,E051,2017-0289-IND,Assam,Charaideo,2017-06-25,0,0,,heuristic,missing,missing,0,0
-E051::chirang,E051,2017-0289-IND,Assam,Chirang,2017-06-25,0,0,,heuristic,missing,missing,0,0
+E051::charaideo,E051,2017-0289-IND,Assam,Charaideo,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E051::chirang,E051,2017-0289-IND,Assam,Chirang,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::darrang,E051,2017-0289-IND,Assam,Darrang,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::dhemaji,E051,2017-0289-IND,Assam,Dhemaji,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
-E051::dhubri,E051,2017-0289-IND,Assam,Dhubri,2017-06-25,0,0,,heuristic,missing,missing,0,0
-E051::dhuburi,E051,2017-0289-IND,Assam,Dhuburi,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E051::dhubri,E051,2017-0289-IND,Assam,Dhubri,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::dibrugarh,E051,2017-0289-IND,Assam,Dibrugarh,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::goalpara,E051,2017-0289-IND,Assam,Goalpara,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::golaghat,E051,2017-0289-IND,Assam,Golaghat,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
@@ -160,25 +286,85 @@ E051::karbi%20anglong,E051,2017-0289-IND,Assam,Karbi Anglong,2017-06-25,0,0,,heu
 E051::karimganj,E051,2017-0289-IND,Assam,Karimganj,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::kokrajhar,E051,2017-0289-IND,Assam,Kokrajhar,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::lakhimpur,E051,2017-0289-IND,Assam,Lakhimpur,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
-E051::majuli,E051,2017-0289-IND,Assam,Majuli,2017-06-25,0,0,,heuristic,missing,missing,0,0
-E051::marigaon,E051,2017-0289-IND,Assam,Marigaon,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
-E051::morigaon,E051,2017-0289-IND,Assam,Morigaon,2017-06-25,0,0,,heuristic,missing,missing,0,0
+E051::majuli,E051,2017-0289-IND,Assam,Majuli,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E051::morigaon,E051,2017-0289-IND,Assam,Morigaon,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::nagaon,E051,2017-0289-IND,Assam,Nagaon,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::nalbari,E051,2017-0289-IND,Assam,Nalbari,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
-E051::sibsagar,E051,2017-0289-IND,Assam,Sibsagar,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
-E051::sivasagar,E051,2017-0289-IND,Assam,Sivasagar,2017-06-25,0,0,,heuristic,missing,missing,0,0
+E051::sivasagar,E051,2017-0289-IND,Assam,Sivasagar,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E051::sonitpur,E051,2017-0289-IND,Assam,Sonitpur,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
-E051::south%20salmara,E051,2017-0289-IND,Assam,South Salmara,2017-06-25,0,0,,heuristic,missing,missing,0,0
+E051::south%20salmara,E051,2017-0289-IND,Assam,South Salmara,2017-06-25,0,0,,heuristic,incomplete,incomplete,0,0
 E052::bishnupur,E052,2017-0290-IND,Manipur,Bishnupur,2017-07-01,0,0,,heuristic,incomplete,incomplete,0,0
-E052::east%20imphal,E052,2017-0290-IND,Manipur,East Imphal,2017-07-01,0,0,,heuristic,incomplete,incomplete,0,0
 E052::imphal%20east,E052,2017-0290-IND,Manipur,Imphal East,2017-07-01,0,0,,heuristic,incomplete,incomplete,0,0
 E052::imphal%20west,E052,2017-0290-IND,Manipur,Imphal West,2017-07-01,0,0,,heuristic,incomplete,incomplete,0,0
 E052::thoubal,E052,2017-0290-IND,Manipur,Thoubal,2017-07-01,0,0,,heuristic,incomplete,incomplete,0,0
-E052::west%20imphal,E052,2017-0290-IND,Manipur,West Imphal,2017-07-01,0,0,,heuristic,incomplete,incomplete,0,0
 E053::araria,E053,2017-0342-IND,Bihar,Araria,2017-08-11,1,1,,heuristic,incomplete,incomplete,0,0
-E053::jogbani,E053,2017-0342-IND,Bihar,Jogbani,2017-08-11,0,0,,heuristic,missing,missing,0,0
-E054::district_missing,E054,2017-0342-IND,Uttar Pradesh,district_missing,2017-08-11,0,0,,heuristic,missing,missing,0,0
-E055::district_missing,E055,2017-0342-IND,West Bengal,district_missing,2017-08-11,0,0,,heuristic,missing,missing,0,0
+E053::darbhanga,E053,2017-0342-IND,Bihar,Darbhanga,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::east%20champaran,E053,2017-0342-IND,Bihar,East Champaran,2017-08-11,3,3,,heuristic,incomplete,incomplete,0,0
+E053::gopalganj,E053,2017-0342-IND,Bihar,Gopalganj,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::jogbani,E053,2017-0342-IND,Bihar,Jogbani,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::katihar,E053,2017-0342-IND,Bihar,Katihar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::khagaria,E053,2017-0342-IND,Bihar,Khagaria,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::kishanganj,E053,2017-0342-IND,Bihar,Kishanganj,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::madhepura,E053,2017-0342-IND,Bihar,Madhepura,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::madhubani,E053,2017-0342-IND,Bihar,Madhubani,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::muzaffarpur,E053,2017-0342-IND,Bihar,Muzaffarpur,2017-08-11,2,2,,heuristic,incomplete,incomplete,0,0
+E053::nalanda,E053,2017-0342-IND,Bihar,Nalanda,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::patna,E053,2017-0342-IND,Bihar,Patna,2017-08-11,8,8,,heuristic,incomplete,incomplete,0,0
+E053::purnea,E053,2017-0342-IND,Bihar,Purnea,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::saharsa,E053,2017-0342-IND,Bihar,Saharsa,2017-08-11,1,1,,heuristic,incomplete,incomplete,0,0
+E053::samastipur,E053,2017-0342-IND,Bihar,Samastipur,2017-08-11,1,1,,heuristic,incomplete,incomplete,0,0
+E053::saran,E053,2017-0342-IND,Bihar,Saran,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::sheohar,E053,2017-0342-IND,Bihar,Sheohar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::sitamarhi,E053,2017-0342-IND,Bihar,Sitamarhi,2017-08-11,2,2,,heuristic,incomplete,incomplete,0,0
+E053::siwan,E053,2017-0342-IND,Bihar,Siwan,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::supaul,E053,2017-0342-IND,Bihar,Supaul,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E053::west%20champaran,E053,2017-0342-IND,Bihar,West Champaran,2017-08-11,1,1,,heuristic,incomplete,incomplete,0,0
+E054::ambedkar%20nagar,E054,2017-0342-IND,Uttar Pradesh,Ambedkar Nagar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::ayodhya,E054,2017-0342-IND,Uttar Pradesh,Ayodhya,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::azamgarh,E054,2017-0342-IND,Uttar Pradesh,Azamgarh,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::bahraich,E054,2017-0342-IND,Uttar Pradesh,Bahraich,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::ballia,E054,2017-0342-IND,Uttar Pradesh,Ballia,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::balrampur,E054,2017-0342-IND,Uttar Pradesh,Balrampur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::barabanki,E054,2017-0342-IND,Uttar Pradesh,Barabanki,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::basti,E054,2017-0342-IND,Uttar Pradesh,Basti,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::bijnor,E054,2017-0342-IND,Uttar Pradesh,Bijnor,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::budaun,E054,2017-0342-IND,Uttar Pradesh,Budaun,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::deoria,E054,2017-0342-IND,Uttar Pradesh,Deoria,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::farrukhabad,E054,2017-0342-IND,Uttar Pradesh,Farrukhabad,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::ghazipur,E054,2017-0342-IND,Uttar Pradesh,Ghazipur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::gonda,E054,2017-0342-IND,Uttar Pradesh,Gonda,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::gorakhpur,E054,2017-0342-IND,Uttar Pradesh,Gorakhpur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::kushinagar,E054,2017-0342-IND,Uttar Pradesh,Kushinagar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::lakhimpur%20kheri,E054,2017-0342-IND,Uttar Pradesh,Lakhimpur Kheri,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::maharajganj,E054,2017-0342-IND,Uttar Pradesh,Maharajganj,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::mau,E054,2017-0342-IND,Uttar Pradesh,Mau,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::mirzapur,E054,2017-0342-IND,Uttar Pradesh,Mirzapur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::pilibhit,E054,2017-0342-IND,Uttar Pradesh,Pilibhit,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::sant%20kabir%20nagar,E054,2017-0342-IND,Uttar Pradesh,Sant Kabir Nagar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::shrawasti,E054,2017-0342-IND,Uttar Pradesh,Shrawasti,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::siddharthnagar,E054,2017-0342-IND,Uttar Pradesh,Siddharthnagar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E054::sitapur,E054,2017-0342-IND,Uttar Pradesh,Sitapur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::alipurduar,E055,2017-0342-IND,West Bengal,Alipurduar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::bankura,E055,2017-0342-IND,West Bengal,Bankura,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::birbhum,E055,2017-0342-IND,West Bengal,Birbhum,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::cooch%20behar,E055,2017-0342-IND,West Bengal,Cooch Behar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::dakshin%20dinajpur,E055,2017-0342-IND,West Bengal,Dakshin Dinajpur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::darjeeling,E055,2017-0342-IND,West Bengal,Darjeeling,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::east%20medinipur,E055,2017-0342-IND,West Bengal,East Medinipur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::hooghly,E055,2017-0342-IND,West Bengal,Hooghly,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::howrah,E055,2017-0342-IND,West Bengal,Howrah,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::jalpaiguri,E055,2017-0342-IND,West Bengal,Jalpaiguri,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::jhargram,E055,2017-0342-IND,West Bengal,Jhargram,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::malda,E055,2017-0342-IND,West Bengal,Malda,2017-08-11,1,1,,heuristic,incomplete,incomplete,0,0
+E055::murshidabad,E055,2017-0342-IND,West Bengal,Murshidabad,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::nadia,E055,2017-0342-IND,West Bengal,Nadia,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::north%2024%20parganas,E055,2017-0342-IND,West Bengal,North 24 Parganas,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::paschim%20bardhaman,E055,2017-0342-IND,West Bengal,Paschim Bardhaman,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::purba%20bardhaman,E055,2017-0342-IND,West Bengal,Purba Bardhaman,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::purulia,E055,2017-0342-IND,West Bengal,Purulia,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::south%2024%20parganas,E055,2017-0342-IND,West Bengal,South 24 Parganas,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::uttar%20dinajpur,E055,2017-0342-IND,West Bengal,Uttar Dinajpur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
+E055::west%20medinipur,E055,2017-0342-IND,West Bengal,West Medinipur,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
 E056::ambedkar%20nagar,E056,2017-0517-IND,Uttar Pradesh,Ambedkar Nagar,2017-08-16,0,0,,heuristic,incomplete,incomplete,0,0
 E056::azamgarh,E056,2017-0517-IND,Uttar Pradesh,Azamgarh,2017-08-16,0,0,,heuristic,incomplete,incomplete,0,0
 E056::badaun,E056,2017-0517-IND,Uttar Pradesh,Badaun,2017-08-16,0,0,,heuristic,incomplete,incomplete,0,0
@@ -212,18 +398,48 @@ E057::mumbai%20city,E057,2017-0364-IND,Maharashtra,Mumbai City,2017-08-29,0,0,,h
 E057::mumbai%20suburban,E057,2017-0364-IND,Maharashtra,Mumbai Suburban,2017-08-29,0,0,,heuristic,incomplete,incomplete,0,0
 E057::palghar,E057,2017-0364-IND,Maharashtra,Palghar,2017-08-29,0,0,,heuristic,incomplete,incomplete,0,0
 E057::thane,E057,2017-0364-IND,Maharashtra,Thane,2017-08-29,0,0,,heuristic,incomplete,incomplete,0,0
-E058::chenai,E058,2017-0495-IND,Tamil Nadu,Chenai,2017-10-30,0,0,,heuristic,missing,missing,0,0
 E058::chennai,E058,2017-0495-IND,Tamil Nadu,Chennai,2017-10-30,19,19,,heuristic,incomplete,incomplete,0,0
-E059::district_missing,E059,2018-0213-IND,Tripura,district_missing,2018-05-17,0,0,,heuristic,missing,missing,0,0
-E060::dakshin%20kannad,E060,2018-0216-IND,Karnataka,Dakshin Kannad,2018-05-29,0,0,,heuristic,incomplete,incomplete,0,0
+E059::dhalai,E059,2018-0213-IND,Tripura,Dhalai,2018-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E059::gomati,E059,2018-0213-IND,Tripura,Gomati,2018-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E059::khowai,E059,2018-0213-IND,Tripura,Khowai,2018-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E059::north%20tripura,E059,2018-0213-IND,Tripura,North Tripura,2018-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E059::sepahijala,E059,2018-0213-IND,Tripura,Sepahijala,2018-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E059::south%20tripura,E059,2018-0213-IND,Tripura,South Tripura,2018-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E059::unakoti,E059,2018-0213-IND,Tripura,Unakoti,2018-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E059::west%20tripura,E059,2018-0213-IND,Tripura,West Tripura,2018-05-17,0,0,,heuristic,incomplete,incomplete,0,0
 E060::dakshina%20kannada,E060,2018-0216-IND,Karnataka,Dakshina Kannada,2018-05-29,0,0,,heuristic,incomplete,incomplete,0,0
 E060::udupi,E060,2018-0216-IND,Karnataka,Udupi,2018-05-29,2,2,,heuristic,incomplete,incomplete,0,0
-E061::district_missing,E061,2018-0205-IND,Assam,district_missing,2018-06-22,0,0,,heuristic,missing,missing,0,0
-E062::district_missing,E062,2018-0205-IND,Gujarat,district_missing,2018-06-22,0,0,,heuristic,missing,missing,0,0
-E063::district_missing,E063,2018-0205-IND,Maharashtra,district_missing,2018-06-22,0,0,,heuristic,missing,missing,0,0
-E064::district_missing,E064,2018-0286-IND,Odisha,district_missing,2018-07-20,0,0,,heuristic,missing,missing,0,0
-E065::district_missing,E065,2018-0267-IND,Rajasthan,district_missing,2018-07-26,0,0,,heuristic,missing,missing,0,0
-E066::district_missing,E066,2018-0267-IND,Uttar Pradesh,district_missing,2018-07-26,0,0,,heuristic,missing,missing,0,0
+E061::biswanath,E061,2018-0205-IND,Assam,Biswanath,2018-06-22,0,0,,heuristic,incomplete,incomplete,0,0
+E061::cachar,E061,2018-0205-IND,Assam,Cachar,2018-06-22,2,2,,heuristic,incomplete,incomplete,0,0
+E061::east%20karbi%20anglong,E061,2018-0205-IND,Assam,East Karbi Anglong,2018-06-22,0,0,,heuristic,incomplete,incomplete,0,0
+E061::golaghat,E061,2018-0205-IND,Assam,Golaghat,2018-06-22,0,0,,heuristic,incomplete,incomplete,0,0
+E061::hailakandi,E061,2018-0205-IND,Assam,Hailakandi,2018-06-22,1,1,,heuristic,incomplete,incomplete,0,0
+E061::hojai,E061,2018-0205-IND,Assam,Hojai,2018-06-22,0,0,,heuristic,incomplete,incomplete,0,0
+E061::karimganj,E061,2018-0205-IND,Assam,Karimganj,2018-06-22,0,0,,heuristic,incomplete,incomplete,0,0
+E061::nagaon,E061,2018-0205-IND,Assam,Nagaon,2018-06-22,0,0,,heuristic,incomplete,incomplete,0,0
+E061::west%20karbi%20anglong,E061,2018-0205-IND,Assam,West Karbi Anglong,2018-06-22,0,0,,heuristic,incomplete,incomplete,0,0
+E064::gajapati,E064,2018-0286-IND,Odisha,Gajapati,2018-07-20,0,0,,heuristic,incomplete,incomplete,0,0
+E064::kandhamal,E064,2018-0286-IND,Odisha,Kandhamal,2018-07-20,0,0,,heuristic,incomplete,incomplete,0,0
+E064::malkangiri,E064,2018-0286-IND,Odisha,Malkangiri,2018-07-20,0,0,,heuristic,incomplete,incomplete,0,0
+E064::rayagada,E064,2018-0286-IND,Odisha,Rayagada,2018-07-20,1,1,,heuristic,incomplete,incomplete,0,0
+E065::banswara,E065,2018-0267-IND,Rajasthan,Banswara,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E065::dungarpur,E065,2018-0267-IND,Rajasthan,Dungarpur,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E065::jhalawar,E065,2018-0267-IND,Rajasthan,Jhalawar,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E065::kota,E065,2018-0267-IND,Rajasthan,Kota,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::agra,E066,2018-0267-IND,Uttar Pradesh,Agra,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::baghpat,E066,2018-0267-IND,Uttar Pradesh,Baghpat,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::banda,E066,2018-0267-IND,Uttar Pradesh,Banda,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::bareilly,E066,2018-0267-IND,Uttar Pradesh,Bareilly,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::bulandshahr,E066,2018-0267-IND,Uttar Pradesh,Bulandshahr,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::ghaziabad,E066,2018-0267-IND,Uttar Pradesh,Ghaziabad,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::hapur,E066,2018-0267-IND,Uttar Pradesh,Hapur,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::jalaun,E066,2018-0267-IND,Uttar Pradesh,Jalaun,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::kasganj,E066,2018-0267-IND,Uttar Pradesh,Kasganj,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::mainpuri,E066,2018-0267-IND,Uttar Pradesh,Mainpuri,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::mathura,E066,2018-0267-IND,Uttar Pradesh,Mathura,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::meerut,E066,2018-0267-IND,Uttar Pradesh,Meerut,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::muzaffarnagar,E066,2018-0267-IND,Uttar Pradesh,Muzaffarnagar,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
+E066::saharanpur,E066,2018-0267-IND,Uttar Pradesh,Saharanpur,2018-07-26,0,0,,heuristic,incomplete,incomplete,0,0
 E067::barpeta,E067,2018-0345-IND,Assam,Barpeta,2018-08-02,0,0,,heuristic,incomplete,incomplete,0,0
 E067::darrang,E067,2018-0345-IND,Assam,Darrang,2018-08-02,0,0,,heuristic,incomplete,incomplete,0,0
 E067::dhemaji,E067,2018-0345-IND,Assam,Dhemaji,2018-08-02,0,0,,heuristic,incomplete,incomplete,0,0
@@ -232,116 +448,618 @@ E067::lakhimpur,E067,2018-0345-IND,Assam,Lakhimpur,2018-08-02,0,0,,heuristic,inc
 E067::sivasagar,E067,2018-0345-IND,Assam,Sivasagar,2018-08-02,0,0,,heuristic,incomplete,incomplete,0,0
 E067::sonitpur,E067,2018-0345-IND,Assam,Sonitpur,2018-08-02,0,0,,heuristic,incomplete,incomplete,0,0
 E067::udalguri,E067,2018-0345-IND,Assam,Udalguri,2018-08-02,0,0,,heuristic,incomplete,incomplete,0,0
-E068::district_missing,E068,2018-0345-IND,West Bengal,district_missing,2018-08-02,0,0,,heuristic,missing,missing,0,0
-E069::district_missing,E069,2018-0295-IND,Assam,district_missing,2018-08-07,0,0,,heuristic,missing,missing,0,0
-E070::district_missing,E070,2018-0295-IND,Himachal Pradesh,district_missing,2018-08-07,0,0,,heuristic,missing,missing,0,0
+E068::bankura,E068,2018-0345-IND,West Bengal,Bankura,2018-08-02,0,0,,heuristic,incomplete,incomplete,0,0
+E069::barpeta,E069,2018-0295-IND,Assam,Barpeta,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::biswanath,E069,2018-0295-IND,Assam,Biswanath,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::cachar,E069,2018-0295-IND,Assam,Cachar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::charaideo,E069,2018-0295-IND,Assam,Charaideo,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::chirang,E069,2018-0295-IND,Assam,Chirang,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::darrang,E069,2018-0295-IND,Assam,Darrang,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::dhemaji,E069,2018-0295-IND,Assam,Dhemaji,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::dibrugarh,E069,2018-0295-IND,Assam,Dibrugarh,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::dima%20hasao,E069,2018-0295-IND,Assam,Dima Hasao,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::east%20karbi%20anglong,E069,2018-0295-IND,Assam,East Karbi Anglong,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::golaghat,E069,2018-0295-IND,Assam,Golaghat,2018-08-07,1,1,,heuristic,incomplete,incomplete,0,0
+E069::hailakandi,E069,2018-0295-IND,Assam,Hailakandi,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::hojai,E069,2018-0295-IND,Assam,Hojai,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::jorhat,E069,2018-0295-IND,Assam,Jorhat,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::karimganj,E069,2018-0295-IND,Assam,Karimganj,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::kokrajhar,E069,2018-0295-IND,Assam,Kokrajhar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::lakhimpur,E069,2018-0295-IND,Assam,Lakhimpur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::majuli,E069,2018-0295-IND,Assam,Majuli,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::nagaon,E069,2018-0295-IND,Assam,Nagaon,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::nalbari,E069,2018-0295-IND,Assam,Nalbari,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::sivasagar,E069,2018-0295-IND,Assam,Sivasagar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::sonitpur,E069,2018-0295-IND,Assam,Sonitpur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::tinsukia,E069,2018-0295-IND,Assam,Tinsukia,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::udalguri,E069,2018-0295-IND,Assam,Udalguri,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E069::west%20karbi%20anglong,E069,2018-0295-IND,Assam,West Karbi Anglong,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E070::chamba,E070,2018-0295-IND,Himachal Pradesh,Chamba,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E070::hamirpur,E070,2018-0295-IND,Himachal Pradesh,Hamirpur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E070::kangra,E070,2018-0295-IND,Himachal Pradesh,Kangra,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E070::kullu,E070,2018-0295-IND,Himachal Pradesh,Kullu,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E070::mandi,E070,2018-0295-IND,Himachal Pradesh,Mandi,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E070::shimla,E070,2018-0295-IND,Himachal Pradesh,Shimla,2018-08-07,2,2,,heuristic,incomplete,incomplete,0,0
 E071::alappuzha,E071,2018-0295-IND,Kerala,Alappuzha,2018-08-07,4,4,,heuristic,incomplete,incomplete,0,0
-E071::chengannur,E071,2018-0295-IND,Kerala,Chengannur,2018-08-07,0,0,,heuristic,missing,missing,0,0
+E071::chengannur,E071,2018-0295-IND,Kerala,Chengannur,2018-08-07,9,9,,heuristic,incomplete,incomplete,0,0
+E071::ernakulam,E071,2018-0295-IND,Kerala,Ernakulam,2018-08-07,14,14,,heuristic,incomplete,incomplete,0,0
+E071::idukki,E071,2018-0295-IND,Kerala,Idukki,2018-08-07,69,64,,heuristic,incomplete,incomplete,0,0
+E071::kannur,E071,2018-0295-IND,Kerala,Kannur,2018-08-07,3,3,,heuristic,incomplete,incomplete,0,0
+E071::kasaragod,E071,2018-0295-IND,Kerala,Kasaragod,2018-08-07,1,1,,heuristic,incomplete,incomplete,0,0
+E071::kollam,E071,2018-0295-IND,Kerala,Kollam,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E071::kottayam,E071,2018-0295-IND,Kerala,Kottayam,2018-08-07,1,1,,heuristic,incomplete,incomplete,0,0
+E071::kozhikode,E071,2018-0295-IND,Kerala,Kozhikode,2018-08-07,3,3,,heuristic,incomplete,incomplete,0,0
+E071::malappuram,E071,2018-0295-IND,Kerala,Malappuram,2018-08-07,2,2,,heuristic,incomplete,incomplete,0,0
+E071::palakkad,E071,2018-0295-IND,Kerala,Palakkad,2018-08-07,10,10,,heuristic,incomplete,incomplete,0,0
+E071::pathanamthitta,E071,2018-0295-IND,Kerala,Pathanamthitta,2018-08-07,7,7,,heuristic,incomplete,incomplete,0,0
+E071::thiruvananthapuram,E071,2018-0295-IND,Kerala,Thiruvananthapuram,2018-08-07,10,10,,heuristic,incomplete,incomplete,0,0
 E071::thrissur,E071,2018-0295-IND,Kerala,Thrissur,2018-08-07,7,7,,heuristic,incomplete,incomplete,0,0
-E072::district_missing,E072,2018-0295-IND,Maharashtra,district_missing,2018-08-07,0,0,,heuristic,missing,missing,0,0
-E073::district_missing,E073,2018-0295-IND,Nagaland,district_missing,2018-08-07,0,0,,heuristic,missing,missing,0,0
-E074::district_missing,E074,2018-0295-IND,Odisha,district_missing,2018-08-07,0,0,,heuristic,missing,missing,0,0
-E075::district_missing,E075,2018-0295-IND,Uttar Pradesh,district_missing,2018-08-07,0,0,,heuristic,missing,missing,0,0
-E076::district_missing,E076,2018-0295-IND,West Bengal,district_missing,2018-08-07,0,0,,heuristic,missing,missing,0,0
-E077::district_missing,E077,2018-0370-IND,Uttar Pradesh,district_missing,2018-09-01,0,0,,heuristic,missing,missing,0,0
-E078::district_missing,E078,2018-0372-IND,Haryana,district_missing,2018-09-23,0,0,,heuristic,missing,missing,0,0
-E079::district_missing,E079,2018-0372-IND,Punjab,district_missing,2018-09-23,0,0,,heuristic,missing,missing,0,0
-E080::mumbai,E080,2019-0288-IND,Maharashtra,Mumbai,2019-06-28,0,0,,heuristic,missing,missing,0,0
+E071::wayanad,E071,2018-0295-IND,Kerala,Wayanad,2018-08-07,15,15,,heuristic,incomplete,incomplete,0,0
+E072::kolhapur,E072,2018-0295-IND,Maharashtra,Kolhapur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E072::mumbai%20city,E072,2018-0295-IND,Maharashtra,Mumbai City,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E072::mumbai%20suburban,E072,2018-0295-IND,Maharashtra,Mumbai Suburban,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E072::palghar,E072,2018-0295-IND,Maharashtra,Palghar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E072::raigad,E072,2018-0295-IND,Maharashtra,Raigad,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E072::ratnagiri,E072,2018-0295-IND,Maharashtra,Ratnagiri,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E072::thane,E072,2018-0295-IND,Maharashtra,Thane,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::dimapur,E073,2018-0295-IND,Nagaland,Dimapur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::kiphire,E073,2018-0295-IND,Nagaland,Kiphire,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::kohima,E073,2018-0295-IND,Nagaland,Kohima,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::longleng,E073,2018-0295-IND,Nagaland,Longleng,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::mokokchung,E073,2018-0295-IND,Nagaland,Mokokchung,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::mon,E073,2018-0295-IND,Nagaland,Mon,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::peren,E073,2018-0295-IND,Nagaland,Peren,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::phek,E073,2018-0295-IND,Nagaland,Phek,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::tuensang,E073,2018-0295-IND,Nagaland,Tuensang,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::wokha,E073,2018-0295-IND,Nagaland,Wokha,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E073::zunheboto,E073,2018-0295-IND,Nagaland,Zunheboto,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E074::koraput,E074,2018-0295-IND,Odisha,Koraput,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E074::nabarangpur,E074,2018-0295-IND,Odisha,Nabarangpur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E074::rayagada,E074,2018-0295-IND,Odisha,Rayagada,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::ambedkar%20nagar,E075,2018-0295-IND,Uttar Pradesh,Ambedkar Nagar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::ayodhya,E075,2018-0295-IND,Uttar Pradesh,Ayodhya,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::bahraich,E075,2018-0295-IND,Uttar Pradesh,Bahraich,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::barabanki,E075,2018-0295-IND,Uttar Pradesh,Barabanki,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::basti,E075,2018-0295-IND,Uttar Pradesh,Basti,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::bijnor,E075,2018-0295-IND,Uttar Pradesh,Bijnor,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::farrukhabad,E075,2018-0295-IND,Uttar Pradesh,Farrukhabad,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::gonda,E075,2018-0295-IND,Uttar Pradesh,Gonda,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::kanpur%20dehat,E075,2018-0295-IND,Uttar Pradesh,Kanpur Dehat,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::kanpur%20nagar,E075,2018-0295-IND,Uttar Pradesh,Kanpur Nagar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::kushinagar,E075,2018-0295-IND,Uttar Pradesh,Kushinagar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::lakhimpur%20kheri,E075,2018-0295-IND,Uttar Pradesh,Lakhimpur Kheri,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::mau,E075,2018-0295-IND,Uttar Pradesh,Mau,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::pilibhit,E075,2018-0295-IND,Uttar Pradesh,Pilibhit,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::sant%20kabir%20nagar,E075,2018-0295-IND,Uttar Pradesh,Sant Kabir Nagar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::siddharthnagar,E075,2018-0295-IND,Uttar Pradesh,Siddharthnagar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E075::sitapur,E075,2018-0295-IND,Uttar Pradesh,Sitapur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::alipurduar,E076,2018-0295-IND,West Bengal,Alipurduar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::bankura,E076,2018-0295-IND,West Bengal,Bankura,2018-08-07,1,1,,heuristic,incomplete,incomplete,0,0
+E076::birbhum,E076,2018-0295-IND,West Bengal,Birbhum,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::cooch%20behar,E076,2018-0295-IND,West Bengal,Cooch Behar,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::dakshin%20dinajpur,E076,2018-0295-IND,West Bengal,Dakshin Dinajpur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::darjeeling,E076,2018-0295-IND,West Bengal,Darjeeling,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::east%20medinipur,E076,2018-0295-IND,West Bengal,East Medinipur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::hooghly,E076,2018-0295-IND,West Bengal,Hooghly,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::howrah,E076,2018-0295-IND,West Bengal,Howrah,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::jalpaiguri,E076,2018-0295-IND,West Bengal,Jalpaiguri,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::jhargram,E076,2018-0295-IND,West Bengal,Jhargram,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::kalimpong,E076,2018-0295-IND,West Bengal,Kalimpong,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::kolkata,E076,2018-0295-IND,West Bengal,Kolkata,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::murshidabad,E076,2018-0295-IND,West Bengal,Murshidabad,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::nadia,E076,2018-0295-IND,West Bengal,Nadia,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::north%2024%20parganas,E076,2018-0295-IND,West Bengal,North 24 Parganas,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::paschim%20bardhaman,E076,2018-0295-IND,West Bengal,Paschim Bardhaman,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::purba%20bardhaman,E076,2018-0295-IND,West Bengal,Purba Bardhaman,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::purulia,E076,2018-0295-IND,West Bengal,Purulia,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::south%2024%20parganas,E076,2018-0295-IND,West Bengal,South 24 Parganas,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::uttar%20dinajpur,E076,2018-0295-IND,West Bengal,Uttar Dinajpur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E076::west%20medinipur,E076,2018-0295-IND,West Bengal,West Medinipur,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
+E077::ambedkar%20nagar,E077,2018-0370-IND,Uttar Pradesh,Ambedkar Nagar,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::amethi,E077,2018-0370-IND,Uttar Pradesh,Amethi,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::ayodhya,E077,2018-0370-IND,Uttar Pradesh,Ayodhya,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::azamgarh,E077,2018-0370-IND,Uttar Pradesh,Azamgarh,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::bahraich,E077,2018-0370-IND,Uttar Pradesh,Bahraich,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::ballia,E077,2018-0370-IND,Uttar Pradesh,Ballia,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::balrampur,E077,2018-0370-IND,Uttar Pradesh,Balrampur,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::barabanki,E077,2018-0370-IND,Uttar Pradesh,Barabanki,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::basti,E077,2018-0370-IND,Uttar Pradesh,Basti,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::bijnor,E077,2018-0370-IND,Uttar Pradesh,Bijnor,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::budaun,E077,2018-0370-IND,Uttar Pradesh,Budaun,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::chandauli,E077,2018-0370-IND,Uttar Pradesh,Chandauli,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::farrukhabad,E077,2018-0370-IND,Uttar Pradesh,Farrukhabad,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::gonda,E077,2018-0370-IND,Uttar Pradesh,Gonda,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::hardoi,E077,2018-0370-IND,Uttar Pradesh,Hardoi,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::kannauj,E077,2018-0370-IND,Uttar Pradesh,Kannauj,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::kanpur%20dehat,E077,2018-0370-IND,Uttar Pradesh,Kanpur Dehat,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::kanpur%20nagar,E077,2018-0370-IND,Uttar Pradesh,Kanpur Nagar,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::kasganj,E077,2018-0370-IND,Uttar Pradesh,Kasganj,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::kushinagar,E077,2018-0370-IND,Uttar Pradesh,Kushinagar,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::lakhimpur%20kheri,E077,2018-0370-IND,Uttar Pradesh,Lakhimpur Kheri,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::mau,E077,2018-0370-IND,Uttar Pradesh,Mau,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::moradabad,E077,2018-0370-IND,Uttar Pradesh,Moradabad,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::pilibhit,E077,2018-0370-IND,Uttar Pradesh,Pilibhit,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::sant%20kabir%20nagar,E077,2018-0370-IND,Uttar Pradesh,Sant Kabir Nagar,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::siddharthnagar,E077,2018-0370-IND,Uttar Pradesh,Siddharthnagar,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::sitapur,E077,2018-0370-IND,Uttar Pradesh,Sitapur,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E077::unnao,E077,2018-0370-IND,Uttar Pradesh,Unnao,2018-09-01,0,0,,heuristic,incomplete,incomplete,0,0
+E078::yamunanagar,E078,2018-0372-IND,Haryana,Yamunanagar,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::amritsar,E079,2018-0372-IND,Punjab,Amritsar,2018-09-23,1,1,,heuristic,incomplete,incomplete,0,0
+E079::faridkot,E079,2018-0372-IND,Punjab,Faridkot,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::fazilka,E079,2018-0372-IND,Punjab,Fazilka,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::ferozepur,E079,2018-0372-IND,Punjab,Ferozepur,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::hoshiarpur,E079,2018-0372-IND,Punjab,Hoshiarpur,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::jalandhar,E079,2018-0372-IND,Punjab,Jalandhar,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::ludhiana,E079,2018-0372-IND,Punjab,Ludhiana,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::moga,E079,2018-0372-IND,Punjab,Moga,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::muktsar,E079,2018-0372-IND,Punjab,Muktsar,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::pathankot,E079,2018-0372-IND,Punjab,Pathankot,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E079::tarn%20taran,E079,2018-0372-IND,Punjab,Tarn Taran,2018-09-23,0,0,,heuristic,incomplete,incomplete,0,0
+E080::mumbai,E080,2019-0288-IND,Maharashtra,Mumbai,2019-06-28,23,22,,heuristic,incomplete,incomplete,0,0
 E080::mumbai%20city,E080,2019-0288-IND,Maharashtra,Mumbai City,2019-06-28,0,0,,heuristic,incomplete,incomplete,0,0
 E080::pune,E080,2019-0288-IND,Maharashtra,Pune,2019-06-28,2,1,,heuristic,incomplete,incomplete,0,0
 E080::ratnagiri,E080,2019-0288-IND,Maharashtra,Ratnagiri,2019-06-28,7,7,,heuristic,incomplete,incomplete,0,0
-E081::baksa,E081,2019-0331-IND,Assam,Baksa,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::barpeta,E081,2019-0331-IND,Assam,Barpeta,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::biswanath,E081,2019-0331-IND,Assam,Biswanath,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::bongaigaon,E081,2019-0331-IND,Assam,Bongaigaon,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::cachar,E081,2019-0331-IND,Assam,Cachar,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::chirang,E081,2019-0331-IND,Assam,Chirang,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::darrang,E081,2019-0331-IND,Assam,Darrang,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::dhemaji,E081,2019-0331-IND,Assam,Dhemaji,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::dhubri,E081,2019-0331-IND,Assam,Dhubri,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::dibrugarh,E081,2019-0331-IND,Assam,Dibrugarh,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::goalpara,E081,2019-0331-IND,Assam,Goalpara,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::golaghat%20jorhat,E081,2019-0331-IND,Assam,Golaghat Jorhat,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::hailakandi,E081,2019-0331-IND,Assam,Hailakandi,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::hojai,E081,2019-0331-IND,Assam,Hojai,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::kamrup,E081,2019-0331-IND,Assam,Kamrup,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::karbianglrng,E081,2019-0331-IND,Assam,KarbiAnglrng,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::kokrajhar,E081,2019-0331-IND,Assam,Kokrajhar,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::lakhimpur,E081,2019-0331-IND,Assam,Lakhimpur,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::majuli,E081,2019-0331-IND,Assam,Majuli,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::morigaon,E081,2019-0331-IND,Assam,Morigaon,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::nagaon,E081,2019-0331-IND,Assam,Nagaon,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::nalbari,E081,2019-0331-IND,Assam,Nalbari,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::sivsagar,E081,2019-0331-IND,Assam,Sivsagar,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::sonitpur,E081,2019-0331-IND,Assam,Sonitpur,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::south%20salmara,E081,2019-0331-IND,Assam,South Salmara,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::tinsukia,E081,2019-0331-IND,Assam,Tinsukia,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E081::west%20karbi-anglong,E081,2019-0331-IND,Assam,West Karbi-Anglong,2019-07-14,0,0,,heuristic,missing,missing,0,0
+E081::baksa,E081,2019-0331-IND,Assam,Baksa,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::barpeta,E081,2019-0331-IND,Assam,Barpeta,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::biswanath,E081,2019-0331-IND,Assam,Biswanath,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::bongaigaon,E081,2019-0331-IND,Assam,Bongaigaon,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::cachar,E081,2019-0331-IND,Assam,Cachar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::charaideo,E081,2019-0331-IND,Assam,Charaideo,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::chirang,E081,2019-0331-IND,Assam,Chirang,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::darrang,E081,2019-0331-IND,Assam,Darrang,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::dhemaji,E081,2019-0331-IND,Assam,Dhemaji,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::dhubri,E081,2019-0331-IND,Assam,Dhubri,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::dibrugarh,E081,2019-0331-IND,Assam,Dibrugarh,2019-07-14,2,2,,heuristic,incomplete,incomplete,0,0
+E081::goalpara,E081,2019-0331-IND,Assam,Goalpara,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::golaghat,E081,2019-0331-IND,Assam,Golaghat,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::hailakandi,E081,2019-0331-IND,Assam,Hailakandi,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::hojai,E081,2019-0331-IND,Assam,Hojai,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::jorhat,E081,2019-0331-IND,Assam,Jorhat,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::kamrup,E081,2019-0331-IND,Assam,Kamrup,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
+E081::kamrup%20metropolitan,E081,2019-0331-IND,Assam,Kamrup Metropolitan,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::karbi%20anglong,E081,2019-0331-IND,Assam,Karbi Anglong,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::karimganj,E081,2019-0331-IND,Assam,Karimganj,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::kokrajhar,E081,2019-0331-IND,Assam,Kokrajhar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::lakhimpur,E081,2019-0331-IND,Assam,Lakhimpur,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
+E081::majuli,E081,2019-0331-IND,Assam,Majuli,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::morigaon,E081,2019-0331-IND,Assam,Morigaon,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::nagaon,E081,2019-0331-IND,Assam,Nagaon,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::nalbari,E081,2019-0331-IND,Assam,Nalbari,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
+E081::sivasagar,E081,2019-0331-IND,Assam,Sivasagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::sonitpur,E081,2019-0331-IND,Assam,Sonitpur,2019-07-14,3,3,,heuristic,incomplete,incomplete,0,0
+E081::south%20salmara,E081,2019-0331-IND,Assam,South Salmara,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::tinsukia,E081,2019-0331-IND,Assam,Tinsukia,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::udalguri,E081,2019-0331-IND,Assam,Udalguri,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::west%20karbi%20anglong,E081,2019-0331-IND,Assam,West Karbi Anglong,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E081::west%20karbi-anglong,E081,2019-0331-IND,Assam,West Karbi-Anglong,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E082::araria,E082,2019-0331-IND,Bihar,Araria,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
 E082::darbhanga,E082,2019-0331-IND,Bihar,Darbhanga,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
-E082::east%20champaran,E082,2019-0331-IND,Bihar,East Champaran,2019-07-14,0,0,,heuristic,missing,missing,0,0
+E082::east%20champaran,E082,2019-0331-IND,Bihar,East Champaran,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E082::katihar,E082,2019-0331-IND,Bihar,Katihar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E082::kishanganj,E082,2019-0331-IND,Bihar,Kishanganj,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E082::madhubani,E082,2019-0331-IND,Bihar,Madhubani,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
 E082::muzaffarpur,E082,2019-0331-IND,Bihar,Muzaffarpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
-E082::purba%20champaran,E082,2019-0331-IND,Bihar,Purba Champaran,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E082::purnia,E082,2019-0331-IND,Bihar,Purnia,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E082::saharsa,E082,2019-0331-IND,Bihar,Saharsa,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
-E082::sahersa,E082,2019-0331-IND,Bihar,Sahersa,2019-07-14,0,0,,heuristic,missing,missing,0,0
 E082::sheohar,E082,2019-0331-IND,Bihar,Sheohar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
 E082::sitamarhi,E082,2019-0331-IND,Bihar,Sitamarhi,2019-07-14,2,2,,heuristic,incomplete,incomplete,0,0
 E082::supaul,E082,2019-0331-IND,Bihar,Supaul,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
-E083::district_missing,E083,2019-0331-IND,Himachal Pradesh,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E084::district_missing,E084,2019-0331-IND,Karnataka,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E085::district_missing,E085,2019-0331-IND,Kerala,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E086::district_missing,E086,2019-0331-IND,Maharashtra,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E087::district_missing,E087,2019-0331-IND,Odisha,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E088::district_missing,E088,2019-0331-IND,Punjab,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E089::district_missing,E089,2019-0331-IND,Rajasthan,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E090::district_missing,E090,2019-0331-IND,Uttar Pradesh,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E091::district_missing,E091,2019-0331-IND,Uttarakhand,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E092::district_missing,E092,2019-0331-IND,West Bengal,district_missing,2019-07-14,0,0,,heuristic,missing,missing,0,0
-E093::district_missing,E093,2019-0383-IND,Kerala,district_missing,2019-08-12,0,0,,heuristic,missing,missing,0,0
-E094::district_missing,E094,2019-0383-IND,Maharashtra,district_missing,2019-08-12,0,0,,heuristic,missing,missing,0,0
-E095::district_missing,E095,2019-0383-IND,Odisha,district_missing,2019-08-12,0,0,,heuristic,missing,missing,0,0
-E096::district_missing,E096,2019-0383-IND,West Bengal,district_missing,2019-08-12,0,0,,heuristic,missing,missing,0,0
-E097::belagavi,E097,2019-0499-IND,Karnataka,Belagavi,2019-10-19,0,0,,heuristic,missing,missing,0,0
-E097::belgaum,E097,2019-0499-IND,Karnataka,Belgaum,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E084::bagalkot,E084,2019-0331-IND,Karnataka,Bagalkot,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::belagavi,E084,2019-0331-IND,Karnataka,Belagavi,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::chikkamagaluru,E084,2019-0331-IND,Karnataka,Chikkamagaluru,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::dakshina%20kannada,E084,2019-0331-IND,Karnataka,Dakshina Kannada,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::hassan,E084,2019-0331-IND,Karnataka,Hassan,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::haveri,E084,2019-0331-IND,Karnataka,Haveri,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::kodagu,E084,2019-0331-IND,Karnataka,Kodagu,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::raichur,E084,2019-0331-IND,Karnataka,Raichur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::shivamogga,E084,2019-0331-IND,Karnataka,Shivamogga,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::udupi,E084,2019-0331-IND,Karnataka,Udupi,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::uttara%20kannada,E084,2019-0331-IND,Karnataka,Uttara Kannada,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::vijayapura,E084,2019-0331-IND,Karnataka,Vijayapura,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E084::yadgir,E084,2019-0331-IND,Karnataka,Yadgir,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::alappuzha,E085,2019-0331-IND,Kerala,Alappuzha,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::ernakulam,E085,2019-0331-IND,Kerala,Ernakulam,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
+E085::idukki,E085,2019-0331-IND,Kerala,Idukki,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
+E085::kannur,E085,2019-0331-IND,Kerala,Kannur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::kasaragod,E085,2019-0331-IND,Kerala,Kasaragod,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::kollam,E085,2019-0331-IND,Kerala,Kollam,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::kottayam,E085,2019-0331-IND,Kerala,Kottayam,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::kozhikode,E085,2019-0331-IND,Kerala,Kozhikode,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::malappuram,E085,2019-0331-IND,Kerala,Malappuram,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::palakkad,E085,2019-0331-IND,Kerala,Palakkad,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::thiruvananthapuram,E085,2019-0331-IND,Kerala,Thiruvananthapuram,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::thrissur,E085,2019-0331-IND,Kerala,Thrissur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E085::wayanad,E085,2019-0331-IND,Kerala,Wayanad,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::ahilyanagar,E086,2019-0331-IND,Maharashtra,Ahilyanagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::amravati,E086,2019-0331-IND,Maharashtra,Amravati,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::aurangabad,E086,2019-0331-IND,Maharashtra,Aurangabad,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::bhandara,E086,2019-0331-IND,Maharashtra,Bhandara,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::buldhana,E086,2019-0331-IND,Maharashtra,Buldhana,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::dhule,E086,2019-0331-IND,Maharashtra,Dhule,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::gadchiroli,E086,2019-0331-IND,Maharashtra,Gadchiroli,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::gondia,E086,2019-0331-IND,Maharashtra,Gondia,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::hingoli,E086,2019-0331-IND,Maharashtra,Hingoli,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::kolhapur,E086,2019-0331-IND,Maharashtra,Kolhapur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::latur,E086,2019-0331-IND,Maharashtra,Latur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::nagpur,E086,2019-0331-IND,Maharashtra,Nagpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::nandurbar,E086,2019-0331-IND,Maharashtra,Nandurbar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::nashik,E086,2019-0331-IND,Maharashtra,Nashik,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::palghar,E086,2019-0331-IND,Maharashtra,Palghar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::pune,E086,2019-0331-IND,Maharashtra,Pune,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::raigad,E086,2019-0331-IND,Maharashtra,Raigad,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::ratnagiri,E086,2019-0331-IND,Maharashtra,Ratnagiri,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::sangli,E086,2019-0331-IND,Maharashtra,Sangli,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::thane,E086,2019-0331-IND,Maharashtra,Thane,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::wardha,E086,2019-0331-IND,Maharashtra,Wardha,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E086::yavatmal,E086,2019-0331-IND,Maharashtra,Yavatmal,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::angul,E087,2019-0331-IND,Odisha,Angul,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::bargarh,E087,2019-0331-IND,Odisha,Bargarh,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::bolangir,E087,2019-0331-IND,Odisha,Bolangir,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::boudh,E087,2019-0331-IND,Odisha,Boudh,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::cuttack,E087,2019-0331-IND,Odisha,Cuttack,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::gajapati,E087,2019-0331-IND,Odisha,Gajapati,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::ganjam,E087,2019-0331-IND,Odisha,Ganjam,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::jagatsinghpur,E087,2019-0331-IND,Odisha,Jagatsinghpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::kalahandi,E087,2019-0331-IND,Odisha,Kalahandi,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::kandhamal,E087,2019-0331-IND,Odisha,Kandhamal,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::kendrapara,E087,2019-0331-IND,Odisha,Kendrapara,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::khordha,E087,2019-0331-IND,Odisha,Khordha,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::koraput,E087,2019-0331-IND,Odisha,Koraput,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::malkangiri,E087,2019-0331-IND,Odisha,Malkangiri,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::nabarangpur,E087,2019-0331-IND,Odisha,Nabarangpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::nayagarh,E087,2019-0331-IND,Odisha,Nayagarh,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::nuapada,E087,2019-0331-IND,Odisha,Nuapada,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::puri,E087,2019-0331-IND,Odisha,Puri,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::rayagada,E087,2019-0331-IND,Odisha,Rayagada,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::sambalpur,E087,2019-0331-IND,Odisha,Sambalpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::subarnapur,E087,2019-0331-IND,Odisha,Subarnapur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E087::sundargarh,E087,2019-0331-IND,Odisha,Sundargarh,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::amritsar,E088,2019-0331-IND,Punjab,Amritsar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::bathinda,E088,2019-0331-IND,Punjab,Bathinda,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::faridkot,E088,2019-0331-IND,Punjab,Faridkot,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::fazilka,E088,2019-0331-IND,Punjab,Fazilka,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::ferozepur,E088,2019-0331-IND,Punjab,Ferozepur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::gurdaspur,E088,2019-0331-IND,Punjab,Gurdaspur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::hoshiarpur,E088,2019-0331-IND,Punjab,Hoshiarpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::jalandhar,E088,2019-0331-IND,Punjab,Jalandhar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::ludhiana,E088,2019-0331-IND,Punjab,Ludhiana,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
+E088::mansa,E088,2019-0331-IND,Punjab,Mansa,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::moga,E088,2019-0331-IND,Punjab,Moga,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::muktsar,E088,2019-0331-IND,Punjab,Muktsar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::pathankot,E088,2019-0331-IND,Punjab,Pathankot,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::patiala,E088,2019-0331-IND,Punjab,Patiala,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::rupnagar,E088,2019-0331-IND,Punjab,Rupnagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::sangrur,E088,2019-0331-IND,Punjab,Sangrur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::sas%20nagar,E088,2019-0331-IND,Punjab,SAS Nagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E088::sbs%20nagar,E088,2019-0331-IND,Punjab,SBS Nagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::baran,E089,2019-0331-IND,Rajasthan,Baran,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::bundi,E089,2019-0331-IND,Rajasthan,Bundi,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::chittorgarh,E089,2019-0331-IND,Rajasthan,Chittorgarh,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::churu,E089,2019-0331-IND,Rajasthan,Churu,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::dholpur,E089,2019-0331-IND,Rajasthan,Dholpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::jhalawar,E089,2019-0331-IND,Rajasthan,Jhalawar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::kota,E089,2019-0331-IND,Rajasthan,Kota,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::rajsamand,E089,2019-0331-IND,Rajasthan,Rajsamand,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E089::sikar,E089,2019-0331-IND,Rajasthan,Sikar,2019-07-14,1,1,,heuristic,incomplete,incomplete,0,0
+E090::agra,E090,2019-0331-IND,Uttar Pradesh,Agra,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::ambedkar%20nagar,E090,2019-0331-IND,Uttar Pradesh,Ambedkar Nagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::amroha,E090,2019-0331-IND,Uttar Pradesh,Amroha,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::auraiya,E090,2019-0331-IND,Uttar Pradesh,Auraiya,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::ayodhya,E090,2019-0331-IND,Uttar Pradesh,Ayodhya,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::bahraich,E090,2019-0331-IND,Uttar Pradesh,Bahraich,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::ballia,E090,2019-0331-IND,Uttar Pradesh,Ballia,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::balrampur,E090,2019-0331-IND,Uttar Pradesh,Balrampur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::banda,E090,2019-0331-IND,Uttar Pradesh,Banda,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::barabanki,E090,2019-0331-IND,Uttar Pradesh,Barabanki,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::etawah,E090,2019-0331-IND,Uttar Pradesh,Etawah,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::farrukhabad,E090,2019-0331-IND,Uttar Pradesh,Farrukhabad,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::ghazipur,E090,2019-0331-IND,Uttar Pradesh,Ghazipur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::gonda,E090,2019-0331-IND,Uttar Pradesh,Gonda,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::hamirpur,E090,2019-0331-IND,Uttar Pradesh,Hamirpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::jalaun,E090,2019-0331-IND,Uttar Pradesh,Jalaun,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::kanpur%20dehat,E090,2019-0331-IND,Uttar Pradesh,Kanpur Dehat,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::kanpur%20nagar,E090,2019-0331-IND,Uttar Pradesh,Kanpur Nagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::kushinagar,E090,2019-0331-IND,Uttar Pradesh,Kushinagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::lakhimpur%20kheri,E090,2019-0331-IND,Uttar Pradesh,Lakhimpur Kheri,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::mirzapur,E090,2019-0331-IND,Uttar Pradesh,Mirzapur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::pilibhit,E090,2019-0331-IND,Uttar Pradesh,Pilibhit,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::prayagraj,E090,2019-0331-IND,Uttar Pradesh,Prayagraj,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::sant%20kabir%20nagar,E090,2019-0331-IND,Uttar Pradesh,Sant Kabir Nagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::shrawasti,E090,2019-0331-IND,Uttar Pradesh,Shrawasti,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::sitapur,E090,2019-0331-IND,Uttar Pradesh,Sitapur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E090::varanasi,E090,2019-0331-IND,Uttar Pradesh,Varanasi,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::almora,E091,2019-0331-IND,Uttarakhand,Almora,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::bageshwar,E091,2019-0331-IND,Uttarakhand,Bageshwar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::chamoli,E091,2019-0331-IND,Uttarakhand,Chamoli,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::champawat,E091,2019-0331-IND,Uttarakhand,Champawat,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::dehradun,E091,2019-0331-IND,Uttarakhand,Dehradun,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::haridwar,E091,2019-0331-IND,Uttarakhand,Haridwar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::nainital,E091,2019-0331-IND,Uttarakhand,Nainital,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::pauri%20garhwal,E091,2019-0331-IND,Uttarakhand,Pauri Garhwal,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::pithoragarh,E091,2019-0331-IND,Uttarakhand,Pithoragarh,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::rudraprayag,E091,2019-0331-IND,Uttarakhand,Rudraprayag,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::tehri%20garhwal,E091,2019-0331-IND,Uttarakhand,Tehri Garhwal,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::udham%20singh%20nagar,E091,2019-0331-IND,Uttarakhand,Udham Singh Nagar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E091::uttarkashi,E091,2019-0331-IND,Uttarakhand,Uttarkashi,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::alipurduar,E092,2019-0331-IND,West Bengal,Alipurduar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::bankura,E092,2019-0331-IND,West Bengal,Bankura,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::birbhum,E092,2019-0331-IND,West Bengal,Birbhum,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::cooch%20behar,E092,2019-0331-IND,West Bengal,Cooch Behar,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::dakshin%20dinajpur,E092,2019-0331-IND,West Bengal,Dakshin Dinajpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::darjeeling,E092,2019-0331-IND,West Bengal,Darjeeling,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::east%20medinipur,E092,2019-0331-IND,West Bengal,East Medinipur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::hooghly,E092,2019-0331-IND,West Bengal,Hooghly,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::howrah,E092,2019-0331-IND,West Bengal,Howrah,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::jalpaiguri,E092,2019-0331-IND,West Bengal,Jalpaiguri,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::jhargram,E092,2019-0331-IND,West Bengal,Jhargram,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::kalimpong,E092,2019-0331-IND,West Bengal,Kalimpong,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::kolkata,E092,2019-0331-IND,West Bengal,Kolkata,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::malda,E092,2019-0331-IND,West Bengal,Malda,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::murshidabad,E092,2019-0331-IND,West Bengal,Murshidabad,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::nadia,E092,2019-0331-IND,West Bengal,Nadia,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::north%2024%20parganas,E092,2019-0331-IND,West Bengal,North 24 Parganas,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::paschim%20bardhaman,E092,2019-0331-IND,West Bengal,Paschim Bardhaman,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::purba%20bardhaman,E092,2019-0331-IND,West Bengal,Purba Bardhaman,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::purulia,E092,2019-0331-IND,West Bengal,Purulia,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::south%2024%20parganas,E092,2019-0331-IND,West Bengal,South 24 Parganas,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::uttar%20dinajpur,E092,2019-0331-IND,West Bengal,Uttar Dinajpur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E092::west%20medinipur,E092,2019-0331-IND,West Bengal,West Medinipur,2019-07-14,0,0,,heuristic,incomplete,incomplete,0,0
+E093::alappuzha,E093,2019-0383-IND,Kerala,Alappuzha,2019-08-12,2,2,,heuristic,incomplete,incomplete,0,0
+E093::ernakulam,E093,2019-0383-IND,Kerala,Ernakulam,2019-08-12,1,1,,heuristic,incomplete,incomplete,0,0
+E093::idukki,E093,2019-0383-IND,Kerala,Idukki,2019-08-12,2,2,,heuristic,incomplete,incomplete,0,0
+E093::kannur,E093,2019-0383-IND,Kerala,Kannur,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E093::kasaragod,E093,2019-0383-IND,Kerala,Kasaragod,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E093::kottayam,E093,2019-0383-IND,Kerala,Kottayam,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E093::kozhikode,E093,2019-0383-IND,Kerala,Kozhikode,2019-08-12,1,1,,heuristic,incomplete,incomplete,0,0
+E093::malappuram,E093,2019-0383-IND,Kerala,Malappuram,2019-08-12,2,2,,heuristic,incomplete,incomplete,0,0
+E093::pathanamthitta,E093,2019-0383-IND,Kerala,Pathanamthitta,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E093::thrissur,E093,2019-0383-IND,Kerala,Thrissur,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E093::wayanad,E093,2019-0383-IND,Kerala,Wayanad,2019-08-12,11,10,,heuristic,incomplete,incomplete,0,1
+E094::kolhapur,E094,2019-0383-IND,Maharashtra,Kolhapur,2019-08-12,16,16,,heuristic,incomplete,incomplete,0,0
+E094::sangli,E094,2019-0383-IND,Maharashtra,Sangli,2019-08-12,8,8,,heuristic,incomplete,incomplete,0,0
+E095::balangir,E095,2019-0383-IND,Odisha,Balangir,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E095::kalahandi,E095,2019-0383-IND,Odisha,Kalahandi,2019-08-12,2,2,,heuristic,incomplete,incomplete,0,0
+E095::kandhamal,E095,2019-0383-IND,Odisha,Kandhamal,2019-08-12,1,1,,heuristic,incomplete,incomplete,0,0
+E095::nuapada,E095,2019-0383-IND,Odisha,Nuapada,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E095::subarnapur,E095,2019-0383-IND,Odisha,Subarnapur,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E096::birbhum,E096,2019-0383-IND,West Bengal,Birbhum,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E096::darjeeling,E096,2019-0383-IND,West Bengal,Darjeeling,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E096::kalimpong,E096,2019-0383-IND,West Bengal,Kalimpong,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E096::nadia,E096,2019-0383-IND,West Bengal,Nadia,2019-08-12,0,0,,heuristic,incomplete,incomplete,0,0
+E097::belagavi,E097,2019-0499-IND,Karnataka,Belagavi,2019-10-19,2,2,,heuristic,incomplete,incomplete,0,0
 E097::gadag,E097,2019-0499-IND,Karnataka,Gadag,2019-10-19,1,1,,heuristic,incomplete,incomplete,0,0
 E097::koppal,E097,2019-0499-IND,Karnataka,Koppal,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
-E098::district_missing,E098,2019-0499-IND,Kerala,district_missing,2019-10-19,0,0,,heuristic,missing,missing,0,0
-E099::district_missing,E099,2019-0499-IND,Tamil Nadu,district_missing,2019-10-19,0,0,,heuristic,missing,missing,0,0
-E100::district_missing,E100,2019-0574-IND,Puducherry,district_missing,2019-11-29,0,0,,heuristic,missing,missing,0,0
+E098::alappuzha,E098,2019-0499-IND,Kerala,Alappuzha,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E098::ernakulam,E098,2019-0499-IND,Kerala,Ernakulam,2019-10-19,1,1,,heuristic,incomplete,incomplete,0,0
+E098::kannur,E098,2019-0499-IND,Kerala,Kannur,2019-10-19,1,1,,heuristic,incomplete,incomplete,0,0
+E098::kasaragod,E098,2019-0499-IND,Kerala,Kasaragod,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E098::kollam,E098,2019-0499-IND,Kerala,Kollam,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E098::kottayam,E098,2019-0499-IND,Kerala,Kottayam,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E098::palakkad,E098,2019-0499-IND,Kerala,Palakkad,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E098::thiruvananthapuram,E098,2019-0499-IND,Kerala,Thiruvananthapuram,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E098::thrissur,E098,2019-0499-IND,Kerala,Thrissur,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E099::nilgiris,E099,2019-0499-IND,Tamil Nadu,Nilgiris,2019-10-19,0,0,,heuristic,incomplete,incomplete,0,0
+E100::puducherry,E100,2019-0574-IND,Puducherry,Puducherry,2019-11-29,5,5,,heuristic,incomplete,incomplete,0,0
 E101::coimbatore,E101,2019-0574-IND,Tamil Nadu,Coimbatore,2019-11-29,4,4,,heuristic,incomplete,incomplete,0,0
 E101::cuddalore,E101,2019-0574-IND,Tamil Nadu,Cuddalore,2019-11-29,0,0,,heuristic,incomplete,incomplete,0,0
-E101::nagapattinam,E101,2019-0574-IND,Tamil Nadu,Nagapattinam,2019-11-29,0,0,,heuristic,missing,missing,0,0
-E101::nagappattinam,E101,2019-0574-IND,Tamil Nadu,Nagappattinam,2019-11-29,0,0,,heuristic,incomplete,incomplete,0,0
+E101::nagapattinam,E101,2019-0574-IND,Tamil Nadu,Nagapattinam,2019-11-29,0,0,,heuristic,incomplete,incomplete,0,0
 E101::thiruvarur,E101,2019-0574-IND,Tamil Nadu,Thiruvarur,2019-11-29,0,0,,heuristic,incomplete,incomplete,0,0
 E101::thoothukkudi,E101,2019-0574-IND,Tamil Nadu,Thoothukkudi,2019-11-29,0,0,,heuristic,incomplete,incomplete,0,0
 E101::tiruppur,E101,2019-0574-IND,Tamil Nadu,Tiruppur,2019-11-29,0,0,,heuristic,incomplete,incomplete,0,0
-E102::district_missing,E102,2020-0198-IND,Uttar Pradesh,district_missing,2020-05-10,0,0,,heuristic,missing,missing,0,0
 E103::darrang,E103,2020-0206-IND,Assam,Darrang,2020-05-24,0,0,,heuristic,incomplete,incomplete,0,0
 E103::goalpara,E103,2020-0206-IND,Assam,Goalpara,2020-05-24,2,2,,heuristic,incomplete,incomplete,0,0
 E103::lakhimpur,E103,2020-0206-IND,Assam,Lakhimpur,2020-05-24,0,0,,heuristic,incomplete,incomplete,0,0
 E103::sonitpur,E103,2020-0206-IND,Assam,Sonitpur,2020-05-24,0,0,,heuristic,incomplete,incomplete,0,0
-E103::sontipur,E103,2020-0206-IND,Assam,Sontipur,2020-05-24,0,0,,heuristic,missing,missing,0,0
 E103::udalguri,E103,2020-0206-IND,Assam,Udalguri,2020-05-24,0,0,,heuristic,incomplete,incomplete,0,0
-E104::district_missing,E104,2020-0206-IND,Sikkim,district_missing,2020-05-24,0,0,,heuristic,missing,missing,0,0
-E105::district_missing,E105,2020-0249-IND,Jammu and Kashmir,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E106::district_missing,E106,2020-0304-IND,Arunachal Pradesh,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E107::district_missing,E107,2020-0304-IND,Assam,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E108::district_missing,E108,2020-0304-IND,Bihar,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E109::district_missing,E109,2020-0304-IND,Chhattisgarh,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E110::district_missing,E110,2020-0304-IND,Gujarat,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E111::district_missing,E111,2020-0304-IND,Karnataka,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E112::district_missing,E112,2020-0304-IND,Kerala,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E113::district_missing,E113,2020-0304-IND,Madhya Pradesh,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E114::district_missing,E114,2020-0304-IND,Maharashtra,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E115::district_missing,E115,2020-0304-IND,Odisha,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E116::district_missing,E116,2020-0304-IND,Uttar Pradesh,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E117::district_missing,E117,2020-0304-IND,West Bengal,district_missing,2020-06-01,0,0,,heuristic,missing,missing,0,0
-E118::district_missing,E118,2020-0446-IND,Andhra Pradesh,district_missing,2020-10-01,0,0,,heuristic,missing,missing,0,0
-E119::district_missing,E119,2020-0446-IND,Karnataka,district_missing,2020-10-01,0,0,,heuristic,missing,missing,0,0
+E104::mangan,E104,2020-0206-IND,Sikkim,Mangan,2020-05-24,0,0,,heuristic,incomplete,incomplete,0,0
+E106::east%20siang,E106,2020-0304-IND,Arunachal Pradesh,East Siang,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E106::namsai,E106,2020-0304-IND,Arunachal Pradesh,Namsai,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::baksa,E107,2020-0304-IND,Assam,Baksa,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::barpeta,E107,2020-0304-IND,Assam,Barpeta,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::biswanath,E107,2020-0304-IND,Assam,Biswanath,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::bongaigaon,E107,2020-0304-IND,Assam,Bongaigaon,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::cachar,E107,2020-0304-IND,Assam,Cachar,2020-06-01,1,1,,heuristic,incomplete,incomplete,0,0
+E107::charaideo,E107,2020-0304-IND,Assam,Charaideo,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::chirang,E107,2020-0304-IND,Assam,Chirang,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::darrang,E107,2020-0304-IND,Assam,Darrang,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::dhemaji,E107,2020-0304-IND,Assam,Dhemaji,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::dhubri,E107,2020-0304-IND,Assam,Dhubri,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::dibrugarh,E107,2020-0304-IND,Assam,Dibrugarh,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::goalpara,E107,2020-0304-IND,Assam,Goalpara,2020-06-01,2,2,,heuristic,incomplete,incomplete,0,0
+E107::golaghat,E107,2020-0304-IND,Assam,Golaghat,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::hojai,E107,2020-0304-IND,Assam,Hojai,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::jorhat,E107,2020-0304-IND,Assam,Jorhat,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::kamrup,E107,2020-0304-IND,Assam,Kamrup,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::kamrup%20metropolitan,E107,2020-0304-IND,Assam,Kamrup Metropolitan,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::karbi%20anglong,E107,2020-0304-IND,Assam,Karbi Anglong,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::kokrajhar,E107,2020-0304-IND,Assam,Kokrajhar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::lakhimpur,E107,2020-0304-IND,Assam,Lakhimpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::majuli,E107,2020-0304-IND,Assam,Majuli,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::morigaon,E107,2020-0304-IND,Assam,Morigaon,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::nagaon,E107,2020-0304-IND,Assam,Nagaon,2020-06-01,1,1,,heuristic,incomplete,incomplete,0,0
+E107::nalbari,E107,2020-0304-IND,Assam,Nalbari,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::sivasagar,E107,2020-0304-IND,Assam,Sivasagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::sonitpur,E107,2020-0304-IND,Assam,Sonitpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::south%20salmara,E107,2020-0304-IND,Assam,South Salmara,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::tinsukia,E107,2020-0304-IND,Assam,Tinsukia,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::udalguri,E107,2020-0304-IND,Assam,Udalguri,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E107::west%20karbi%20anglong,E107,2020-0304-IND,Assam,West Karbi Anglong,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::darbhanga,E108,2020-0304-IND,Bihar,Darbhanga,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::east%20champaran,E108,2020-0304-IND,Bihar,East Champaran,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::gopalganj,E108,2020-0304-IND,Bihar,Gopalganj,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::khagaria,E108,2020-0304-IND,Bihar,Khagaria,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::kishanganj,E108,2020-0304-IND,Bihar,Kishanganj,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::madhepura,E108,2020-0304-IND,Bihar,Madhepura,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::madhubani,E108,2020-0304-IND,Bihar,Madhubani,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::muzaffarpur,E108,2020-0304-IND,Bihar,Muzaffarpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::saharsa,E108,2020-0304-IND,Bihar,Saharsa,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::samastipur,E108,2020-0304-IND,Bihar,Samastipur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::saran,E108,2020-0304-IND,Bihar,Saran,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::sheohar,E108,2020-0304-IND,Bihar,Sheohar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::sitamarhi,E108,2020-0304-IND,Bihar,Sitamarhi,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::siwan,E108,2020-0304-IND,Bihar,Siwan,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::supaul,E108,2020-0304-IND,Bihar,Supaul,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E108::west%20champaran,E108,2020-0304-IND,Bihar,West Champaran,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::balod,E109,2020-0304-IND,Chhattisgarh,Balod,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::balodabazar,E109,2020-0304-IND,Chhattisgarh,Balodabazar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::balrampur,E109,2020-0304-IND,Chhattisgarh,Balrampur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::bastar,E109,2020-0304-IND,Chhattisgarh,Bastar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::bijapur,E109,2020-0304-IND,Chhattisgarh,Bijapur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::dantewada,E109,2020-0304-IND,Chhattisgarh,Dantewada,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::dhamtari,E109,2020-0304-IND,Chhattisgarh,Dhamtari,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::gariyaband,E109,2020-0304-IND,Chhattisgarh,Gariyaband,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::janjgir-champa,E109,2020-0304-IND,Chhattisgarh,Janjgir-Champa,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::jashpur,E109,2020-0304-IND,Chhattisgarh,Jashpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::kabirdham,E109,2020-0304-IND,Chhattisgarh,Kabirdham,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::kanker,E109,2020-0304-IND,Chhattisgarh,Kanker,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::kondagaon,E109,2020-0304-IND,Chhattisgarh,Kondagaon,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::koriya,E109,2020-0304-IND,Chhattisgarh,Koriya,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::mungeli,E109,2020-0304-IND,Chhattisgarh,Mungeli,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::narayanpur,E109,2020-0304-IND,Chhattisgarh,Narayanpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::raigarh,E109,2020-0304-IND,Chhattisgarh,Raigarh,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::raipur,E109,2020-0304-IND,Chhattisgarh,Raipur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::rajnandgaon,E109,2020-0304-IND,Chhattisgarh,Rajnandgaon,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::sukma,E109,2020-0304-IND,Chhattisgarh,Sukma,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E109::surajpur,E109,2020-0304-IND,Chhattisgarh,Surajpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::ahmedabad,E110,2020-0304-IND,Gujarat,Ahmedabad,2020-06-01,1,1,,heuristic,incomplete,incomplete,0,0
+E110::amreli,E110,2020-0304-IND,Gujarat,Amreli,2020-06-01,1,0,,heuristic,incomplete,incomplete,0,0
+E110::anand,E110,2020-0304-IND,Gujarat,Anand,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::bharuch,E110,2020-0304-IND,Gujarat,Bharuch,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::bhavnagar,E110,2020-0304-IND,Gujarat,Bhavnagar,2020-06-01,2,0,,heuristic,incomplete,incomplete,0,0
+E110::botad,E110,2020-0304-IND,Gujarat,Botad,2020-06-01,2,1,,heuristic,incomplete,incomplete,0,0
+E110::devbhumi%20dwarka,E110,2020-0304-IND,Gujarat,Devbhumi Dwarka,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::gandhinagar,E110,2020-0304-IND,Gujarat,Gandhinagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::gir%20somnath,E110,2020-0304-IND,Gujarat,Gir Somnath,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::jamnagar,E110,2020-0304-IND,Gujarat,Jamnagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::junagadh,E110,2020-0304-IND,Gujarat,Junagadh,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::kutch,E110,2020-0304-IND,Gujarat,Kutch,2020-06-01,1,1,,heuristic,incomplete,incomplete,0,0
+E110::mehsana,E110,2020-0304-IND,Gujarat,Mehsana,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::morbi,E110,2020-0304-IND,Gujarat,Morbi,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::narmada,E110,2020-0304-IND,Gujarat,Narmada,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::navsari,E110,2020-0304-IND,Gujarat,Navsari,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::patan,E110,2020-0304-IND,Gujarat,Patan,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::porbandar,E110,2020-0304-IND,Gujarat,Porbandar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::rajkot,E110,2020-0304-IND,Gujarat,Rajkot,2020-06-01,2,2,,heuristic,incomplete,incomplete,0,0
+E110::sabarkantha,E110,2020-0304-IND,Gujarat,Sabarkantha,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::surat,E110,2020-0304-IND,Gujarat,Surat,2020-06-01,1,0,,heuristic,incomplete,incomplete,0,0
+E110::surendranagar,E110,2020-0304-IND,Gujarat,Surendranagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::tapi,E110,2020-0304-IND,Gujarat,Tapi,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E110::vadodara,E110,2020-0304-IND,Gujarat,Vadodara,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E111::bagalkot,E111,2020-0304-IND,Karnataka,Bagalkot,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E111::belagavi,E111,2020-0304-IND,Karnataka,Belagavi,2020-06-01,1,1,,heuristic,incomplete,incomplete,0,0
+E111::chamarajanagar,E111,2020-0304-IND,Karnataka,Chamarajanagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E111::chikkamagaluru,E111,2020-0304-IND,Karnataka,Chikkamagaluru,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E111::kodagu,E111,2020-0304-IND,Karnataka,Kodagu,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E111::mysuru,E111,2020-0304-IND,Karnataka,Mysuru,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E111::raichur,E111,2020-0304-IND,Karnataka,Raichur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E111::shivamogga,E111,2020-0304-IND,Karnataka,Shivamogga,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E111::vijayapura,E111,2020-0304-IND,Karnataka,Vijayapura,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::alappuzha,E112,2020-0304-IND,Kerala,Alappuzha,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::ernakulam,E112,2020-0304-IND,Kerala,Ernakulam,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::idukki,E112,2020-0304-IND,Kerala,Idukki,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::kannur,E112,2020-0304-IND,Kerala,Kannur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::kasaragod,E112,2020-0304-IND,Kerala,Kasaragod,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::kollam,E112,2020-0304-IND,Kerala,Kollam,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::kottayam,E112,2020-0304-IND,Kerala,Kottayam,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::kozhikode,E112,2020-0304-IND,Kerala,Kozhikode,2020-06-01,1,1,,heuristic,incomplete,incomplete,0,0
+E112::malappuram,E112,2020-0304-IND,Kerala,Malappuram,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::palakkad,E112,2020-0304-IND,Kerala,Palakkad,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::pathanamthitta,E112,2020-0304-IND,Kerala,Pathanamthitta,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::thiruvananthapuram,E112,2020-0304-IND,Kerala,Thiruvananthapuram,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::thrissur,E112,2020-0304-IND,Kerala,Thrissur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E112::wayanad,E112,2020-0304-IND,Kerala,Wayanad,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::alirajpur,E113,2020-0304-IND,Madhya Pradesh,Alirajpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::balaghat,E113,2020-0304-IND,Madhya Pradesh,Balaghat,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::barwani,E113,2020-0304-IND,Madhya Pradesh,Barwani,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::betul,E113,2020-0304-IND,Madhya Pradesh,Betul,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::bhopal,E113,2020-0304-IND,Madhya Pradesh,Bhopal,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::chhatarpur,E113,2020-0304-IND,Madhya Pradesh,Chhatarpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::chhindwara,E113,2020-0304-IND,Madhya Pradesh,Chhindwara,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::damoh,E113,2020-0304-IND,Madhya Pradesh,Damoh,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::dewas,E113,2020-0304-IND,Madhya Pradesh,Dewas,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::dhar,E113,2020-0304-IND,Madhya Pradesh,Dhar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::dindori,E113,2020-0304-IND,Madhya Pradesh,Dindori,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::guna,E113,2020-0304-IND,Madhya Pradesh,Guna,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::jhabua,E113,2020-0304-IND,Madhya Pradesh,Jhabua,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::katni,E113,2020-0304-IND,Madhya Pradesh,Katni,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::khandwa,E113,2020-0304-IND,Madhya Pradesh,Khandwa,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::khargone,E113,2020-0304-IND,Madhya Pradesh,Khargone,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::mandla,E113,2020-0304-IND,Madhya Pradesh,Mandla,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::mandsaur,E113,2020-0304-IND,Madhya Pradesh,Mandsaur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::morena,E113,2020-0304-IND,Madhya Pradesh,Morena,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::narmadapuram,E113,2020-0304-IND,Madhya Pradesh,Narmadapuram,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::narsinghpur,E113,2020-0304-IND,Madhya Pradesh,Narsinghpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::neemuch,E113,2020-0304-IND,Madhya Pradesh,Neemuch,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::panna,E113,2020-0304-IND,Madhya Pradesh,Panna,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::raisen,E113,2020-0304-IND,Madhya Pradesh,Raisen,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::rajgarh,E113,2020-0304-IND,Madhya Pradesh,Rajgarh,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::rewa,E113,2020-0304-IND,Madhya Pradesh,Rewa,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::satna,E113,2020-0304-IND,Madhya Pradesh,Satna,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::sehore,E113,2020-0304-IND,Madhya Pradesh,Sehore,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::seoni,E113,2020-0304-IND,Madhya Pradesh,Seoni,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::shahdol,E113,2020-0304-IND,Madhya Pradesh,Shahdol,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::sheopur,E113,2020-0304-IND,Madhya Pradesh,Sheopur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::shivpuri,E113,2020-0304-IND,Madhya Pradesh,Shivpuri,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::sidhi,E113,2020-0304-IND,Madhya Pradesh,Sidhi,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::singrauli,E113,2020-0304-IND,Madhya Pradesh,Singrauli,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::tikamgarh,E113,2020-0304-IND,Madhya Pradesh,Tikamgarh,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::umaria,E113,2020-0304-IND,Madhya Pradesh,Umaria,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E113::vidisha,E113,2020-0304-IND,Madhya Pradesh,Vidisha,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E114::kolhapur,E114,2020-0304-IND,Maharashtra,Kolhapur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E115::koraput,E115,2020-0304-IND,Odisha,Koraput,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E115::malkangiri,E115,2020-0304-IND,Odisha,Malkangiri,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E115::nabarangpur,E115,2020-0304-IND,Odisha,Nabarangpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::ambedkar%20nagar,E116,2020-0304-IND,Uttar Pradesh,Ambedkar Nagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::ayodhya,E116,2020-0304-IND,Uttar Pradesh,Ayodhya,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::azamgarh,E116,2020-0304-IND,Uttar Pradesh,Azamgarh,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::bahraich,E116,2020-0304-IND,Uttar Pradesh,Bahraich,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::balrampur,E116,2020-0304-IND,Uttar Pradesh,Balrampur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::barabanki,E116,2020-0304-IND,Uttar Pradesh,Barabanki,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::gonda,E116,2020-0304-IND,Uttar Pradesh,Gonda,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::gorakhpur,E116,2020-0304-IND,Uttar Pradesh,Gorakhpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::kushinagar,E116,2020-0304-IND,Uttar Pradesh,Kushinagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::lakhimpur%20kheri,E116,2020-0304-IND,Uttar Pradesh,Lakhimpur Kheri,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::maharajganj,E116,2020-0304-IND,Uttar Pradesh,Maharajganj,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::mau,E116,2020-0304-IND,Uttar Pradesh,Mau,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::sant%20kabir%20nagar,E116,2020-0304-IND,Uttar Pradesh,Sant Kabir Nagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::siddharth%20nagar,E116,2020-0304-IND,Uttar Pradesh,Siddharth Nagar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E116::sitapur,E116,2020-0304-IND,Uttar Pradesh,Sitapur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::alipurduar,E117,2020-0304-IND,West Bengal,Alipurduar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::bankura,E117,2020-0304-IND,West Bengal,Bankura,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::birbhum,E117,2020-0304-IND,West Bengal,Birbhum,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::cooch%20behar,E117,2020-0304-IND,West Bengal,Cooch Behar,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::dakshin%20dinajpur,E117,2020-0304-IND,West Bengal,Dakshin Dinajpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::darjeeling,E117,2020-0304-IND,West Bengal,Darjeeling,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::east%20medinipur,E117,2020-0304-IND,West Bengal,East Medinipur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::hooghly,E117,2020-0304-IND,West Bengal,Hooghly,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::howrah,E117,2020-0304-IND,West Bengal,Howrah,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::jalpaiguri,E117,2020-0304-IND,West Bengal,Jalpaiguri,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::jhargram,E117,2020-0304-IND,West Bengal,Jhargram,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::kalimpong,E117,2020-0304-IND,West Bengal,Kalimpong,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::kolkata,E117,2020-0304-IND,West Bengal,Kolkata,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::malda,E117,2020-0304-IND,West Bengal,Malda,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::murshidabad,E117,2020-0304-IND,West Bengal,Murshidabad,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::nadia,E117,2020-0304-IND,West Bengal,Nadia,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::north%2024%20parganas,E117,2020-0304-IND,West Bengal,North 24 Parganas,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::paschim%20bardhaman,E117,2020-0304-IND,West Bengal,Paschim Bardhaman,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::purba%20bardhaman,E117,2020-0304-IND,West Bengal,Purba Bardhaman,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::purulia,E117,2020-0304-IND,West Bengal,Purulia,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::south%2024%20parganas,E117,2020-0304-IND,West Bengal,South 24 Parganas,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::uttar%20dinajpur,E117,2020-0304-IND,West Bengal,Uttar Dinajpur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E117::west%20medinipur,E117,2020-0304-IND,West Bengal,West Medinipur,2020-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E118::east%20godavari,E118,2020-0446-IND,Andhra Pradesh,East Godavari,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E118::guntur,E118,2020-0446-IND,Andhra Pradesh,Guntur,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E118::krishna,E118,2020-0446-IND,Andhra Pradesh,Krishna,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E118::kurnool,E118,2020-0446-IND,Andhra Pradesh,Kurnool,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E118::nellore,E118,2020-0446-IND,Andhra Pradesh,Nellore,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E118::srikakulam,E118,2020-0446-IND,Andhra Pradesh,Srikakulam,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E118::visakhapatnam,E118,2020-0446-IND,Andhra Pradesh,Visakhapatnam,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E118::west%20godavari,E118,2020-0446-IND,Andhra Pradesh,West Godavari,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E119::kalaburagi,E119,2020-0446-IND,Karnataka,Kalaburagi,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E119::koppal,E119,2020-0446-IND,Karnataka,Koppal,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E119::raichur,E119,2020-0446-IND,Karnataka,Raichur,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E119::vijayapura,E119,2020-0446-IND,Karnataka,Vijayapura,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E119::yadgir,E119,2020-0446-IND,Karnataka,Yadgir,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
 E120::bauda,E120,2020-0446-IND,Odisha,Bauda,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
 E120::gajapati,E120,2020-0446-IND,Odisha,Gajapati,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
 E120::ganjam,E120,2020-0446-IND,Odisha,Ganjam,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
@@ -352,34 +1070,95 @@ E120::malkangiri,E120,2020-0446-IND,Odisha,Malkangiri,2020-10-01,0,0,,heuristic,
 E120::nabarangapur,E120,2020-0446-IND,Odisha,Nabarangapur,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
 E120::nuapada,E120,2020-0446-IND,Odisha,Nuapada,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
 E120::rayagada,E120,2020-0446-IND,Odisha,Rayagada,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
-E121::district_missing,E121,2020-0446-IND,Telangana,district_missing,2020-10-01,0,0,,heuristic,missing,missing,0,0
-E122::district_missing,E122,2021-0316-IND,Bihar,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E123::district_missing,E123,2021-0316-IND,Chhattisgarh,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E124::district_missing,E124,2021-0316-IND,Gujarat,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E125::district_missing,E125,2021-0316-IND,Karnataka,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E126::district_missing,E126,2021-0316-IND,Kerala,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E127::district_missing,E127,2021-0316-IND,Maharashtra,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E128::district_missing,E128,2021-0316-IND,Tripura,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E129::district_missing,E129,2021-0316-IND,Uttar Pradesh,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E130::district_missing,E130,2021-0316-IND,Uttarakhand,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E131::district_missing,E131,2021-0316-IND,West Bengal,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E132::district_missing,E132,2021-0435-IND,Goa,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E133::district_missing,E133,2021-0435-IND,Himachal Pradesh,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E134::district_missing,E134,2021-0435-IND,Jharkhand,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E135::district_missing,E135,2021-0435-IND,Karnataka,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
+E121::hyderabad,E121,2020-0446-IND,Telangana,Hyderabad,2020-10-01,6,6,,heuristic,incomplete,incomplete,0,0
+E121::nalgonda,E121,2020-0446-IND,Telangana,Nalgonda,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E121::ranga%20reddy,E121,2020-0446-IND,Telangana,Ranga Reddy,2020-10-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::darbhanga,E122,2021-0316-IND,Bihar,Darbhanga,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::east%20champaran,E122,2021-0316-IND,Bihar,East Champaran,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::gopalganj,E122,2021-0316-IND,Bihar,Gopalganj,2021-06-01,1,1,,heuristic,incomplete,incomplete,0,0
+E122::madhubani,E122,2021-0316-IND,Bihar,Madhubani,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::muzaffarpur,E122,2021-0316-IND,Bihar,Muzaffarpur,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::samastipur,E122,2021-0316-IND,Bihar,Samastipur,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::saran,E122,2021-0316-IND,Bihar,Saran,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::sitamarhi,E122,2021-0316-IND,Bihar,Sitamarhi,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::siwan,E122,2021-0316-IND,Bihar,Siwan,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::vaishali,E122,2021-0316-IND,Bihar,Vaishali,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E122::west%20champaran,E122,2021-0316-IND,Bihar,West Champaran,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E124::navsari,E124,2021-0316-IND,Gujarat,Navsari,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E124::surat,E124,2021-0316-IND,Gujarat,Surat,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E124::valsad,E124,2021-0316-IND,Gujarat,Valsad,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::bagalkot,E125,2021-0316-IND,Karnataka,Bagalkot,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::belagavi,E125,2021-0316-IND,Karnataka,Belagavi,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::chikkamagaluru,E125,2021-0316-IND,Karnataka,Chikkamagaluru,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::davanagere,E125,2021-0316-IND,Karnataka,Davanagere,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::dharwad,E125,2021-0316-IND,Karnataka,Dharwad,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::gadag,E125,2021-0316-IND,Karnataka,Gadag,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::haveri,E125,2021-0316-IND,Karnataka,Haveri,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::kodagu,E125,2021-0316-IND,Karnataka,Kodagu,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::shivamogga,E125,2021-0316-IND,Karnataka,Shivamogga,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E125::uttara%20kannada,E125,2021-0316-IND,Karnataka,Uttara Kannada,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E126::idukki,E126,2021-0316-IND,Kerala,Idukki,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E126::kottayam,E126,2021-0316-IND,Kerala,Kottayam,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E126::pathanamthitta,E126,2021-0316-IND,Kerala,Pathanamthitta,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::kolhapur,E127,2021-0316-IND,Maharashtra,Kolhapur,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::mumbai%20suburban,E127,2021-0316-IND,Maharashtra,Mumbai Suburban,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::pune,E127,2021-0316-IND,Maharashtra,Pune,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::raigad,E127,2021-0316-IND,Maharashtra,Raigad,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::ratnagiri,E127,2021-0316-IND,Maharashtra,Ratnagiri,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::sangli,E127,2021-0316-IND,Maharashtra,Sangli,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::satara,E127,2021-0316-IND,Maharashtra,Satara,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::sindhudurg,E127,2021-0316-IND,Maharashtra,Sindhudurg,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E127::thane,E127,2021-0316-IND,Maharashtra,Thane,2021-06-01,1,0,,heuristic,incomplete,incomplete,0,0
+E127::wardha,E127,2021-0316-IND,Maharashtra,Wardha,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E128::gomati,E128,2021-0316-IND,Tripura,Gomati,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E128::south%20tripura,E128,2021-0316-IND,Tripura,South Tripura,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E128::west%20tripura,E128,2021-0316-IND,Tripura,West Tripura,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E129::ayodhya,E129,2021-0316-IND,Uttar Pradesh,Ayodhya,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E129::ballia,E129,2021-0316-IND,Uttar Pradesh,Ballia,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E129::barabanki,E129,2021-0316-IND,Uttar Pradesh,Barabanki,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E129::budaun,E129,2021-0316-IND,Uttar Pradesh,Budaun,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E129::lakhimpur%20kheri,E129,2021-0316-IND,Uttar Pradesh,Lakhimpur Kheri,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E130::bageshwar,E130,2021-0316-IND,Uttarakhand,Bageshwar,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E130::chamoli,E130,2021-0316-IND,Uttarakhand,Chamoli,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E130::pithoragarh,E130,2021-0316-IND,Uttarakhand,Pithoragarh,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E131::cooch%20behar,E131,2021-0316-IND,West Bengal,Cooch Behar,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E131::darjeeling,E131,2021-0316-IND,West Bengal,Darjeeling,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E131::jalpaiguri,E131,2021-0316-IND,West Bengal,Jalpaiguri,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E132::north%20goa,E132,2021-0435-IND,Goa,North Goa,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E132::south%20goa,E132,2021-0435-IND,Goa,South Goa,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E133::lahaul%20and%20spiti,E133,2021-0435-IND,Himachal Pradesh,Lahaul and Spiti,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E134::sahibganj,E134,2021-0435-IND,Jharkhand,Sahibganj,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::bagalkot,E135,2021-0435-IND,Karnataka,Bagalkot,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::belagavi,E135,2021-0435-IND,Karnataka,Belagavi,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::chikkamagaluru,E135,2021-0435-IND,Karnataka,Chikkamagaluru,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::davanagere,E135,2021-0435-IND,Karnataka,Davanagere,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::dharwad,E135,2021-0435-IND,Karnataka,Dharwad,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::gadag,E135,2021-0435-IND,Karnataka,Gadag,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::haveri,E135,2021-0435-IND,Karnataka,Haveri,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::kodagu,E135,2021-0435-IND,Karnataka,Kodagu,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::shivamogga,E135,2021-0435-IND,Karnataka,Shivamogga,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E135::uttara%20kannada,E135,2021-0435-IND,Karnataka,Uttara Kannada,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
 E136::pune,E136,2021-0435-IND,Maharashtra,Pune,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
 E136::raigarh,E136,2021-0435-IND,Maharashtra,Raigarh,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
 E136::ratnagiri,E136,2021-0435-IND,Maharashtra,Ratnagiri,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
 E136::satara,E136,2021-0435-IND,Maharashtra,Satara,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
-E137::district_missing,E137,2021-0435-IND,Uttarakhand,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
-E138::district_missing,E138,2021-0435-IND,West Bengal,district_missing,2021-06-01,0,0,,heuristic,missing,missing,0,0
+E137::bageshwar,E137,2021-0435-IND,Uttarakhand,Bageshwar,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E137::chamoli,E137,2021-0435-IND,Uttarakhand,Chamoli,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E137::dehradun,E137,2021-0435-IND,Uttarakhand,Dehradun,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E137::pithoragarh,E137,2021-0435-IND,Uttarakhand,Pithoragarh,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E137::uttarkashi,E137,2021-0435-IND,Uttarakhand,Uttarkashi,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E138::east%20medinipur,E138,2021-0435-IND,West Bengal,East Medinipur,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E138::hooghly,E138,2021-0435-IND,West Bengal,Hooghly,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
+E138::west%20medinipur,E138,2021-0435-IND,West Bengal,West Medinipur,2021-06-01,0,0,,heuristic,incomplete,incomplete,0,0
 E139::bongaigaon,E139,2021-0366-IND,Assam,Bongaigaon,2021-07-01,0,0,,heuristic,incomplete,incomplete,0,0
 E139::chirang,E139,2021-0366-IND,Assam,Chirang,2021-07-01,0,0,,heuristic,incomplete,incomplete,0,0
 E139::dhemaji,E139,2021-0366-IND,Assam,Dhemaji,2021-07-01,0,0,,heuristic,incomplete,incomplete,0,0
-E139::dhemaji%20and%20dibrugarh,E139,2021-0366-IND,Assam,Dhemaji and Dibrugarh,2021-07-01,0,0,,heuristic,missing,missing,0,0
 E139::dibrugarh,E139,2021-0366-IND,Assam,Dibrugarh,2021-07-01,0,0,,heuristic,incomplete,incomplete,0,0
-E140::district_missing,E140,2021-0458-IND,Himachal Pradesh,district_missing,2021-07-28,0,0,,heuristic,missing,missing,0,0
-E141::district_missing,E141,2021-0458-IND,Jammu and Kashmir,district_missing,2021-07-28,0,0,,heuristic,missing,missing,0,0
+E140::lahaul%20and%20spiti,E140,2021-0458-IND,Himachal Pradesh,Lahaul and Spiti,2021-07-28,0,0,,heuristic,incomplete,incomplete,0,0
+E141::anantnag,E141,2021-0458-IND,Jammu and Kashmir,Anantnag,2021-07-28,0,0,,heuristic,incomplete,incomplete,0,0
+E141::bandipora,E141,2021-0458-IND,Jammu and Kashmir,Bandipora,2021-07-28,0,0,,heuristic,incomplete,incomplete,0,0
+E141::ganderbal,E141,2021-0458-IND,Jammu and Kashmir,Ganderbal,2021-07-28,0,0,,heuristic,incomplete,incomplete,0,0
+E141::kishtwar,E141,2021-0458-IND,Jammu and Kashmir,Kishtwar,2021-07-28,1,1,,heuristic,incomplete,incomplete,0,0
 E142::devbhumi%20dwarka,E142,2021-0585-IND,Gujarat,Devbhumi Dwarka,2021-09-13,0,0,,heuristic,incomplete,incomplete,0,0
 E142::gir%20somnath,E142,2021-0585-IND,Gujarat,Gir Somnath,2021-09-13,0,0,,heuristic,incomplete,incomplete,0,0
 E142::jamnagar,E142,2021-0585-IND,Gujarat,Jamnagar,2021-09-13,5,5,,heuristic,incomplete,incomplete,0,0
@@ -388,109 +1167,465 @@ E142::morbi,E142,2021-0585-IND,Gujarat,Morbi,2021-09-13,0,0,,heuristic,incomplet
 E142::porbandar,E142,2021-0585-IND,Gujarat,Porbandar,2021-09-13,0,0,,heuristic,incomplete,incomplete,0,0
 E142::rajkot,E142,2021-0585-IND,Gujarat,Rajkot,2021-09-13,5,5,,heuristic,incomplete,incomplete,0,0
 E142::valsad,E142,2021-0585-IND,Gujarat,Valsad,2021-09-13,0,0,,heuristic,incomplete,incomplete,0,0
-E143::achankovil,E143,2021-0677-IND,Kerala,Achankovil,2021-10-11,0,0,,heuristic,missing,missing,0,0
+E143::alappuzha,E143,2021-0677-IND,Kerala,Alappuzha,2021-10-11,2,1,,heuristic,incomplete,incomplete,0,1
 E143::idukki,E143,2021-0677-IND,Kerala,Idukki,2021-10-11,9,6,,heuristic,incomplete,incomplete,0,1
 E143::kollam,E143,2021-0677-IND,Kerala,Kollam,2021-10-11,1,0,,heuristic,incomplete,incomplete,0,1
 E143::kottayam,E143,2021-0677-IND,Kerala,Kottayam,2021-10-11,7,5,,heuristic,incomplete,incomplete,0,0
 E143::pathanamthitta,E143,2021-0677-IND,Kerala,Pathanamthitta,2021-10-11,0,0,,heuristic,incomplete,incomplete,0,0
-E143::pattanamtitta,E143,2021-0677-IND,Kerala,Pattanamtitta,2021-10-11,0,0,,heuristic,incomplete,incomplete,0,0
 E143::thiruvananthapuram,E143,2021-0677-IND,Kerala,Thiruvananthapuram,2021-10-11,2,1,,heuristic,incomplete,incomplete,0,1
-E144::naini%20tal,E144,2021-0681-IND,Uttarakhand,Naini Tal,2021-10-18,0,0,,heuristic,incomplete,incomplete,0,0
 E144::nainital,E144,2021-0681-IND,Uttarakhand,Nainital,2021-10-18,11,11,,heuristic,incomplete,incomplete,0,0
-E145::district_missing,E145,2021-0722-IND,Tamil Nadu,district_missing,2021-11-06,0,0,,heuristic,missing,missing,0,0
+E145::ariyalur,E145,2021-0722-IND,Tamil Nadu,Ariyalur,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::chengalpattu,E145,2021-0722-IND,Tamil Nadu,Chengalpattu,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::chennai,E145,2021-0722-IND,Tamil Nadu,Chennai,2021-11-06,22,21,,heuristic,incomplete,incomplete,0,0
+E145::coimbatore,E145,2021-0722-IND,Tamil Nadu,Coimbatore,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::cuddalore,E145,2021-0722-IND,Tamil Nadu,Cuddalore,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::dharmapuri,E145,2021-0722-IND,Tamil Nadu,Dharmapuri,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::dindigul,E145,2021-0722-IND,Tamil Nadu,Dindigul,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::erode,E145,2021-0722-IND,Tamil Nadu,Erode,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::kallakurichi,E145,2021-0722-IND,Tamil Nadu,Kallakurichi,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::kanchipuram,E145,2021-0722-IND,Tamil Nadu,Kanchipuram,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::kanyakumari,E145,2021-0722-IND,Tamil Nadu,Kanyakumari,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::karur,E145,2021-0722-IND,Tamil Nadu,Karur,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::krishnagiri,E145,2021-0722-IND,Tamil Nadu,Krishnagiri,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::madurai,E145,2021-0722-IND,Tamil Nadu,Madurai,2021-11-06,1,1,,heuristic,incomplete,incomplete,0,0
+E145::mayiladuthurai,E145,2021-0722-IND,Tamil Nadu,Mayiladuthurai,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::nagapattinam,E145,2021-0722-IND,Tamil Nadu,Nagapattinam,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::namakkal,E145,2021-0722-IND,Tamil Nadu,Namakkal,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::nilgiris,E145,2021-0722-IND,Tamil Nadu,Nilgiris,2021-11-06,1,1,,heuristic,incomplete,incomplete,0,0
+E145::perambalur,E145,2021-0722-IND,Tamil Nadu,Perambalur,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::pudukkottai,E145,2021-0722-IND,Tamil Nadu,Pudukkottai,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::ramanathapuram,E145,2021-0722-IND,Tamil Nadu,Ramanathapuram,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::ranipet,E145,2021-0722-IND,Tamil Nadu,Ranipet,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::salem,E145,2021-0722-IND,Tamil Nadu,Salem,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::sivagangai,E145,2021-0722-IND,Tamil Nadu,Sivagangai,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::tenkasi,E145,2021-0722-IND,Tamil Nadu,Tenkasi,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::thanjavur,E145,2021-0722-IND,Tamil Nadu,Thanjavur,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::theni,E145,2021-0722-IND,Tamil Nadu,Theni,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::thoothukudi,E145,2021-0722-IND,Tamil Nadu,Thoothukudi,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::tiruchirappalli,E145,2021-0722-IND,Tamil Nadu,Tiruchirappalli,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::tirunelveli,E145,2021-0722-IND,Tamil Nadu,Tirunelveli,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::tirupattur,E145,2021-0722-IND,Tamil Nadu,Tirupattur,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::tiruvallur,E145,2021-0722-IND,Tamil Nadu,Tiruvallur,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::tiruvannamalai,E145,2021-0722-IND,Tamil Nadu,Tiruvannamalai,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::tiruvarur,E145,2021-0722-IND,Tamil Nadu,Tiruvarur,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::vellore,E145,2021-0722-IND,Tamil Nadu,Vellore,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::villupuram,E145,2021-0722-IND,Tamil Nadu,Villupuram,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
+E145::virudhunagar,E145,2021-0722-IND,Tamil Nadu,Virudhunagar,2021-11-06,0,0,,heuristic,incomplete,incomplete,0,0
 E146::anantapur,E146,2021-0748-IND,Andhra Pradesh,Anantapur,2021-11-18,0,0,,heuristic,incomplete,incomplete,0,0
 E146::chittoor,E146,2021-0748-IND,Andhra Pradesh,Chittoor,2021-11-18,1,1,,heuristic,incomplete,incomplete,0,0
-E146::cuddapah,E146,2021-0748-IND,Andhra Pradesh,Cuddapah,2021-11-18,0,0,,heuristic,incomplete,incomplete,0,0
-E146::kadapa,E146,2021-0748-IND,Andhra Pradesh,Kadapa,2021-11-18,0,0,,heuristic,missing,missing,0,0
 E146::nellore,E146,2021-0748-IND,Andhra Pradesh,Nellore,2021-11-18,2,2,,heuristic,incomplete,incomplete,0,0
-E146::y.s.r.,E146,2021-0748-IND,Andhra Pradesh,Y.S.R.,2021-11-18,0,0,,heuristic,incomplete,incomplete,0,0
-E147::district_missing,E147,2022-0293-IND,Arunachal Pradesh,district_missing,2022-05-17,0,0,,heuristic,missing,missing,0,0
+E146::ysr%20kadapa,E146,2021-0748-IND,Andhra Pradesh,YSR Kadapa,2021-11-18,0,0,,heuristic,incomplete,incomplete,0,0
+E148::bajali,E148,2022-0293-IND,Assam,Bajali,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::baksa,E148,2022-0293-IND,Assam,Baksa,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::barpeta,E148,2022-0293-IND,Assam,Barpeta,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::biswanath,E148,2022-0293-IND,Assam,Biswanath,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::bongaigaon,E148,2022-0293-IND,Assam,Bongaigaon,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
 E148::cachar,E148,2022-0293-IND,Assam,Cachar,2022-05-17,5,5,,heuristic,incomplete,incomplete,0,0
+E148::chirang,E148,2022-0293-IND,Assam,Chirang,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::darrang,E148,2022-0293-IND,Assam,Darrang,2022-05-17,1,1,,heuristic,incomplete,incomplete,0,0
+E148::dhemaji,E148,2022-0293-IND,Assam,Dhemaji,2022-05-17,1,1,,heuristic,incomplete,incomplete,0,0
+E148::dhubri,E148,2022-0293-IND,Assam,Dhubri,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::dibrugarh,E148,2022-0293-IND,Assam,Dibrugarh,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
 E148::dima%20hasao,E148,2022-0293-IND,Assam,Dima Hasao,2022-05-17,11,11,,heuristic,incomplete,incomplete,0,0
+E148::goalpara,E148,2022-0293-IND,Assam,Goalpara,2022-05-17,1,1,,heuristic,incomplete,incomplete,0,0
+E148::golaghat,E148,2022-0293-IND,Assam,Golaghat,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::hailakandi,E148,2022-0293-IND,Assam,Hailakandi,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::hojai,E148,2022-0293-IND,Assam,Hojai,2022-05-17,3,3,,heuristic,incomplete,incomplete,0,0
+E148::kamrup,E148,2022-0293-IND,Assam,Kamrup,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::kamrup%20metropolitan,E148,2022-0293-IND,Assam,Kamrup Metropolitan,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::karimganj,E148,2022-0293-IND,Assam,Karimganj,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::kokrajhar,E148,2022-0293-IND,Assam,Kokrajhar,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::lakhimpur,E148,2022-0293-IND,Assam,Lakhimpur,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::majuli,E148,2022-0293-IND,Assam,Majuli,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::morigaon,E148,2022-0293-IND,Assam,Morigaon,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::nagaon,E148,2022-0293-IND,Assam,Nagaon,2022-05-17,3,3,,heuristic,incomplete,incomplete,0,0
+E148::nalbari,E148,2022-0293-IND,Assam,Nalbari,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::sivasagar,E148,2022-0293-IND,Assam,Sivasagar,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::sonitpur,E148,2022-0293-IND,Assam,Sonitpur,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::south%20salmara,E148,2022-0293-IND,Assam,South Salmara,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::tamulpur,E148,2022-0293-IND,Assam,Tamulpur,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E148::tinsukia,E148,2022-0293-IND,Assam,Tinsukia,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
 E148::udalguri,E148,2022-0293-IND,Assam,Udalguri,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
-E149::district_missing,E149,2022-0293-IND,Bihar,district_missing,2022-05-17,0,0,,heuristic,missing,missing,0,0
-E150::district_missing,E150,2022-0293-IND,Gujarat,district_missing,2022-05-17,0,0,,heuristic,missing,missing,0,0
-E151::district_missing,E151,2022-0293-IND,Himachal Pradesh,district_missing,2022-05-17,0,0,,heuristic,missing,missing,0,0
-E152::district_missing,E152,2022-0293-IND,Madhya Pradesh,district_missing,2022-05-17,0,0,,heuristic,missing,missing,0,0
-E153::district_missing,E153,2022-0293-IND,Maharashtra,district_missing,2022-05-17,0,0,,heuristic,missing,missing,0,0
+E148::west%20karbi%20anglong,E148,2022-0293-IND,Assam,West Karbi Anglong,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E150::bharuch,E150,2022-0293-IND,Gujarat,Bharuch,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E150::dang,E150,2022-0293-IND,Gujarat,Dang,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E150::navsari,E150,2022-0293-IND,Gujarat,Navsari,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E150::surat,E150,2022-0293-IND,Gujarat,Surat,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E150::tapi,E150,2022-0293-IND,Gujarat,Tapi,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E150::vadodara,E150,2022-0293-IND,Gujarat,Vadodara,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E150::valsad,E150,2022-0293-IND,Gujarat,Valsad,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E151::chamba,E151,2022-0293-IND,Himachal Pradesh,Chamba,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E151::kangra,E151,2022-0293-IND,Himachal Pradesh,Kangra,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E151::kullu,E151,2022-0293-IND,Himachal Pradesh,Kullu,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E151::mandi,E151,2022-0293-IND,Himachal Pradesh,Mandi,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E152::narmadapuram,E152,2022-0293-IND,Madhya Pradesh,Narmadapuram,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E152::raisen,E152,2022-0293-IND,Madhya Pradesh,Raisen,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E153::bhandara,E153,2022-0293-IND,Maharashtra,Bhandara,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E153::gadchiroli,E153,2022-0293-IND,Maharashtra,Gadchiroli,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E153::kolhapur,E153,2022-0293-IND,Maharashtra,Kolhapur,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E153::mumbai%20suburban,E153,2022-0293-IND,Maharashtra,Mumbai Suburban,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E153::nandurbar,E153,2022-0293-IND,Maharashtra,Nandurbar,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
 E154::east%20khasi%20hills,E154,2022-0293-IND,Meghalaya,East Khasi Hills,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
 E154::ri%20bhoi,E154,2022-0293-IND,Meghalaya,Ri Bhoi,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
-E154::ri-bhoi,E154,2022-0293-IND,Meghalaya,Ri-Bhoi,2022-05-17,0,0,,heuristic,missing,missing,0,0
-E155::district_missing,E155,2022-0293-IND,Nagaland,district_missing,2022-05-17,0,0,,heuristic,missing,missing,0,0
-E156::district_missing,E156,2022-0539-IND,Himachal Pradesh,district_missing,2022-08-01,0,0,,heuristic,missing,missing,0,0
-E157::district_missing,E157,2022-0539-IND,Jharkhand,district_missing,2022-08-01,0,0,,heuristic,missing,missing,0,0
-E158::district_missing,E158,2022-0539-IND,Uttarakhand,district_missing,2022-08-01,0,0,,heuristic,missing,missing,0,0
-E159::district_missing,E159,2022-0590-IND,Uttar Pradesh,district_missing,2022-09-18,0,0,,heuristic,missing,missing,0,0
-E160::bajali,E160,2023-0330-IND,Assam,Bajali,2023-06-14,0,0,,heuristic,missing,missing,0,0
-E160::baksa,E160,2023-0330-IND,Assam,Baksa,2023-06-14,0,0,,heuristic,missing,missing,0,0
-E160::barpet%20distrcits,E160,2023-0330-IND,Assam,Barpet distrcits,2023-06-14,0,0,,heuristic,missing,missing,0,0
-E160::lakhimpur,E160,2023-0330-IND,Assam,Lakhimpur,2023-06-14,0,0,,heuristic,missing,missing,0,0
-E160::nalbari,E160,2023-0330-IND,Assam,Nalbari,2023-06-14,0,0,,heuristic,missing,missing,0,0
-E161::district_missing,E161,2023-0330-IND,Sikkim,district_missing,2023-06-14,0,0,,heuristic,missing,missing,0,0
-E162::district_missing,E162,2023-0428-IND,Assam,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E163::district_missing,E163,2023-0428-IND,Bihar,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E164::district_missing,E164,2023-0428-IND,Chhattisgarh,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E165::district_missing,E165,2023-0428-IND,Delhi,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E166::district_missing,E166,2023-0428-IND,Gujarat,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E167::district_missing,E167,2023-0428-IND,Himachal Pradesh,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E168::district_missing,E168,2023-0428-IND,Karnataka,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E169::district_missing,E169,2023-0428-IND,Madhya Pradesh,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E170::district_missing,E170,2023-0428-IND,Maharashtra,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E171::district_missing,E171,2023-0428-IND,Punjab,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E172::district_missing,E172,2023-0428-IND,Uttarakhand,district_missing,2023-06-25,0,0,,heuristic,missing,missing,0,0
-E173::district_missing,E173,2023-0359-IND,Delhi,district_missing,2023-06-26,0,0,,heuristic,missing,missing,0,0
-E174::district_missing,E174,2023-0359-IND,Haryana,district_missing,2023-06-26,0,0,,heuristic,missing,missing,0,0
+E154::ri-bhoi,E154,2022-0293-IND,Meghalaya,Ri-Bhoi,2022-05-17,0,0,,heuristic,incomplete,incomplete,0,0
+E156::chamba,E156,2022-0539-IND,Himachal Pradesh,Chamba,2022-08-01,1,1,,heuristic,incomplete,incomplete,0,0
+E156::kangra,E156,2022-0539-IND,Himachal Pradesh,Kangra,2022-08-01,0,0,,heuristic,incomplete,incomplete,0,0
+E156::mandi,E156,2022-0539-IND,Himachal Pradesh,Mandi,2022-08-01,0,0,,heuristic,incomplete,incomplete,0,0
+E157::sahibganj,E157,2022-0539-IND,Jharkhand,Sahibganj,2022-08-01,0,0,,heuristic,incomplete,incomplete,0,0
+E158::dehradun,E158,2022-0539-IND,Uttarakhand,Dehradun,2022-08-01,2,2,,heuristic,incomplete,incomplete,0,0
+E158::pauri%20garhwal,E158,2022-0539-IND,Uttarakhand,Pauri Garhwal,2022-08-01,0,0,,heuristic,incomplete,incomplete,0,0
+E158::rudraprayag,E158,2022-0539-IND,Uttarakhand,Rudraprayag,2022-08-01,0,0,,heuristic,incomplete,incomplete,0,0
+E158::tehri%20garhwal,E158,2022-0539-IND,Uttarakhand,Tehri Garhwal,2022-08-01,0,0,,heuristic,incomplete,incomplete,0,0
+E158::uttarkashi,E158,2022-0539-IND,Uttarakhand,Uttarkashi,2022-08-01,0,0,,heuristic,incomplete,incomplete,0,0
+E159::ayodhya,E159,2022-0590-IND,Uttar Pradesh,Ayodhya,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::azamgarh,E159,2022-0590-IND,Uttar Pradesh,Azamgarh,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::ballia,E159,2022-0590-IND,Uttar Pradesh,Ballia,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::barabanki,E159,2022-0590-IND,Uttar Pradesh,Barabanki,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::basti,E159,2022-0590-IND,Uttar Pradesh,Basti,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::budaun,E159,2022-0590-IND,Uttar Pradesh,Budaun,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::gonda,E159,2022-0590-IND,Uttar Pradesh,Gonda,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::gorakhpur,E159,2022-0590-IND,Uttar Pradesh,Gorakhpur,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::lakhimpur%20kheri,E159,2022-0590-IND,Uttar Pradesh,Lakhimpur Kheri,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::sant%20kabir%20nagar,E159,2022-0590-IND,Uttar Pradesh,Sant Kabir Nagar,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E159::sitapur,E159,2022-0590-IND,Uttar Pradesh,Sitapur,2022-09-18,0,0,,heuristic,incomplete,incomplete,0,0
+E160::bajali,E160,2023-0330-IND,Assam,Bajali,2023-06-14,2,2,,heuristic,incomplete,incomplete,0,0
+E160::baksa,E160,2023-0330-IND,Assam,Baksa,2023-06-14,2,2,,heuristic,incomplete,incomplete,0,0
+E160::barpeta,E160,2023-0330-IND,Assam,Barpeta,2023-06-14,1,1,,heuristic,incomplete,incomplete,0,0
+E160::lakhimpur,E160,2023-0330-IND,Assam,Lakhimpur,2023-06-14,9,9,,heuristic,incomplete,incomplete,0,0
+E160::nalbari,E160,2023-0330-IND,Assam,Nalbari,2023-06-14,2,2,,heuristic,incomplete,incomplete,0,0
+E161::gyalshing,E161,2023-0330-IND,Sikkim,Gyalshing,2023-06-14,0,0,,heuristic,incomplete,incomplete,0,0
+E161::mangan,E161,2023-0330-IND,Sikkim,Mangan,2023-06-14,0,0,,heuristic,incomplete,incomplete,0,0
+E162::dhemaji,E162,2023-0428-IND,Assam,Dhemaji,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E162::lakhimpur,E162,2023-0428-IND,Assam,Lakhimpur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E163::supaul,E163,2023-0428-IND,Bihar,Supaul,2023-06-25,1,1,,heuristic,incomplete,incomplete,0,0
+E164::dhamtari,E164,2023-0428-IND,Chhattisgarh,Dhamtari,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E164::gariaband,E164,2023-0428-IND,Chhattisgarh,Gariaband,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E164::narayanpur,E164,2023-0428-IND,Chhattisgarh,Narayanpur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E164::raipur,E164,2023-0428-IND,Chhattisgarh,Raipur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E165::central%20delhi,E165,2023-0428-IND,Delhi,Central Delhi,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E165::east%20delhi,E165,2023-0428-IND,Delhi,East Delhi,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E165::north%20east%20delhi,E165,2023-0428-IND,Delhi,North East Delhi,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E165::shahdara,E165,2023-0428-IND,Delhi,Shahdara,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E166::bhavnagar,E166,2023-0428-IND,Gujarat,Bhavnagar,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E166::chhota%20udaipur,E166,2023-0428-IND,Gujarat,Chhota Udaipur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E166::dang,E166,2023-0428-IND,Gujarat,Dang,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E166::navsari,E166,2023-0428-IND,Gujarat,Navsari,2023-06-25,4,4,,heuristic,incomplete,incomplete,0,0
+E166::surat,E166,2023-0428-IND,Gujarat,Surat,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E166::tapi,E166,2023-0428-IND,Gujarat,Tapi,2023-06-25,1,1,,heuristic,incomplete,incomplete,0,0
+E166::valsad,E166,2023-0428-IND,Gujarat,Valsad,2023-06-25,1,1,,heuristic,incomplete,incomplete,0,0
+E167::bilaspur,E167,2023-0428-IND,Himachal Pradesh,Bilaspur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E167::chamba,E167,2023-0428-IND,Himachal Pradesh,Chamba,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E167::hamirpur,E167,2023-0428-IND,Himachal Pradesh,Hamirpur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E167::kangra,E167,2023-0428-IND,Himachal Pradesh,Kangra,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E167::mandi,E167,2023-0428-IND,Himachal Pradesh,Mandi,2023-06-25,4,4,,heuristic,incomplete,incomplete,0,0
+E167::shimla,E167,2023-0428-IND,Himachal Pradesh,Shimla,2023-06-25,1,1,,heuristic,incomplete,incomplete,0,0
+E167::sirmaur,E167,2023-0428-IND,Himachal Pradesh,Sirmaur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E167::solan,E167,2023-0428-IND,Himachal Pradesh,Solan,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E168::belagavi,E168,2023-0428-IND,Karnataka,Belagavi,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E168::chikkamagaluru,E168,2023-0428-IND,Karnataka,Chikkamagaluru,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E168::shivamogga,E168,2023-0428-IND,Karnataka,Shivamogga,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E168::uttara%20kannada,E168,2023-0428-IND,Karnataka,Uttara Kannada,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E169::alirajpur,E169,2023-0428-IND,Madhya Pradesh,Alirajpur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E169::balaghat,E169,2023-0428-IND,Madhya Pradesh,Balaghat,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E169::betul,E169,2023-0428-IND,Madhya Pradesh,Betul,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E169::dewas,E169,2023-0428-IND,Madhya Pradesh,Dewas,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E169::narmadapuram,E169,2023-0428-IND,Madhya Pradesh,Narmadapuram,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E169::raisen,E169,2023-0428-IND,Madhya Pradesh,Raisen,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E169::sagar,E169,2023-0428-IND,Madhya Pradesh,Sagar,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::amravati,E170,2023-0428-IND,Maharashtra,Amravati,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::beed,E170,2023-0428-IND,Maharashtra,Beed,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::chandrapur,E170,2023-0428-IND,Maharashtra,Chandrapur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::gondia,E170,2023-0428-IND,Maharashtra,Gondia,2023-06-25,1,1,,heuristic,incomplete,incomplete,0,0
+E170::hingoli,E170,2023-0428-IND,Maharashtra,Hingoli,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::kolhapur,E170,2023-0428-IND,Maharashtra,Kolhapur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::latur,E170,2023-0428-IND,Maharashtra,Latur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::mumbai%20city,E170,2023-0428-IND,Maharashtra,Mumbai City,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::mumbai%20suburban,E170,2023-0428-IND,Maharashtra,Mumbai Suburban,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::nagpur,E170,2023-0428-IND,Maharashtra,Nagpur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::nanded,E170,2023-0428-IND,Maharashtra,Nanded,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::nandurbar,E170,2023-0428-IND,Maharashtra,Nandurbar,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::nashik,E170,2023-0428-IND,Maharashtra,Nashik,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::palghar,E170,2023-0428-IND,Maharashtra,Palghar,2023-06-25,3,3,,heuristic,incomplete,incomplete,0,0
+E170::pune,E170,2023-0428-IND,Maharashtra,Pune,2023-06-25,2,1,,heuristic,incomplete,incomplete,1,0
+E170::raigad,E170,2023-0428-IND,Maharashtra,Raigad,2023-06-25,1,1,,heuristic,incomplete,incomplete,0,0
+E170::ratnagiri,E170,2023-0428-IND,Maharashtra,Ratnagiri,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::satara,E170,2023-0428-IND,Maharashtra,Satara,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::sindhudurg,E170,2023-0428-IND,Maharashtra,Sindhudurg,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E170::thane,E170,2023-0428-IND,Maharashtra,Thane,2023-06-25,3,3,,heuristic,incomplete,incomplete,0,0
+E170::yavatmal,E170,2023-0428-IND,Maharashtra,Yavatmal,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E171::fazilka,E171,2023-0428-IND,Punjab,Fazilka,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E171::firozpur,E171,2023-0428-IND,Punjab,Firozpur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E171::gurdaspur,E171,2023-0428-IND,Punjab,Gurdaspur,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E171::kapurthala,E171,2023-0428-IND,Punjab,Kapurthala,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E171::mansa,E171,2023-0428-IND,Punjab,Mansa,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E171::rupnagar,E171,2023-0428-IND,Punjab,Rupnagar,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E171::tarn%20taran,E171,2023-0428-IND,Punjab,Tarn Taran,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E172::bageshwar,E172,2023-0428-IND,Uttarakhand,Bageshwar,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E172::champawat,E172,2023-0428-IND,Uttarakhand,Champawat,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E172::dehradun,E172,2023-0428-IND,Uttarakhand,Dehradun,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E172::pauri%20garhwal,E172,2023-0428-IND,Uttarakhand,Pauri Garhwal,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E172::pithoragarh,E172,2023-0428-IND,Uttarakhand,Pithoragarh,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E172::tehri%20garhwal,E172,2023-0428-IND,Uttarakhand,Tehri Garhwal,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E172::udham%20singh%20nagar,E172,2023-0428-IND,Uttarakhand,Udham Singh Nagar,2023-06-25,0,0,,heuristic,incomplete,incomplete,0,0
+E173::central%20delhi,E173,2023-0359-IND,Delhi,Central Delhi,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E173::east%20delhi,E173,2023-0359-IND,Delhi,East Delhi,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E173::north%20east%20delhi,E173,2023-0359-IND,Delhi,North East Delhi,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E173::shahdara,E173,2023-0359-IND,Delhi,Shahdara,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::ambala,E174,2023-0359-IND,Haryana,Ambala,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::faridabad,E174,2023-0359-IND,Haryana,Faridabad,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::fatehabad,E174,2023-0359-IND,Haryana,Fatehabad,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::kaithal,E174,2023-0359-IND,Haryana,Kaithal,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::karnal,E174,2023-0359-IND,Haryana,Karnal,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::kurukshetra,E174,2023-0359-IND,Haryana,Kurukshetra,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::palwal,E174,2023-0359-IND,Haryana,Palwal,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::panchkula,E174,2023-0359-IND,Haryana,Panchkula,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::panipat,E174,2023-0359-IND,Haryana,Panipat,2023-06-26,1,1,,heuristic,incomplete,incomplete,0,0
+E174::sirsa,E174,2023-0359-IND,Haryana,Sirsa,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::sonipat,E174,2023-0359-IND,Haryana,Sonipat,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E174::yamunanagar,E174,2023-0359-IND,Haryana,Yamunanagar,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
 E175::hamirpur,E175,2023-0359-IND,Himachal Pradesh,Hamirpur,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
 E175::mandi,E175,2023-0359-IND,Himachal Pradesh,Mandi,2023-06-26,4,4,,heuristic,incomplete,incomplete,0,0
 E175::solan,E175,2023-0359-IND,Himachal Pradesh,Solan,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
-E175::solan%20and%20hamirpur,E175,2023-0359-IND,Himachal Pradesh,Solan and Hamirpur,2023-06-26,0,0,,heuristic,missing,missing,0,0
-E176::district_missing,E176,2023-0359-IND,Punjab,district_missing,2023-06-26,0,0,,heuristic,missing,missing,0,0
-E177::district_missing,E177,2023-0359-IND,Uttarakhand,district_missing,2023-06-26,0,0,,heuristic,missing,missing,0,0
-E178::district_missing,E178,2023-0486-IND,Telangana,district_missing,2023-07-27,0,0,,heuristic,missing,missing,0,0
+E176::faridkot,E176,2023-0359-IND,Punjab,Faridkot,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::fatehgarh%20sahib,E176,2023-0359-IND,Punjab,Fatehgarh Sahib,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::firozpur,E176,2023-0359-IND,Punjab,Firozpur,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::hoshiarpur,E176,2023-0359-IND,Punjab,Hoshiarpur,2023-06-26,1,1,,heuristic,incomplete,incomplete,0,0
+E176::jalandhar,E176,2023-0359-IND,Punjab,Jalandhar,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::ludhiana,E176,2023-0359-IND,Punjab,Ludhiana,2023-06-26,1,1,,heuristic,incomplete,incomplete,0,0
+E176::moga,E176,2023-0359-IND,Punjab,Moga,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::pathankot,E176,2023-0359-IND,Punjab,Pathankot,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::patiala,E176,2023-0359-IND,Punjab,Patiala,2023-06-26,2,2,,heuristic,incomplete,incomplete,0,0
+E176::rupnagar,E176,2023-0359-IND,Punjab,Rupnagar,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::sangrur,E176,2023-0359-IND,Punjab,Sangrur,2023-06-26,1,1,,heuristic,incomplete,incomplete,0,0
+E176::sas%20nagar,E176,2023-0359-IND,Punjab,SAS Nagar,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::sbs%20nagar,E176,2023-0359-IND,Punjab,SBS Nagar,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E176::tarn%20taran,E176,2023-0359-IND,Punjab,Tarn Taran,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E177::haridwar,E177,2023-0359-IND,Uttarakhand,Haridwar,2023-06-26,0,0,,heuristic,incomplete,incomplete,0,0
+E178::bhadradri%20kothagudem,E178,2023-0486-IND,Telangana,Bhadradri Kothagudem,2023-07-27,1,1,,heuristic,incomplete,incomplete,0,0
+E178::jayashankar%20bhupalpally,E178,2023-0486-IND,Telangana,Jayashankar Bhupalpally,2023-07-27,0,0,,heuristic,incomplete,incomplete,0,0
+E178::mancherial,E178,2023-0486-IND,Telangana,Mancherial,2023-07-27,0,0,,heuristic,incomplete,incomplete,0,0
+E178::mulugu,E178,2023-0486-IND,Telangana,Mulugu,2023-07-27,5,5,,heuristic,incomplete,incomplete,0,0
+E178::nirmal,E178,2023-0486-IND,Telangana,Nirmal,2023-07-27,0,0,,heuristic,incomplete,incomplete,0,0
 E179::kanniyakumari,E179,2023-0846-IND,Tamil Nadu,Kanniyakumari,2023-12-18,0,0,,heuristic,incomplete,incomplete,0,0
-E179::kanniyakumari%20and%20tenkasi,E179,2023-0846-IND,Tamil Nadu,Kanniyakumari and Tenkasi,2023-12-18,0,0,,heuristic,missing,missing,0,0
+E179::kanyakumari,E179,2023-0846-IND,Tamil Nadu,Kanyakumari,2023-12-18,1,1,,heuristic,incomplete,incomplete,0,0
+E179::tenkasi,E179,2023-0846-IND,Tamil Nadu,Tenkasi,2023-12-18,1,1,,heuristic,incomplete,incomplete,0,0
 E179::thoothukkudi,E179,2023-0846-IND,Tamil Nadu,Thoothukkudi,2023-12-18,0,0,,heuristic,incomplete,incomplete,0,0
-E179::thoothukudi,E179,2023-0846-IND,Tamil Nadu,Thoothukudi,2023-12-18,0,0,,heuristic,missing,missing,0,0
+E179::thoothukudi,E179,2023-0846-IND,Tamil Nadu,Thoothukudi,2023-12-18,13,13,,heuristic,incomplete,incomplete,0,0
 E179::tirunelveli,E179,2023-0846-IND,Tamil Nadu,Tirunelveli,2023-12-18,15,15,,heuristic,incomplete,incomplete,0,0
-E180::district_missing,E180,2024-0399-IND,Assam,district_missing,2024-05-01,0,0,,heuristic,missing,missing,0,0
-E181::district_missing,E181,2024-0399-IND,Meghalaya,district_missing,2024-05-01,0,0,,heuristic,missing,missing,0,0
-E182::district_missing,E182,2024-0481-IND,Assam,district_missing,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::auraiya,E183,2024-0481-IND,Uttar Pradesh,Auraiya,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::chandauli,E183,2024-0481-IND,Uttar Pradesh,Chandauli,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::deoria,E183,2024-0481-IND,Uttar Pradesh,Deoria,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::hathras,E183,2024-0481-IND,Uttar Pradesh,Hathras,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::mainpuri,E183,2024-0481-IND,Uttar Pradesh,Mainpuri,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::pratapgarh,E183,2024-0481-IND,Uttar Pradesh,Pratapgarh,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::prayagraj,E183,2024-0481-IND,Uttar Pradesh,Prayagraj,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::sultanpur,E183,2024-0481-IND,Uttar Pradesh,Sultanpur,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E183::varanasi%20and%20siddharthnagar,E183,2024-0481-IND,Uttar Pradesh,Varanasi and Siddharthnagar,2024-07-09,0,0,,heuristic,missing,missing,0,0
-E184::kullu,E184,2024-0561-IND,Himachal Pradesh,Kullu,2024-07-31,0,0,,heuristic,missing,missing,0,0
-E184::mandi,E184,2024-0561-IND,Himachal Pradesh,Mandi,2024-07-31,0,0,,heuristic,missing,missing,0,0
-E184::shimla,E184,2024-0561-IND,Himachal Pradesh,Shimla,2024-07-31,0,0,,heuristic,missing,missing,0,0
-E185::district_missing,E185,2024-0624-IND,Tripura,district_missing,2024-08-19,0,0,,heuristic,missing,missing,0,0
-E186::district_missing,E186,2024-0647-IND,Gujarat,district_missing,2024-08-26,0,0,,heuristic,missing,missing,0,0
-E187::district_missing,E187,2024-0647-IND,Maharashtra,district_missing,2024-08-26,0,0,,heuristic,missing,missing,0,0
-E188::district_missing,E188,2024-0647-IND,Tripura,district_missing,2024-08-26,0,0,,heuristic,missing,missing,0,0
-E189::district_missing,E189,2024-0719-IND,Meghalaya,district_missing,2024-10-04,0,0,,heuristic,missing,missing,0,0
-E190::district_missing,E190,2025-0402-IND,Arunachal Pradesh,district_missing,2025-05-31,0,0,,heuristic,missing,missing,0,0
-E191::district_missing,E191,2025-0402-IND,Assam,district_missing,2025-05-31,0,0,,heuristic,missing,missing,0,0
-E192::district_missing,E192,2025-0402-IND,Manipur,district_missing,2025-05-31,0,0,,heuristic,missing,missing,0,0
-E193::district_missing,E193,2025-0402-IND,Meghalaya,district_missing,2025-05-31,0,0,,heuristic,missing,missing,0,0
-E194::district_missing,E194,2025-0402-IND,Mizoram,district_missing,2025-05-31,0,0,,heuristic,missing,missing,0,0
-E195::district_missing,E195,2025-0402-IND,Nagaland,district_missing,2025-05-31,0,0,,heuristic,missing,missing,0,0
-E196::district_missing,E196,2025-0402-IND,Sikkim,district_missing,2025-05-31,0,0,,heuristic,missing,missing,0,0
-E197::district_missing,E197,2025-0402-IND,Tripura,district_missing,2025-05-31,0,0,,heuristic,missing,missing,0,0
-E198::district_missing,E198,2025-0469-IND,Himachal Pradesh,district_missing,2025-06-20,0,0,,heuristic,missing,missing,0,0
-E199::district_missing,E199,2025-0469-IND,Uttarakhand,district_missing,2025-06-20,0,0,,heuristic,missing,missing,0,0
-E200::kishtwar,E200,2025-0690-IND,Jammu and Kashmir,Kishtwar,2025-08-14,0,0,,heuristic,missing,missing,0,0
-E201::district_missing,E201,2025-0751-IND,Punjab,district_missing,2025-08-15,0,0,,heuristic,missing,missing,0,0
-E202::and%20udham%20singh%20nagar,E202,2025-0803-IND,Uttarakhand,and Udham Singh Nagar,2025-09-15,0,0,,heuristic,missing,missing,0,0
-E202::bageshwar,E202,2025-0803-IND,Uttarakhand,Bageshwar,2025-09-15,0,0,,heuristic,missing,missing,0,0
-E202::champawat,E202,2025-0803-IND,Uttarakhand,Champawat,2025-09-15,0,0,,heuristic,missing,missing,0,0
-E202::dehradun,E202,2025-0803-IND,Uttarakhand,Dehradun,2025-09-15,0,0,,heuristic,missing,missing,0,0
-E202::haridwar,E202,2025-0803-IND,Uttarakhand,Haridwar,2025-09-15,0,0,,heuristic,missing,missing,0,0
-E202::nainital,E202,2025-0803-IND,Uttarakhand,Nainital,2025-09-15,0,0,,heuristic,missing,missing,0,0
-E202::pauri%20garhwal,E202,2025-0803-IND,Uttarakhand,Pauri Garhwal,2025-09-15,0,0,,heuristic,missing,missing,0,0
-E202::pithoragarh,E202,2025-0803-IND,Uttarakhand,Pithoragarh,2025-09-15,0,0,,heuristic,missing,missing,0,0
-E203::district_missing,E203,2025-0859-IND,Bihar,district_missing,2025-10-03,0,0,,heuristic,missing,missing,0,0
-E204::darjeeling,E204,2025-0859-IND,West Bengal,Darjeeling,2025-10-03,0,0,,heuristic,missing,missing,0,0
+E180::biswanath,E180,2024-0399-IND,Assam,Biswanath,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::cachar,E180,2024-0399-IND,Assam,Cachar,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::darrang,E180,2024-0399-IND,Assam,Darrang,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::dhemaji,E180,2024-0399-IND,Assam,Dhemaji,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::dibrugarh,E180,2024-0399-IND,Assam,Dibrugarh,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::golaghat,E180,2024-0399-IND,Assam,Golaghat,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::jorhat,E180,2024-0399-IND,Assam,Jorhat,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::kamrup,E180,2024-0399-IND,Assam,Kamrup,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::karimganj,E180,2024-0399-IND,Assam,Karimganj,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::lakhimpur,E180,2024-0399-IND,Assam,Lakhimpur,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::majuli,E180,2024-0399-IND,Assam,Majuli,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::morigaon,E180,2024-0399-IND,Assam,Morigaon,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::nagaon,E180,2024-0399-IND,Assam,Nagaon,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::nalbari,E180,2024-0399-IND,Assam,Nalbari,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::sivasagar,E180,2024-0399-IND,Assam,Sivasagar,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::sonitpur,E180,2024-0399-IND,Assam,Sonitpur,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::tamulpur,E180,2024-0399-IND,Assam,Tamulpur,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::tinsukia,E180,2024-0399-IND,Assam,Tinsukia,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E180::udalguri,E180,2024-0399-IND,Assam,Udalguri,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E181::east%20jaintia%20hills,E181,2024-0399-IND,Meghalaya,East Jaintia Hills,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E181::east%20khasi%20hills,E181,2024-0399-IND,Meghalaya,East Khasi Hills,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E181::south%20west%20garo%20hills,E181,2024-0399-IND,Meghalaya,South West Garo Hills,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E181::west%20garo%20hills,E181,2024-0399-IND,Meghalaya,West Garo Hills,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E181::west%20jaintia%20hills,E181,2024-0399-IND,Meghalaya,West Jaintia Hills,2024-05-01,0,0,,heuristic,incomplete,incomplete,0,0
+E182::barpeta,E182,2024-0481-IND,Assam,Barpeta,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::biswanath,E182,2024-0481-IND,Assam,Biswanath,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::cachar,E182,2024-0481-IND,Assam,Cachar,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::chirang,E182,2024-0481-IND,Assam,Chirang,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::darrang,E182,2024-0481-IND,Assam,Darrang,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::dhemaji,E182,2024-0481-IND,Assam,Dhemaji,2024-07-09,1,1,,heuristic,incomplete,incomplete,0,0
+E182::dhubri,E182,2024-0481-IND,Assam,Dhubri,2024-07-09,1,1,,heuristic,incomplete,incomplete,0,0
+E182::dibrugarh,E182,2024-0481-IND,Assam,Dibrugarh,2024-07-09,1,1,,heuristic,incomplete,incomplete,0,0
+E182::goalpara,E182,2024-0481-IND,Assam,Goalpara,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::golaghat,E182,2024-0481-IND,Assam,Golaghat,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::hailakandi,E182,2024-0481-IND,Assam,Hailakandi,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::jorhat,E182,2024-0481-IND,Assam,Jorhat,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::kamrup,E182,2024-0481-IND,Assam,Kamrup,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::kamrup%20metropolitan,E182,2024-0481-IND,Assam,Kamrup Metropolitan,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::karimganj,E182,2024-0481-IND,Assam,Karimganj,2024-07-09,1,1,,heuristic,incomplete,incomplete,0,0
+E182::majuli,E182,2024-0481-IND,Assam,Majuli,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::morigaon,E182,2024-0481-IND,Assam,Morigaon,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::nagaon,E182,2024-0481-IND,Assam,Nagaon,2024-07-09,3,3,,heuristic,incomplete,incomplete,0,0
+E182::nalbari,E182,2024-0481-IND,Assam,Nalbari,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::sivasagar,E182,2024-0481-IND,Assam,Sivasagar,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E182::south%20salmara,E182,2024-0481-IND,Assam,South Salmara,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::auraiya,E183,2024-0481-IND,Uttar Pradesh,Auraiya,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::ayodhya,E183,2024-0481-IND,Uttar Pradesh,Ayodhya,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::ballia,E183,2024-0481-IND,Uttar Pradesh,Ballia,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::balrampur,E183,2024-0481-IND,Uttar Pradesh,Balrampur,2024-07-09,1,1,,heuristic,incomplete,incomplete,0,0
+E183::barabanki,E183,2024-0481-IND,Uttar Pradesh,Barabanki,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::budaun,E183,2024-0481-IND,Uttar Pradesh,Budaun,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::chandauli,E183,2024-0481-IND,Uttar Pradesh,Chandauli,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::deoria,E183,2024-0481-IND,Uttar Pradesh,Deoria,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::gonda,E183,2024-0481-IND,Uttar Pradesh,Gonda,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::gorakhpur,E183,2024-0481-IND,Uttar Pradesh,Gorakhpur,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::hardoi,E183,2024-0481-IND,Uttar Pradesh,Hardoi,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::hathras,E183,2024-0481-IND,Uttar Pradesh,Hathras,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::kushinagar,E183,2024-0481-IND,Uttar Pradesh,Kushinagar,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::lakhimpur%20kheri,E183,2024-0481-IND,Uttar Pradesh,Lakhimpur Kheri,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::maharajganj,E183,2024-0481-IND,Uttar Pradesh,Maharajganj,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::mainpuri,E183,2024-0481-IND,Uttar Pradesh,Mainpuri,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::pilibhit,E183,2024-0481-IND,Uttar Pradesh,Pilibhit,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::pratapgarh,E183,2024-0481-IND,Uttar Pradesh,Pratapgarh,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::prayagraj,E183,2024-0481-IND,Uttar Pradesh,Prayagraj,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::shahjahanpur,E183,2024-0481-IND,Uttar Pradesh,Shahjahanpur,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::shrawasti,E183,2024-0481-IND,Uttar Pradesh,Shrawasti,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::siddharthnagar,E183,2024-0481-IND,Uttar Pradesh,Siddharthnagar,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::sultanpur,E183,2024-0481-IND,Uttar Pradesh,Sultanpur,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::unnao,E183,2024-0481-IND,Uttar Pradesh,Unnao,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E183::varanasi,E183,2024-0481-IND,Uttar Pradesh,Varanasi,2024-07-09,0,0,,heuristic,incomplete,incomplete,0,0
+E184::kullu,E184,2024-0561-IND,Himachal Pradesh,Kullu,2024-07-31,6,6,,heuristic,incomplete,incomplete,0,0
+E184::mandi,E184,2024-0561-IND,Himachal Pradesh,Mandi,2024-07-31,2,2,,heuristic,incomplete,incomplete,0,0
+E184::shimla,E184,2024-0561-IND,Himachal Pradesh,Shimla,2024-07-31,6,5,,heuristic,incomplete,incomplete,0,0
+E185::dhalai,E185,2024-0624-IND,Tripura,Dhalai,2024-08-19,0,0,,heuristic,incomplete,incomplete,0,0
+E185::gomati,E185,2024-0624-IND,Tripura,Gomati,2024-08-19,3,3,,heuristic,incomplete,incomplete,0,0
+E185::khowai,E185,2024-0624-IND,Tripura,Khowai,2024-08-19,0,0,,heuristic,incomplete,incomplete,0,0
+E185::north%20tripura,E185,2024-0624-IND,Tripura,North Tripura,2024-08-19,0,0,,heuristic,incomplete,incomplete,0,0
+E185::sepahijala,E185,2024-0624-IND,Tripura,Sepahijala,2024-08-19,0,0,,heuristic,incomplete,incomplete,0,0
+E185::south%20tripura,E185,2024-0624-IND,Tripura,South Tripura,2024-08-19,2,2,,heuristic,incomplete,incomplete,0,0
+E185::unakoti,E185,2024-0624-IND,Tripura,Unakoti,2024-08-19,0,0,,heuristic,incomplete,incomplete,0,0
+E185::west%20tripura,E185,2024-0624-IND,Tripura,West Tripura,2024-08-19,0,0,,heuristic,incomplete,incomplete,0,0
+E186::ahmedabad,E186,2024-0647-IND,Gujarat,Ahmedabad,2024-08-26,5,5,,heuristic,incomplete,incomplete,0,0
+E186::amreli,E186,2024-0647-IND,Gujarat,Amreli,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::anand,E186,2024-0647-IND,Gujarat,Anand,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::aravalli,E186,2024-0647-IND,Gujarat,Aravalli,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::botad,E186,2024-0647-IND,Gujarat,Botad,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::dahod,E186,2024-0647-IND,Gujarat,Dahod,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::devbhumi%20dwarka,E186,2024-0647-IND,Gujarat,Devbhumi Dwarka,2024-08-26,1,1,,heuristic,incomplete,incomplete,0,0
+E186::jamnagar,E186,2024-0647-IND,Gujarat,Jamnagar,2024-08-26,2,2,,heuristic,incomplete,incomplete,0,0
+E186::junagadh,E186,2024-0647-IND,Gujarat,Junagadh,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::kheda,E186,2024-0647-IND,Gujarat,Kheda,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::kutch,E186,2024-0647-IND,Gujarat,Kutch,2024-08-26,8,7,,heuristic,incomplete,incomplete,0,0
+E186::mahisagar,E186,2024-0647-IND,Gujarat,Mahisagar,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::morbi,E186,2024-0647-IND,Gujarat,Morbi,2024-08-26,1,1,,heuristic,incomplete,incomplete,0,0
+E186::panchmahal,E186,2024-0647-IND,Gujarat,Panchmahal,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::rajkot,E186,2024-0647-IND,Gujarat,Rajkot,2024-08-26,2,2,,heuristic,incomplete,incomplete,0,0
+E186::surendranagar,E186,2024-0647-IND,Gujarat,Surendranagar,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E186::vadodara,E186,2024-0647-IND,Gujarat,Vadodara,2024-08-26,21,21,,heuristic,incomplete,incomplete,0,0
+E187::kolhapur,E187,2024-0647-IND,Maharashtra,Kolhapur,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E187::nashik,E187,2024-0647-IND,Maharashtra,Nashik,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E187::palghar,E187,2024-0647-IND,Maharashtra,Palghar,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E187::pune,E187,2024-0647-IND,Maharashtra,Pune,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E187::raigad,E187,2024-0647-IND,Maharashtra,Raigad,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E187::ratnagiri,E187,2024-0647-IND,Maharashtra,Ratnagiri,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E187::satara,E187,2024-0647-IND,Maharashtra,Satara,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E187::sindhudurg,E187,2024-0647-IND,Maharashtra,Sindhudurg,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E188::dhalai,E188,2024-0647-IND,Tripura,Dhalai,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E188::gomati,E188,2024-0647-IND,Tripura,Gomati,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E188::khowai,E188,2024-0647-IND,Tripura,Khowai,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E188::north%20tripura,E188,2024-0647-IND,Tripura,North Tripura,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E188::sepahijala,E188,2024-0647-IND,Tripura,Sepahijala,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E188::south%20tripura,E188,2024-0647-IND,Tripura,South Tripura,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E188::unakoti,E188,2024-0647-IND,Tripura,Unakoti,2024-08-26,0,0,,heuristic,incomplete,incomplete,0,0
+E188::west%20tripura,E188,2024-0647-IND,Tripura,West Tripura,2024-08-26,2,2,,heuristic,incomplete,incomplete,0,0
+E189::east%20garo%20hills,E189,2024-0719-IND,Meghalaya,East Garo Hills,2024-10-04,0,0,,heuristic,incomplete,incomplete,0,0
+E189::north%20garo%20hills,E189,2024-0719-IND,Meghalaya,North Garo Hills,2024-10-04,1,1,,heuristic,incomplete,incomplete,0,0
+E189::south%20garo%20hills,E189,2024-0719-IND,Meghalaya,South Garo Hills,2024-10-04,3,3,,heuristic,incomplete,incomplete,0,0
+E189::south%20west%20garo%20hills,E189,2024-0719-IND,Meghalaya,South West Garo Hills,2024-10-04,0,0,,heuristic,incomplete,incomplete,0,0
+E189::west%20garo%20hills,E189,2024-0719-IND,Meghalaya,West Garo Hills,2024-10-04,1,1,,heuristic,incomplete,incomplete,0,0
+E190::itanagar%20capital%20region,E190,2025-0402-IND,Arunachal Pradesh,Itanagar Capital Region,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E190::lohit,E190,2025-0402-IND,Arunachal Pradesh,Lohit,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E190::lower%20dibang%20valley,E190,2025-0402-IND,Arunachal Pradesh,Lower Dibang Valley,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E190::lower%20subansiri,E190,2025-0402-IND,Arunachal Pradesh,Lower Subansiri,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E190::namsai,E190,2025-0402-IND,Arunachal Pradesh,Namsai,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E190::pakke%20kessang,E190,2025-0402-IND,Arunachal Pradesh,Pakke Kessang,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E191::bongaigaon,E191,2025-0402-IND,Assam,Bongaigaon,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E191::cachar,E191,2025-0402-IND,Assam,Cachar,2025-05-31,3,3,,heuristic,incomplete,incomplete,0,0
+E191::dima%20hasao,E191,2025-0402-IND,Assam,Dima Hasao,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E191::hailakandi,E191,2025-0402-IND,Assam,Hailakandi,2025-05-31,3,3,,heuristic,incomplete,incomplete,0,0
+E191::kamrup,E191,2025-0402-IND,Assam,Kamrup,2025-05-31,2,2,,heuristic,incomplete,incomplete,0,0
+E191::lakhimpur,E191,2025-0402-IND,Assam,Lakhimpur,2025-05-31,1,1,,heuristic,incomplete,incomplete,0,0
+E191::sribhumi%20%28karimganj%29,E191,2025-0402-IND,Assam,Sribhumi (Karimganj),2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E192::bishnupur,E192,2025-0402-IND,Manipur,Bishnupur,2025-05-31,1,1,,heuristic,incomplete,incomplete,0,0
+E192::imphal%20east,E192,2025-0402-IND,Manipur,Imphal East,2025-05-31,2,2,,heuristic,incomplete,incomplete,0,0
+E192::imphal%20west,E192,2025-0402-IND,Manipur,Imphal West,2025-05-31,1,1,,heuristic,incomplete,incomplete,0,0
+E192::kangpokpi,E192,2025-0402-IND,Manipur,Kangpokpi,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E192::noney,E192,2025-0402-IND,Manipur,Noney,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E192::pherzawl,E192,2025-0402-IND,Manipur,Pherzawl,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E192::senapati,E192,2025-0402-IND,Manipur,Senapati,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E192::tamenglong,E192,2025-0402-IND,Manipur,Tamenglong,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E192::ukhrul,E192,2025-0402-IND,Manipur,Ukhrul,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::east%20garo%20hills,E193,2025-0402-IND,Meghalaya,East Garo Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::east%20jaintia%20hills,E193,2025-0402-IND,Meghalaya,East Jaintia Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::east%20khasi%20hills,E193,2025-0402-IND,Meghalaya,East Khasi Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::eastern%20west%20khasi%20hills,E193,2025-0402-IND,Meghalaya,Eastern West Khasi Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::north%20garo%20hills,E193,2025-0402-IND,Meghalaya,North Garo Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::ri-bhoi,E193,2025-0402-IND,Meghalaya,Ri-Bhoi,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::south%20garo%20hills,E193,2025-0402-IND,Meghalaya,South Garo Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::south%20west%20garo%20hills,E193,2025-0402-IND,Meghalaya,South West Garo Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::south%20west%20khasi%20hills,E193,2025-0402-IND,Meghalaya,South West Khasi Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::west%20garo%20hills,E193,2025-0402-IND,Meghalaya,West Garo Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::west%20jaintia%20hills,E193,2025-0402-IND,Meghalaya,West Jaintia Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E193::west%20khasi%20hills,E193,2025-0402-IND,Meghalaya,West Khasi Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E194::aizawl,E194,2025-0402-IND,Mizoram,Aizawl,2025-05-31,1,0,,heuristic,incomplete,incomplete,0,0
+E194::kolasib,E194,2025-0402-IND,Mizoram,Kolasib,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E195::chumoukedima,E195,2025-0402-IND,Nagaland,Chumoukedima,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E195::shamator,E195,2025-0402-IND,Nagaland,Shamator,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E195::tuensang,E195,2025-0402-IND,Nagaland,Tuensang,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E196::mangan,E196,2025-0402-IND,Sikkim,Mangan,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E197::gomati,E197,2025-0402-IND,Tripura,Gomati,2025-05-31,1,1,,heuristic,incomplete,incomplete,0,0
+E197::khowai,E197,2025-0402-IND,Tripura,Khowai,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E197::north%20tripura,E197,2025-0402-IND,Tripura,North Tripura,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E197::unakoti,E197,2025-0402-IND,Tripura,Unakoti,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
+E197::west%20tripura,E197,2025-0402-IND,Tripura,West Tripura,2025-05-31,2,2,,heuristic,incomplete,incomplete,0,0
+E198::chamba,E198,2025-0469-IND,Himachal Pradesh,Chamba,2025-06-20,0,0,,heuristic,incomplete,incomplete,0,0
+E198::hamirpur,E198,2025-0469-IND,Himachal Pradesh,Hamirpur,2025-06-20,0,0,,heuristic,incomplete,incomplete,0,0
+E198::kinnaur,E198,2025-0469-IND,Himachal Pradesh,Kinnaur,2025-06-20,0,0,,heuristic,incomplete,incomplete,0,0
+E198::kullu,E198,2025-0469-IND,Himachal Pradesh,Kullu,2025-06-20,0,0,,heuristic,incomplete,incomplete,0,0
+E198::mandi,E198,2025-0469-IND,Himachal Pradesh,Mandi,2025-06-20,13,13,,heuristic,incomplete,incomplete,0,0
+E198::shimla,E198,2025-0469-IND,Himachal Pradesh,Shimla,2025-06-20,1,1,,heuristic,incomplete,incomplete,0,0
+E199::bageshwar,E199,2025-0469-IND,Uttarakhand,Bageshwar,2025-06-20,0,0,,heuristic,incomplete,incomplete,0,0
+E199::chamoli,E199,2025-0469-IND,Uttarakhand,Chamoli,2025-06-20,0,0,,heuristic,incomplete,incomplete,0,0
+E200::kishtwar,E200,2025-0690-IND,Jammu and Kashmir,Kishtwar,2025-08-14,15,15,,heuristic,incomplete,incomplete,0,0
+E201::amritsar,E201,2025-0751-IND,Punjab,Amritsar,2025-08-15,3,3,,heuristic,incomplete,incomplete,0,0
+E201::fazilka,E201,2025-0751-IND,Punjab,Fazilka,2025-08-15,2,2,,heuristic,incomplete,incomplete,0,0
+E201::firozpur,E201,2025-0751-IND,Punjab,Firozpur,2025-08-15,0,0,,heuristic,incomplete,incomplete,0,0
+E201::gurdaspur,E201,2025-0751-IND,Punjab,Gurdaspur,2025-08-15,4,4,,heuristic,incomplete,incomplete,0,0
+E201::hoshiarpur,E201,2025-0751-IND,Punjab,Hoshiarpur,2025-08-15,1,1,,heuristic,incomplete,incomplete,0,0
+E201::jalandhar,E201,2025-0751-IND,Punjab,Jalandhar,2025-08-15,0,0,,heuristic,incomplete,incomplete,0,0
+E201::kapurthala,E201,2025-0751-IND,Punjab,Kapurthala,2025-08-15,1,1,,heuristic,incomplete,incomplete,0,0
+E201::ludhiana,E201,2025-0751-IND,Punjab,Ludhiana,2025-08-15,2,2,,heuristic,incomplete,incomplete,0,0
+E201::moga,E201,2025-0751-IND,Punjab,Moga,2025-08-15,0,0,,heuristic,incomplete,incomplete,0,0
+E201::pathankot,E201,2025-0751-IND,Punjab,Pathankot,2025-08-15,0,0,,heuristic,incomplete,incomplete,0,0
+E201::sangrur,E201,2025-0751-IND,Punjab,Sangrur,2025-08-15,0,0,,heuristic,incomplete,incomplete,0,0
+E201::sri%20muktsar%20sahib,E201,2025-0751-IND,Punjab,Sri Muktsar Sahib,2025-08-15,0,0,,heuristic,incomplete,incomplete,0,0
+E202::bageshwar,E202,2025-0803-IND,Uttarakhand,Bageshwar,2025-09-15,0,0,,heuristic,incomplete,incomplete,0,0
+E202::champawat,E202,2025-0803-IND,Uttarakhand,Champawat,2025-09-15,0,0,,heuristic,incomplete,incomplete,0,0
+E202::dehradun,E202,2025-0803-IND,Uttarakhand,Dehradun,2025-09-15,20,19,,heuristic,incomplete,incomplete,0,0
+E202::haridwar,E202,2025-0803-IND,Uttarakhand,Haridwar,2025-09-15,2,2,,heuristic,incomplete,incomplete,0,0
+E202::nainital,E202,2025-0803-IND,Uttarakhand,Nainital,2025-09-15,0,0,,heuristic,incomplete,incomplete,0,0
+E202::pauri%20garhwal,E202,2025-0803-IND,Uttarakhand,Pauri Garhwal,2025-09-15,0,0,,heuristic,incomplete,incomplete,0,0
+E202::pithoragarh,E202,2025-0803-IND,Uttarakhand,Pithoragarh,2025-09-15,0,0,,heuristic,incomplete,incomplete,0,0
+E202::tehri%20garhwal,E202,2025-0803-IND,Uttarakhand,Tehri Garhwal,2025-09-15,0,0,,heuristic,incomplete,incomplete,0,0
+E202::udham%20singh%20nagar,E202,2025-0803-IND,Uttarakhand,Udham Singh Nagar,2025-09-15,0,0,,heuristic,incomplete,incomplete,0,0
+E203::araria,E203,2025-0859-IND,Bihar,Araria,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::darbhanga,E203,2025-0859-IND,Bihar,Darbhanga,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::east%20champaran,E203,2025-0859-IND,Bihar,East Champaran,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::gopalganj,E203,2025-0859-IND,Bihar,Gopalganj,2025-10-03,1,1,,heuristic,incomplete,incomplete,0,0
+E203::katihar,E203,2025-0859-IND,Bihar,Katihar,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::kishanganj,E203,2025-0859-IND,Bihar,Kishanganj,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::madhepura,E203,2025-0859-IND,Bihar,Madhepura,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::madhubani,E203,2025-0859-IND,Bihar,Madhubani,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::muzaffarpur,E203,2025-0859-IND,Bihar,Muzaffarpur,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::purnia,E203,2025-0859-IND,Bihar,Purnia,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::saharsa,E203,2025-0859-IND,Bihar,Saharsa,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::samastipur,E203,2025-0859-IND,Bihar,Samastipur,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::saran,E203,2025-0859-IND,Bihar,Saran,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::sheohar,E203,2025-0859-IND,Bihar,Sheohar,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::sitamarhi,E203,2025-0859-IND,Bihar,Sitamarhi,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::siwan,E203,2025-0859-IND,Bihar,Siwan,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::supaul,E203,2025-0859-IND,Bihar,Supaul,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E203::west%20champaran,E203,2025-0859-IND,Bihar,West Champaran,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E204::alipurduar,E204,2025-0859-IND,West Bengal,Alipurduar,2025-10-03,1,1,,heuristic,incomplete,incomplete,0,0
+E204::cooch%20behar,E204,2025-0859-IND,West Bengal,Cooch Behar,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0
+E204::darjeeling,E204,2025-0859-IND,West Bengal,Darjeeling,2025-10-03,13,13,,heuristic,incomplete,incomplete,0,0
+E204::jalpaiguri,E204,2025-0859-IND,West Bengal,Jalpaiguri,2025-10-03,2,2,,heuristic,incomplete,incomplete,0,0
+E204::kalimpong,E204,2025-0859-IND,West Bengal,Kalimpong,2025-10-03,0,0,,heuristic,incomplete,incomplete,0,0

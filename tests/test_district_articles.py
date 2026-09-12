@@ -220,6 +220,16 @@ class DistrictArticlesTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             district_articles.prepare_district_windows(fallback)
 
+    def test_puducherry_named_district_is_eligible(self):
+        district = self.registry.iloc[:1].copy()
+        district['state'] = 'Puducherry'
+        district['district'] = 'Puducherry'
+        district['aoi_level'] = 'district'
+        district['district_source'] = 'external_recovery'
+        self.assertTrue(bool(district_articles.prepare_district_registry(district).iloc[0]['primary_eligible']))
+        district['district_source'] = 'state_fallback'
+        self.assertFalse(bool(district_articles.prepare_district_registry(district).iloc[0]['primary_eligible']))
+
 
 if __name__ == "__main__":
     unittest.main()

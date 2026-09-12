@@ -1,0 +1,1 @@
+model,fold_id,event_district_id,source_record_id,observed,expected,alpha,absolute_error,negative_log_probability,predictive_low_90,predictive_high_90,interval_covered,interval_width,observed_zero,predicted_zero_probability

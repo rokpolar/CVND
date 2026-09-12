@@ -1,0 +1,5147 @@
+[
+  {
+    "state": "Madhya Pradesh",
+    "district": "Ashoknagar",
+    "shape_id": "76128533B75548370501185",
+    "state_overlap": 0.9993747720152225,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Raisen",
+    "shape_id": "76128533B57893545331548",
+    "state_overlap": 1.0000000000000047,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Chhindwara",
+    "shape_id": "76128533B70646408240587",
+    "state_overlap": 0.9990282166442279,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Betul",
+    "shape_id": "76128533B82559220423608",
+    "state_overlap": 0.99867911026762,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Hoshangabad",
+    "shape_id": "76128533B45314020251888",
+    "state_overlap": 0.9999999999999989,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Sehore",
+    "shape_id": "76128533B39959897010345",
+    "state_overlap": 0.99999999999999,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Jabalpur",
+    "shape_id": "76128533B27615708126939",
+    "state_overlap": 1.0000000000000036,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Narsimhapur",
+    "shape_id": "76128533B20683890392439",
+    "state_overlap": 0.9999999999999966,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Panna",
+    "shape_id": "76128533B81607600692021",
+    "state_overlap": 0.9990285448894722,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Ujjain",
+    "shape_id": "76128533B89286042589317",
+    "state_overlap": 1.0,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Rewa",
+    "shape_id": "76128533B31161316175613",
+    "state_overlap": 0.9957842394986424,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Dindori",
+    "shape_id": "76128533B20502827346807",
+    "state_overlap": 0.997788404945886,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Balaghat",
+    "shape_id": "76128533B66134271591289",
+    "state_overlap": 0.9968253707043105,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Barwani",
+    "shape_id": "76128533B668165975951",
+    "state_overlap": 0.9982541317920101,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Satna",
+    "shape_id": "76128533B39705008578419",
+    "state_overlap": 0.9965858599797274,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Chhatarpur",
+    "shape_id": "76128533B42922918567330",
+    "state_overlap": 0.99072267965395,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Indore",
+    "shape_id": "76128533B60360721573267",
+    "state_overlap": 0.999999999999995,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Ratlam",
+    "shape_id": "76128533B19341883513630",
+    "state_overlap": 0.9973330549615519,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Harda",
+    "shape_id": "76128533B21179322085415",
+    "state_overlap": 0.9999999999999987,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Sagar",
+    "shape_id": "76128533B30447764775083",
+    "state_overlap": 0.9984277834345308,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Neemuch",
+    "shape_id": "76128533B77191913035963",
+    "state_overlap": 0.9511503893042738,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Tikamgarh",
+    "shape_id": "76128533B1566053393466",
+    "state_overlap": 0.9954325217382227,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Guna",
+    "shape_id": "76128533B79048012717121",
+    "state_overlap": 0.9976704676632814,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Dewas",
+    "shape_id": "76128533B53549946596470",
+    "state_overlap": 0.9999999999999989,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Mandsaur",
+    "shape_id": "76128533B25679991785711",
+    "state_overlap": 0.9889156715041745,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Khargone (West Nimar)",
+    "shape_id": "76128533B69481535535995",
+    "state_overlap": 0.9999907019167593,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Sheopur",
+    "shape_id": "76128533B82240600990321",
+    "state_overlap": 0.9745195579737078,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Morena",
+    "shape_id": "76128533B12343314564708",
+    "state_overlap": 0.9976982560469646,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Bhind",
+    "shape_id": "76128533B57712033428660",
+    "state_overlap": 0.9939288566198807,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Jhabua",
+    "shape_id": "76128533B67004768724668",
+    "state_overlap": 0.9992830118558742,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Seoni",
+    "shape_id": "76128533B78482805703540",
+    "state_overlap": 0.9997315788407833,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Khandwa (East Nimar)",
+    "shape_id": "76128533B71271011331008",
+    "state_overlap": 0.9997915835132077,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Umaria",
+    "shape_id": "76128533B4466876522971",
+    "state_overlap": 0.9999999999999994,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Gwalior",
+    "shape_id": "76128533B90551733723251",
+    "state_overlap": 0.9999999999999992,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Damoh",
+    "shape_id": "76128533B44250373880839",
+    "state_overlap": 1.0000000000000044,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Dhar",
+    "shape_id": "76128533B42880544505675",
+    "state_overlap": 1.0000000000000102,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Katni",
+    "shape_id": "76128533B16674973717653",
+    "state_overlap": 0.9999999999999978,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Sidhi",
+    "shape_id": "76128533B53791014455989",
+    "state_overlap": 0.9958048475751319,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Alirajpur",
+    "shape_id": "76128533B35167844027544",
+    "state_overlap": 0.9968504130814592,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Singrauli",
+    "shape_id": "76128533B50014751336341",
+    "state_overlap": 0.9897022429521227,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Bhopal",
+    "shape_id": "76128533B22439249004073",
+    "state_overlap": 0.9999999999999963,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Rajgarh",
+    "shape_id": "76128533B28521131010314",
+    "state_overlap": 0.9961040294316225,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Mandla",
+    "shape_id": "76128533B79087524886024",
+    "state_overlap": 0.9992764362367609,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Shajapur",
+    "shape_id": "76128533B30477486088156",
+    "state_overlap": 0.9999999999999982,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Shivpuri",
+    "shape_id": "76128533B66335428496945",
+    "state_overlap": 0.9901442483702212,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Datia",
+    "shape_id": "76128533B80958502091898",
+    "state_overlap": 0.9893832087730287,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Burhanpur",
+    "shape_id": "76128533B37096001761063",
+    "state_overlap": 0.9967388501053547,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Anuppur",
+    "shape_id": "76128533B25468964623139",
+    "state_overlap": 0.9917041451900617,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Shahdol",
+    "shape_id": "76128533B79303776608295",
+    "state_overlap": 0.9976354578323124,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Vidisha",
+    "shape_id": "76128533B64834018186186",
+    "state_overlap": 0.999999999999999,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Una",
+    "shape_id": "76128533B75262864015847",
+    "state_overlap": 0.99639674960094,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Solan",
+    "shape_id": "76128533B58569599021232",
+    "state_overlap": 0.9978763140889946,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Sirmaur",
+    "shape_id": "76128533B11802210119774",
+    "state_overlap": 0.9900312782042608,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Kinnaur",
+    "shape_id": "76128533B50011981829203",
+    "state_overlap": 0.9762847869441651,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Kullu",
+    "shape_id": "76128533B97425778881707",
+    "state_overlap": 0.9999999999999996,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Chamba",
+    "shape_id": "76128533B58537895532859",
+    "state_overlap": 0.9948912434253017,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Shimla",
+    "shape_id": "76128533B77537928419507",
+    "state_overlap": 0.9910855832711636,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Bilaspur",
+    "shape_id": "76128533B85695392289827",
+    "state_overlap": 0.9973203057936104,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Kangra",
+    "shape_id": "76128533B13697452453823",
+    "state_overlap": 0.9982937289794933,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Lahul & Spiti",
+    "shape_id": "76128533B75359793481950",
+    "state_overlap": 0.9967857592777751,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Mandi",
+    "shape_id": "76128533B23735146933631",
+    "state_overlap": 0.9999999999999999,
+    "valid": true
+  },
+  {
+    "state": "Him\u0101chal Pradesh",
+    "district": "Hamirpur",
+    "shape_id": "76128533B35956162202704",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Lad\u0101kh",
+    "district": "DATA NOT AVAILABLE",
+    "shape_id": "76128533B2782141712775",
+    "state_overlap": 0.8421946348922174,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Anantnag",
+    "shape_id": "76128533B6393836306469",
+    "state_overlap": 0.9993849189649657,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Baramula",
+    "shape_id": "76128533B15567489974292",
+    "state_overlap": 1.0000000000000009,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Kulgam",
+    "shape_id": "76128533B87327155385261",
+    "state_overlap": 1.0000000000000024,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Shupiyan",
+    "shape_id": "76128533B37825396764028",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Reasi",
+    "shape_id": "76128533B50784044604286",
+    "state_overlap": 0.9999999999999972,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Rajouri",
+    "shape_id": "76128533B45655211862788",
+    "state_overlap": 0.9999999999999974,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Jammu",
+    "shape_id": "76128533B3371867518692",
+    "state_overlap": 0.9988867801437651,
+    "valid": true
+  },
+  {
+    "state": "Lad\u0101kh",
+    "district": "Leh(Ladakh)",
+    "shape_id": "76128533B57183548666997",
+    "state_overlap": 0.9979629099722954,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Srinagar",
+    "shape_id": "76128533B32249045995424",
+    "state_overlap": 1.0000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Doda",
+    "shape_id": "76128533B48708628358161",
+    "state_overlap": 0.9994051294118022,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Pulwama",
+    "shape_id": "76128533B74958462315105",
+    "state_overlap": 0.9999999999999988,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Ramban",
+    "shape_id": "76128533B92985585225784",
+    "state_overlap": 0.9999999999999991,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Ganderbal",
+    "shape_id": "76128533B20504715877560",
+    "state_overlap": 0.9999999999999988,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Udhampur",
+    "shape_id": "76128533B31127900859310",
+    "state_overlap": 0.9999999999999982,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Badgam",
+    "shape_id": "76128533B88214376170788",
+    "state_overlap": 1.0000000000000018,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Punch",
+    "shape_id": "76128533B32998994032811",
+    "state_overlap": 0.9999999999999984,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Kupwara",
+    "shape_id": "76128533B68195849750399",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Samba",
+    "shape_id": "76128533B49429513424897",
+    "state_overlap": 0.9992716023762436,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Bandipore",
+    "shape_id": "76128533B41744580856133",
+    "state_overlap": 1.0000000000000013,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Kathua",
+    "shape_id": "76128533B79652855441225",
+    "state_overlap": 0.9819948693729101,
+    "valid": true
+  },
+  {
+    "state": "Lad\u0101kh",
+    "district": "Kargil",
+    "shape_id": "76128533B47664895117076",
+    "state_overlap": 0.9769672215964408,
+    "valid": true
+  },
+  {
+    "state": "Jammu and Kashm\u012br",
+    "district": "Kishtwar",
+    "shape_id": "76128533B20458430922604",
+    "state_overlap": 0.9947343664313925,
+    "valid": true
+  },
+  {
+    "state": "D\u0101dra and Nagar Haveli and Dam\u0101n and Diu",
+    "district": "Daman",
+    "shape_id": "76128533B15180319517641",
+    "state_overlap": 0.6253453929956717,
+    "valid": true
+  },
+  {
+    "state": "D\u0101dra and Nagar Haveli and Dam\u0101n and Diu",
+    "district": "Diu",
+    "shape_id": "76128533B56857410767766",
+    "state_overlap": 0.6752978073723009,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Bhavnagar",
+    "shape_id": "76128533B93450974047240",
+    "state_overlap": 0.9683029397360039,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Ahmadabad",
+    "shape_id": "76128533B93113981386565",
+    "state_overlap": 0.9967856218895744,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Chhota Udaipur",
+    "shape_id": "76128533B69417260894674",
+    "state_overlap": 0.9940939143528084,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Batod",
+    "shape_id": "76128533B48885555323596",
+    "state_overlap": 0.9999999999999968,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Vadodara",
+    "shape_id": "76128533B33151011563565",
+    "state_overlap": 0.9843200072627032,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Aravali",
+    "shape_id": "76128533B62153454383166",
+    "state_overlap": 0.9962218103776473,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Sabar Kantha",
+    "shape_id": "76128533B35129325000613",
+    "state_overlap": 0.9822788540347112,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Banas Kantha",
+    "shape_id": "76128533B52902360321344",
+    "state_overlap": 0.9984167847606621,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Surendranagar",
+    "shape_id": "76128533B7851306475665",
+    "state_overlap": 1.0000000000000027,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Anand",
+    "shape_id": "76128533B69438085511257",
+    "state_overlap": 0.9712267686187637,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Narmada",
+    "shape_id": "76128533B46866455993508",
+    "state_overlap": 0.9907002388099149,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Amreli",
+    "shape_id": "76128533B43737470294384",
+    "state_overlap": 0.9952725552024797,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Dohad",
+    "shape_id": "76128533B70576899889534",
+    "state_overlap": 0.9949672207851313,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Rajkot",
+    "shape_id": "76128533B74992405432705",
+    "state_overlap": 1.0000000000000018,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Kachchh",
+    "shape_id": "76128533B91881382098572",
+    "state_overlap": 0.9644834432242169,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "The Dangs",
+    "shape_id": "76128533B16271917438029",
+    "state_overlap": 0.9915117942512959,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Mahesana",
+    "shape_id": "76128533B81661995166840",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Patan",
+    "shape_id": "76128533B42839853072341",
+    "state_overlap": 0.9999999999999966,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Bharuch",
+    "shape_id": "76128533B63599385776584",
+    "state_overlap": 0.9609256146818814,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Gir Somnath",
+    "shape_id": "76128533B45037556977273",
+    "state_overlap": 0.9969359990521941,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Junagadh",
+    "shape_id": "76128533B40923846274136",
+    "state_overlap": 0.9998974849991423,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Devbhumi Dwarka",
+    "shape_id": "76128533B74381554567803",
+    "state_overlap": 0.9653209634139944,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Navsari",
+    "shape_id": "76128533B6397758882978",
+    "state_overlap": 0.9921225955802679,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Surat",
+    "shape_id": "76128533B97372652494648",
+    "state_overlap": 0.9854471946705028,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Jamnagar",
+    "shape_id": "76128533B35205406647638",
+    "state_overlap": 0.9939482164155675,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Tapi",
+    "shape_id": "76128533B12519626815499",
+    "state_overlap": 0.9783803493695303,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Porbandar",
+    "shape_id": "76128533B84417945851362",
+    "state_overlap": 0.9992697969175345,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Valsad",
+    "shape_id": "76128533B60261306484775",
+    "state_overlap": 0.9828467596110281,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Gandhinagar",
+    "shape_id": "76128533B7606365706860",
+    "state_overlap": 0.999999999999997,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Mahisagar",
+    "shape_id": "76128533B49615943426842",
+    "state_overlap": 0.9960976587087519,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Morbi",
+    "shape_id": "76128533B2080752988715",
+    "state_overlap": 0.9991512260259068,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Panch Mahals",
+    "shape_id": "76128533B16476001647323",
+    "state_overlap": 0.9999999999999984,
+    "valid": true
+  },
+  {
+    "state": "Gujar\u0101t",
+    "district": "Kheda",
+    "shape_id": "76128533B39046535416628",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "D\u0101dra and Nagar Haveli and Dam\u0101n and Diu",
+    "district": "Dadra & Nagar Haveli",
+    "shape_id": "76128533B43252171579976",
+    "state_overlap": 0.9548875325930318,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Prakasam",
+    "shape_id": "76128533B95075104846315",
+    "state_overlap": 0.9969022140668151,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Krishna",
+    "shape_id": "76128533B4481773749911",
+    "state_overlap": 0.990856510806558,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "East Godavari",
+    "shape_id": "76128533B29138015770556",
+    "state_overlap": 0.9969090342273732,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Visakhapatnam",
+    "shape_id": "76128533B71485440235524",
+    "state_overlap": 0.9975402403493745,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Sri Potti Sriramulu Nellore",
+    "shape_id": "76128533B55622097933343",
+    "state_overlap": 0.9989978415215364,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Chittoor",
+    "shape_id": "76128533B22471914548132",
+    "state_overlap": 0.99388983209981,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Srikakulam",
+    "shape_id": "76128533B59405966069108",
+    "state_overlap": 0.9945855874359147,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Kurnool",
+    "shape_id": "76128533B28294794137747",
+    "state_overlap": 0.9922008113699932,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Guntur",
+    "shape_id": "76128533B72541188260561",
+    "state_overlap": 0.9943507677980763,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Vizianagaram",
+    "shape_id": "76128533B36164606132718",
+    "state_overlap": 0.9971329589885943,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Anantapur",
+    "shape_id": "76128533B52664671961643",
+    "state_overlap": 0.9966703217916081,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "West Godavari",
+    "shape_id": "76128533B19792346411952",
+    "state_overlap": 0.9956885805429568,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Kadapa(YSR)",
+    "shape_id": "76128533B72109128179340",
+    "state_overlap": 1.0000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Jamtara",
+    "shape_id": "76128533B17261532861377",
+    "state_overlap": 0.9873486642081724,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Saraikela-Kharsawan",
+    "shape_id": "76128533B50275440439236",
+    "state_overlap": 0.9933634388942382,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Simdega",
+    "shape_id": "76128533B15601995412161",
+    "state_overlap": 0.9933103573022084,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Latehar",
+    "shape_id": "76128533B35143550659673",
+    "state_overlap": 0.99959435369386,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Khunti",
+    "shape_id": "76128533B27414563922025",
+    "state_overlap": 1.0000000000000004,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Pashchimi Singhbhum",
+    "shape_id": "76128533B60893804631193",
+    "state_overlap": 0.9966003474973698,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Hazaribagh",
+    "shape_id": "76128533B1222571856670",
+    "state_overlap": 0.9960259442876058,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Chatra",
+    "shape_id": "76128533B44632955875385",
+    "state_overlap": 0.9958621279778934,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Purbi Singhbhum",
+    "shape_id": "76128533B18931932305748",
+    "state_overlap": 0.9925596758002097,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Kodarma",
+    "shape_id": "76128533B43180268042348",
+    "state_overlap": 0.9863089754971337,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Giridih",
+    "shape_id": "76128533B75529869544465",
+    "state_overlap": 0.9922205024098134,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Lohardaga",
+    "shape_id": "76128533B35439951183692",
+    "state_overlap": 0.9999999999999977,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Sahibganj",
+    "shape_id": "76128533B49805675626253",
+    "state_overlap": 0.9673783049073912,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Godda",
+    "shape_id": "76128533B58697472287618",
+    "state_overlap": 0.9982340500837974,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Palamu",
+    "shape_id": "76128533B6050540865870",
+    "state_overlap": 0.9910473360597567,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Dhanbad",
+    "shape_id": "76128533B94847743365739",
+    "state_overlap": 0.9994626326176846,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Dumka",
+    "shape_id": "76128533B18802630191461",
+    "state_overlap": 0.9960746837541187,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Bokaro",
+    "shape_id": "76128533B30016122738302",
+    "state_overlap": 0.9917543672029381,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Deoghar",
+    "shape_id": "76128533B90068096507942",
+    "state_overlap": 0.9986484173519993,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Gumla",
+    "shape_id": "76128533B80916614857890",
+    "state_overlap": 0.9991385684285833,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Ramgarh",
+    "shape_id": "76128533B79263581040575",
+    "state_overlap": 0.9984774082668024,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Garhwa",
+    "shape_id": "76128533B12294379827032",
+    "state_overlap": 0.9924569187513985,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Ranchi",
+    "shape_id": "76128533B71439508543442",
+    "state_overlap": 0.9957729981783412,
+    "valid": true
+  },
+  {
+    "state": "Jh\u0101rkhand",
+    "district": "Pakur",
+    "shape_id": "76128533B45381195840581",
+    "state_overlap": 0.9928731710482757,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Arwal",
+    "shape_id": "76128533B45623818137574",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Bhagalpur",
+    "shape_id": "76128533B83462627230182",
+    "state_overlap": 0.9962450209366497,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Purnia",
+    "shape_id": "76128533B32499449492865",
+    "state_overlap": 0.9998406067828548,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Madhepura",
+    "shape_id": "76128533B29293163114565",
+    "state_overlap": 1.0000000000000036,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Kishanganj",
+    "shape_id": "76128533B65773363805797",
+    "state_overlap": 0.9840860519199143,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Gaya",
+    "shape_id": "76128533B91871300208785",
+    "state_overlap": 0.9977151660948673,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Banka",
+    "shape_id": "76128533B54517225652088",
+    "state_overlap": 0.9831960512608947,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Aurangabad",
+    "shape_id": "76128533B21485639457044",
+    "state_overlap": 0.9966958406449171,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Nawada",
+    "shape_id": "76128533B36625800127334",
+    "state_overlap": 0.9934369027212702,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Araria",
+    "shape_id": "76128533B4745348385341",
+    "state_overlap": 0.9991618125156763,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Pashchim Champaran",
+    "shape_id": "76128533B17762399278073",
+    "state_overlap": 0.9969477336385033,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Muzaffarpur",
+    "shape_id": "76128533B88481188307630",
+    "state_overlap": 1.0000000000000056,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Saran",
+    "shape_id": "76128533B19903856317609",
+    "state_overlap": 0.9995399833590264,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Sheikhpura",
+    "shape_id": "76128533B29672216830072",
+    "state_overlap": 0.9999999999999992,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Jehanabad",
+    "shape_id": "76128533B24101991435637",
+    "state_overlap": 1.0000000000000038,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Saharsa",
+    "shape_id": "76128533B24755983727265",
+    "state_overlap": 1.0000000000000013,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Gopalganj",
+    "shape_id": "76128533B93214480696409",
+    "state_overlap": 0.9979941466110909,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Vaishali",
+    "shape_id": "76128533B91445917652173",
+    "state_overlap": 1.0000000000000018,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Siwan",
+    "shape_id": "76128533B14033116794334",
+    "state_overlap": 0.9978041126362471,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Sheohar",
+    "shape_id": "76128533B74961596993088",
+    "state_overlap": 0.9999999999999996,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Buxar",
+    "shape_id": "76128533B12244320360965",
+    "state_overlap": 0.9968607698144418,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Madhubani",
+    "shape_id": "76128533B90384580518633",
+    "state_overlap": 0.9996022404053323,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Supaul",
+    "shape_id": "76128533B62794162648247",
+    "state_overlap": 0.999334766758923,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Patna",
+    "shape_id": "76128533B60721316645780",
+    "state_overlap": 0.9999999999999986,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Bhojpur",
+    "shape_id": "76128533B66426066081507",
+    "state_overlap": 0.9976241280554423,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Darbhanga",
+    "shape_id": "76128533B12694285477701",
+    "state_overlap": 1.0000000000000038,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Samastipur",
+    "shape_id": "76128533B66790149147330",
+    "state_overlap": 0.9999999999999992,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Kaimur (Bhabua)",
+    "shape_id": "76128533B78904410352326",
+    "state_overlap": 0.998632897893035,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Rohtas",
+    "shape_id": "76128533B33458049385696",
+    "state_overlap": 0.9989891434514305,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Khagaria",
+    "shape_id": "76128533B78970756356546",
+    "state_overlap": 1.000000000000004,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Munger",
+    "shape_id": "76128533B40868676647207",
+    "state_overlap": 0.9999999999999961,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Sitamarhi",
+    "shape_id": "76128533B21922686388534",
+    "state_overlap": 0.9996509730100186,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Purba Champaran",
+    "shape_id": "76128533B49017555803526",
+    "state_overlap": 0.9995866296514724,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Lakhisarai",
+    "shape_id": "76128533B98985252129882",
+    "state_overlap": 0.9999999999999984,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Jamui",
+    "shape_id": "76128533B16781044866906",
+    "state_overlap": 0.9934701000198536,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Begusarai",
+    "shape_id": "76128533B5855800361016",
+    "state_overlap": 0.9999999999999994,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Nalanda",
+    "shape_id": "76128533B51363853289247",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Bih\u0101r",
+    "district": "Katihar",
+    "shape_id": "76128533B27432148084533",
+    "state_overlap": 0.979688118821951,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Gurgaon",
+    "shape_id": "76128533B67580812983244",
+    "state_overlap": 0.9990095455644772,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Yamunanagar",
+    "shape_id": "76128533B23956636471502",
+    "state_overlap": 0.9895593064993955,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Palwal",
+    "shape_id": "76128533B71088079535368",
+    "state_overlap": 0.9969561348463735,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Panchkula",
+    "shape_id": "76128533B58876508630362",
+    "state_overlap": 0.9762027625135644,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Mewat",
+    "shape_id": "76128533B80016894369263",
+    "state_overlap": 0.9953790609970012,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Jhajjar",
+    "shape_id": "76128533B70554191137208",
+    "state_overlap": 0.9990048330068754,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Bhiwani",
+    "shape_id": "76128533B42646400584570",
+    "state_overlap": 0.9998120542623532,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Kaithal",
+    "shape_id": "76128533B64596101949699",
+    "state_overlap": 0.9896206670363107,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Sonipat",
+    "shape_id": "76128533B69536039643660",
+    "state_overlap": 0.9987406719763864,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Karnal",
+    "shape_id": "76128533B6330405394721",
+    "state_overlap": 0.9985491140572692,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Kurukshetra",
+    "shape_id": "76128533B94710820075529",
+    "state_overlap": 0.9995752901145007,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Jind",
+    "shape_id": "76128533B45106682783501",
+    "state_overlap": 0.9993017179823945,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Panipat",
+    "shape_id": "76128533B86048662040782",
+    "state_overlap": 0.9980739774376882,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Mahendragarh",
+    "shape_id": "76128533B64161607349718",
+    "state_overlap": 0.9937486701188537,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Fatehabad",
+    "shape_id": "76128533B10727492375508",
+    "state_overlap": 0.9956976072808678,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Faridabad",
+    "shape_id": "76128533B40638696154891",
+    "state_overlap": 0.9967761208337544,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Sirsa",
+    "shape_id": "76128533B84837672903805",
+    "state_overlap": 0.9957377451373847,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Hisar",
+    "shape_id": "76128533B22732185131019",
+    "state_overlap": 0.9998483326059121,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Rewari",
+    "shape_id": "76128533B22722327711505",
+    "state_overlap": 0.994153143964644,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Rohtak",
+    "shape_id": "76128533B12244045944458",
+    "state_overlap": 1.0000000000000016,
+    "valid": true
+  },
+  {
+    "state": "Hary\u0101na",
+    "district": "Ambala",
+    "shape_id": "76128533B95049353851516",
+    "state_overlap": 0.9966855691195148,
+    "valid": true
+  },
+  {
+    "state": "Chand\u012bgarh",
+    "district": "Chandigarh",
+    "shape_id": "76128533B56050914259601",
+    "state_overlap": 0.9607652938817278,
+    "valid": true
+  },
+  {
+    "state": "Goa",
+    "district": "North Goa",
+    "shape_id": "76128533B1711704044407",
+    "state_overlap": 0.988103027479979,
+    "valid": true
+  },
+  {
+    "state": "Goa",
+    "district": "South Goa",
+    "shape_id": "76128533B63117839967753",
+    "state_overlap": 0.9870710891478135,
+    "valid": true
+  },
+  {
+    "state": "Andaman and Nicobar Islands",
+    "district": "North  & Middle Andaman",
+    "shape_id": "76128533B28397307540277",
+    "state_overlap": 0.9498296214674178,
+    "valid": true
+  },
+  {
+    "state": "Andaman and Nicobar Islands",
+    "district": "South Andaman",
+    "shape_id": "76128533B22587307937261",
+    "state_overlap": 0.9415170191846671,
+    "valid": true
+  },
+  {
+    "state": "Andaman and Nicobar Islands",
+    "district": "Nicobars",
+    "shape_id": "76128533B33103505211400",
+    "state_overlap": 0.8696492426034794,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Lohit",
+    "shape_id": "76128533B6828791241172",
+    "state_overlap": 0.999818891179549,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "West Siang",
+    "shape_id": "76128533B95764075909869",
+    "state_overlap": 1.0000000000000024,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Upper Subansiri",
+    "shape_id": "76128533B84689409020934",
+    "state_overlap": 0.9967861603193714,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Changlang",
+    "shape_id": "76128533B9558749744242",
+    "state_overlap": 0.9912819856219355,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Longding",
+    "shape_id": "76128533B22715430000002",
+    "state_overlap": 0.9699922461438057,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Lower Subansiri",
+    "shape_id": "76128533B90913053845537",
+    "state_overlap": 0.999999999999999,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "East Kameng",
+    "shape_id": "76128533B76129461078086",
+    "state_overlap": 0.9909226603528668,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Upper Siang",
+    "shape_id": "76128533B76058958071350",
+    "state_overlap": 0.998045142924544,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Anjaw",
+    "shape_id": "76128533B55878637000592",
+    "state_overlap": 0.9863079369017589,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Siang",
+    "shape_id": "76128533B95910687666425",
+    "state_overlap": 1.0000000000000016,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Dibang Valley",
+    "shape_id": "76128533B11651252780045",
+    "state_overlap": 0.9863986764802155,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Kurung Kumey",
+    "shape_id": "76128533B31405919461443",
+    "state_overlap": 0.998337945242513,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "West Kameng",
+    "shape_id": "76128533B61235952222315",
+    "state_overlap": 0.9850290835987244,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Lower Dibang Valley",
+    "shape_id": "76128533B38784530776316",
+    "state_overlap": 0.9902442476954537,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Tawang",
+    "shape_id": "76128533B18668117085772",
+    "state_overlap": 0.9568268629980337,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Papum Pare",
+    "shape_id": "76128533B17472905712757",
+    "state_overlap": 0.9931126953412709,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Goalpara",
+    "shape_id": "76128533B91472319248603",
+    "state_overlap": 0.9965177434702552,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Nalbari",
+    "shape_id": "76128533B40995085026980",
+    "state_overlap": 0.9999999999999994,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Dhubri",
+    "shape_id": "76128533B25835998628545",
+    "state_overlap": 0.9927778273004482,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Sivasagar",
+    "shape_id": "76128533B21722277889516",
+    "state_overlap": 0.9976901913860083,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Karimganj",
+    "shape_id": "76128533B23092176497025",
+    "state_overlap": 0.9932964988360268,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Tinsukia",
+    "shape_id": "76128533B8920527783032",
+    "state_overlap": 0.9881938731568469,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Hailakandi",
+    "shape_id": "76128533B16749627383755",
+    "state_overlap": 0.9919363083059899,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Chirang",
+    "shape_id": "76128533B56012535339305",
+    "state_overlap": 0.9996717042053963,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Dhemaji",
+    "shape_id": "76128533B50650763703739",
+    "state_overlap": 0.99774250017428,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Morigaon",
+    "shape_id": "76128533B17968019348564",
+    "state_overlap": 0.9991981322306754,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Karbi Anglong East",
+    "shape_id": "76128533B38548995376745",
+    "state_overlap": 0.9977322215714345,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Lakhimpur",
+    "shape_id": "76128533B85627242103654",
+    "state_overlap": 0.9995243948985063,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Bongaigaon",
+    "shape_id": "76128533B46490409917345",
+    "state_overlap": 1.0000000000000013,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Baksa",
+    "shape_id": "76128533B8221925175605",
+    "state_overlap": 0.9993744228654442,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Nagaon",
+    "shape_id": "76128533B13437137070957",
+    "state_overlap": 1.000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Cachar",
+    "shape_id": "76128533B26964150246712",
+    "state_overlap": 0.9937946530136813,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Darrang",
+    "shape_id": "76128533B96719327593873",
+    "state_overlap": 1.0000000000000009,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Kamrup",
+    "shape_id": "76128533B66682530790248",
+    "state_overlap": 0.9962382016350696,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Dibrugarh",
+    "shape_id": "76128533B57825981663822",
+    "state_overlap": 0.9988930820756836,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Barpeta",
+    "shape_id": "76128533B47772746709007",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Sonitpur",
+    "shape_id": "76128533B41005496708834",
+    "state_overlap": 0.9940028340808168,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Udalguri",
+    "shape_id": "76128533B20307518801538",
+    "state_overlap": 0.9990983583445522,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Golaghat",
+    "shape_id": "76128533B55519385298440",
+    "state_overlap": 0.996784675892385,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Kamrup Metropolitan",
+    "shape_id": "76128533B38230828972906",
+    "state_overlap": 0.9873069306139608,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Dima Hasao",
+    "shape_id": "76128533B66125202864966",
+    "state_overlap": 0.9948892594214592,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Kokrajhar",
+    "shape_id": "76128533B91480770176940",
+    "state_overlap": 0.9992839632756226,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Jorhat",
+    "shape_id": "76128533B334793883930",
+    "state_overlap": 0.9935987790720444,
+    "valid": true
+  },
+  {
+    "state": "Andhra Pradesh",
+    "district": "Yanam",
+    "shape_id": "76128533B83105693975079",
+    "state_overlap": 0.7006456584349487,
+    "valid": true
+  },
+  {
+    "state": "Puducherry",
+    "district": "Karaikal",
+    "shape_id": "76128533B62624361588317",
+    "state_overlap": 0.9678382124484469,
+    "valid": true
+  },
+  {
+    "state": "Puducherry",
+    "district": "Puducherry",
+    "shape_id": "76128533B29873478326363",
+    "state_overlap": 0.8498761104398276,
+    "valid": true
+  },
+  {
+    "state": "Puducherry",
+    "district": "Mahe",
+    "shape_id": "76128533B41246169049488",
+    "state_overlap": 0.87020373926789,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Lunglei",
+    "shape_id": "76128533B97836280165555",
+    "state_overlap": 0.9991951958204153,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Kolasib",
+    "shape_id": "76128533B38141181853016",
+    "state_overlap": 0.9979759365315426,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Lawngtlai",
+    "shape_id": "76128533B70210707786180",
+    "state_overlap": 0.9934530098305054,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Saiha",
+    "shape_id": "76128533B35468154415031",
+    "state_overlap": 0.9869635919051529,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Champhai",
+    "shape_id": "76128533B39039541714099",
+    "state_overlap": 0.9906538811010205,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Serchhip",
+    "shape_id": "76128533B49456368048033",
+    "state_overlap": 0.9985292472302789,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Aizawl",
+    "shape_id": "76128533B34203923268864",
+    "state_overlap": 0.9910518649166974,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Mamit",
+    "shape_id": "76128533B77336742344288",
+    "state_overlap": 0.9929633773398799,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Chandel",
+    "shape_id": "76128533B59855617266389",
+    "state_overlap": 0.9902563973796762,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Tamenglong",
+    "shape_id": "76128533B11421856387892",
+    "state_overlap": 0.9974185051277337,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Ukhrul",
+    "shape_id": "76128533B44190672061408",
+    "state_overlap": 0.9727621483301634,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Bishnupur",
+    "shape_id": "76128533B14403163214152",
+    "state_overlap": 0.9999999999999991,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Churachandpur",
+    "shape_id": "76128533B50969226102213",
+    "state_overlap": 0.9876063070653311,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Thoubal",
+    "shape_id": "76128533B44197302080139",
+    "state_overlap": 0.9999999999999974,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Imphal East",
+    "shape_id": "76128533B30779259886340",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Kangpokpi",
+    "shape_id": "76128533B56326354019534",
+    "state_overlap": 0.9999999999999978,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Imphal West",
+    "shape_id": "76128533B99807650893733",
+    "state_overlap": 0.9999999999999996,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Mon",
+    "shape_id": "76128533B23611090346849",
+    "state_overlap": 0.9696344901063453,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Tuensang",
+    "shape_id": "76128533B82052450002431",
+    "state_overlap": 0.9642506064242355,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Mokokchung",
+    "shape_id": "76128533B82793215586362",
+    "state_overlap": 0.9985361887000691,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Longleng",
+    "shape_id": "76128533B66411945144923",
+    "state_overlap": 0.9986215574851699,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Phek",
+    "shape_id": "76128533B13733639953372",
+    "state_overlap": 0.9733382944008805,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Kohima",
+    "shape_id": "76128533B53671786151110",
+    "state_overlap": 0.9913669464712418,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Wokha",
+    "shape_id": "76128533B67210465807627",
+    "state_overlap": 0.9976046225733508,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Zunheboto",
+    "shape_id": "76128533B58058152513003",
+    "state_overlap": 1.0000000000000024,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Kiphire",
+    "shape_id": "76128533B49100243723360",
+    "state_overlap": 0.9405350808751002,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Dimapur",
+    "shape_id": "76128533B85747247216737",
+    "state_overlap": 0.993389557637377,
+    "valid": true
+  },
+  {
+    "state": "N\u0101g\u0101land",
+    "district": "Peren",
+    "shape_id": "76128533B2970909480221",
+    "state_overlap": 0.9654770094476648,
+    "valid": true
+  },
+  {
+    "state": "Tripura",
+    "district": "Khowai",
+    "shape_id": "76128533B67044589012853",
+    "state_overlap": 0.9966869378294319,
+    "valid": true
+  },
+  {
+    "state": "Tripura",
+    "district": "Sipahijula",
+    "shape_id": "76128533B43965372582859",
+    "state_overlap": 0.9878576079253633,
+    "valid": true
+  },
+  {
+    "state": "Tripura",
+    "district": "West Tripura",
+    "shape_id": "76128533B97225684979956",
+    "state_overlap": 0.9947101538426115,
+    "valid": true
+  },
+  {
+    "state": "Tripura",
+    "district": "Dhalai",
+    "shape_id": "76128533B42970684683247",
+    "state_overlap": 0.9926318007630415,
+    "valid": true
+  },
+  {
+    "state": "Tripura",
+    "district": "Unokoti",
+    "shape_id": "76128533B4720703924950",
+    "state_overlap": 0.9906259419708984,
+    "valid": true
+  },
+  {
+    "state": "Tripura",
+    "district": "North Tripura",
+    "shape_id": "76128533B77134386587213",
+    "state_overlap": 0.9773826172031865,
+    "valid": true
+  },
+  {
+    "state": "Tripura",
+    "district": "Gomati",
+    "shape_id": "76128533B94126463611805",
+    "state_overlap": 0.9845477488171606,
+    "valid": true
+  },
+  {
+    "state": "Tripura",
+    "district": "South Tripura",
+    "shape_id": "76128533B67748245133340",
+    "state_overlap": 0.9978901651768413,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "South Garo Hills",
+    "shape_id": "76128533B79750857313751",
+    "state_overlap": 0.9985112210081579,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "Ribhoi",
+    "shape_id": "76128533B70570208114113",
+    "state_overlap": 0.985377088905738,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "East Khasi Hills",
+    "shape_id": "76128533B49246671500878",
+    "state_overlap": 0.9954192245767965,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "West Khasi Hills",
+    "shape_id": "76128533B42153891534463",
+    "state_overlap": 0.9983922817963451,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "South West Khasi Hills",
+    "shape_id": "76128533B27102120636500",
+    "state_overlap": 0.9987652227853935,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "West Garo Hills",
+    "shape_id": "76128533B96195300293897",
+    "state_overlap": 0.9980096515923664,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "South West Garo Hills",
+    "shape_id": "76128533B52906466328910",
+    "state_overlap": 0.9914139549811829,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "East Jaintia Hills",
+    "shape_id": "76128533B70185077694103",
+    "state_overlap": 0.9935393817539592,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "West Jaintia Hills",
+    "shape_id": "76128533B84622469201834",
+    "state_overlap": 0.9945172966969166,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "East Garo Hills",
+    "shape_id": "76128533B40535123096970",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "Megh\u0101laya",
+    "district": "North Garo Hills",
+    "shape_id": "76128533B35759455556328",
+    "state_overlap": 0.9765072506366478,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Bemetra",
+    "shape_id": "76128533B73736605657091",
+    "state_overlap": 0.9999999999999991,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Bastar",
+    "shape_id": "76128533B47840093719460",
+    "state_overlap": 0.9955064929302908,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Mungeli",
+    "shape_id": "76128533B17292264941997",
+    "state_overlap": 0.9986059305037472,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Bilaspur",
+    "shape_id": "76128533B81964529079574",
+    "state_overlap": 0.9999313865610803,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Gariaband",
+    "shape_id": "76128533B93063337202124",
+    "state_overlap": 0.9950157488251251,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Kabeerdham",
+    "shape_id": "76128533B48077510234542",
+    "state_overlap": 0.9983018719616544,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Sukma",
+    "shape_id": "76128533B53316015271969",
+    "state_overlap": 0.993303396724967,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Uttar Bastar Kanker",
+    "shape_id": "76128533B26755490628656",
+    "state_overlap": 0.9985656252651627,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Dakshin Bastar Dantewada",
+    "shape_id": "76128533B14292125820380",
+    "state_overlap": 0.999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Surguja",
+    "shape_id": "76128533B52487813780503",
+    "state_overlap": 0.9999999999999993,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Balrampur",
+    "shape_id": "76128533B14598081584747",
+    "state_overlap": 0.9939903172300695,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Kondagaon",
+    "shape_id": "76128533B12144400448811",
+    "state_overlap": 0.9984419006920267,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Narayanpur",
+    "shape_id": "76128533B89979485471283",
+    "state_overlap": 0.9973918845791716,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Durg",
+    "shape_id": "76128533B15993411864574",
+    "state_overlap": 1.0000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Surajpur",
+    "shape_id": "76128533B46979893461805",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Bijapur",
+    "shape_id": "76128533B66145460152555",
+    "state_overlap": 0.9968073297392045,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Raipur",
+    "shape_id": "76128533B57691508962219",
+    "state_overlap": 0.9999999999999969,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Baloda Bazar",
+    "shape_id": "76128533B54306414631532",
+    "state_overlap": 0.9999999999999993,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Balod",
+    "shape_id": "76128533B90169585758701",
+    "state_overlap": 0.9999999999999992,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Koriya",
+    "shape_id": "76128533B1621599562140",
+    "state_overlap": 0.9976694187609826,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Dhamtari",
+    "shape_id": "76128533B71714250401862",
+    "state_overlap": 0.9995301924231801,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Korba",
+    "shape_id": "76128533B89438858641946",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Raigarh",
+    "shape_id": "76128533B67018657649043",
+    "state_overlap": 0.9937257961187042,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Jashpur",
+    "shape_id": "76128533B53609934827566",
+    "state_overlap": 0.9944439645402086,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Mahasamund",
+    "shape_id": "76128533B9759621355294",
+    "state_overlap": 0.9919733699898085,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Janjgir-Champa",
+    "shape_id": "76128533B6310527412636",
+    "state_overlap": 0.9999999999999989,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Rajnandgaon",
+    "shape_id": "76128533B25020556592153",
+    "state_overlap": 0.9956470145912739,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Nainital",
+    "shape_id": "76128533B50374927918374",
+    "state_overlap": 0.9996478866534168,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Dehradun",
+    "shape_id": "76128533B67005208112053",
+    "state_overlap": 0.9929023457276088,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Almora",
+    "shape_id": "76128533B74917207853309",
+    "state_overlap": 0.9999999999999971,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Champawat",
+    "shape_id": "76128533B2761749808956",
+    "state_overlap": 0.997445208372076,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Uttarkashi",
+    "shape_id": "76128533B81694682724865",
+    "state_overlap": 0.9968179739308719,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Garhwal",
+    "shape_id": "76128533B46926146855114",
+    "state_overlap": 0.997019375345783,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Hardwar",
+    "shape_id": "76128533B87833640460819",
+    "state_overlap": 0.9717775792629632,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Rudraprayag",
+    "shape_id": "76128533B46038384763988",
+    "state_overlap": 0.9999999999999982,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Tehri Garhwal",
+    "shape_id": "76128533B61134942989820",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Bageshwar",
+    "shape_id": "76128533B64217423710469",
+    "state_overlap": 0.999999999999999,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Pithoragarh",
+    "shape_id": "76128533B38561771925520",
+    "state_overlap": 0.9977806797268378,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Chamoli",
+    "shape_id": "76128533B69844709752120",
+    "state_overlap": 0.9992830942448204,
+    "valid": true
+  },
+  {
+    "state": "Uttar\u0101khand",
+    "district": "Udham Singh Nagar",
+    "shape_id": "76128533B46531174070538",
+    "state_overlap": 0.9752077297302868,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Kannur",
+    "shape_id": "76128533B41976979530466",
+    "state_overlap": 0.989305693193833,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Pathanamthitta",
+    "shape_id": "76128533B29330052395581",
+    "state_overlap": 0.9987322444407257,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Alappuzha",
+    "shape_id": "76128533B86368264587575",
+    "state_overlap": 0.9963571028648428,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Ernakulam",
+    "shape_id": "76128533B75519739609062",
+    "state_overlap": 0.9972078600920132,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Kollam",
+    "shape_id": "76128533B61117593923933",
+    "state_overlap": 0.9935283992737224,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Kasaragod",
+    "shape_id": "76128533B63366045987285",
+    "state_overlap": 0.9798421051186291,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Idukki",
+    "shape_id": "76128533B35083559759016",
+    "state_overlap": 0.9932034974802434,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Kozhikode",
+    "shape_id": "76128533B3985531353014",
+    "state_overlap": 0.9980291142452271,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Kottayam",
+    "shape_id": "76128533B2576169508425",
+    "state_overlap": 0.9999999999999979,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Thrissur",
+    "shape_id": "76128533B75696328527555",
+    "state_overlap": 0.9966749740660708,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Palakkad",
+    "shape_id": "76128533B19581555782120",
+    "state_overlap": 0.9889701241470404,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Thiruvananthapuram",
+    "shape_id": "76128533B33162455176756",
+    "state_overlap": 0.9816722439974175,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Malappuram",
+    "shape_id": "76128533B83861010847920",
+    "state_overlap": 0.9969951597997777,
+    "valid": true
+  },
+  {
+    "state": "Kerala",
+    "district": "Wayanad",
+    "shape_id": "76128533B82539771173603",
+    "state_overlap": 0.9959887913779251,
+    "valid": true
+  },
+  {
+    "state": "Lakshadweep",
+    "district": "Lakshadweep",
+    "shape_id": "76128533B41477629049356",
+    "state_overlap": 0.12245648870791723,
+    "valid": true
+  },
+  {
+    "state": "Sikkim",
+    "district": "North District",
+    "shape_id": "76128533B65820903826030",
+    "state_overlap": 0.9879056582976604,
+    "valid": true
+  },
+  {
+    "state": "Sikkim",
+    "district": "South District",
+    "shape_id": "76128533B10270619600482",
+    "state_overlap": 0.9922764516998832,
+    "valid": true
+  },
+  {
+    "state": "Sikkim",
+    "district": "West District",
+    "shape_id": "76128533B30151252629779",
+    "state_overlap": 0.9969234290509036,
+    "valid": true
+  },
+  {
+    "state": "Sikkim",
+    "district": "East District",
+    "shape_id": "76128533B67639510673366",
+    "state_overlap": 0.9814698497009061,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Nadia",
+    "shape_id": "76128533B71390118115414",
+    "state_overlap": 0.9997831142725485,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Dakshin Dinajpur",
+    "shape_id": "76128533B43049220506604",
+    "state_overlap": 0.9997739284445997,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Murshidabad",
+    "shape_id": "76128533B51402332870635",
+    "state_overlap": 0.9710303450099266,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Kolkata",
+    "shape_id": "76128533B72507508533064",
+    "state_overlap": 0.9999999999999993,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Maldah",
+    "shape_id": "76128533B36734405131975",
+    "state_overlap": 0.9876526858017726,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "South Twenty Four Parganas",
+    "shape_id": "76128533B2860535426345",
+    "state_overlap": 0.7753627401926582,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Darjiling",
+    "shape_id": "76128533B17109302371020",
+    "state_overlap": 0.9758020480029443,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Jalpaiguri",
+    "shape_id": "76128533B99051523080987",
+    "state_overlap": 0.9915687303802891,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Uttar Dinajpur",
+    "shape_id": "76128533B7157007143985",
+    "state_overlap": 0.9751610496437894,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Purba Medinipur",
+    "shape_id": "76128533B25373378863054",
+    "state_overlap": 0.948911342466063,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Haora",
+    "shape_id": "76128533B22077262393417",
+    "state_overlap": 0.9911295436447722,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "North Twenty Four Parganas",
+    "shape_id": "76128533B93453964263910",
+    "state_overlap": 0.9991729026167225,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Birbhum",
+    "shape_id": "76128533B53366745705922",
+    "state_overlap": 0.9957769169168522,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Barddhaman",
+    "shape_id": "76128533B59121537940607",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Bankura",
+    "shape_id": "76128533B20752885472650",
+    "state_overlap": 0.9999999999999949,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Puruliya",
+    "shape_id": "76128533B16811573188243",
+    "state_overlap": 0.9816691483216724,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Koch Bihar",
+    "shape_id": "76128533B64156747739715",
+    "state_overlap": 0.9942317944280099,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Paschim Medinipur",
+    "shape_id": "76128533B88812350838807",
+    "state_overlap": 0.9998791282714329,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Hugli",
+    "shape_id": "76128533B81857725777974",
+    "state_overlap": 0.9999999999999968,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Pathankot",
+    "shape_id": "76128533B19630094725383",
+    "state_overlap": 0.9321167782329953,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Gurdaspur",
+    "shape_id": "76128533B51331331726928",
+    "state_overlap": 0.9985440072634248,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Patiala",
+    "shape_id": "76128533B39368211148513",
+    "state_overlap": 0.9790673040986544,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Tarn Taran",
+    "shape_id": "76128533B54652028494758",
+    "state_overlap": 0.9999151230702198,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Kapurthala",
+    "shape_id": "76128533B37199077904074",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Fatehgarh Sahib",
+    "shape_id": "76128533B99919205026025",
+    "state_overlap": 0.9999999999999944,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Sangrur",
+    "shape_id": "76128533B82601690264832",
+    "state_overlap": 0.9980459876616484,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Mansa",
+    "shape_id": "76128533B41499938690181",
+    "state_overlap": 0.989035690363761,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Amritsar",
+    "shape_id": "76128533B8426545955058",
+    "state_overlap": 0.9992995498780595,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Faridkot",
+    "shape_id": "76128533B13552746017223",
+    "state_overlap": 1.0,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Ludhiana",
+    "shape_id": "76128533B46195204843409",
+    "state_overlap": 0.9999999999999997,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Bathinda",
+    "shape_id": "76128533B13791982054894",
+    "state_overlap": 0.9948818656220607,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Jalandhar",
+    "shape_id": "76128533B91211372620495",
+    "state_overlap": 1.000000000000006,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Muktsar",
+    "shape_id": "76128533B50184713016881",
+    "state_overlap": 0.9985109219696818,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Moga",
+    "shape_id": "76128533B18834172694083",
+    "state_overlap": 0.9999999999999988,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Hoshiarpur",
+    "shape_id": "76128533B41747884279129",
+    "state_overlap": 0.9914878826548795,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Rupnagar",
+    "shape_id": "76128533B24759700890118",
+    "state_overlap": 0.9902968080819978,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Firozpur",
+    "shape_id": "76128533B421757708753",
+    "state_overlap": 0.9999126481911498,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Fazilka",
+    "shape_id": "76128533B7291413308870",
+    "state_overlap": 0.9983510552440527,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Barnala",
+    "shape_id": "76128533B39051871473194",
+    "state_overlap": 0.9999999999999972,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Sahibzada Ajit Singh Nagar",
+    "shape_id": "76128533B12197302963241",
+    "state_overlap": 0.9692004752078438,
+    "valid": true
+  },
+  {
+    "state": "Punjab",
+    "district": "Shahid Bhagat Singh Nagar",
+    "shape_id": "76128533B14984770113274",
+    "state_overlap": 0.9999999999999991,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Mandya",
+    "shape_id": "76128533B43335986553000",
+    "state_overlap": 1.0,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Mysore",
+    "shape_id": "76128533B95879808095476",
+    "state_overlap": 0.9845095188871287,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Chikkaballapura",
+    "shape_id": "76128533B80772392204057",
+    "state_overlap": 0.9963728272560491,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Yadgir",
+    "shape_id": "76128533B84927972855096",
+    "state_overlap": 0.9975184400667977,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Chikmagalur",
+    "shape_id": "76128533B15550697205080",
+    "state_overlap": 0.9999999999999989,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Chitradurga",
+    "shape_id": "76128533B47594161132413",
+    "state_overlap": 0.9969671788565748,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Haveri",
+    "shape_id": "76128533B86721175299079",
+    "state_overlap": 0.9999999999999996,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Dakshina Kannada",
+    "shape_id": "76128533B54396396829952",
+    "state_overlap": 0.9964914921693315,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Raichur",
+    "shape_id": "76128533B284680734793",
+    "state_overlap": 0.9977563772152278,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Kolar",
+    "shape_id": "76128533B29292403538801",
+    "state_overlap": 0.9948450883314305,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Bijapur",
+    "shape_id": "76128533B40495457052818",
+    "state_overlap": 0.9976921875388565,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Uttara Kannada",
+    "shape_id": "76128533B79180273895456",
+    "state_overlap": 0.9985631329874073,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Davanagere",
+    "shape_id": "76128533B49597693387243",
+    "state_overlap": 0.999999999999997,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Dharwad",
+    "shape_id": "76128533B75110579117636",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Bidar",
+    "shape_id": "76128533B9794868259401",
+    "state_overlap": 0.992363174209322,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Chamarajanagar",
+    "shape_id": "76128533B16628456658675",
+    "state_overlap": 0.9787552337927573,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Gulbarga",
+    "shape_id": "76128533B1083016608278",
+    "state_overlap": 0.9970720968441202,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Gadag",
+    "shape_id": "76128533B33966968116377",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Udupi",
+    "shape_id": "76128533B4839184447445",
+    "state_overlap": 0.9988620874896581,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Bagalkot",
+    "shape_id": "76128533B83278580643229",
+    "state_overlap": 1.0000000000000009,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Hassan",
+    "shape_id": "76128533B54775433755383",
+    "state_overlap": 0.9999999999999982,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Shimoga",
+    "shape_id": "76128533B85389886560116",
+    "state_overlap": 1.0000000000000029,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Bellary",
+    "shape_id": "76128533B92621859299479",
+    "state_overlap": 0.9971862787664763,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Kodagu",
+    "shape_id": "76128533B57609583882472",
+    "state_overlap": 0.997994688156366,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Bangalore Rural",
+    "shape_id": "76128533B48075109668277",
+    "state_overlap": 0.9997723376828013,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Tumkur",
+    "shape_id": "76128533B64905184636422",
+    "state_overlap": 0.9953332499437667,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Belgaum",
+    "shape_id": "76128533B74319098136622",
+    "state_overlap": 0.9981444398919145,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Koppal",
+    "shape_id": "76128533B79601545186231",
+    "state_overlap": 0.999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Bangalore",
+    "shape_id": "76128533B76927648517269",
+    "state_overlap": 0.9977181271578932,
+    "valid": true
+  },
+  {
+    "state": "Karn\u0101taka",
+    "district": "Ramanagara",
+    "shape_id": "76128533B79600797037735",
+    "state_overlap": 0.9980607133782596,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Washim",
+    "shape_id": "76128533B59866172845044",
+    "state_overlap": 0.9999999999999993,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Ahmadnagar",
+    "shape_id": "76128533B47816398970283",
+    "state_overlap": 1.000000000000003,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Latur",
+    "shape_id": "76128533B98050240849249",
+    "state_overlap": 0.9963968979986205,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Solapur",
+    "shape_id": "76128533B62490300334729",
+    "state_overlap": 0.9988275347895703,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Nashik",
+    "shape_id": "76128533B50056157736049",
+    "state_overlap": 0.9992596988253714,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Osmanabad",
+    "shape_id": "76128533B20474666262371",
+    "state_overlap": 0.999024545994803,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Sindhudurg",
+    "shape_id": "76128533B39238815774480",
+    "state_overlap": 0.9941311789640289,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Kolhapur",
+    "shape_id": "76128533B66719908763317",
+    "state_overlap": 0.9955497447303974,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Chandrapur",
+    "shape_id": "76128533B31342633028465",
+    "state_overlap": 0.9977181682226784,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Akola",
+    "shape_id": "76128533B12380735325851",
+    "state_overlap": 1.0000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Parbhani",
+    "shape_id": "76128533B27609096170969",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Yavatmal",
+    "shape_id": "76128533B61814103412294",
+    "state_overlap": 0.9995354911061655,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Nanded",
+    "shape_id": "76128533B63783580004876",
+    "state_overlap": 0.9887427787544996,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Dhule",
+    "shape_id": "76128533B25344721013980",
+    "state_overlap": 0.9997319125125268,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Satara",
+    "shape_id": "76128533B93152786731267",
+    "state_overlap": 1.0000000000000009,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Sangli",
+    "shape_id": "76128533B9892158671522",
+    "state_overlap": 0.99664777191731,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Hingoli",
+    "shape_id": "76128533B86424887513424",
+    "state_overlap": 0.9999999999999961,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Pune",
+    "shape_id": "76128533B71380851181380",
+    "state_overlap": 0.9999999999999972,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Gondiya",
+    "shape_id": "76128533B76286653784168",
+    "state_overlap": 0.9971752523190285,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Amravati",
+    "shape_id": "76128533B63815467309300",
+    "state_overlap": 0.99733684326632,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Nandurbar",
+    "shape_id": "76128533B61304308285665",
+    "state_overlap": 0.9940949942711074,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Ratnagiri",
+    "shape_id": "76128533B8575303957680",
+    "state_overlap": 0.9982825636023602,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Wardha",
+    "shape_id": "76128533B37486272752374",
+    "state_overlap": 1.0,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Aurangabad",
+    "shape_id": "76128533B39329594544563",
+    "state_overlap": 1.000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Buldana",
+    "shape_id": "76128533B70021405538438",
+    "state_overlap": 0.9986329300169222,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Gadchiroli",
+    "shape_id": "76128533B36958871695926",
+    "state_overlap": 0.9945141290003748,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Jalgaon",
+    "shape_id": "76128533B40156838070",
+    "state_overlap": 0.9954727228340721,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Raigarh",
+    "shape_id": "76128533B99895802074414",
+    "state_overlap": 0.9871510494038614,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Bhandara",
+    "shape_id": "76128533B14243635342908",
+    "state_overlap": 0.999300986651551,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Bid",
+    "shape_id": "76128533B5215906594478",
+    "state_overlap": 0.9999999999999993,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Jalna",
+    "shape_id": "76128533B55603381222870",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Thane",
+    "shape_id": "76128533B74859418903113",
+    "state_overlap": 0.9999609553735737,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Palghar",
+    "shape_id": "76128533B37148244536449",
+    "state_overlap": 0.977525912864018,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Mumbai",
+    "shape_id": "76128533B16442413169750",
+    "state_overlap": 0.8090240676389127,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Mumbai Suburban",
+    "shape_id": "76128533B67326016655833",
+    "state_overlap": 0.9927997375451983,
+    "valid": true
+  },
+  {
+    "state": "Mah\u0101r\u0101shtra",
+    "district": "Nagpur",
+    "shape_id": "76128533B3026318797185",
+    "state_overlap": 0.9984527386774531,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Subarnapur",
+    "shape_id": "76128533B6884509901047",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Puri",
+    "shape_id": "76128533B80656256583567",
+    "state_overlap": 0.9973941785455944,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Anugul",
+    "shape_id": "76128533B60186573304899",
+    "state_overlap": 0.9999999999999996,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Debagarh",
+    "shape_id": "76128533B64749652826710",
+    "state_overlap": 1.0000000000000018,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Koraput",
+    "shape_id": "76128533B47448948912370",
+    "state_overlap": 0.9871694249362767,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Nabarangapur",
+    "shape_id": "76128533B99037046327658",
+    "state_overlap": 0.9971010210091772,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Bargarh",
+    "shape_id": "76128533B74482494441458",
+    "state_overlap": 0.9980549768983631,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Jagatsinghapur",
+    "shape_id": "76128533B32949331695897",
+    "state_overlap": 0.9919915561428764,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Kandhamal",
+    "shape_id": "76128533B8798165946807",
+    "state_overlap": 0.9999999999999986,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Khordha",
+    "shape_id": "76128533B52802748445403",
+    "state_overlap": 1.0000000000000004,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Mayurbhanj",
+    "shape_id": "76128533B34216851275023",
+    "state_overlap": 0.9975776408552481,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Malkangiri",
+    "shape_id": "76128533B85917349021677",
+    "state_overlap": 0.9855992111759461,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Baleshwar",
+    "shape_id": "76128533B81147724102706",
+    "state_overlap": 0.9976280385141679,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Sambalpur",
+    "shape_id": "76128533B84129562351919",
+    "state_overlap": 0.9999999999999988,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Gajapati",
+    "shape_id": "76128533B73854359719990",
+    "state_overlap": 0.9939177903565307,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Dhenkanal",
+    "shape_id": "76128533B32509926596077",
+    "state_overlap": 1.0000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Nayagarh",
+    "shape_id": "76128533B77719785699048",
+    "state_overlap": 0.9999999999999979,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Cuttack",
+    "shape_id": "76128533B70842759816811",
+    "state_overlap": 1.0,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Jajapur",
+    "shape_id": "76128533B91818883767147",
+    "state_overlap": 0.9999999999999952,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Kalahandi",
+    "shape_id": "76128533B70759200975708",
+    "state_overlap": 0.9999734379478081,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Baudh",
+    "shape_id": "76128533B84772375641700",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Kendrapara",
+    "shape_id": "76128533B98951704707517",
+    "state_overlap": 0.9962505639742477,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Kendujhar",
+    "shape_id": "76128533B59504628511334",
+    "state_overlap": 0.9998088506226005,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Ganjam",
+    "shape_id": "76128533B633842538351",
+    "state_overlap": 0.9983589605790435,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Sundargarh",
+    "shape_id": "76128533B6128685860104",
+    "state_overlap": 0.9962731672314616,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Bhadrak",
+    "shape_id": "76128533B58797478961083",
+    "state_overlap": 0.9937297419738752,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Nuapada",
+    "shape_id": "76128533B33451850475260",
+    "state_overlap": 0.9977103171325055,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Jharsuguda",
+    "shape_id": "76128533B93240759409313",
+    "state_overlap": 0.9997011350577181,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Rayagada",
+    "shape_id": "76128533B50498617372937",
+    "state_overlap": 0.9965647156824896,
+    "valid": true
+  },
+  {
+    "state": "Odisha",
+    "district": "Balangir",
+    "shape_id": "76128533B44395557448920",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Jhunjhunun",
+    "shape_id": "76128533B86135761305702",
+    "state_overlap": 0.9988936644681463,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Jaisalmer",
+    "shape_id": "76128533B14849085202492",
+    "state_overlap": 0.9999357856391335,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Sikar",
+    "shape_id": "76128533B20732636837048",
+    "state_overlap": 0.999894175675684,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Hanumangarh",
+    "shape_id": "76128533B92044109913630",
+    "state_overlap": 0.9984394483120477,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Nagaur",
+    "shape_id": "76128533B43544960343942",
+    "state_overlap": 1.0000000000000002,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Barmer",
+    "shape_id": "76128533B75922461866405",
+    "state_overlap": 0.9998662325757905,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Ganganagar",
+    "shape_id": "76128533B72079972234594",
+    "state_overlap": 0.9989280968412776,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Jodhpur",
+    "shape_id": "76128533B84094142280102",
+    "state_overlap": 0.9999999999999986,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Churu",
+    "shape_id": "76128533B66825707357376",
+    "state_overlap": 0.9996242732288744,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Bikaner",
+    "shape_id": "76128533B55039756001726",
+    "state_overlap": 0.9999577162473128,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Pratapgarh",
+    "shape_id": "76128533B50613523798301",
+    "state_overlap": 0.9702801570160774,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Bhilwara",
+    "shape_id": "76128533B93441663686573",
+    "state_overlap": 0.999864662684763,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Tonk",
+    "shape_id": "76128533B54301724756864",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Bundi",
+    "shape_id": "76128533B69412164931619",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Jaipur",
+    "shape_id": "76128533B28755611410447",
+    "state_overlap": 0.9999453046021552,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Kota",
+    "shape_id": "76128533B74447895476194",
+    "state_overlap": 0.9913580273662265,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Pali",
+    "shape_id": "76128533B9783509419210",
+    "state_overlap": 1.0,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Rajsamand",
+    "shape_id": "76128533B11082155919544",
+    "state_overlap": 0.9999999999999966,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Ajmer",
+    "shape_id": "76128533B60180372390230",
+    "state_overlap": 0.9999999999999967,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Bharatpur",
+    "shape_id": "76128533B25576352747885",
+    "state_overlap": 0.9904284009860389,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Dungarpur",
+    "shape_id": "76128533B12079567451207",
+    "state_overlap": 0.9989745832057626,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Chittaurgarh",
+    "shape_id": "76128533B58527154065354",
+    "state_overlap": 0.9837473989960783,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Udaipur",
+    "shape_id": "76128533B37392223136185",
+    "state_overlap": 0.998613830621466,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Jalor",
+    "shape_id": "76128533B59459156188335",
+    "state_overlap": 0.9956327217610401,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Dausa",
+    "shape_id": "76128533B73809971322123",
+    "state_overlap": 0.9999999999999987,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Sirohi",
+    "shape_id": "76128533B49867917697487",
+    "state_overlap": 0.9871828790754623,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Ariyalur",
+    "shape_id": "76128533B16889790752134",
+    "state_overlap": 1.0000000000000004,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Sivaganga",
+    "shape_id": "76128533B89925537847414",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Thanjavur",
+    "shape_id": "76128533B54279577656282",
+    "state_overlap": 0.9972521233809722,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Tiruvannamalai",
+    "shape_id": "76128533B89575258858457",
+    "state_overlap": 1.0000000000000016,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Ramanathapuram",
+    "shape_id": "76128533B1629699732681",
+    "state_overlap": 0.9890035359985114,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Tirunelveli",
+    "shape_id": "76128533B52639434516056",
+    "state_overlap": 0.9992911861890176,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Virudhunagar",
+    "shape_id": "76128533B70974512658911",
+    "state_overlap": 0.9999351282591983,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Thiruvarur",
+    "shape_id": "76128533B45072089356239",
+    "state_overlap": 0.9897444199527001,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Thiruvallur",
+    "shape_id": "76128533B45592431373253",
+    "state_overlap": 0.9835334472425208,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Tiruchirappalli",
+    "shape_id": "76128533B1645877589145",
+    "state_overlap": 1.000000000000005,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Tiruppur",
+    "shape_id": "76128533B57036825942975",
+    "state_overlap": 0.999172390866006,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Theni",
+    "shape_id": "76128533B79135514077232",
+    "state_overlap": 0.9991479658120765,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Salem",
+    "shape_id": "76128533B52590639744160",
+    "state_overlap": 0.9999999999999982,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Madurai",
+    "shape_id": "76128533B71824979235503",
+    "state_overlap": 1.000000000000003,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Perambalur",
+    "shape_id": "76128533B51799781997546",
+    "state_overlap": 1.0000000000000009,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Dindigul",
+    "shape_id": "76128533B28879432621383",
+    "state_overlap": 0.9999984098555731,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Karur",
+    "shape_id": "76128533B19335918192159",
+    "state_overlap": 1.0000000000000009,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Dharmapuri",
+    "shape_id": "76128533B4743808419896",
+    "state_overlap": 1.000000000000003,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Namakkal",
+    "shape_id": "76128533B51372664315362",
+    "state_overlap": 0.9999999999999988,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Moradabad",
+    "shape_id": "76128533B51849218363622",
+    "state_overlap": 0.9867135040680453,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Sambhal",
+    "shape_id": "76128533B7545062765383",
+    "state_overlap": 1.0000000000000009,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Budaun",
+    "shape_id": "76128533B84679668760735",
+    "state_overlap": 1.0000000000000027,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Kanshiram Nagar",
+    "shape_id": "76128533B7643504807381",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Bahraich",
+    "shape_id": "76128533B66612397499770",
+    "state_overlap": 0.9991205917393529,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Hapur",
+    "shape_id": "76128533B87317961648652",
+    "state_overlap": 0.9999999999999981,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Sitapur",
+    "shape_id": "76128533B8998698404381",
+    "state_overlap": 0.9999999999999951,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Samli",
+    "shape_id": "76128533B35465481868600",
+    "state_overlap": 0.9998011750073198,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Shrawasti",
+    "shape_id": "76128533B34832354589031",
+    "state_overlap": 0.9992042075087948,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Meerut",
+    "shape_id": "76128533B61760400952464",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Aligarh",
+    "shape_id": "76128533B60862799554879",
+    "state_overlap": 0.999994273752994,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Bulandshahr",
+    "shape_id": "76128533B13272482176343",
+    "state_overlap": 0.9999999999999996,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Bijnor",
+    "shape_id": "76128533B14534161138054",
+    "state_overlap": 0.9960840348871424,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Baghpat",
+    "shape_id": "76128533B46268976217915",
+    "state_overlap": 0.9994357569025519,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Kheri",
+    "shape_id": "76128533B76479861129777",
+    "state_overlap": 0.9996649814389041,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Rampur",
+    "shape_id": "76128533B46682008877369",
+    "state_overlap": 0.9781958762183922,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Bareilly",
+    "shape_id": "76128533B68554447699730",
+    "state_overlap": 0.9968248947067284,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Mathura",
+    "shape_id": "76128533B88758450653156",
+    "state_overlap": 0.9986965352474997,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Etah",
+    "shape_id": "76128533B15342706434354",
+    "state_overlap": 0.9999999999999988,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Hardoi",
+    "shape_id": "76128533B25208535254310",
+    "state_overlap": 1.0000000000000022,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Balrampur",
+    "shape_id": "76128533B87371000929659",
+    "state_overlap": 0.9996053310864966,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Mahamaya Nagar",
+    "shape_id": "76128533B8878807356913",
+    "state_overlap": 0.9999999999999974,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Shahjahanpur",
+    "shape_id": "76128533B96870418529164",
+    "state_overlap": 1.0000000000000029,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Farrukhabad",
+    "shape_id": "76128533B59596968713717",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Kannauj",
+    "shape_id": "76128533B80966996849325",
+    "state_overlap": 0.999999999999996,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Pilibhit",
+    "shape_id": "76128533B90071703601852",
+    "state_overlap": 0.9959374418354291,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Mainpuri",
+    "shape_id": "76128533B84772439394056",
+    "state_overlap": 0.9999999999999974,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Jyotiba Phule Nagar",
+    "shape_id": "76128533B21119051307760",
+    "state_overlap": 0.999999999999999,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Firozabad",
+    "shape_id": "76128533B91640519747726",
+    "state_overlap": 1.0000000000000004,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Sultanpur",
+    "shape_id": "76128533B1996088953603",
+    "state_overlap": 1.0000000000000013,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Chitrakoot",
+    "shape_id": "76128533B53725063754801",
+    "state_overlap": 0.9855644305588023,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Basti",
+    "shape_id": "76128533B18648944871057",
+    "state_overlap": 1.0000000000000018,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Gorakhpur",
+    "shape_id": "76128533B40226077866964",
+    "state_overlap": 0.9999999999999938,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Lucknow",
+    "shape_id": "76128533B49436035281620",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Azamgarh",
+    "shape_id": "76128533B73925919155567",
+    "state_overlap": 0.999999999999999,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Faizabad",
+    "shape_id": "76128533B60320291189162",
+    "state_overlap": 0.9999999999999994,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Ambedkar Nagar",
+    "shape_id": "76128533B7879459377699",
+    "state_overlap": 1.0,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Ballia",
+    "shape_id": "76128533B73769926250842",
+    "state_overlap": 0.9875424888510522,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Kanpur Nagar",
+    "shape_id": "76128533B23710487943819",
+    "state_overlap": 1.0000000000000029,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Sant Ravidas Nagar (Bhadohi)",
+    "shape_id": "76128533B87515288456202",
+    "state_overlap": 0.9999999999999979,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Siddharthnagar",
+    "shape_id": "76128533B40509297062120",
+    "state_overlap": 0.9996931456713337,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Auraiya",
+    "shape_id": "76128533B20660206691661",
+    "state_overlap": 1.0000000000000004,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Sant Kabir Nagar",
+    "shape_id": "76128533B54279951806726",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Kaushambi",
+    "shape_id": "76128533B98420041301261",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Jalaun",
+    "shape_id": "76128533B15835290978888",
+    "state_overlap": 0.9989557710211068,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Varanasi",
+    "shape_id": "76128533B7622369120497",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Pratapgarh",
+    "shape_id": "76128533B20647769792365",
+    "state_overlap": 0.9999999999999992,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Hamirpur",
+    "shape_id": "76128533B27201270098470",
+    "state_overlap": 0.9999999999999974,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Gonda",
+    "shape_id": "76128533B67530641452031",
+    "state_overlap": 1.0000000000000013,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Kanpur Dehat",
+    "shape_id": "76128533B80299348876357",
+    "state_overlap": 1.0000000000000022,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Jaunpur",
+    "shape_id": "76128533B64732849735713",
+    "state_overlap": 1.0000000000000038,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Bara Banki",
+    "shape_id": "76128533B74938989340684",
+    "state_overlap": 1.0000000000000027,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Mahoba",
+    "shape_id": "76128533B11083100419963",
+    "state_overlap": 0.9855840801601038,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Mahrajganj",
+    "shape_id": "76128533B29554440319099",
+    "state_overlap": 0.9990570649967967,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Mirzapur",
+    "shape_id": "76128533B18243475101734",
+    "state_overlap": 0.9966392862698599,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Kushinagar",
+    "shape_id": "76128533B26931973511551",
+    "state_overlap": 0.9933625580589871,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Deoria",
+    "shape_id": "76128533B40023971667984",
+    "state_overlap": 0.9929418621805584,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Unnao",
+    "shape_id": "76128533B42623703243160",
+    "state_overlap": 0.9999999999999989,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Fatehpur",
+    "shape_id": "76128533B7124697440629",
+    "state_overlap": 1.0000000000000024,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Mau",
+    "shape_id": "76128533B88623139855224",
+    "state_overlap": 1.0000000000000027,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Rae Bareli",
+    "shape_id": "76128533B74057284038879",
+    "state_overlap": 1.0000000000000007,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Amethi",
+    "shape_id": "76128533B13908294104682",
+    "state_overlap": 1.0000000000000016,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Ghaziabad",
+    "shape_id": "76128533B68984344044805",
+    "state_overlap": 0.9993706486910224,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Muzaffarnagar",
+    "shape_id": "76128533B87051210355251",
+    "state_overlap": 0.99265818735734,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Gautam Buddha Nagar",
+    "shape_id": "76128533B34462889864078",
+    "state_overlap": 0.9985684706452166,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Saharanpur",
+    "shape_id": "76128533B33437990510331",
+    "state_overlap": 0.9921080240671233,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Etawah",
+    "shape_id": "76128533B79784438258239",
+    "state_overlap": 0.998584765688838,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Agra",
+    "shape_id": "76128533B26296891809198",
+    "state_overlap": 0.9929154560525711,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Cuddalore",
+    "shape_id": "76128533B61321395333865",
+    "state_overlap": 0.9967611728476683,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Pudukkottai",
+    "shape_id": "76128533B64003397477352",
+    "state_overlap": 0.9994402112345477,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Vellore",
+    "shape_id": "76128533B89374164863010",
+    "state_overlap": 0.9975518049970189,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Chennai",
+    "shape_id": "76128533B89024397489955",
+    "state_overlap": 0.9892574796774715,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Nagapattinam",
+    "shape_id": "76128533B88466433485589",
+    "state_overlap": 0.9843480494453979,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Viluppuram",
+    "shape_id": "76128533B86430586962522",
+    "state_overlap": 0.9949940837072219,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Kancheepuram",
+    "shape_id": "76128533B83644689337946",
+    "state_overlap": 0.9987609996791965,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Kanniyakumari",
+    "shape_id": "76128533B53796141759805",
+    "state_overlap": 0.9939231842777053,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Thoothukkudi",
+    "shape_id": "76128533B31241181851990",
+    "state_overlap": 0.9963177390128889,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Allahabad",
+    "shape_id": "76128533B51368558457506",
+    "state_overlap": 0.996502644026389,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Chandauli",
+    "shape_id": "76128533B13673614951516",
+    "state_overlap": 0.9938483797116644,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Jhansi",
+    "shape_id": "76128533B66072086060089",
+    "state_overlap": 0.9794107448934484,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Banda",
+    "shape_id": "76128533B45099378029175",
+    "state_overlap": 0.9917446786456366,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Sonbhadra",
+    "shape_id": "76128533B52058654769647",
+    "state_overlap": 0.9928533871807704,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Lalitpur",
+    "shape_id": "76128533B59256192226816",
+    "state_overlap": 0.992214978621059,
+    "valid": true
+  },
+  {
+    "state": "Uttar Pradesh",
+    "district": "Ghazipur",
+    "shape_id": "76128533B49460554954204",
+    "state_overlap": 0.9966114775741437,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Krishnagiri",
+    "shape_id": "76128533B35717069663408",
+    "state_overlap": 0.9972027594579838,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Erode",
+    "shape_id": "76128533B15337568968545",
+    "state_overlap": 0.9990355766467812,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Coimbatore",
+    "shape_id": "76128533B4753404177348",
+    "state_overlap": 0.9978557789938377,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "The Nilgiris",
+    "shape_id": "76128533B21812274124310",
+    "state_overlap": 0.996636723021743,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Jhalawar",
+    "shape_id": "76128533B91943656836526",
+    "state_overlap": 0.9830446358501769,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Alwar",
+    "shape_id": "76128533B5628791558965",
+    "state_overlap": 0.9989595948484135,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Baran",
+    "shape_id": "76128533B98308664713511",
+    "state_overlap": 0.9895937239777531,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Dhaulpur",
+    "shape_id": "76128533B64898456093948",
+    "state_overlap": 0.9925873331775057,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Sawai Madhopur",
+    "shape_id": "76128533B28138828116492",
+    "state_overlap": 0.9915733629383257,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Banswara",
+    "shape_id": "76128533B96584288929219",
+    "state_overlap": 0.9904511593702082,
+    "valid": true
+  },
+  {
+    "state": "R\u0101jasth\u0101n",
+    "district": "Karauli",
+    "shape_id": "76128533B34069028331411",
+    "state_overlap": 0.9992589170530604,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Jangaon",
+    "shape_id": "76128533B8930157583904",
+    "state_overlap": 1.000000000000001,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Bhadradri",
+    "shape_id": "76128533B30246762498957",
+    "state_overlap": 0.7397615475697691,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Hydrabad",
+    "shape_id": "76128533B84676164211579",
+    "state_overlap": 0.9999999999999978,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Mancherial",
+    "shape_id": "76128533B53018054761164",
+    "state_overlap": 0.9980714793516005,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Karimnagar",
+    "shape_id": "76128533B58104976570569",
+    "state_overlap": 0.9999999999999996,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Nizamabad",
+    "shape_id": "76128533B58493775523243",
+    "state_overlap": 0.99840937319404,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Medak",
+    "shape_id": "76128533B97126567441665",
+    "state_overlap": 0.9999999999999998,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Rangareddy",
+    "shape_id": "76128533B31175522938788",
+    "state_overlap": 0.9999999999999991,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Nalgonda",
+    "shape_id": "76128533B8892495882090",
+    "state_overlap": 0.9941768552681972,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Nagarkurnool",
+    "shape_id": "76128533B31246189674263",
+    "state_overlap": 0.9961085124385255,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Adilabad",
+    "shape_id": "76128533B38354309367879",
+    "state_overlap": 0.9841890128686434,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Komaram Bheem",
+    "shape_id": "76128533B33226396095315",
+    "state_overlap": 0.9899621133472091,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Nirmal",
+    "shape_id": "76128533B25280172436550",
+    "state_overlap": 0.9938197989755885,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Kamareddy",
+    "shape_id": "76128533B21068662878849",
+    "state_overlap": 0.999106575849227,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Jagtial",
+    "shape_id": "76128533B67054925852429",
+    "state_overlap": 1.000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Jayashankar",
+    "shape_id": "76128533B60322704115131",
+    "state_overlap": 0.9964162092270301,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Peddapalli",
+    "shape_id": "76128533B53373614632193",
+    "state_overlap": 1.0000000000000009,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Rajanna Sircilla",
+    "shape_id": "76128533B21485897206517",
+    "state_overlap": 1.0000000000000013,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Sangareddy",
+    "shape_id": "76128533B40480360118262",
+    "state_overlap": 0.9986468243796707,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Siddipet",
+    "shape_id": "76128533B31111781432113",
+    "state_overlap": 1.0000000000000013,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Khammam",
+    "shape_id": "76128533B96571577519224",
+    "state_overlap": 0.9889236787996651,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Mahabubabad",
+    "shape_id": "76128533B28290181894983",
+    "state_overlap": 1.0000000000000004,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Warangal (R)",
+    "shape_id": "76128533B63833971372360",
+    "state_overlap": 0.9999999999999997,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Warangal (U)",
+    "shape_id": "76128533B34824326075805",
+    "state_overlap": 1.0000000000000004,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Suryapet",
+    "shape_id": "76128533B24594618908349",
+    "state_overlap": 0.9971064665527902,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Yadadri Bhongiri",
+    "shape_id": "76128533B85157820615002",
+    "state_overlap": 0.9999999999999984,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Medchal",
+    "shape_id": "76128533B71056110198347",
+    "state_overlap": 1.0,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Vikarabad",
+    "shape_id": "76128533B74887942950962",
+    "state_overlap": 0.9982916134228421,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Jogulamba",
+    "shape_id": "76128533B72829420975835",
+    "state_overlap": 0.9945787221605901,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Wanaparthy",
+    "shape_id": "76128533B49394025943542",
+    "state_overlap": 0.9985565408863569,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Mahabubnagar",
+    "shape_id": "76128533B58170186574016",
+    "state_overlap": 1.0000000000000002,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Tirap",
+    "shape_id": "76128533B99469070633974",
+    "state_overlap": 0.9895414323147426,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Namsai",
+    "shape_id": "76128533B1875965515331",
+    "state_overlap": 0.9997860989010148,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "East Siang",
+    "shape_id": "76128533B53717296822608",
+    "state_overlap": 0.9915523485834733,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Kra Daadi",
+    "shape_id": "76128533B12129983841645",
+    "state_overlap": 0.9999999999999976,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Charaideo",
+    "shape_id": "76128533B89228414823983",
+    "state_overlap": 0.9906073140049534,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Majuli",
+    "shape_id": "76128533B15157901669242",
+    "state_overlap": 0.9999999999999991,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Biswanath",
+    "shape_id": "76128533B40714385808093",
+    "state_overlap": 0.9993105122042407,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Hojai",
+    "shape_id": "76128533B70315194619807",
+    "state_overlap": 0.9999999999999991,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "Karbi Anglong West",
+    "shape_id": "76128533B57995625790051",
+    "state_overlap": 0.9953816271516838,
+    "valid": true
+  },
+  {
+    "state": "Assam",
+    "district": "South Salmara-Mankachar",
+    "shape_id": "76128533B20298037622173",
+    "state_overlap": 0.9815485005537558,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Agar",
+    "shape_id": "76128533B29721759389119",
+    "state_overlap": 0.990497407645692,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Pherzawl",
+    "shape_id": "76128533B71254158898830",
+    "state_overlap": 0.9743553509210934,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Noney",
+    "shape_id": "76128533B36594996191182",
+    "state_overlap": 0.9999999999999981,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Tengnoupal",
+    "shape_id": "76128533B61831576863813",
+    "state_overlap": 0.955916709185806,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Kamjong",
+    "shape_id": "76128533B66815680293072",
+    "state_overlap": 0.9659195824121333,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Senapati",
+    "shape_id": "76128533B95642877176862",
+    "state_overlap": 0.9862194794065916,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Kakching",
+    "shape_id": "76128533B82279368215419",
+    "state_overlap": 1.0000000000000038,
+    "valid": true
+  },
+  {
+    "state": "Manipur",
+    "district": "Jiribam",
+    "shape_id": "76128533B64881202564500",
+    "state_overlap": 0.9683940052176159,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "North West",
+    "shape_id": "76128533B71353370080255",
+    "state_overlap": 0.9985865839886856,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "New Delhi",
+    "shape_id": "76128533B58262202014972",
+    "state_overlap": 0.9978795010127054,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "East",
+    "shape_id": "76128533B72485933575946",
+    "state_overlap": 0.9990687596814969,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "South West",
+    "shape_id": "76128533B53136419849111",
+    "state_overlap": 0.9974186667836438,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "West",
+    "shape_id": "76128533B68379889579232",
+    "state_overlap": 0.9999148375218438,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "South",
+    "shape_id": "76128533B97089774514948",
+    "state_overlap": 0.9805002984865682,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "North ",
+    "shape_id": "76128533B45574198291616",
+    "state_overlap": 0.9980575375588366,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "North East",
+    "shape_id": "76128533B9976625304286",
+    "state_overlap": 0.9887545054956551,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "South East",
+    "shape_id": "76128533B1420136949169",
+    "state_overlap": 0.9860817093529082,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "Central",
+    "shape_id": "76128533B19832024635761",
+    "state_overlap": 0.9999999999999997,
+    "valid": true
+  },
+  {
+    "state": "Delhi",
+    "district": "Shahdara",
+    "shape_id": "76128533B81419063387740",
+    "state_overlap": 0.9959737290929961,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Alipurduar",
+    "shape_id": "76128533B23858286755005",
+    "state_overlap": 0.9656911694389393,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Jhargram",
+    "shape_id": "76128533B24861976740713",
+    "state_overlap": 0.9971647199211737,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Paschim Barddhaman",
+    "shape_id": "76128533B60845263086042",
+    "state_overlap": 0.9964012185638987,
+    "valid": true
+  },
+  {
+    "state": "West Bengal",
+    "district": "Kalimpong",
+    "shape_id": "76128533B78458325839103",
+    "state_overlap": 0.9724220390404619,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Narayanpet",
+    "shape_id": "76128533B14968875277413",
+    "state_overlap": 0.9979058872823466,
+    "valid": true
+  },
+  {
+    "state": "Telang\u0101na",
+    "district": "Mulugu",
+    "shape_id": "76128533B84398038505400",
+    "state_overlap": 0.999946531404112,
+    "valid": true
+  },
+  {
+    "state": "Madhya Pradesh",
+    "district": "Niwari",
+    "shape_id": "76128533B38767180038480",
+    "state_overlap": 0.9787831371057248,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Pakke Kessang",
+    "shape_id": "76128533B24017517661394",
+    "state_overlap": 0.9977629491931449,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Kamle",
+    "shape_id": "76128533B19898496046456",
+    "state_overlap": 0.9968721239728043,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Shi Yomi",
+    "shape_id": "76128533B46084756537322",
+    "state_overlap": 0.996564633238457,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Leparada",
+    "shape_id": "76128533B25448742967716",
+    "state_overlap": 1.0000000000000013,
+    "valid": true
+  },
+  {
+    "state": "Arun\u0101chal Pradesh",
+    "district": "Lower Siang",
+    "shape_id": "76128533B49993259380917",
+    "state_overlap": 0.9934563786262735,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Hnahthial",
+    "shape_id": "76128533B64903504311414",
+    "state_overlap": 0.9998468758767276,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Saitual",
+    "shape_id": "76128533B62486414019241",
+    "state_overlap": 0.9964979186974827,
+    "valid": true
+  },
+  {
+    "state": "Mizoram",
+    "district": "Khawzawl",
+    "shape_id": "76128533B41321006511827",
+    "state_overlap": 0.9992956195851719,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Tirupathur",
+    "shape_id": "76128533B11403491783632",
+    "state_overlap": 0.9986948351165909,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Ranipet",
+    "shape_id": "76128533B22687502928564",
+    "state_overlap": 0.9962392594584926,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Chengalputtu",
+    "shape_id": "76128533B88669134807148",
+    "state_overlap": 0.9999999999999973,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Kallakurichi",
+    "shape_id": "76128533B19545859035458",
+    "state_overlap": 1.0000000000000018,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Mayiladuthurai",
+    "shape_id": "76128533B63176236753619",
+    "state_overlap": 0.9964073857167511,
+    "valid": true
+  },
+  {
+    "state": "Tamil N\u0101du",
+    "district": "Tenkasi",
+    "shape_id": "76128533B27604563137530",
+    "state_overlap": 0.999564645709842,
+    "valid": true
+  },
+  {
+    "state": "Chhatt\u012bsgarh",
+    "district": "Gaurella Pendra Marwahi",
+    "shape_id": "76128533B38203190611533",
+    "state_overlap": 0.9994248391179354,
+    "valid": true
+  }
+]

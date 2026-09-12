@@ -157,14 +157,15 @@ def prepare_district_registry(events: pd.DataFrame) -> pd.DataFrame:
         frame["event_district_id"].ne("")
         & ~frame["district"].map(_is_missing_district)
         & ~frame.apply(
-            lambda row: normalize_district(row["district"]) == normalize_district(row["state"]),
+            lambda row: normalize_district(row["district"]) == normalize_district(row["state"])
+            and not (normalize_district(row["state"]) == "puducherry"
+                     and row.get("aoi_level") == "district"
+                     and row.get("district_source") != "state_fallback"),
             axis=1,
         )
     )
     if 'aoi_level' in frame:
         frame['primary_eligible'] &= frame['aoi_level'].eq('district')
-    if 'district_resolution_confidence' in frame:
-        frame['primary_eligible'] &= frame['district_resolution_confidence'].eq('high')
     for value in frame.loc[frame["primary_eligible"], "start_date"]:
         try:
             date.fromisoformat(value)
@@ -597,7 +598,7 @@ def registry_fingerprint(registry: pd.DataFrame) -> str:
     """Hash identity and dates so a cached manifest cannot fit another run."""
     frame = prepare_district_registry(registry)
     columns = ["event_district_id", "event_id", "source_record_id", "state", "district", "start_date"]
-    columns += [c for c in ["aoi_level", "district_resolution_confidence"] if c in frame]
+    columns += [c for c in ["aoi_level"] if c in frame]
     rows = frame.loc[:, columns].sort_values("event_district_id").to_dict(orient="records")
     payload = json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
