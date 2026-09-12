@@ -153,6 +153,22 @@ class MeasurementLayerTests(unittest.TestCase):
             digest = inference.sha256_file(checkpoint)
             self.assertEqual(inference.ensure_checkpoint(checkpoint, expected_sha256=digest), checkpoint)
 
+    def test_score_cache_requires_exact_h5_checkpoint_spec_and_layout(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            h5_path, score_path = root / "E001.h5", root / "E001.npz"
+            h5_path.write_bytes(b"patches-v1")
+            digest = inference.sha256_file(h5_path)
+            np.savez(score_path, patches_sha256=np.array(digest),
+                     weights_sha256=np.array("weights"),
+                     checkpoint_sha256=np.array("weights"),
+                     spec_version=np.array(SPEC_VERSION),
+                     layout_version=np.array(H5_LAYOUT_VERSION))
+            self.assertTrue(inference.score_cache_is_current(h5_path, score_path, "weights"))
+            h5_path.write_bytes(b"patches-v2")
+            self.assertFalse(inference.score_cache_is_current(h5_path, score_path, "weights"))
+            self.assertFalse(inference.score_cache_is_current(h5_path, score_path, "other"))
+
 
 if HAS_TORCH:
     import torch

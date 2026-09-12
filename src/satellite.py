@@ -16,6 +16,7 @@ import json
 import os
 import re
 import unicodedata
+import tempfile
 from typing import NamedTuple
 
 from datetime import datetime, timezone
@@ -114,8 +115,18 @@ def _json_default(value):
     raise TypeError(f'{type(value).__name__} is not JSON serializable')
 
 def save_checkpoint(data, path):
-    with open(path, 'w') as f:
-        json.dump(data, f, default=_json_default)
+    directory = os.path.dirname(path) or '.'
+    os.makedirs(directory, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix='.checkpoint-', suffix='.tmp', dir=directory)
+    try:
+        with os.fdopen(fd, 'w') as f:
+            json.dump(data, f, default=_json_default)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

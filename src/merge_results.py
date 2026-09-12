@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import glob
+import hashlib
 import os
 import sys
 from collections import Counter
@@ -120,7 +121,15 @@ SCORE_VECTORS = ('ndwi_flood_km2', 'tile_area_km2', 'usable_px', 'usable_km2',
                  's1_flood_km2', 'block_id')
 
 
-def validate_district_scores(archive, row):
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_district_scores(archive, row, h5_path=None):
     """External scores must prove the same district/geometry, model, spec and layout."""
     for field in ['event_district_id', 'event_id', 'source_record_id', 'state', 'district', 'start_date', 'geometry_id']:
         if field not in archive or _text(archive, field) != str(row.get(field)):
@@ -133,6 +142,11 @@ def validate_district_scores(archive, row):
     if 'layout_version' not in archive or _text(archive, 'layout_version') != H5_LAYOUT_VERSION:
         raise ValueError(f'SITS score archive has another H5 layout; expected {H5_LAYOUT_VERSION}; '
                          f'rerun run_sits_inference.py')
+    if h5_path is not None:
+        if not os.path.exists(h5_path):
+            raise ValueError('SITS score archive has no current H5 input; rerun Track B')
+        if _text(archive, 'patches_sha256') != _sha256_file(h5_path):
+            raise ValueError('SITS score archive does not match the current H5 patches; rerun inference')
     scores, water = archive['scores'], archive['ndwi_flood']
     if scores.ndim != 1 or water.shape != scores.shape or not np.isfinite(scores).all() or not np.isfinite(water).all():
         raise ValueError('SITS scores and NDWI pixel counts must be equal-length finite vectors')
@@ -372,7 +386,7 @@ def _share(part, whole):
 
 
 def merge_row(a, archive=None, index_entry=None, converter=None, spec=SPEC,
-              routing=DEFAULT_ROUTING) -> dict:
+              routing=DEFAULT_ROUTING, h5_path=None) -> dict:
     if routing not in ROUTING_MODES:
         raise ValueError(f'routing must be one of {ROUTING_MODES}')
     key = analysis_key(a)
@@ -380,7 +394,7 @@ def merge_row(a, archive=None, index_entry=None, converter=None, spec=SPEC,
     status, reason = track_b_status(key, index_entry, archive is not None)
     sits = {}
     if archive is not None and aoi_matched and status == 'ok':
-        validate_district_scores(archive, a)
+        validate_district_scores(archive, a, h5_path)
         sits = _sits_candidates(archive, spec)
         if not sits:
             status, reason = 'unavailable', 'no_usable_pixels'
@@ -480,7 +494,9 @@ def main(routing=DEFAULT_ROUTING):
         a = track_a[key]
         archive = np.load(archives[key], allow_pickle=False) if key in archives else None
         try:
-            row = merge_row(a, archive, index.get(key), converter, routing=routing)
+            h5_path = os.path.join(PATCH_DIR, f'{cache_stem(key)}.h5')
+            row = merge_row(a, archive, index.get(key), converter, routing=routing,
+                            h5_path=h5_path if archive is not None else None)
         finally:
             if archive is not None:
                 archive.close()

@@ -1,4 +1,5 @@
 import json
+import hashlib
 import sys
 import tempfile
 import unittest
@@ -212,6 +213,10 @@ class MergeMainTests(unittest.TestCase):
             scores = root / "scores"
             scores.mkdir()
             for key, changes in archives:
+                h5 = root / f"{cache_stem(key)}.h5"
+                h5.write_bytes(f"fixture:{key}".encode())
+                changes = dict(changes)
+                changes.setdefault("patches_sha256", np.array(hashlib.sha256(h5.read_bytes()).hexdigest()))
                 score_archive(scores / f"{cache_stem(key)}.npz", **changes)
             track, output, index = root / "track.csv", root / "combined.csv", root / "index.csv"
             pd.DataFrame(track_rows).to_csv(track, index=False)

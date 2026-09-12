@@ -34,11 +34,11 @@ Two names referencing the same Census geography in the same event are marked
 ambiguous by the downstream join. West Karbi Anglong / West Karbi-Anglong in
 E081 is one such duplicate; the registry itself is not modified here.
 
-The current regenerated lookup contains 506 linked regions out of 566 (39
-additional recoveries), leaving 60 unlinked regions / 128 event-district rows.
-The join identifies 14 rows in seven same-event alias pairs as ambiguous,
-including pre-existing aliases such as Badaun/Budaun and Mumbai/Mumbai City.
-After that duplicate safeguard, 1,488 of 1,630 rows have usable Census links.
+The current primary-registry lookup contains 484 linked regions out of 542,
+leaving 58 unlinked regions / 124 event-district rows. Canonical alias merging
+happens before this lookup, so aliases such as Badaun/Budaun and Mumbai/Mumbai
+City do not create duplicate event-district rows. In total, 1,429 of 1,553
+primary rows have usable Census links before downstream geometry checks.
 
 ## Scope limitations
 

@@ -1,9 +1,15 @@
-"""Merge accepted district recovery rows while retaining source provenance."""
+"""Merge district recovery rows while retaining source provenance."""
 import json
 import pandas as pd
 from functools import lru_cache
 from pathlib import Path
 from district_keys import make_event_district_id, normalize_name
+
+INDEPENDENT_SOURCE_CLASSES = frozenset({
+    'official_government', 'state_government', 'nrsc_isro',
+    'humanitarian', 'humanitarian_network', 'humanitarian_aggregator',
+    'national_red_cross', 'ifrc',
+})
 
 
 @lru_cache(maxsize=2048)
@@ -58,6 +64,12 @@ def apply_recovery(registry, evidence, aliases=()):
             json.loads(row.get('district_resolution_evidence', '[]')))), ensure_ascii=False)
         previous['district_source'] = '|'.join(sorted(set(
             previous['district_source'].split('|') + row['district_source'].split('|'))))
+        for field in ('district_resolution_source_class',
+                      'district_resolution_evidence_type',
+                      'district_resolution_circularity_risk',
+                      'district_resolution_source_url'):
+            values = [str(previous.get(field, '')).strip(), str(row.get(field, '')).strip()]
+            previous[field] = '|'.join(sorted({value for value in values if value}))
 
     for row in registry.to_dict('records'):
         for name in names(row['district']):
@@ -97,6 +109,10 @@ def apply_recovery(registry, evidence, aliases=()):
             provenance = {key: value for key, value in record.items() if value != ''}
             row = {**parent, 'district': name, 'district_source': 'external_recovery',
                    'aoi_level': 'district', 'aoi_match_status': 'pending',
+                   'district_resolution_source_class': record.get('source_class', ''),
+                   'district_resolution_evidence_type': record.get('evidence_type', ''),
+                   'district_resolution_circularity_risk': record.get('circularity_risk', ''),
+                   'district_resolution_source_url': record.get('source_url', ''),
                    'district_resolution_evidence': json.dumps([
                        json.dumps({'mapping_row': number, **provenance,
                                    'source_verification': 'supplied_not_independently_verified'},
@@ -115,10 +131,24 @@ def apply_recovery(registry, evidence, aliases=()):
     return result
 
 
-def recover_from_files(registry, path):
+def independent_recovery_evidence(evidence):
+    """Return geography evidence that was not selected from news coverage."""
+    keep = pd.Series(True, index=evidence.index)
+    if 'circularity_risk' in evidence:
+        risk = evidence['circularity_risk'].fillna('').astype(str).str.strip().str.lower()
+        keep &= risk.isin(('', 'none'))
+    if 'source_class' in evidence:
+        source_class = evidence['source_class'].fillna('').astype(str).str.strip().str.lower()
+        keep &= source_class.eq('') | source_class.isin(INDEPENDENT_SOURCE_CLASSES)
+    return evidence.loc[keep].copy()
+
+
+def recover_from_files(registry, path, *, include_circularity_risk=False):
     if not path.exists():
         return registry.drop(columns=['district_resolution_confidence'], errors='ignore')
     evidence = pd.read_csv(path, dtype=str, keep_default_na=False)
+    if not include_circularity_risk:
+        evidence = independent_recovery_evidence(evidence)
     aliases_path = path.with_name('district_recovery_aliases.csv')
     aliases = (pd.read_csv(aliases_path, dtype=str, keep_default_na=False).to_dict('records')
                if aliases_path.exists() else [])

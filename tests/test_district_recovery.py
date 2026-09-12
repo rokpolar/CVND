@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from district_recovery import apply_recovery
+from district_recovery import apply_recovery, independent_recovery_evidence
 
 
 class RecoveryTests(unittest.TestCase):
@@ -30,3 +30,21 @@ class RecoveryTests(unittest.TestCase):
         empty = pd.DataFrame(columns=self.record)
         result = apply_recovery(self.base, empty)
         self.assertTrue(result.empty)
+
+    def test_news_informed_recovery_is_not_primary(self):
+        evidence = pd.DataFrame([
+            {**self.record, 'circularity_risk': 'none',
+             'source_class': 'official_government'},
+            {**self.record, 'canonical_district': 'Jorhat',
+             'circularity_risk': 'news_used_for_geography_only',
+             'source_class': 'official_quoted_media'},
+            {**self.record, 'canonical_district': 'Kamrup',
+             'circularity_risk': 'none',
+             'source_class': 'secondary_quotes_government'},
+        ])
+        primary = apply_recovery(self.base, independent_recovery_evidence(evidence))
+        sensitivity = apply_recovery(self.base, evidence)
+        self.assertEqual(primary.district.tolist(), ['Dhemaji'])
+        self.assertEqual(sensitivity.district.tolist(), ['Dhemaji', 'Jorhat', 'Kamrup'])
+        self.assertNotIn('district_resolution_confidence', sensitivity)
+        self.assertEqual(primary.iloc[0].district_resolution_circularity_risk, 'none')

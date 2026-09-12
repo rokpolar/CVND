@@ -176,6 +176,26 @@ def complete_h5_files(
     return files
 
 
+def score_cache_is_current(input_path: Path, output_path: Path,
+                           checkpoint_hash: str) -> bool:
+    """A score cache is reusable only for these exact patches/model/spec/layout."""
+    if not output_path.exists():
+        return False
+    try:
+        with np.load(output_path, allow_pickle=False) as archive:
+            expected = {
+                "patches_sha256": sha256_file(input_path),
+                "weights_sha256": checkpoint_hash,
+                "checkpoint_sha256": checkpoint_hash,
+                "spec_version": SPEC_VERSION,
+                "layout_version": H5_LAYOUT_VERSION,
+            }
+            return all(field in archive and str(np.asarray(archive[field]).item()) == value
+                       for field, value in expected.items())
+    except (OSError, ValueError, KeyError):
+        return False
+
+
 def _band_indices(hdf: h5py.File) -> list[int]:
     """RGB band positions for the model input."""
     raw = hdf["meta"].attrs.get("bands", "")
@@ -482,11 +502,19 @@ def main() -> int:
     args = parse_args()
     event_ids = set(args.events) if args.events else None
     inputs = complete_h5_files(PATCH_DIR, event_ids)
+    if not inputs:
+        print("No completed H5 files are available for local inference.")
+        return 0
+    checkpoint = ensure_checkpoint(
+        args.checkpoint, offline=args.offline, expected_sha256=args.expected_sha256
+    )
+    checkpoint_hash = sha256_file(checkpoint)
     pending = [
         path
         for path in inputs
         if args.overwrite
-        or not (SCORE_DIR / f"{path.stem}.npz").exists()
+        or not score_cache_is_current(
+            path, SCORE_DIR / f"{path.stem}.npz", checkpoint_hash)
     ]
     if not pending:
         print(
@@ -497,9 +525,6 @@ def main() -> int:
 
     if torch is None:
         raise RuntimeError("SITS inference requires PyTorch (pip install torch)")
-    checkpoint = ensure_checkpoint(
-        args.checkpoint, offline=args.offline, expected_sha256=args.expected_sha256
-    )
     if args.device == "auto":
         device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
@@ -512,8 +537,6 @@ def main() -> int:
         )
     print(f"Local SITS inference device: {device}")
     model = build_local_model(checkpoint, device)
-    checkpoint_hash = sha256_file(checkpoint)
-
     completed, stale = 0, []
     for input_path in pending:
         output_path = SCORE_DIR / f"{input_path.stem}.npz"
