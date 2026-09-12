@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 
 EVENT_DISTRICT_COLUMNS = [
@@ -71,6 +71,41 @@ _CANONICAL_STATE_NAMES = {
         "Daman and Diu", "Dadra and Nagar Haveli and Daman and Diu",
     )
 }
+
+
+# Closed status vocabularies shared by every district step. resolve_aoi only
+# ever writes "matched"; a registry "pending"/"unresolved" is not a match.
+AOI_MATCHED = frozenset({"matched"})
+SATELLITE_OBSERVED = frozenset({"observed"})
+
+_BLANK_KEYS = {"", "nan", "none", "<na>", "nat"}
+
+
+def analysis_key(row: Any) -> str:
+    """Return the event-district key, or the parent event ID when it is blank.
+
+    This is the only key helper: Track A/B caches, H5/NPZ file stems, the merge
+    and the area table must agree on it exactly.
+    """
+
+    value = row.get("event_district_id") if hasattr(row, "get") else None
+    if value is not None and str(value).strip().casefold() not in _BLANK_KEYS:
+        return str(value)
+    return str(row.get("event_id"))
+
+
+def cache_stem(key: str) -> str:
+    """Filesystem-safe, reversible file stem for an analysis key.
+
+    District keys contain ``::``, which Windows rejects in file names. Percent-
+    encoding every reserved character keeps H5/NPZ names portable.
+    """
+
+    return quote(str(key), safe="")
+
+
+def key_from_stem(stem: str) -> str:
+    return unquote(stem)
 
 
 def normalize_name(value: Any) -> str:

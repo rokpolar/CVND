@@ -12,7 +12,7 @@ from join_district_flood_articles import build_district_table, qc_summary
 class DistrictJoinTests(unittest.TestCase):
     def setUp(self):
         self.registry = pd.DataFrame([dict(event_district_id=f'E1::{d}', event_id='E1', source_record_id='F1', state='Assam', district=d, start_date='2020-01-01', aoi_level='district', district_resolution_confidence='high') for d in ['A', 'B', 'C']])
-        self.flood = self.registry.copy().assign(flood_area_km2=[5, np.nan, 0], flood_ratio=[.05, np.nan, 0], aoi_area_km2=100, satellite_source='S1', satellite_status=['observed', 'failed', 'observed'], aoi_match_status='matched')
+        self.flood = self.registry.copy().assign(flood_area_km2=[5, np.nan, 0], flood_ratio=[.05, np.nan, 0], aoi_area_km2=100, satellite_source='S1_TO_SITS', satellite_status=['observed', 'failed', 'observed'], aoi_match_status='matched')
         self.articles = self.registry.copy().assign(final_article_count=[0, 0, 0], collection_status=['complete', 'complete', 'failed'], count_source='heuristic')
         self.cov = pd.DataFrame([dict(state='Assam', district=d, total_population=100, urban_population=20, rural_population=80, urban_population_share=.2, census_year=2011, source='official', match_status='matched') for d in ['A', 'B', 'C']])
 
@@ -46,6 +46,24 @@ class DistrictJoinTests(unittest.TestCase):
         table, _ = build_district_table(self.registry, self.flood, self.articles.iloc[1:], self.cov)
         self.assertTrue(pd.isna(table.loc[0, 'article_count']))
         self.assertEqual(table.loc[0, 'article_collection_status'], 'not_executed')
+
+    def test_invalid_satellite_source_excluded(self):
+        for source in ['S1(cloud)', 'NONE']:
+            with self.subTest(source=source):
+                table, _ = build_district_table(self.registry, self.flood.assign(satellite_source=source), self.articles, self.cov)
+                self.assertFalse(table.loc[0, 'analysis_eligible'])
+                self.assertIn('satellite_source_invalid', table.loc[0, 'exclusion_reason'])
+                self.assertTrue(pd.isna(table.loc[0, 'flood_area_km2']))
+
+    def test_satellite_source_and_route_reason_carried(self):
+        flood = self.flood.assign(satellite_source=['SITS_NDWI', 'NONE', 'S1_TO_SITS'],
+                                  route_reason=['sits_gate_passed', 'sits_pending', 'sits_unavailable_converted'],
+                                  spec_version='fs1-test')
+        table, _ = build_district_table(self.registry, flood, self.articles, self.cov)
+        self.assertEqual(table['route_reason'].tolist(), ['sits_gate_passed', 'sits_pending', 'sits_unavailable_converted'])
+        self.assertEqual(table.loc[0, 'satellite_source'], 'SITS_NDWI')
+        self.assertEqual(table.loc[0, 'spec_version'], 'fs1-test')
+        self.assertEqual(qc_summary(table)['satellite_source_counts'], {'SITS_NDWI': 1})
 
     def test_invalid_flood_area_and_census_denominator_excluded(self):
         table, _ = build_district_table(self.registry, self.flood.assign(flood_area_km2=1000), self.articles, self.cov.assign(total_population=0))
