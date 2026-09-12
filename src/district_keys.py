@@ -23,7 +23,6 @@ EVENT_DISTRICT_COLUMNS = [
     "end_date",
     "date_precision",
     "district_source",
-    "district_resolution_confidence",
     "aoi_level",
     "aoi_match_status",
 ]

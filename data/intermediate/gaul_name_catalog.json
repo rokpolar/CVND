@@ -1,0 +1,2867 @@
+[
+  [
+    "Haryana",
+    "Karnal",
+    17660
+  ],
+  [
+    "Haryana",
+    "Kurukshetra",
+    17661
+  ],
+  [
+    "Haryana",
+    "Mahendragarh",
+    17662
+  ],
+  [
+    "Haryana",
+    "Sonepat",
+    17665
+  ],
+  [
+    "Haryana",
+    "Kaithal",
+    70134
+  ],
+  [
+    "Haryana",
+    "Panipat",
+    70136
+  ],
+  [
+    "Haryana",
+    "Rewari",
+    70137
+  ],
+  [
+    "Haryana",
+    "Yamuna Nagar",
+    70138
+  ],
+  [
+    "Rajasthan",
+    "Bharatpur",
+    17838
+  ],
+  [
+    "Rajasthan",
+    "Dhaulpur",
+    17844
+  ],
+  [
+    "Jharkhand",
+    "Purba Singhbhum",
+    70153
+  ],
+  [
+    "Uttar Pradesh",
+    "Gorakhpur",
+    17914
+  ],
+  [
+    "Uttar Pradesh",
+    "Maharajganj",
+    70272
+  ],
+  [
+    "Rajasthan",
+    "Kota",
+    17853
+  ],
+  [
+    "Rajasthan",
+    "Baran",
+    70236
+  ],
+  [
+    "Meghalaya",
+    "East Khasi Hills",
+    17794
+  ],
+  [
+    "Meghalaya",
+    "West Garo Hills",
+    17796
+  ],
+  [
+    "Meghalaya",
+    "Ri-Bhoi",
+    70197
+  ],
+  [
+    "Meghalaya",
+    "South Garo Hills",
+    70198
+  ],
+  [
+    "Punjab",
+    "Patiala",
+    17831
+  ],
+  [
+    "Punjab",
+    "Rupnagar",
+    17832
+  ],
+  [
+    "Punjab",
+    "Fatehgarh Sahib",
+    70231
+  ],
+  [
+    "West Bengal",
+    "Dakshin Dinajpur",
+    70290
+  ],
+  [
+    "West Bengal",
+    "Uttar Dinajpur",
+    70295
+  ],
+  [
+    "Haryana",
+    "Ambala",
+    17654
+  ],
+  [
+    "Haryana",
+    "Panchkula",
+    70135
+  ],
+  [
+    "Uttar Pradesh",
+    "Deoria",
+    17904
+  ],
+  [
+    "Uttar Pradesh",
+    "Kushinagar",
+    70271
+  ],
+  [
+    "Punjab",
+    "Bathinda",
+    17822
+  ],
+  [
+    "Punjab",
+    "Hoshiarpur",
+    17827
+  ],
+  [
+    "Punjab",
+    "Mansa",
+    70232
+  ],
+  [
+    "Punjab",
+    "Muktsar",
+    70234
+  ],
+  [
+    "Punjab",
+    "Nawan Shehar",
+    70235
+  ],
+  [
+    "Tripura",
+    "North Tripura",
+    17885
+  ],
+  [
+    "Tripura",
+    "South Tripura",
+    17886
+  ],
+  [
+    "Tripura",
+    "Dhalai",
+    70256
+  ],
+  [
+    "Uttar Pradesh",
+    "Hamirpur",
+    17915
+  ],
+  [
+    "Uttar Pradesh",
+    "Mahoba",
+    70273
+  ],
+  [
+    "Punjab",
+    "Faridkot",
+    70230
+  ],
+  [
+    "Punjab",
+    "Moga",
+    70233
+  ],
+  [
+    "Rajasthan",
+    "Jaipur",
+    17847
+  ],
+  [
+    "Rajasthan",
+    "Udaipur",
+    17860
+  ],
+  [
+    "Rajasthan",
+    "Dausa",
+    70237
+  ],
+  [
+    "Rajasthan",
+    "Rajsamand",
+    70240
+  ],
+  [
+    "Uttar Pradesh",
+    "Bahraich",
+    17893
+  ],
+  [
+    "Uttar Pradesh",
+    "Faizabad",
+    17907
+  ],
+  [
+    "Uttar Pradesh",
+    "Ambedkar Nagar",
+    70257
+  ],
+  [
+    "Uttar Pradesh",
+    "Sant Ravi Das Nagar",
+    70276
+  ],
+  [
+    "Uttar Pradesh",
+    "Shravasti",
+    70277
+  ],
+  [
+    "Uttarakhand",
+    "Naini Tal",
+    70285
+  ],
+  [
+    "Uttarakhand",
+    "Udham Singh Nagar",
+    70288
+  ],
+  [
+    "Manipur",
+    "East Imphal",
+    70191
+  ],
+  [
+    "Manipur",
+    "West Imphal",
+    70196
+  ],
+  [
+    "Rajasthan",
+    "Sawai Madhopur",
+    17856
+  ],
+  [
+    "Rajasthan",
+    "Karauli",
+    70239
+  ],
+  [
+    "Uttar Pradesh",
+    "Aligarh",
+    17889
+  ],
+  [
+    "Uttar Pradesh",
+    "Allahabad",
+    17890
+  ],
+  [
+    "Uttar Pradesh",
+    "Banda",
+    17895
+  ],
+  [
+    "Uttar Pradesh",
+    "Gonda",
+    17913
+  ],
+  [
+    "Uttar Pradesh",
+    "Mathura",
+    17925
+  ],
+  [
+    "Uttar Pradesh",
+    "Moradabad",
+    17928
+  ],
+  [
+    "Uttar Pradesh",
+    "Varanasi",
+    17943
+  ],
+  [
+    "Uttar Pradesh",
+    "Balrampur",
+    70261
+  ],
+  [
+    "Uttar Pradesh",
+    "Chandauli",
+    70262
+  ],
+  [
+    "Uttar Pradesh",
+    "Chitrakoot",
+    70263
+  ],
+  [
+    "Uttar Pradesh",
+    "Hathras",
+    70266
+  ],
+  [
+    "Uttar Pradesh",
+    "Jyotiba Phule Nagar",
+    70267
+  ],
+  [
+    "Uttar Pradesh",
+    "Kaushambi",
+    70270
+  ],
+  [
+    "Gujarat",
+    "Bharuch",
+    17638
+  ],
+  [
+    "Gujarat",
+    "Junagadh",
+    17642
+  ],
+  [
+    "Gujarat",
+    "Kheda",
+    17644
+  ],
+  [
+    "Gujarat",
+    "Anand",
+    70124
+  ],
+  [
+    "Gujarat",
+    "Dahod",
+    70125
+  ],
+  [
+    "Gujarat",
+    "Narmada",
+    70126
+  ],
+  [
+    "Gujarat",
+    "Panch Mahals",
+    70128
+  ],
+  [
+    "Gujarat",
+    "Porbandar",
+    70130
+  ],
+  [
+    "Haryana",
+    "Hisar",
+    17658
+  ],
+  [
+    "Haryana",
+    "Rohtak",
+    17663
+  ],
+  [
+    "Haryana",
+    "Fatehabad",
+    70132
+  ],
+  [
+    "Haryana",
+    "Jhajjar",
+    70133
+  ],
+  [
+    "Maharashtra",
+    "Nandurbar",
+    70185
+  ],
+  [
+    "Nagaland",
+    "Kohima",
+    17801
+  ],
+  [
+    "Nagaland",
+    "Dimapur",
+    70205
+  ],
+  [
+    "Rajasthan",
+    "Ganganagar",
+    17846
+  ],
+  [
+    "Rajasthan",
+    "Hanumangarh",
+    70238
+  ],
+  [
+    "Chhattisgarh",
+    "Bilaspur",
+    70106
+  ],
+  [
+    "Chhattisgarh",
+    "Jashpur",
+    70110
+  ],
+  [
+    "Chhattisgarh",
+    "Kawardha",
+    70112
+  ],
+  [
+    "Chhattisgarh",
+    "Korba",
+    70113
+  ],
+  [
+    "Chhattisgarh",
+    "Koriya",
+    70114
+  ],
+  [
+    "Chhattisgarh",
+    "Surguja",
+    70118
+  ],
+  [
+    "Madhya Pradesh",
+    "Hoshangabad",
+    17728
+  ],
+  [
+    "Madhya Pradesh",
+    "Jabalpur",
+    17730
+  ],
+  [
+    "Madhya Pradesh",
+    "Mandla",
+    17732
+  ],
+  [
+    "Madhya Pradesh",
+    "Mandsaur",
+    17733
+  ],
+  [
+    "Madhya Pradesh",
+    "Morena",
+    17734
+  ],
+  [
+    "Madhya Pradesh",
+    "Rajgarh",
+    17741
+  ],
+  [
+    "Madhya Pradesh",
+    "West Nimar",
+    17756
+  ],
+  [
+    "Madhya Pradesh",
+    "Barwani",
+    70170
+  ],
+  [
+    "Madhya Pradesh",
+    "Dindori",
+    70172
+  ],
+  [
+    "Madhya Pradesh",
+    "Harda",
+    70173
+  ],
+  [
+    "Madhya Pradesh",
+    "Katni",
+    70174
+  ],
+  [
+    "Madhya Pradesh",
+    "Neemuch",
+    70175
+  ],
+  [
+    "Madhya Pradesh",
+    "Sheopur",
+    70176
+  ],
+  [
+    "Madhya Pradesh",
+    "Umaria",
+    70177
+  ],
+  [
+    "Uttar Pradesh",
+    "Basti",
+    17898
+  ],
+  [
+    "Uttar Pradesh",
+    "Bulandshahr",
+    17901
+  ],
+  [
+    "Uttar Pradesh",
+    "Etawah",
+    17906
+  ],
+  [
+    "Uttar Pradesh",
+    "Farrukhabad",
+    17908
+  ],
+  [
+    "Uttar Pradesh",
+    "Meerut",
+    17926
+  ],
+  [
+    "Uttar Pradesh",
+    "Auraiya",
+    70258
+  ],
+  [
+    "Uttar Pradesh",
+    "Baghpat",
+    70260
+  ],
+  [
+    "Uttar Pradesh",
+    "Gautam Buddha Nagar",
+    70265
+  ],
+  [
+    "Uttar Pradesh",
+    "Kannauj",
+    70268
+  ],
+  [
+    "Uttar Pradesh",
+    "Sant Kabir Nagar",
+    70275
+  ],
+  [
+    "Uttarakhand",
+    "Pithoragarh",
+    17932
+  ],
+  [
+    "Uttarakhand",
+    "Almora",
+    70280
+  ],
+  [
+    "Uttarakhand",
+    "Bageshwar",
+    70281
+  ],
+  [
+    "Uttarakhand",
+    "Chamoli",
+    70282
+  ],
+  [
+    "Uttarakhand",
+    "Champawat",
+    70283
+  ],
+  [
+    "Uttarakhand",
+    "Rudra Prayag",
+    70286
+  ],
+  [
+    "Mizoram",
+    "Aizawl",
+    17798
+  ],
+  [
+    "Mizoram",
+    "Lunglei",
+    17800
+  ],
+  [
+    "Mizoram",
+    "Champhai",
+    70199
+  ],
+  [
+    "Mizoram",
+    "Kolasib",
+    70200
+  ],
+  [
+    "Mizoram",
+    "Mamit",
+    70202
+  ],
+  [
+    "Mizoram",
+    "Saiha",
+    70203
+  ],
+  [
+    "Mizoram",
+    "Serchhip",
+    70204
+  ],
+  [
+    "Bihar",
+    "Bhagalpur",
+    17596
+  ],
+  [
+    "Bihar",
+    "Munger",
+    17614
+  ],
+  [
+    "Bihar",
+    "Rohtas",
+    17623
+  ],
+  [
+    "Bihar",
+    "Saharsa",
+    17624
+  ],
+  [
+    "Bihar",
+    "Sitamarhi",
+    17630
+  ],
+  [
+    "Bihar",
+    "Banka",
+    70095
+  ],
+  [
+    "Bihar",
+    "Bhabua",
+    70096
+  ],
+  [
+    "Bihar",
+    "Bhojpur",
+    70097
+  ],
+  [
+    "Bihar",
+    "Buxar",
+    70098
+  ],
+  [
+    "Bihar",
+    "Jamui",
+    70099
+  ],
+  [
+    "Bihar",
+    "Lakhisarai",
+    70101
+  ],
+  [
+    "Bihar",
+    "Sheikhpura",
+    70102
+  ],
+  [
+    "Bihar",
+    "Sheohar",
+    70103
+  ],
+  [
+    "Bihar",
+    "Supaul",
+    70104
+  ],
+  [
+    "Jharkhand",
+    "Bokaro",
+    70139
+  ],
+  [
+    "Jharkhand",
+    "Chatra",
+    70140
+  ],
+  [
+    "Jharkhand",
+    "Garhwa",
+    70143
+  ],
+  [
+    "Jharkhand",
+    "Giridih",
+    70144
+  ],
+  [
+    "Jharkhand",
+    "Hazaribag",
+    70146
+  ],
+  [
+    "Jharkhand",
+    "Koderma",
+    70148
+  ],
+  [
+    "Jharkhand",
+    "Pakur",
+    70150
+  ],
+  [
+    "Jharkhand",
+    "Sahibganj",
+    70154
+  ],
+  [
+    "Gujarat",
+    "Banas Kantha",
+    17637
+  ],
+  [
+    "Gujarat",
+    "Mahesana",
+    17645
+  ],
+  [
+    "Gujarat",
+    "Patan",
+    70129
+  ],
+  [
+    "Jharkhand",
+    "Dumka",
+    70142
+  ],
+  [
+    "Jharkhand",
+    "Gumla",
+    70145
+  ],
+  [
+    "Jharkhand",
+    "Jamtara",
+    70147
+  ],
+  [
+    "Jharkhand",
+    "Latehar",
+    70149
+  ],
+  [
+    "Jharkhand",
+    "Palamu",
+    70151
+  ],
+  [
+    "Jharkhand",
+    "Pashchim Singhbhum",
+    70152
+  ],
+  [
+    "Jharkhand",
+    "Saraikela Kharsawan",
+    70155
+  ],
+  [
+    "Jharkhand",
+    "Simdega",
+    70156
+  ],
+  [
+    "West Bengal",
+    "West Midnapore",
+    70296
+  ],
+  [
+    "Madhya Pradesh",
+    "East Nimar",
+    17725
+  ],
+  [
+    "Madhya Pradesh",
+    "Guna",
+    17726
+  ],
+  [
+    "Madhya Pradesh",
+    "Shahdol",
+    17748
+  ],
+  [
+    "Madhya Pradesh",
+    "Anuppur",
+    70168
+  ],
+  [
+    "Madhya Pradesh",
+    "Ashoknagar",
+    70169
+  ],
+  [
+    "Andaman and Nicobar",
+    "Andaman Islands",
+    17545
+  ],
+  [
+    "Andaman and Nicobar",
+    "Nicobar Islands",
+    17546
+  ],
+  [
+    "Assam",
+    "Barpeta",
+    17576
+  ],
+  [
+    "Assam",
+    "Cachar",
+    17577
+  ],
+  [
+    "Assam",
+    "Darrang",
+    17578
+  ],
+  [
+    "Assam",
+    "Dhuburi",
+    17579
+  ],
+  [
+    "Assam",
+    "Dibrugarh",
+    17580
+  ],
+  [
+    "Assam",
+    "Goalpara",
+    17581
+  ],
+  [
+    "Assam",
+    "Golaghat",
+    17582
+  ],
+  [
+    "Assam",
+    "Kamrup",
+    17583
+  ],
+  [
+    "Assam",
+    "Karbi Anglong",
+    17584
+  ],
+  [
+    "Assam",
+    "Karimganj",
+    17585
+  ],
+  [
+    "Assam",
+    "Nagaon",
+    17589
+  ],
+  [
+    "Assam",
+    "Nalbari",
+    17590
+  ],
+  [
+    "Assam",
+    "North Cachar Hills",
+    17591
+  ],
+  [
+    "Assam",
+    "Sibsagar",
+    17592
+  ],
+  [
+    "Assam",
+    "Sonitpur",
+    17593
+  ],
+  [
+    "Assam",
+    "Bongaigaon",
+    70086
+  ],
+  [
+    "Assam",
+    "Dhemaji",
+    70087
+  ],
+  [
+    "Assam",
+    "Hailakandi",
+    70088
+  ],
+  [
+    "Assam",
+    "Jorhat",
+    70089
+  ],
+  [
+    "Assam",
+    "Kokrajhar",
+    70090
+  ],
+  [
+    "Assam",
+    "Lakhimpur",
+    70091
+  ],
+  [
+    "Assam",
+    "Marigaon",
+    70092
+  ],
+  [
+    "Assam",
+    "Tinsukia",
+    70093
+  ],
+  [
+    "Delhi",
+    "Delhi",
+    17633
+  ],
+  [
+    "Gujarat",
+    "Ahmadabad",
+    17635
+  ],
+  [
+    "Gujarat",
+    "Amreli",
+    17636
+  ],
+  [
+    "Gujarat",
+    "Bhavnagar",
+    17639
+  ],
+  [
+    "Gujarat",
+    "Gandhinagar",
+    17640
+  ],
+  [
+    "Gujarat",
+    "Jamnagar",
+    17641
+  ],
+  [
+    "Gujarat",
+    "Kachchh",
+    17643
+  ],
+  [
+    "Gujarat",
+    "Rajkot",
+    17647
+  ],
+  [
+    "Gujarat",
+    "Sabar Kantha",
+    17648
+  ],
+  [
+    "Gujarat",
+    "Surendranagar",
+    17650
+  ],
+  [
+    "Gujarat",
+    "Vadodara",
+    17652
+  ],
+  [
+    "Haryana",
+    "Bhiwani",
+    17655
+  ],
+  [
+    "Haryana",
+    "Gurgaon",
+    17657
+  ],
+  [
+    "Haryana",
+    "Jind",
+    17659
+  ],
+  [
+    "Haryana",
+    "Sirsa",
+    17664
+  ],
+  [
+    "Haryana",
+    "Faridabad",
+    70131
+  ],
+  [
+    "Himachal Pradesh",
+    "Bilaspur",
+    17666
+  ],
+  [
+    "Himachal Pradesh",
+    "Chamba",
+    17667
+  ],
+  [
+    "Himachal Pradesh",
+    "Hamirpur",
+    17668
+  ],
+  [
+    "Himachal Pradesh",
+    "Kangra",
+    17669
+  ],
+  [
+    "Himachal Pradesh",
+    "Kinnaur",
+    17670
+  ],
+  [
+    "Himachal Pradesh",
+    "Kullu",
+    17671
+  ],
+  [
+    "Himachal Pradesh",
+    "Lahul and Spiti",
+    17672
+  ],
+  [
+    "Himachal Pradesh",
+    "Mandi",
+    17673
+  ],
+  [
+    "Himachal Pradesh",
+    "Shimla",
+    17674
+  ],
+  [
+    "Himachal Pradesh",
+    "Sirmaur",
+    17675
+  ],
+  [
+    "Himachal Pradesh",
+    "Solan",
+    17676
+  ],
+  [
+    "Himachal Pradesh",
+    "Una",
+    17677
+  ],
+  [
+    "Manipur",
+    "Bishnupur",
+    70188
+  ],
+  [
+    "Manipur",
+    "Chandel",
+    70189
+  ],
+  [
+    "Manipur",
+    "Churachandpur",
+    70190
+  ],
+  [
+    "Manipur",
+    "Senapati",
+    70192
+  ],
+  [
+    "Manipur",
+    "Tamenglong",
+    70193
+  ],
+  [
+    "Manipur",
+    "Thoubal",
+    70194
+  ],
+  [
+    "Manipur",
+    "Ukhrul",
+    70195
+  ],
+  [
+    "Meghalaya",
+    "East Garo Hills",
+    17793
+  ],
+  [
+    "Meghalaya",
+    "Jaintia Hills",
+    17795
+  ],
+  [
+    "Meghalaya",
+    "West Khasi Hills",
+    17797
+  ],
+  [
+    "Mizoram",
+    "Lawngtlai",
+    70201
+  ],
+  [
+    "Nagaland",
+    "Mokokchung",
+    17802
+  ],
+  [
+    "Nagaland",
+    "Mon",
+    17803
+  ],
+  [
+    "Nagaland",
+    "Phek",
+    17804
+  ],
+  [
+    "Nagaland",
+    "Tuensang",
+    17805
+  ],
+  [
+    "Nagaland",
+    "Wokha",
+    17806
+  ],
+  [
+    "Nagaland",
+    "Zunheboto",
+    17807
+  ],
+  [
+    "Orissa",
+    "Sundargarh",
+    17820
+  ],
+  [
+    "Punjab",
+    "Amritsar",
+    17821
+  ],
+  [
+    "Punjab",
+    "Firozpur",
+    17825
+  ],
+  [
+    "Punjab",
+    "Gurdaspur",
+    17826
+  ],
+  [
+    "Punjab",
+    "Jalandhar",
+    17828
+  ],
+  [
+    "Punjab",
+    "Kapurthala",
+    17829
+  ],
+  [
+    "Punjab",
+    "Ludhiana",
+    17830
+  ],
+  [
+    "Punjab",
+    "Sangrur",
+    17833
+  ],
+  [
+    "Rajasthan",
+    "Ajmer",
+    17834
+  ],
+  [
+    "Rajasthan",
+    "Alwar",
+    17835
+  ],
+  [
+    "Rajasthan",
+    "Banswara",
+    17836
+  ],
+  [
+    "Rajasthan",
+    "Barmer",
+    17837
+  ],
+  [
+    "Rajasthan",
+    "Bhilwara",
+    17839
+  ],
+  [
+    "Rajasthan",
+    "Bikaner",
+    17840
+  ],
+  [
+    "Rajasthan",
+    "Bundi",
+    17841
+  ],
+  [
+    "Rajasthan",
+    "Chittaurgarh",
+    17842
+  ],
+  [
+    "Rajasthan",
+    "Churu",
+    17843
+  ],
+  [
+    "Rajasthan",
+    "Dungarpur",
+    17845
+  ],
+  [
+    "Rajasthan",
+    "Jaisalmer",
+    17848
+  ],
+  [
+    "Rajasthan",
+    "Jalor",
+    17849
+  ],
+  [
+    "Rajasthan",
+    "Jhalawar",
+    17850
+  ],
+  [
+    "Rajasthan",
+    "Jhunjhunun",
+    17851
+  ],
+  [
+    "Rajasthan",
+    "Jodhpur",
+    17852
+  ],
+  [
+    "Rajasthan",
+    "Nagaur",
+    17854
+  ],
+  [
+    "Rajasthan",
+    "Pali",
+    17855
+  ],
+  [
+    "Rajasthan",
+    "Sikar",
+    17857
+  ],
+  [
+    "Rajasthan",
+    "Sirohi",
+    17858
+  ],
+  [
+    "Rajasthan",
+    "Tonk",
+    17859
+  ],
+  [
+    "Sikkim",
+    "East",
+    17861
+  ],
+  [
+    "Sikkim",
+    "North Sikkim",
+    17862
+  ],
+  [
+    "Sikkim",
+    "South Sikkim",
+    17863
+  ],
+  [
+    "Sikkim",
+    "West Sikkim",
+    17864
+  ],
+  [
+    "Tripura",
+    "West Tripura",
+    17887
+  ],
+  [
+    "West Bengal",
+    "Bankura",
+    17945
+  ],
+  [
+    "West Bengal",
+    "Barddhaman",
+    17946
+  ],
+  [
+    "West Bengal",
+    "Birbhum",
+    17947
+  ],
+  [
+    "West Bengal",
+    "Darjiling",
+    17948
+  ],
+  [
+    "West Bengal",
+    "Haora",
+    17949
+  ],
+  [
+    "West Bengal",
+    "Hugli",
+    17950
+  ],
+  [
+    "West Bengal",
+    "Jalpaiguri",
+    17951
+  ],
+  [
+    "West Bengal",
+    "Kochbihar",
+    17952
+  ],
+  [
+    "West Bengal",
+    "Maldah",
+    17953
+  ],
+  [
+    "West Bengal",
+    "Murshidabad",
+    17955
+  ],
+  [
+    "West Bengal",
+    "Nadia",
+    17956
+  ],
+  [
+    "West Bengal",
+    "Puruliya",
+    17957
+  ],
+  [
+    "West Bengal",
+    "Kolkata",
+    70292
+  ],
+  [
+    "West Bengal",
+    "North 24 Parganas",
+    70293
+  ],
+  [
+    "West Bengal",
+    "South 24 Parganas",
+    70294
+  ],
+  [
+    "Arunachal Pradesh",
+    "East Siang",
+    17571
+  ],
+  [
+    "Arunachal Pradesh",
+    "Lohit",
+    17572
+  ],
+  [
+    "Arunachal Pradesh",
+    "Lower Subansiri",
+    17573
+  ],
+  [
+    "Arunachal Pradesh",
+    "Tirap",
+    17574
+  ],
+  [
+    "Arunachal Pradesh",
+    "West Siang",
+    17575
+  ],
+  [
+    "Arunachal Pradesh",
+    "Changlang",
+    70083
+  ],
+  [
+    "Arunachal Pradesh",
+    "Lower Dibang Valley",
+    70084
+  ],
+  [
+    "Arunachal Pradesh",
+    "Papum Pare",
+    70085
+  ],
+  [
+    "Bihar",
+    "Aurangabad",
+    17594
+  ],
+  [
+    "Bihar",
+    "Begusarai",
+    17595
+  ],
+  [
+    "Bihar",
+    "Darbhanga",
+    17598
+  ],
+  [
+    "Bihar",
+    "Gaya",
+    17601
+  ],
+  [
+    "Bihar",
+    "Gopalganj",
+    17604
+  ],
+  [
+    "Bihar",
+    "Jehanabad",
+    17607
+  ],
+  [
+    "Bihar",
+    "Katihar",
+    17608
+  ],
+  [
+    "Bihar",
+    "Khagaria",
+    17609
+  ],
+  [
+    "Bihar",
+    "Madhubani",
+    17611
+  ],
+  [
+    "Bihar",
+    "Madhepura",
+    17612
+  ],
+  [
+    "Bihar",
+    "Muzaffarpur",
+    17613
+  ],
+  [
+    "Bihar",
+    "Nalanda",
+    17615
+  ],
+  [
+    "Bihar",
+    "Nawada",
+    17616
+  ],
+  [
+    "Bihar",
+    "Pashchim Champaran",
+    17618
+  ],
+  [
+    "Bihar",
+    "Patna",
+    17619
+  ],
+  [
+    "Bihar",
+    "Purba Champaran",
+    17620
+  ],
+  [
+    "Bihar",
+    "Purnia",
+    17621
+  ],
+  [
+    "Bihar",
+    "Samastipur",
+    17626
+  ],
+  [
+    "Bihar",
+    "Saran",
+    17628
+  ],
+  [
+    "Bihar",
+    "Siwan",
+    17631
+  ],
+  [
+    "Bihar",
+    "Vaishali",
+    17632
+  ],
+  [
+    "Bihar",
+    "Araria",
+    70094
+  ],
+  [
+    "Bihar",
+    "Kishanganj",
+    70100
+  ],
+  [
+    "Chandigarh",
+    "Chandigarh",
+    17823
+  ],
+  [
+    "Chhattisgarh",
+    "Raigarh",
+    70297
+  ],
+  [
+    "Jharkhand",
+    "Deoghar",
+    17600
+  ],
+  [
+    "Jharkhand",
+    "Godda",
+    17603
+  ],
+  [
+    "Jharkhand",
+    "Lohardaga",
+    17610
+  ],
+  [
+    "Jharkhand",
+    "Ranchi",
+    17622
+  ],
+  [
+    "Jharkhand",
+    "Dhanbad",
+    70141
+  ],
+  [
+    "Madhya Pradesh",
+    "Balaghat",
+    17712
+  ],
+  [
+    "Madhya Pradesh",
+    "Betul",
+    17714
+  ],
+  [
+    "Madhya Pradesh",
+    "Bhind",
+    17715
+  ],
+  [
+    "Madhya Pradesh",
+    "Bhopal",
+    17716
+  ],
+  [
+    "Madhya Pradesh",
+    "Chhatarpur",
+    17718
+  ],
+  [
+    "Madhya Pradesh",
+    "Chhindwara",
+    17719
+  ],
+  [
+    "Madhya Pradesh",
+    "Damoh",
+    17720
+  ],
+  [
+    "Madhya Pradesh",
+    "Datia",
+    17721
+  ],
+  [
+    "Madhya Pradesh",
+    "Dewas",
+    17722
+  ],
+  [
+    "Madhya Pradesh",
+    "Dhar",
+    17723
+  ],
+  [
+    "Madhya Pradesh",
+    "Gwalior",
+    17727
+  ],
+  [
+    "Madhya Pradesh",
+    "Indore",
+    17729
+  ],
+  [
+    "Madhya Pradesh",
+    "Jhabua",
+    17731
+  ],
+  [
+    "Madhya Pradesh",
+    "Narsinghpur",
+    17735
+  ],
+  [
+    "Madhya Pradesh",
+    "Panna",
+    17736
+  ],
+  [
+    "Madhya Pradesh",
+    "Raisen",
+    17739
+  ],
+  [
+    "Madhya Pradesh",
+    "Ratlam",
+    17742
+  ],
+  [
+    "Madhya Pradesh",
+    "Rewa",
+    17743
+  ],
+  [
+    "Madhya Pradesh",
+    "Sagar",
+    17744
+  ],
+  [
+    "Madhya Pradesh",
+    "Satna",
+    17745
+  ],
+  [
+    "Madhya Pradesh",
+    "Sehore",
+    17746
+  ],
+  [
+    "Madhya Pradesh",
+    "Seoni",
+    17747
+  ],
+  [
+    "Madhya Pradesh",
+    "Shajapur",
+    17749
+  ],
+  [
+    "Madhya Pradesh",
+    "Shivpuri",
+    17750
+  ],
+  [
+    "Madhya Pradesh",
+    "Sidhi",
+    17751
+  ],
+  [
+    "Madhya Pradesh",
+    "Tikamgarh",
+    17753
+  ],
+  [
+    "Madhya Pradesh",
+    "Ujjain",
+    17754
+  ],
+  [
+    "Madhya Pradesh",
+    "Vidisha",
+    17755
+  ],
+  [
+    "Uttar Pradesh",
+    "Agra",
+    17888
+  ],
+  [
+    "Uttar Pradesh",
+    "Azamgarh",
+    17892
+  ],
+  [
+    "Uttar Pradesh",
+    "Ballia",
+    17894
+  ],
+  [
+    "Uttar Pradesh",
+    "Bara Banki",
+    17896
+  ],
+  [
+    "Uttar Pradesh",
+    "Bareilly",
+    17897
+  ],
+  [
+    "Uttar Pradesh",
+    "Bijnor",
+    17899
+  ],
+  [
+    "Uttar Pradesh",
+    "Etah",
+    17905
+  ],
+  [
+    "Uttar Pradesh",
+    "Fatehpur",
+    17909
+  ],
+  [
+    "Uttar Pradesh",
+    "Ghaziabad",
+    17911
+  ],
+  [
+    "Uttar Pradesh",
+    "Ghazipur",
+    17912
+  ],
+  [
+    "Uttar Pradesh",
+    "Hardoi",
+    17916
+  ],
+  [
+    "Uttar Pradesh",
+    "Jalaun",
+    17917
+  ],
+  [
+    "Uttar Pradesh",
+    "Jaunpur",
+    17918
+  ],
+  [
+    "Uttar Pradesh",
+    "Jhansi",
+    17919
+  ],
+  [
+    "Uttar Pradesh",
+    "Kanpur",
+    17920
+  ],
+  [
+    "Uttar Pradesh",
+    "Lakhimpur Kheri",
+    17921
+  ],
+  [
+    "Uttar Pradesh",
+    "Lalitpur",
+    17922
+  ],
+  [
+    "Uttar Pradesh",
+    "Lucknow",
+    17923
+  ],
+  [
+    "Uttar Pradesh",
+    "Mainpuri",
+    17924
+  ],
+  [
+    "Uttar Pradesh",
+    "Mirzapur",
+    17927
+  ],
+  [
+    "Uttar Pradesh",
+    "Muzaffarnagar",
+    17929
+  ],
+  [
+    "Uttar Pradesh",
+    "Pilibhit",
+    17931
+  ],
+  [
+    "Uttar Pradesh",
+    "Pratapgarh",
+    17933
+  ],
+  [
+    "Uttar Pradesh",
+    "Rae Bareli",
+    17934
+  ],
+  [
+    "Uttar Pradesh",
+    "Rampur",
+    17935
+  ],
+  [
+    "Uttar Pradesh",
+    "Saharanpur",
+    17936
+  ],
+  [
+    "Uttar Pradesh",
+    "Shahjahanpur",
+    17937
+  ],
+  [
+    "Uttar Pradesh",
+    "Sitapur",
+    17938
+  ],
+  [
+    "Uttar Pradesh",
+    "Sultanpur",
+    17939
+  ],
+  [
+    "Uttar Pradesh",
+    "Unnao",
+    17941
+  ],
+  [
+    "Uttar Pradesh",
+    "Badaun",
+    70259
+  ],
+  [
+    "Uttar Pradesh",
+    "Firozabad",
+    70264
+  ],
+  [
+    "Uttar Pradesh",
+    "Kanpur Dehat",
+    70269
+  ],
+  [
+    "Uttar Pradesh",
+    "Mau",
+    70274
+  ],
+  [
+    "Uttar Pradesh",
+    "Siddharth Nagar",
+    70278
+  ],
+  [
+    "Uttar Pradesh",
+    "Sonbhadra",
+    70279
+  ],
+  [
+    "Uttarakhand",
+    "Dehra Dun",
+    17903
+  ],
+  [
+    "Uttarakhand",
+    "Pauri Garhwal",
+    17910
+  ],
+  [
+    "Uttarakhand",
+    "Haridwar",
+    70284
+  ],
+  [
+    "Uttarakhand",
+    "Tehri Garhwal",
+    70287
+  ],
+  [
+    "Uttarakhand",
+    "Uttarkashi",
+    70289
+  ],
+  [
+    "Andhra Pradesh",
+    "Adilabad",
+    17547
+  ],
+  [
+    "Andhra Pradesh",
+    "Anantapur",
+    17548
+  ],
+  [
+    "Andhra Pradesh",
+    "Chittoor",
+    17549
+  ],
+  [
+    "Andhra Pradesh",
+    "Cuddapah",
+    17550
+  ],
+  [
+    "Andhra Pradesh",
+    "East Godavari",
+    17551
+  ],
+  [
+    "Andhra Pradesh",
+    "Guntur",
+    17552
+  ],
+  [
+    "Andhra Pradesh",
+    "Hyderabad",
+    17553
+  ],
+  [
+    "Andhra Pradesh",
+    "Karimnagar",
+    17554
+  ],
+  [
+    "Andhra Pradesh",
+    "Khammam",
+    17555
+  ],
+  [
+    "Andhra Pradesh",
+    "Krishna",
+    17556
+  ],
+  [
+    "Andhra Pradesh",
+    "Kurnool",
+    17557
+  ],
+  [
+    "Andhra Pradesh",
+    "Mahbubnagar",
+    17558
+  ],
+  [
+    "Andhra Pradesh",
+    "Medak",
+    17559
+  ],
+  [
+    "Andhra Pradesh",
+    "Nalgonda",
+    17560
+  ],
+  [
+    "Andhra Pradesh",
+    "Nellore",
+    17561
+  ],
+  [
+    "Andhra Pradesh",
+    "Nizamabad",
+    17562
+  ],
+  [
+    "Andhra Pradesh",
+    "Prakasam",
+    17563
+  ],
+  [
+    "Andhra Pradesh",
+    "Rangareddi",
+    17564
+  ],
+  [
+    "Andhra Pradesh",
+    "Srikakulam",
+    17565
+  ],
+  [
+    "Andhra Pradesh",
+    "Vishakhapatnam",
+    17566
+  ],
+  [
+    "Andhra Pradesh",
+    "Vizianagaram",
+    17567
+  ],
+  [
+    "Andhra Pradesh",
+    "Warangal",
+    17568
+  ],
+  [
+    "Andhra Pradesh",
+    "West Godavari",
+    17569
+  ],
+  [
+    "Goa",
+    "North Goa",
+    70122
+  ],
+  [
+    "Goa",
+    "South Goa",
+    70123
+  ],
+  [
+    "Gujarat",
+    "Surat",
+    17649
+  ],
+  [
+    "Gujarat",
+    "The Dangs",
+    17651
+  ],
+  [
+    "Gujarat",
+    "Valsad",
+    17653
+  ],
+  [
+    "Gujarat",
+    "Navsari",
+    70127
+  ],
+  [
+    "Karnataka",
+    "Belgaum",
+    17679
+  ],
+  [
+    "Karnataka",
+    "Bellary",
+    17680
+  ],
+  [
+    "Karnataka",
+    "Bidar",
+    17681
+  ],
+  [
+    "Karnataka",
+    "Bijapur",
+    17682
+  ],
+  [
+    "Karnataka",
+    "Chikmagalur",
+    17683
+  ],
+  [
+    "Karnataka",
+    "Dakshin Kannad",
+    17685
+  ],
+  [
+    "Karnataka",
+    "Dharwad",
+    17686
+  ],
+  [
+    "Karnataka",
+    "Gulbarga",
+    17687
+  ],
+  [
+    "Karnataka",
+    "Hassan",
+    17688
+  ],
+  [
+    "Karnataka",
+    "Kodagu",
+    17689
+  ],
+  [
+    "Karnataka",
+    "Kolar",
+    17690
+  ],
+  [
+    "Karnataka",
+    "Mandya",
+    17691
+  ],
+  [
+    "Karnataka",
+    "Mysore",
+    17692
+  ],
+  [
+    "Karnataka",
+    "Raichur",
+    17693
+  ],
+  [
+    "Karnataka",
+    "Shimoga",
+    17694
+  ],
+  [
+    "Karnataka",
+    "Tumkur",
+    17695
+  ],
+  [
+    "Karnataka",
+    "Uttar Kannand",
+    17696
+  ],
+  [
+    "Karnataka",
+    "Bagalkot",
+    70157
+  ],
+  [
+    "Karnataka",
+    "Bangalore Rural",
+    70158
+  ],
+  [
+    "Karnataka",
+    "Bangalore Urban",
+    70159
+  ],
+  [
+    "Karnataka",
+    "Chamrajnagar",
+    70160
+  ],
+  [
+    "Karnataka",
+    "Chitradurga",
+    70161
+  ],
+  [
+    "Karnataka",
+    "Davanagere",
+    70162
+  ],
+  [
+    "Karnataka",
+    "Gadag",
+    70163
+  ],
+  [
+    "Karnataka",
+    "Haveri",
+    70164
+  ],
+  [
+    "Karnataka",
+    "Koppal",
+    70165
+  ],
+  [
+    "Karnataka",
+    "Udupi",
+    70166
+  ],
+  [
+    "Kerala",
+    "Kannur",
+    17698
+  ],
+  [
+    "Kerala",
+    "Ernakulam",
+    17699
+  ],
+  [
+    "Kerala",
+    "Idukki",
+    17700
+  ],
+  [
+    "Kerala",
+    "Kasaragod",
+    17701
+  ],
+  [
+    "Kerala",
+    "Kottayam",
+    17702
+  ],
+  [
+    "Kerala",
+    "Kozhikode",
+    17703
+  ],
+  [
+    "Kerala",
+    "Malappuram",
+    17704
+  ],
+  [
+    "Kerala",
+    "Palakkad",
+    17705
+  ],
+  [
+    "Kerala",
+    "Pattanamtitta",
+    17706
+  ],
+  [
+    "Kerala",
+    "Kollam",
+    17707
+  ],
+  [
+    "Kerala",
+    "Thrissur",
+    17708
+  ],
+  [
+    "Kerala",
+    "Thiruvananthapuram",
+    17709
+  ],
+  [
+    "Kerala",
+    "Wayanad",
+    17710
+  ],
+  [
+    "Kerala",
+    "Alappuzha",
+    70298
+  ],
+  [
+    "Lakshadweep",
+    "Kavaratti",
+    70167
+  ],
+  [
+    "Maharashtra",
+    "Akola",
+    17758
+  ],
+  [
+    "Maharashtra",
+    "Amravati",
+    17759
+  ],
+  [
+    "Maharashtra",
+    "Bhandara",
+    17761
+  ],
+  [
+    "Maharashtra",
+    "Buldana",
+    17762
+  ],
+  [
+    "Maharashtra",
+    "Chandrapur",
+    17763
+  ],
+  [
+    "Maharashtra",
+    "Dhule",
+    17764
+  ],
+  [
+    "Maharashtra",
+    "Garhchiroli",
+    17765
+  ],
+  [
+    "Maharashtra",
+    "Jalgaon",
+    17767
+  ],
+  [
+    "Maharashtra",
+    "Kolhapur",
+    17769
+  ],
+  [
+    "Maharashtra",
+    "Latur",
+    17770
+  ],
+  [
+    "Maharashtra",
+    "Nagpur",
+    17771
+  ],
+  [
+    "Maharashtra",
+    "Nanded",
+    17772
+  ],
+  [
+    "Maharashtra",
+    "Nashik",
+    17773
+  ],
+  [
+    "Maharashtra",
+    "Osmanabad",
+    17774
+  ],
+  [
+    "Maharashtra",
+    "Pune",
+    17776
+  ],
+  [
+    "Maharashtra",
+    "Raigarh",
+    17777
+  ],
+  [
+    "Maharashtra",
+    "Ratnagiri",
+    17778
+  ],
+  [
+    "Maharashtra",
+    "Sindhudurg",
+    17779
+  ],
+  [
+    "Maharashtra",
+    "Sangli",
+    17780
+  ],
+  [
+    "Maharashtra",
+    "Satara",
+    17781
+  ],
+  [
+    "Maharashtra",
+    "Solapur",
+    17782
+  ],
+  [
+    "Maharashtra",
+    "Thane",
+    17783
+  ],
+  [
+    "Maharashtra",
+    "Wardha",
+    17784
+  ],
+  [
+    "Maharashtra",
+    "Yavatmal",
+    17785
+  ],
+  [
+    "Maharashtra",
+    "Aurangabad",
+    17786
+  ],
+  [
+    "Maharashtra",
+    "Ahmednagar",
+    70178
+  ],
+  [
+    "Maharashtra",
+    "Bid",
+    70179
+  ],
+  [
+    "Maharashtra",
+    "Gondiya",
+    70180
+  ],
+  [
+    "Maharashtra",
+    "Hingoli",
+    70181
+  ],
+  [
+    "Maharashtra",
+    "Jalna",
+    70182
+  ],
+  [
+    "Maharashtra",
+    "Mumbai Suburban",
+    70183
+  ],
+  [
+    "Maharashtra",
+    "Mumbai city",
+    70184
+  ],
+  [
+    "Maharashtra",
+    "Parbhani",
+    70186
+  ],
+  [
+    "Maharashtra",
+    "Washim",
+    70187
+  ],
+  [
+    "Orissa",
+    "Cuttack",
+    17809
+  ],
+  [
+    "Orissa",
+    "Dhenkanal",
+    17810
+  ],
+  [
+    "Orissa",
+    "Ganjam",
+    17811
+  ],
+  [
+    "Orissa",
+    "Kalahandi",
+    17812
+  ],
+  [
+    "Orissa",
+    "Keonjhar",
+    17813
+  ],
+  [
+    "Orissa",
+    "Koraput",
+    17814
+  ],
+  [
+    "Orissa",
+    "Mayurbhanj",
+    17816
+  ],
+  [
+    "Orissa",
+    "Puri",
+    17818
+  ],
+  [
+    "Orissa",
+    "Sambalpur",
+    17819
+  ],
+  [
+    "Orissa",
+    "Angul",
+    70206
+  ],
+  [
+    "Orissa",
+    "Baleshwar",
+    70207
+  ],
+  [
+    "Orissa",
+    "Baragarh",
+    70208
+  ],
+  [
+    "Orissa",
+    "Bhadrak",
+    70209
+  ],
+  [
+    "Orissa",
+    "Bolangir",
+    70210
+  ],
+  [
+    "Orissa",
+    "Boudh",
+    70211
+  ],
+  [
+    "Orissa",
+    "Deogarh",
+    70212
+  ],
+  [
+    "Orissa",
+    "Gajapati",
+    70213
+  ],
+  [
+    "Orissa",
+    "Jagatsinghpur",
+    70214
+  ],
+  [
+    "Orissa",
+    "Jajpur",
+    70215
+  ],
+  [
+    "Orissa",
+    "Jharsuguda",
+    70216
+  ],
+  [
+    "Orissa",
+    "Kandhamal",
+    70217
+  ],
+  [
+    "Orissa",
+    "Kendrapara",
+    70218
+  ],
+  [
+    "Orissa",
+    "Khordha",
+    70219
+  ],
+  [
+    "Orissa",
+    "Malkangiri",
+    70220
+  ],
+  [
+    "Orissa",
+    "Nabarangpur",
+    70221
+  ],
+  [
+    "Orissa",
+    "Nayagarh",
+    70222
+  ],
+  [
+    "Orissa",
+    "Nuapada",
+    70223
+  ],
+  [
+    "Orissa",
+    "Rayagada",
+    70224
+  ],
+  [
+    "Orissa",
+    "Sonepur",
+    70225
+  ],
+  [
+    "Tamil Nadu",
+    "Thoothukudi",
+    17866
+  ],
+  [
+    "Tamil Nadu",
+    "Coimbatore",
+    17867
+  ],
+  [
+    "Tamil Nadu",
+    "Dharmapuri",
+    17868
+  ],
+  [
+    "Tamil Nadu",
+    "Virudhunagar",
+    17869
+  ],
+  [
+    "Tamil Nadu",
+    "Kanniyakumari",
+    17870
+  ],
+  [
+    "Tamil Nadu",
+    "Nilgiris",
+    17873
+  ],
+  [
+    "Tamil Nadu",
+    "Erode",
+    17875
+  ],
+  [
+    "Tamil Nadu",
+    "Pudukkottai",
+    17876
+  ],
+  [
+    "Tamil Nadu",
+    "Dindigul",
+    17877
+  ],
+  [
+    "Tamil Nadu",
+    "Ramanathapuram",
+    17878
+  ],
+  [
+    "Tamil Nadu",
+    "Salem",
+    17879
+  ],
+  [
+    "Tamil Nadu",
+    "Thanjavur",
+    17881
+  ],
+  [
+    "Tamil Nadu",
+    "Sivaganga",
+    17882
+  ],
+  [
+    "Tamil Nadu",
+    "Tiruchchirappalli",
+    17883
+  ],
+  [
+    "Tamil Nadu",
+    "Tirunelveli Kattabo",
+    17884
+  ],
+  [
+    "Tamil Nadu",
+    "Ariyalur",
+    70241
+  ],
+  [
+    "Tamil Nadu",
+    "Chennai",
+    70242
+  ],
+  [
+    "Tamil Nadu",
+    "Cuddalore",
+    70243
+  ],
+  [
+    "Tamil Nadu",
+    "Kancheepuram",
+    70244
+  ],
+  [
+    "Tamil Nadu",
+    "Karur",
+    70245
+  ],
+  [
+    "Tamil Nadu",
+    "Madurai",
+    70246
+  ],
+  [
+    "Tamil Nadu",
+    "Nagapattinam",
+    70247
+  ],
+  [
+    "Tamil Nadu",
+    "Namakkal",
+    70248
+  ],
+  [
+    "Tamil Nadu",
+    "Perambalur",
+    70249
+  ],
+  [
+    "Tamil Nadu",
+    "Theni",
+    70250
+  ],
+  [
+    "Tamil Nadu",
+    "Thiruvallur",
+    70251
+  ],
+  [
+    "Tamil Nadu",
+    "Tiruvannamalai",
+    70253
+  ],
+  [
+    "Tamil Nadu",
+    "Vellore",
+    70254
+  ],
+  [
+    "Tamil Nadu",
+    "Villupuram",
+    70255
+  ],
+  [
+    "West Bengal",
+    "East Midnapore",
+    70291
+  ],
+  [
+    "Chhattisgarh",
+    "Durg",
+    17724
+  ],
+  [
+    "Chhattisgarh",
+    "Bastar",
+    70105
+  ],
+  [
+    "Chhattisgarh",
+    "Dantewada",
+    70107
+  ],
+  [
+    "Chhattisgarh",
+    "Dhamtari",
+    70108
+  ],
+  [
+    "Chhattisgarh",
+    "Janjgir-Champa",
+    70109
+  ],
+  [
+    "Chhattisgarh",
+    "Kanker",
+    70111
+  ],
+  [
+    "Chhattisgarh",
+    "Mahasamund",
+    70115
+  ],
+  [
+    "Chhattisgarh",
+    "Raipur",
+    70116
+  ],
+  [
+    "Chhattisgarh",
+    "Raj Nandgaon",
+    70117
+  ],
+  [
+    "Dadra and Nagar Haveli",
+    "Dadra and Nagar Haveli",
+    70119
+  ],
+  [
+    "Daman and Diu",
+    "Daman",
+    70120
+  ],
+  [
+    "Daman and Diu",
+    "Junagadh",
+    70121
+  ],
+  [
+    "Madhya Pradesh",
+    "Burhanpur",
+    70171
+  ],
+  [
+    "Puducherry",
+    "Karaikal",
+    70226
+  ],
+  [
+    "Puducherry",
+    "Mahe",
+    70227
+  ],
+  [
+    "Puducherry",
+    "Puducherry",
+    70228
+  ],
+  [
+    "Puducherry",
+    "Yanam",
+    70229
+  ]
+]

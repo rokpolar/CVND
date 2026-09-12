@@ -1,0 +1,11 @@
+{
+  "backup": "/home/home/CVND/data/cache/district/before_reference_recovery_20260912T152841Z",
+  "target_rows": 276,
+  "completed": 52,
+  "source_sha256": "8bef6929fd65432e7dc775e7c44473e84efff064ebddbfd6b834e6291546db40",
+  "status_counts": {
+    "NO_IMAGERY": 75,
+    "OK": 1325,
+    "ERROR": 230
+  }
+}

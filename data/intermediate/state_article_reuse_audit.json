@@ -5,8 +5,8 @@
   "body_database": "/home/home/CVND/data/raw/gdelt_bq.articles.sqlite",
   "reason": "State corpus coverage and district semantic relevance are not verified",
   "input_rows": 507076,
-  "outside_window_or_unmatched_identity": 449278,
-  "qa_candidate_rows": 57798,
-  "unresolved_rows": 57644,
-  "district_candidate_rows": 166
+  "qa_candidate_rows": 127252,
+  "unresolved_rows": 126557,
+  "district_candidate_rows": 762,
+  "outside_window_or_unmatched_identity": 379824
 }

@@ -1,0 +1,171 @@
+{
+  "settings": {
+    "min_rows": 50,
+    "min_sources": 10,
+    "min_train_rows": 30,
+    "min_train_sources": 5,
+    "rows_per_parameter": 5,
+    "tail_threshold": 0.05,
+    "n_splits": 5
+  },
+  "formulas": {
+    "nb2": "article_count ~ log_flood_area + log_population + year_c",
+    "poisson": "article_count ~ log_flood_area + log_population + year_c"
+  },
+  "transforms": {
+    "log_flood_area": "log1p(flood_area_km2)",
+    "log_population": "log(total_population / 1000000)",
+    "year_c": "start_date.year - 2020"
+  },
+  "year_term_omitted": false,
+  "existing_nb_fit_guards": {
+    "min_rows": 20,
+    "rows_per_parameter": 5,
+    "require_outcome_variation": true
+  },
+  "variance": "mu + alpha * mu^2; alpha estimated by maximum likelihood",
+  "n_total": 1630,
+  "n_eligible": 0,
+  "n_sources": 0,
+  "satellite_source_counts": {},
+  "n_input_sources": 72,
+  "n_excluded": 1630,
+  "folds": [],
+  "limitations": [
+    "Observed GDELT coverage under accessible-body and heuristic definitions, not socially deserved coverage, causal discrimination, or intentional neglect.",
+    "Central 90% discrete prediction intervals are plug-in approximations; beta/alpha estimation uncertainty is not included. They are not confidence intervals for the mean.",
+    "Candidate labels are exploratory alerts, not confirmed or multiplicity-adjusted discoveries. No quota or equal tail proportions are imposed.",
+    "Census 2011 total district population is not affected or exposed population. Boundaries, observation selection, source dependence and satellite/news window differences remain limitations.",
+    "Operational sample gates do not guarantee power. Marginal count variance exceeding its mean does not establish conditional overdispersion."
+  ],
+  "exclusion_counts": {
+    "district_aoi_unmatched": 1630,
+    "satellite_missing_or_invalid": 1630,
+    "aoi_area_invalid": 1630,
+    "article_collection_incomplete": 1630,
+    "article_count_missing_or_invalid": 1630,
+    "census_unmatched": 142,
+    "census_invalid": 128,
+    "census_population_inconsistent": 128,
+    "ambiguous_duplicate_census_district_code": 14
+  },
+  "missing_counts": {
+    "article_count": 1630,
+    "flood_area_km2": 1630,
+    "total_population": 128
+  },
+  "extrapolation_definition": "Any main-model predictor outside the training marginal min/max; this is not a joint-support test.",
+  "interval": "Central 90% plug-in count prediction interval: ppf(0.05), ppf(0.95)",
+  "tail_rule": "cdf(y) <= threshold and y < mu; sf(y-1) <= threshold and y > mu",
+  "oof_test_assignment_counts": {},
+  "n_scored": 0,
+  "status": "insufficient_data",
+  "scoring_reason_counts": {
+    "excluded_by_input_contract": 1630
+  },
+  "coverage_class_counts": {
+    "not_scored": 1630
+  },
+  "diagnostics_available": {
+    "nb2": {
+      "n_rows": 0,
+      "n_sources": 0,
+      "row_weighted": {
+        "mae": null,
+        "mean_negative_log_predictive_probability": null,
+        "coverage_90": null,
+        "mean_interval_width_90": null,
+        "observed_zero_rate": null,
+        "mean_predicted_zero_probability": null
+      },
+      "source_macro": {
+        "mae": null,
+        "mean_negative_log_predictive_probability": null,
+        "coverage_90": null,
+        "mean_interval_width_90": null,
+        "observed_zero_rate": null,
+        "mean_predicted_zero_probability": null
+      }
+    },
+    "poisson": {
+      "n_rows": 0,
+      "n_sources": 0,
+      "row_weighted": {
+        "mae": null,
+        "mean_negative_log_predictive_probability": null,
+        "coverage_90": null,
+        "mean_interval_width_90": null,
+        "observed_zero_rate": null,
+        "mean_predicted_zero_probability": null
+      },
+      "source_macro": {
+        "mae": null,
+        "mean_negative_log_predictive_probability": null,
+        "coverage_90": null,
+        "mean_interval_width_90": null,
+        "observed_zero_rate": null,
+        "mean_predicted_zero_probability": null
+      }
+    }
+  },
+  "poisson_comparison_common_success": {
+    "scope": "Only test rows with both NB2 and Poisson predictions; source_macro averages within source, then equally across sources.",
+    "n_rows": 0,
+    "fraction_of_eligible": null,
+    "nb2": {
+      "n_rows": 0,
+      "n_sources": 0,
+      "row_weighted": {
+        "mae": null,
+        "mean_negative_log_predictive_probability": null,
+        "coverage_90": null,
+        "mean_interval_width_90": null,
+        "observed_zero_rate": null,
+        "mean_predicted_zero_probability": null
+      },
+      "source_macro": {
+        "mae": null,
+        "mean_negative_log_predictive_probability": null,
+        "coverage_90": null,
+        "mean_interval_width_90": null,
+        "observed_zero_rate": null,
+        "mean_predicted_zero_probability": null
+      }
+    },
+    "poisson": {
+      "n_rows": 0,
+      "n_sources": 0,
+      "row_weighted": {
+        "mae": null,
+        "mean_negative_log_predictive_probability": null,
+        "coverage_90": null,
+        "mean_interval_width_90": null,
+        "observed_zero_rate": null,
+        "mean_predicted_zero_probability": null
+      },
+      "source_macro": {
+        "mae": null,
+        "mean_negative_log_predictive_probability": null,
+        "coverage_90": null,
+        "mean_interval_width_90": null,
+        "observed_zero_rate": null,
+        "mean_predicted_zero_probability": null
+      }
+    }
+  },
+  "calibration": {
+    "nb2": [],
+    "poisson": []
+  },
+  "input_path": "/home/home/CVND/data/results/district_flood_articles.csv",
+  "input_sha256": "39f71098ab4a8b8e8d886b3976bd70c3f09e575fc7c634636d884871607a1cdb",
+  "git_sha": "c94072bf9749e64ebdb4a0ee021a2940b98671b7",
+  "library_versions": {
+    "numpy": "2.5.2",
+    "pandas": "3.0.5",
+    "scipy": "1.18.1",
+    "statsmodels": "0.14.6",
+    "scikit-learn": "1.9.0",
+    "matplotlib": "3.11.1"
+  }
+}

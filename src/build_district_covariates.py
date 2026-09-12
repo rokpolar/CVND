@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import math
 import re
 import sys
@@ -438,6 +439,7 @@ def build_district_covariates(
     events_path: Path | None = None,
     crosswalk_path: Path | None = None,
     sheet: str | int | None = None,
+    recovery_path: Path | None = None,
 ) -> pd.DataFrame:
     frame = _read_input(Path(input_path), sheet)
     covariates = parse_census_table(frame)
@@ -446,6 +448,8 @@ def build_district_covariates(
     if events_path is not None:
         events = pd.read_csv(events_path)
         result = project_to_events(covariates, events, crosswalk_path)
+        if recovery_path is not None:
+            result = apply_census_recovery(result, events, covariates, recovery_path)
     else:
         result = covariates
     if output_path is not None:
@@ -453,6 +457,76 @@ def build_district_covariates(
         output_path.parent.mkdir(parents=True, exist_ok=True)
         result.to_csv(output_path, index=False)
     return result
+
+
+def apply_census_recovery(result, events, census, path):
+    """Fill unmatched regions only, from cited names or official 2011 retabulations.
+
+    Explicit event IDs scope a recovery to reviewed registry entries. New events
+    are not silently assigned a historical boundary. No parent-area proxy or
+    estimated population is accepted. The district lookup remains many-to-one.
+    """
+    payload = json.loads(Path(path).read_text(encoding='utf-8'))
+    if payload.get('schema_version') != 1:
+        raise ValueError('Unsupported Census recovery schema')
+    digest = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    out = result.copy()
+    key = lambda row: (normalize_name(row['state']), normalize_name(row['district']))
+    census_lookup = {key(row): row for row in census.to_dict('records')}
+    event_groups = {}
+    for row in events.to_dict('records'):
+        event_groups.setdefault(key(row), []).append(row)
+    seen = set()
+    for record in payload['records']:
+        k = key(record)
+        if k in seen:
+            raise ValueError(f'Duplicate Census recovery: {k}')
+        seen.add(k)
+        source = payload['sources'][record['source_id']]
+        if not source.get('url', '').startswith('https://') or not record.get('notes'):
+            raise ValueError(f'Census recovery requires source and notes: {k}')
+        if record.get('census_year') != 2011:
+            raise ValueError(f'Recovery must use 2011 Census: {k}')
+        if not record.get('event_ids'):
+            raise ValueError(f'Recovery requires reviewed event IDs: {k}')
+        if record['method'] == 'census_name_link':
+            target = (normalize_name(record['census_state']), normalize_name(record['census_district']))
+            if target not in census_lookup:
+                raise ValueError(f'Unknown Census recovery target: {target}')
+            values = dict(census_lookup[target])
+        elif record['method'] == 'official_retabulation':
+            nums = {f: _number(record.get(f), field=f, row_number=0)
+                    for f in ['total_population', 'urban_population', 'rural_population']}
+            if any(v is None for v in nums.values()):
+                raise ValueError(f'Missing recovery population: {k}')
+            total = _check_total(nums['total_population'], nums['urban_population'], nums['rural_population'], key=str(k))
+            geography_id = record.get('geography_id', ':'.join(k))
+            values = _base_record(record['state'], record['district'], f'retabulated:{geography_id}', total,
+                                  nums['urban_population'], nums['rural_population'], 2011)
+        else:
+            raise ValueError(f'Unsupported recovery method: {record["method"]}')
+        reviewed = set(record['event_ids'])
+        rows = event_groups.get(k, [])
+        if not rows or any(str(row['event_id']) not in reviewed for row in rows):
+            continue
+        dates = pd.to_datetime([row.get('start_date') for row in rows], errors='coerce')
+        if dates.isna().any():
+            continue
+        if record.get('valid_from') and (dates < pd.Timestamp(record['valid_from'])).any():
+            continue
+        if record.get('valid_until') and (dates >= pd.Timestamp(record['valid_until'])).any():
+            continue
+        mask = out.apply(key, axis=1).map(lambda value: value == k) & out['match_status'].eq('unmatched')
+        population_source = values.get('source', source['url'])
+        values.update(state=record['state'], district=record['district'],
+                      match_status='matched_crosswalk',
+                      source=f'census_2011_recovery;method={record["method"]};url={source["url"]};'
+                             f'table={source.get("table", "district demography")};'
+                             f'notes={record["notes"]};population_source={population_source};'
+                             f'file={Path(path).name};sha256={digest}')
+        for column in COVARIATE_COLUMNS:
+            out.loc[mask, column] = values.get(column)
+    return out
 
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
@@ -468,6 +542,9 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--no-events", action="store_true", help="Write a standalone Census district lookup")
     parser.add_argument("--crosswalk", type=Path, default=data_path("district_crosswalk"))
     parser.add_argument("--sheet", help="Optional Excel sheet name")
+    parser.add_argument('--recovery', type=Path, default=data_path('district_crosswalk').with_name('district_census_recovery.json'))
+    parser.add_argument('--no-recovery', action='store_true', help='Use the original Census/name crosswalk only')
+    parser.add_argument('--unmatched-output', type=Path, help='Optional unresolved-region audit CSV')
     return parser.parse_args(list(argv) if argv is not None else None)
 
 
@@ -480,10 +557,22 @@ def main(argv: Iterable[str] | None = None) -> int:
             events_path=None if args.no_events else args.events,
             crosswalk_path=args.crosswalk if args.crosswalk.exists() else None,
             sheet=args.sheet,
+            recovery_path=None if args.no_recovery else args.recovery,
         )
         print(f"Wrote district covariates: {args.output} ({len(result)} rows)")
         if "match_status" in result:
             print(result["match_status"].value_counts(dropna=False).to_string())
+        if args.unmatched_output and not args.no_events:
+            registry = pd.read_csv(args.events)
+            unresolved = result.loc[~result.match_status.isin(['matched', 'matched_crosswalk']),
+                                    ['state', 'district', 'match_status']].copy()
+            counts = registry.groupby(['state', 'district']).agg(
+                event_count=('event_id', 'nunique'),
+                event_ids=('event_id', lambda values: '|'.join(sorted(set(values)))))
+            unresolved = unresolved.merge(counts, on=['state', 'district'], how='left', validate='one_to_one')
+            unresolved['reason'] = 'Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied'
+            args.unmatched_output.parent.mkdir(parents=True, exist_ok=True)
+            unresolved.to_csv(args.unmatched_output, index=False)
         return 0
     except (OSError, ValueError, KeyError, RuntimeError) as exc:
         print(f"error: {exc}", file=sys.stderr)

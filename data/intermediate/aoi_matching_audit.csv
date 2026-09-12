@@ -1,0 +1,194 @@
+state,district,event_rows,status,gaul_name,gaul_code,candidates,source,note
+Andhra Pradesh,Visakhapatnam,2,boundary_review_required,,,Vishakhapatnam | Krishna | Vizianagaram,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Andhra Pradesh,YSR Kadapa,2,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Arunachal Pradesh,East Kameng,1,boundary_review_required,,,East Siang | West Siang,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Arunachal Pradesh,Itanagar Capital Region,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Arunachal Pradesh,Namsai,3,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Arunachal Pradesh,Pakke Kessang,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Arunachal Pradesh,Tawang,1,boundary_review_required,,,East Siang,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Bajali,2,boundary_review_required,,,Nalbari | Dhemaji | Barpeta,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Baksa,6,boundary_review_required,,,Barpeta,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Biswanath,8,boundary_review_required,,,Sibsagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Charaideo,5,boundary_review_required,,,Cachar | Marigaon,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Chirang,8,boundary_review_required,,,Darrang,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Dhubri,10,boundary_review_required,,,Dhuburi | Nalbari | Dhemaji,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Dima Hasao,3,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,East Karbi Anglong,2,boundary_review_required,,,Karbi Anglong | Marigaon,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Hojai,6,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Kamrup Metropolitan,5,boundary_review_required,,,Kamrup | Barpeta,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Majuli,8,boundary_review_required,,,Nalbari | Dhemaji,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Morigaon,12,boundary_review_required,,,Marigaon | Bongaigaon | Karimganj,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Sivasagar,10,boundary_review_required,,,Sibsagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,South Salmara,6,boundary_review_required,,,Goalpara | North Cachar Hills,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Sribhumi (Karimganj),1,boundary_review_required,,,Karimganj,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Tamulpur,2,boundary_review_required,,,Lakhimpur | Goalpara,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,Udalguri,10,boundary_review_required,,,Nalbari,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,West Karbi Anglong,5,boundary_review_required,,,Karbi Anglong | Marigaon,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Assam,West Karbi-Anglong,1,boundary_review_required,,,Karbi Anglong | Marigaon,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Bihar,East Champaran,5,boundary_review_required,,,Purba Champaran,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Bihar,Jogbani,1,boundary_review_required,,,Madhubani | Jamui | Gopalganj,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Bihar,Purnea,2,boundary_review_required,,,Purnia,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Bihar,West Champaran,4,boundary_review_required,,,Pashchim Champaran,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Balod,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Balodabazar,1,boundary_review_required,,,Bastar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Balrampur,1,boundary_review_required,,,Bilaspur | Raipur | Bastar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Bijapur,1,boundary_review_required,,,Bilaspur | Raipur | Jashpur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Gariaband,1,boundary_review_required,,,Mahasamund,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Gariyaband,1,boundary_review_required,,,Mahasamund | Koriya,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Kabirdham,1,boundary_review_required,,,Kawardha | Janjgir-Champa,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Kondagaon,1,boundary_review_required,,,Raj Nandgaon,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Mungeli,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Narayanpur,2,boundary_review_required,,,Raipur | Jashpur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Rajnandgaon,1,unique_spacing_match,Raj Nandgaon,70117,Raj Nandgaon,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Chhattisgarh,Sukma,1,boundary_review_required,,,Surguja,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Chhattisgarh,Surajpur,1,boundary_review_required,,,Raipur | Surguja | Jashpur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Delhi,Central Delhi,2,boundary_review_required,,,Delhi,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Delhi,East Delhi,2,boundary_review_required,,,Delhi,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Delhi,North East Delhi,2,boundary_review_required,,,Delhi,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Delhi,Shahdara,2,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Ahmedabad,2,boundary_review_required,,,Ahmadabad,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Aravalli,1,boundary_review_required,,,Amreli | Navsari,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Banaskantha,2,unique_spacing_match,Banas Kantha,17637,Banas Kantha,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Gujarat,Botad,2,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Chhota Udaipur,2,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Dang,2,boundary_review_required,,,The Dangs | Jamnagar | Bhavnagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Devbhumi Dwarka,3,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Gir Somnath,2,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Kutch,3,boundary_review_required,,,Kachchh,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Mahisagar,1,boundary_review_required,,,Mahesana | Gandhinagar | Jamnagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Mehsana,1,boundary_review_required,,,Mahesana,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Morbi,4,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Panchmahal,1,boundary_review_required,,,Panch Mahals | Gandhinagar | Narmada,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Gujarat,Sabarkantha,2,unique_spacing_match,Sabar Kantha,17648,Sabar Kantha,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Gujarat,Tapi,5,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Haryana,Palwal,1,boundary_review_required,,,Panchkula | Ambala | Panipat,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Haryana,Sonipat,1,boundary_review_required,,,Sonepat | Panipat | Sirsa,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Haryana,Yamunanagar,2,unique_spacing_match,Yamuna Nagar,70138,Yamuna Nagar | Mahendragarh,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Himachal Pradesh,Lahaul and Spiti,2,boundary_review_required,,,Lahul and Spiti,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Anantnag,3,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Bandipora,2,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Baramulla,1,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Budgam,1,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Ganderbal,2,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Kishtwar,2,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Pulwama,1,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Shopian,1,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Jammu and Kashmir,Srinagar,1,alternative_boundary_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Belagavi,6,boundary_review_required,,,Belgaum,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Chamarajanagar,1,boundary_review_required,,,Chamrajnagar | Chikmagalur | Davanagere,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Chikkamagaluru,5,boundary_review_required,,,Chikmagalur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Dakshina Kannada,2,boundary_review_required,,,Dakshin Kannad | Uttar Kannand,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Kalaburagi,1,boundary_review_required,,,Gulbarga,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Mysuru,1,boundary_review_required,,,Mysore,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Shivamogga,5,boundary_review_required,,,Shimoga,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Uttara Kannada,4,boundary_review_required,,,Uttar Kannand | Dakshin Kannad | Chamrajnagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Vijayapura,3,boundary_review_required,,,Bijapur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Karnataka,Yadgir,2,boundary_review_required,,,Gadag | Raichur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Kerala,Chengannur,1,boundary_review_required,,,Kannur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Kerala,Pathanamthitta,5,boundary_review_required,,,Pattanamtitta,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Madhya Pradesh,Agar Malwa,1,boundary_review_required,,,Mandla | Barwani,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Madhya Pradesh,Alirajpur,2,boundary_review_required,,,Shajapur | Burhanpur | Anuppur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Madhya Pradesh,Khandwa,1,boundary_review_required,,,Mandla | Chhindwara | Mandsaur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Madhya Pradesh,Khargone,1,boundary_review_required,,,Dhar | Katni,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Madhya Pradesh,Narmadapuram,3,boundary_review_required,,,Narsinghpur | Shajapur | Mandsaur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Madhya Pradesh,Singrauli,1,boundary_review_required,,,Dindori | Shivpuri,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Maharashtra,Ahilyanagar,1,boundary_review_required,,,Ahmednagar | Bhandara | Ratnagiri,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Maharashtra,Beed,1,boundary_review_required,,,Bid,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Maharashtra,Buldhana,1,boundary_review_required,,,Buldana,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Maharashtra,Gadchiroli,2,boundary_review_required,,,Garhchiroli | Hingoli,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Maharashtra,Gondia,2,boundary_review_required,,,Gondiya,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Maharashtra,Mumbai,1,boundary_review_required,,,Mumbai city | Mumbai Suburban,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Maharashtra,Palghar,7,boundary_review_required,,,Raigarh | Jalgaon | Parbhani,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Maharashtra,Raigad,5,boundary_review_required,,,Raigarh,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Manipur,Imphal East,3,boundary_review_required,,,West Imphal | East Imphal,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Manipur,Imphal West,3,boundary_review_required,,,West Imphal | East Imphal,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Manipur,Jiribam,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Manipur,Kangpokpi,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Manipur,Noney,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Manipur,Pherzawl,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Meghalaya,East Jaintia Hills,2,boundary_review_required,,,Jaintia Hills | East Khasi Hills | East Garo Hills,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Meghalaya,Eastern West Khasi Hills,1,boundary_review_required,,,West Khasi Hills | East Khasi Hills | West Garo Hills,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Meghalaya,North Garo Hills,2,boundary_review_required,,,South Garo Hills | West Garo Hills | East Garo Hills,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Meghalaya,South West Garo Hills,3,boundary_review_required,,,South Garo Hills | West Garo Hills | East Garo Hills,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Meghalaya,South West Khasi Hills,1,boundary_review_required,,,West Khasi Hills | East Khasi Hills | South Garo Hills,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Meghalaya,West Jaintia Hills,2,boundary_review_required,,,Jaintia Hills | West Khasi Hills | West Garo Hills,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Nagaland,Chumoukedima,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Nagaland,Kiphire,1,boundary_review_required,,,Kohima,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Nagaland,Longleng,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Nagaland,Peren,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Nagaland,Shamator,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Odisha,Balangir,1,boundary_review_required,,,Bolangir | Malkangiri | Kalahandi,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Odisha,Balasore,1,boundary_review_required,,,Baleshwar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Odisha,Bargarh,1,boundary_review_required,,,Baragarh | Sundargarh | Nayagarh,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Odisha,Bauda,1,boundary_review_required,,,Bhadrak | Boudh | Jharsuguda,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Odisha,Nabarangapur,1,boundary_review_required,,,Nabarangpur | Nayagarh | Baragarh,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Odisha,Subarnapur,2,boundary_review_required,,,Nabarangpur | Sambalpur | Sundargarh,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Punjab,Barnala,1,boundary_review_required,,,Kapurthala | Patiala | Bathinda,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Punjab,Fazilka,4,boundary_review_required,,,Faridkot,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Punjab,Ferozepur,2,boundary_review_required,,,Firozpur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Punjab,Pathankot,4,boundary_review_required,,,Patiala | Faridkot | Bathinda,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Punjab,SAS Nagar,2,boundary_review_required,,,Sangrur | Rupnagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Punjab,SBS Nagar,2,boundary_review_required,,,Sangrur | Rupnagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Punjab,Sri Muktsar Sahib,1,boundary_review_required,,,Muktsar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Punjab,Tarn Taran,3,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Rajasthan,Chittorgarh,1,boundary_review_required,,,Chittaurgarh,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Rajasthan,Dholpur,1,boundary_review_required,,,Dhaulpur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Rajasthan,Jalore,2,boundary_review_required,,,Jalor,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Sikkim,Gyalshing,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Sikkim,Mangan,3,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Chengalpattu,1,boundary_review_required,,,Chennai | Nagapattinam,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Kallakurichi,1,boundary_review_required,,,Kanniyakumari | Karur | Dharmapuri,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Kanchipuram,1,boundary_review_required,,,Kancheepuram | Ramanathapuram | Villupuram,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Kanyakumari,2,boundary_review_required,,,Kanniyakumari,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Krishnagiri,1,boundary_review_required,,,Nilgiris | Virudhunagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Mayiladuthurai,1,boundary_review_required,,,Madurai | Villupuram | Ramanathapuram,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Ranipet,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Sivagangai,1,boundary_review_required,,,Sivaganga,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Tenkasi,2,boundary_review_required,,,Theni | Chennai,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Thiruvarur,2,boundary_review_required,,,Thiruvallur | Karur | Thanjavur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Thoothukkudi,2,boundary_review_required,,,Thoothukudi,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Tiruchirappalli,1,boundary_review_required,,,Tiruchchirappalli | Tiruvannamalai | Thiruvallur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Tirunelveli,2,boundary_review_required,,,Tirunelveli Kattabo | Tiruvannamalai | Thiruvallur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Tirupattur,1,boundary_review_required,,,Thiruvallur | Villupuram | Tirunelveli Kattabo,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Tiruppur,1,boundary_review_required,,,Thiruvallur | Villupuram | Virudhunagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Tiruvallur,1,boundary_review_required,,,Thiruvallur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Tiruvarur,1,boundary_review_required,,,Thiruvallur | Karur | Tiruvannamalai,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tamil Nadu,Viluppuram,1,boundary_review_required,,,Villupuram | Kancheepuram,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Telangana,Bhadradri Kothagudem,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Telangana,Jayashankar Bhupalpally,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Telangana,Mancherial,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Telangana,Mulugu,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Telangana,Nirmal,1,boundary_review_required,,,Nizamabad,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Telangana,Ranga Reddy,1,boundary_review_required,,,Rangareddi,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tripura,Gomati,5,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tripura,Khowai,4,boundary_review_required,,,Dhalai,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tripura,Sepahijala,3,boundary_review_required,,,Dhalai,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Tripura,Unakoti,4,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Amethi,1,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Amroha,1,boundary_review_required,,,Agra | Auraiya,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Ayodhya,8,boundary_review_required,,,Gonda,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Barabanki,11,unique_spacing_match,Bara Banki,17896,Bara Banki,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttar Pradesh,Budaun,6,boundary_review_required,,,Badaun | Banda | Jalaun,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Hapur,1,boundary_review_required,,,Hamirpur | Rampur | Kanpur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Kanpur Nagar,3,boundary_review_required,,,Kanpur Dehat | Kanpur | Sant Kabir Nagar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Kasganj,2,boundary_review_required,,,Kannauj | Maharajganj | Kaushambi,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Prayagraj,3,boundary_review_required,,,Pratapgarh | Maharajganj | Auraiya,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Shamli,1,boundary_review_required,,,Shravasti | Kaushambi | Chandauli,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Shrawasti,3,boundary_review_required,,,Shravasti | Varanasi | Basti,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+Uttar Pradesh,Siddharthnagar,5,unique_spacing_match,Siddharth Nagar,70278,Siddharth Nagar | Shahjahanpur | Muzaffarnagar,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttarakhand,Dehradun,5,unique_spacing_match,Dehra Dun,17903,Dehra Dun,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttarakhand,Nainital,4,unique_spacing_match,Naini Tal,70285,Naini Tal,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+Uttarakhand,Rudraprayag,2,unique_spacing_match,Rudra Prayag,70286,Rudra Prayag,FAO/GAUL/2015/level2,"Same normalized spelling; retains GAUL reference geography, not proof of event-year boundaries"
+West Bengal,Alipurduar,6,boundary_review_required,,,,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Cooch Behar,6,boundary_review_required,,,Kochbihar,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Darjeeling,8,boundary_review_required,,,Darjiling,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,East Medinipur,5,boundary_review_required,,,East Midnapore | West Midnapore | Dakshin Dinajpur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Hooghly,5,boundary_review_required,,,Hugli,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Howrah,4,boundary_review_required,,,Haora,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Jhargram,4,boundary_review_required,,,Haora,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Kalimpong,5,boundary_review_required,,,Darjiling,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Malda,4,boundary_review_required,,,Maldah,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Paschim Bardhaman,4,boundary_review_required,,,Barddhaman,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Purba Bardhaman,4,boundary_review_required,,,Barddhaman,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,Purulia,4,boundary_review_required,,,Puruliya,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry
+West Bengal,West Medinipur,5,boundary_review_required,,,West Midnapore | East Midnapore | Uttar Dinajpur,FAO/GAUL/2015/level2,Candidate only; verify administrative history before using geometry

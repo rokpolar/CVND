@@ -50,9 +50,9 @@ def merge_observations(registry, observations, columns, label):
 
 
 def build_district_table(registry, flood, articles, covariates):
-    require(registry, [KEY] + IDENTITY + ['aoi_level', 'district_resolution_confidence'], 'registry')
+    require(registry, [KEY] + IDENTITY + ['aoi_level'], 'registry')
     unique(registry, KEY, 'registry')
-    result = registry.copy()
+    result = registry.drop(columns=['district_resolution_confidence'], errors='ignore').copy()
     # Registry AOI status is a pre-resolution placeholder. Measured provenance is authoritative.
     result = result.drop(columns=['aoi_match_status'], errors='ignore')
     flood_columns = FLOOD_COLUMNS + [c for c in OPTIONAL_FLOOD_COLUMNS if c in flood]
@@ -77,10 +77,18 @@ def build_district_table(registry, flood, articles, covariates):
     duplicate_match = result[keys].apply(tuple, axis=1).isin(ambiguous_keys)
     result.loc[duplicate_match, 'census_match_status'] = 'ambiguous'
     result['census_match_status'] = result['census_match_status'].fillna('missing')
+    # Two aliases in one event must not become independent population samples.
+    if 'census_district_code' in result:
+        code = result['census_district_code'].fillna('').astype(str).str.strip()
+        duplicate_geo = code.ne('') & result.assign(_census_geo=code).duplicated(
+            ['event_id', '_census_geo'], keep=False)
+        result.loc[duplicate_geo, 'census_match_status'] = 'ambiguous'
     result['aoi_match_status'] = result['aoi_match_status'].fillna('not_observed')
     result['satellite_status'] = result['satellite_status'].fillna('not_observed')
     result['article_collection_status'] = result['article_collection_status'].fillna('not_executed')
-    result['district_match_status'] = np.where(result['district'].fillna('').str.strip().isin(['', 'district_missing']), 'district_missing', result['district_resolution_confidence'])
+    result['district_match_status'] = np.where(
+        result['district'].fillna('').str.strip().isin(['', 'district_missing']),
+        'district_missing', 'resolved')
     numeric = ['flood_area_km2', 'article_count', 'urban_population_share', 'total_population', 'urban_population', 'rural_population', 'aoi_area_km2', 'flood_ratio']
     for column in numeric:
         result[column] = pd.to_numeric(result[column], errors='coerce')

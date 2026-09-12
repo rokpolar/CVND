@@ -1,0 +1,61 @@
+state,district,match_status,event_count,event_ids,reason
+Gujarat,Morbi,unmatched,4,E003|E110|E142|E186,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Maharashtra,Palghar,unmatched,7,E004|E040|E057|E072|E086|E170|E187,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+West Bengal,Darjeeling,unmatched,8,E005|E055|E076|E092|E096|E117|E131|E204,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Manipur,Jiribam,unmatched,1,E019,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+West Bengal,Alipurduar,unmatched,6,E022|E055|E076|E092|E117|E204,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Madhya Pradesh,Agar Malwa,unmatched,1,E034,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Gujarat,Chhota Udaipur,unmatched,2,E039|E166,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Bihar,Jogbani,unmatched,1,E053,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+West Bengal,Jhargram,unmatched,4,E055|E076|E092|E117,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+West Bengal,Paschim Bardhaman,unmatched,4,E055|E076|E092|E117,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+West Bengal,Purba Bardhaman,unmatched,4,E055|E076|E092|E117,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+West Bengal,West Medinipur,unmatched,5,E055|E076|E092|E117|E138,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Uttar Pradesh,Shamli,unmatched,1,E056,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tripura,Gomati,unmatched,5,E059|E128|E185|E188|E197,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tripura,Khowai,unmatched,4,E059|E185|E188|E197,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tripura,Sepahijala,unmatched,3,E059|E185|E188,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tripura,Unakoti,unmatched,4,E059|E185|E188|E197,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Uttar Pradesh,Hapur,unmatched,1,E066,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Kerala,Chengannur,unmatched,1,E071,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+West Bengal,Kalimpong,unmatched,5,E076|E092|E096|E117|E204,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Uttar Pradesh,Amethi,unmatched,1,E077,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Punjab,Fazilka,unmatched,4,E079|E088|E171|E201,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Punjab,Pathankot,unmatched,4,E079|E088|E176|E201,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Balodabazar,unmatched,1,E109,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Balrampur,unmatched,1,E109,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Dantewada,unmatched,1,E109,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Gariyaband,unmatched,1,E109,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Kondagaon,unmatched,1,E109,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Mungeli,unmatched,1,E109,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Sukma,unmatched,1,E109,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Surajpur,unmatched,1,E109,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Gujarat,Botad,unmatched,2,E110|E186,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Gujarat,Devbhumi Dwarka,unmatched,3,E110|E142|E186,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Gujarat,Gir Somnath,unmatched,2,E110|E142,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tamil Nadu,Chengalpattu,unmatched,1,E145,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tamil Nadu,Kallakurichi,unmatched,1,E145,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tamil Nadu,Kanchipuram,unmatched,1,E145,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tamil Nadu,Mayiladuthurai,unmatched,1,E145,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tamil Nadu,Ranipet,unmatched,1,E145,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tamil Nadu,Tenkasi,unmatched,2,E145|E179,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tamil Nadu,Tirupattur,unmatched,1,E145,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Tamil Nadu,Villupuram,unmatched,1,E145,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Assam,Bajali,unmatched,2,E148|E160,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Assam,Tamulpur,unmatched,2,E148|E180,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Sikkim,Gyalshing,unmatched,1,E161,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Chhattisgarh,Gariaband,unmatched,1,E164,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Delhi,Central Delhi,unmatched,2,E165|E173,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Delhi,East Delhi,unmatched,2,E165|E173,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Delhi,North East Delhi,unmatched,2,E165|E173,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Delhi,Shahdara,unmatched,2,E165|E173,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Gujarat,Aravalli,unmatched,1,E186,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Gujarat,Mahisagar,unmatched,1,E186,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Gujarat,Panchmahal,unmatched,1,E186,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Arunachal Pradesh,Itanagar Capital Region,unmatched,1,E190,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Arunachal Pradesh,Pakke Kessang,unmatched,1,E190,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Manipur,Kangpokpi,unmatched,1,E192,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Manipur,Noney,unmatched,1,E192,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Manipur,Pherzawl,unmatched,1,E192,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Nagaland,Chumoukedima,unmatched,1,E195,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied
+Nagaland,Shamator,unmatched,1,E195,Requires verified 2011 total and urban/rural population for the district boundary; no parent proxy applied

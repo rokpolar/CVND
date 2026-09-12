@@ -1,0 +1,12 @@
+{
+  "failed_rows_before": 498,
+  "unique_failed_districts": 193,
+  "spacing_recoverable_rows": 34,
+  "spacing_recoverable_districts": 9,
+  "final_status_counts": {
+    "NO_IMAGERY": 61,
+    "OK": 1105,
+    "ERROR": 464
+  },
+  "backup": "/home/home/CVND/data/cache/district/before_aoi_recovery_20260912T150630Z"
+}

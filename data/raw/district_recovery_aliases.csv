@@ -1,0 +1,34 @@
+source_value,canonical_value,action,note
+Virudunagar,Virudhunagar,alias_merge,
+Dhuburi,Dhubri,alias_merge,
+Marigaon,Morigaon,alias_merge,
+Sibsagar,Sivasagar,alias_merge,
+Sivsagar,Sivasagar,alias_merge,
+East Imphal,Imphal East,alias_merge,
+West Imphal,Imphal West,alias_merge,
+Chenai,Chennai,alias_merge,
+Dakshin Kannad,Dakshina Kannada,alias_merge,
+KarbiAnglrng,Karbi Anglong,alias_merge,
+Sahersa,Saharsa,alias_merge,
+Purba Champaran,East Champaran,alias_merge,
+Pashchim Champaran,West Champaran,alias_merge,
+Belgaum,Belagavi,alias_merge,
+Nagappattinam,Nagapattinam,alias_merge,
+Sontipur,Sonitpur,alias_merge,
+Naini Tal,Nainital,alias_merge,
+Cuddapah,YSR Kadapa,alias_merge,
+Kadapa,YSR Kadapa,alias_merge,
+Y.S.R.,YSR Kadapa,alias_merge,
+Barpet distrcits,Barpeta,alias_merge,
+Pattanamtitta,Pathanamthitta,alias_merge,
+Darjiling,Darjeeling,alias_merge,
+Maldah,Malda,alias_merge,
+Kachchh,Kutch,alias_merge,
+Banas Kantha,Banaskantha,alias_merge,
+Golaghat Jorhat,Golaghat | Jorhat,split_compound,Split compound source string before event_district_id generation.
+Dhemaji and Dibrugarh,Dhemaji | Dibrugarh,split_compound,Split compound source string before event_district_id generation.
+Solan and Hamirpur,Solan | Hamirpur,split_compound,Split compound source string before event_district_id generation.
+Kanniyakumari and Tenkasi,Kanyakumari | Tenkasi,split_compound,Split compound source string before event_district_id generation.
+Varanasi and Siddharthnagar,Varanasi | Siddharthnagar,split_compound,Split compound source string before event_district_id generation.
+and Udham Singh Nagar,Udham Singh Nagar,split_compound,Split compound source string before event_district_id generation.
+Achankovil,,drop_non_district,"Achankovil is a river/locality name, not a district."

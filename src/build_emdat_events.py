@@ -660,7 +660,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
         "--event-district-output",
         type=Path,
         default=data_path("event_districts"),
-        help="Bounded event × district registry (includes explicit unresolved rows)",
+        help="Event × district registry after configured recovery and unresolved-event exclusion",
     )
     parser.add_argument("--full-output", type=Path, help="Optional full-fidelity state-event CSV")
     parser.add_argument("--summary-output", type=Path, help="Optional derivation summary JSON")
@@ -674,11 +674,15 @@ def main(argv: Iterable[str] | None = None) -> int:
         base, _info = load_official_workbook(args.base)
         full, registry = build_state_events(base)
         event_districts = build_event_districts(base, registry)
+        from district_recovery import recover_from_files
+        event_districts = recover_from_files(
+            event_districts, data_path("events").parent / "district_recovery_mapping.csv")
+        registry = registry[registry["event_id"].isin(event_districts["event_id"])].reset_index(drop=True)
         summary = build_summary(args.base, base, full)
         print(f"Official source records: {len(base)}")
         print(f"Original columns preserved: {len(base.columns)}")
-        print(f"State-event rows: {len(full)}")
-        print(f"Unique states/UTs: {full['state'].nunique()}")
+        print(f"Retained event rows: {len(registry)}")
+        print(f"Unique retained states/UTs: {registry['state'].nunique()}")
         print(f"Event × district rows: {len(event_districts)}")
         print(
             "District rows with resolved names: "

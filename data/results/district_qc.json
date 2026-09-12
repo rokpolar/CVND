@@ -1,37 +1,38 @@
 {
   "district_extraction": {
-    "success": 251,
-    "total": 495,
-    "rate": 0.5070707070707071
+    "success": 1630,
+    "total": 1630,
+    "rate": 1.0
   },
   "district_aoi_match": {
     "success": 0,
-    "total": 495,
+    "total": 1630,
     "rate": 0.0
   },
   "census_match": {
-    "success": 268,
-    "total": 495,
-    "rate": 0.5414141414141415
+    "success": 1488,
+    "total": 1630,
+    "rate": 0.912883435582822
   },
   "satellite_observation": {
     "success": 0,
-    "total": 495,
+    "total": 1630,
     "rate": 0.0
   },
   "gdelt_collection": {
     "success": 0,
-    "total": 495,
+    "total": 1630,
     "rate": 0.0
   },
   "article_observation": {
     "success": 0,
-    "total": 495,
+    "total": 1630,
     "rate": 0.0
   },
   "final_analyzable": {
     "success": 0,
-    "total": 495,
+    "total": 1630,
     "rate": 0.0
-  }
+  },
+  "satellite_source_counts": {}
 }

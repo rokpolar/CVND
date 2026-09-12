@@ -1,0 +1,22 @@
+{
+  "note": "(a) legacy: pre-refactor routing (S1 whenever SITS was not run, a 60% cloud cut); (b) primary: the current routing (interim S1 for every district, or SITS primary with S1_TO_SITS); (c) the primary sample restricted to SITS sources (empty under the interim routing); (d) a Track A spec variant applied as the relative change of the routed sensor (NDWI for SITS rows, S1 for S1_TO_SITS rows): area_b x (variant + o) / (primary + o), a first-order approximation because Track B is not rerun under variants. Robust when |coef_a - coef_b| < half the width of the 95% CI of (b).",
+  "variants_available": [],
+  "variants_defined": [
+    "jrc_seasonal_10",
+    "mndwi",
+    "pre_same_season_3y"
+  ],
+  "definitions": {
+    "b_primary": {
+      "status": "insufficient sample: N=0 < 20",
+      "n": 0
+    },
+    "c_sits_only": {
+      "status": "insufficient sample: N=0 < 20",
+      "n": 0
+    }
+  },
+  "verdict": {
+    "result": "not assessable: legacy or primary Model 2 not estimated"
+  }
+}
