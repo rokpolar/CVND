@@ -709,11 +709,20 @@ def main(argv: Iterable[str] | None = None) -> int:
     try:
         base, _info = load_official_workbook(args.base)
         full, registry = build_state_events(base)
-        event_districts = build_event_districts(base, registry)
+        unresolved_registry = build_event_districts(base, registry)
         from district_recovery import recover_from_files
         event_districts = recover_from_files(
-            event_districts, data_path("events").parent / "district_recovery_mapping.csv")
-        registry = registry[registry["event_id"].isin(event_districts["event_id"])].reset_index(drop=True)
+            unresolved_registry, data_path("events").parent / "district_recovery_mapping.csv")
+        sensitivity = recover_from_files(
+            unresolved_registry, data_path("events").parent / "district_recovery_mapping.csv",
+            include_circularity_risk=True)
+        retained_event_ids = set(event_districts["event_id"])
+        sensitivity_event_ids = set(sensitivity["event_id"])
+        exclusions = registry.loc[~registry["event_id"].isin(retained_event_ids)].copy()
+        exclusions["exclusion_reason"] = exclusions["event_id"].map(
+            lambda event: ("news_informed_district_recovery_excluded_from_primary"
+                           if event in sensitivity_event_ids else "district_unresolved"))
+        registry = registry[registry["event_id"].isin(retained_event_ids)].reset_index(drop=True)
         summary = build_summary(args.base, base, full)
         print(f"Official source records: {len(base)}")
         print(f"Original columns preserved: {len(base.columns)}")
@@ -738,6 +747,13 @@ def main(argv: Iterable[str] | None = None) -> int:
         args.event_district_output.parent.mkdir(parents=True, exist_ok=True)
         event_districts.to_csv(args.event_district_output, index=False)
         print(f"Wrote event × district registry: {args.event_district_output} ({len(event_districts)} rows)")
+        sensitivity_path = data_path("event_districts_news_sensitivity")
+        sensitivity_path.parent.mkdir(parents=True, exist_ok=True)
+        sensitivity.to_csv(sensitivity_path, index=False)
+        exclusion_path = data_path("event_registry_exclusions")
+        exclusions.to_csv(exclusion_path, index=False)
+        print(f"Wrote news-inclusive sensitivity registry: {sensitivity_path} ({len(sensitivity)} rows)")
+        print(f"Wrote excluded-event audit: {exclusion_path} ({len(exclusions)} rows)")
         if args.full_output:
             args.full_output.parent.mkdir(parents=True, exist_ok=True)
             full.to_csv(args.full_output, index=False)

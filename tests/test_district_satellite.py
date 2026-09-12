@@ -437,6 +437,13 @@ class TileTests(unittest.TestCase):
 
 
 class ResumeTests(unittest.TestCase):
+    def test_checkpoint_write_is_atomic_and_leaves_no_temporary_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "checkpoint.json"
+            satellite.save_checkpoint({"completed": np.int64(3)}, str(path))
+            self.assertEqual(json.loads(path.read_text()), {"completed": 3})
+            self.assertEqual(list(path.parent.glob(".checkpoint-*.tmp")), [])
+
     """C2: an interruption after a block's append must not duplicate its tiles."""
 
     def _grid(self):

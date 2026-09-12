@@ -2,14 +2,9 @@ event_id,state,district,disaster_type,start_date,end_date,lat,lon,bbox,income_gr
 E001,Jammu and Kashmir,Jammu and Kashmir,flood,2015-03-20,2015-03-31,34.45,77.05,"73.7,32.3,80.4,36.6",Low,emdat_official_state,2015-0107-IND,state,start:day|end:day,Location
 E002,Tamil Nadu,Virudunagar,flood,2015-05-17,2015-05-21,10.8,78.3,"76.2,8.0,80.4,13.6",Middle,emdat_official_state,2015-0207-IND,state,start:day|end:day,GADM|Location
 E003,Gujarat,Morbi,flood,2015-06-19,2015-06-20,22.4,71.35,"68.2,20.1,74.5,24.7",High,emdat_official_state,2015-0249-IND,state,start:day|end:day,GADM|Location
-E004,Maharashtra,Maharashtra,flood,2015-06-19,2015-06-20,18.8,76.75,"72.6,15.6,80.9,22.0",High,emdat_official_state,2015-0249-IND,state,start:day|end:day,Admin Units|GADM|Location
 E005,West Bengal,Darjiling,flood,2015-06-23,2015-06-30,24.5,87.85,"85.8,21.5,89.9,27.5",Middle,emdat_official_state,2015-0253-IND,state,start:day|end:day,GADM|Location
-E008,Himachal Pradesh,Himachal Pradesh,flood,2015-07-07,2015-07-13,31.8,77.3,"75.6,30.4,79.0,33.2",Low,emdat_official_state,2015-0333-IND,state,start:day|end:day,Admin Units|GADM|Location
 E009,Jammu and Kashmir,Jammu and Kashmir,flood,2015-07-07,2015-07-13,34.45,77.05,"73.7,32.3,80.4,36.6",Low,emdat_official_state,2015-0333-IND,state,start:day|end:day,Location
-E010,Punjab,Punjab,flood,2015-07-07,2015-07-13,31.0,75.4,"73.9,29.5,76.9,32.5",Middle,emdat_official_state,2015-0333-IND,state,start:day|end:day,Admin Units|GADM|Location
 E012,Uttar Pradesh,Uttar Pradesh,flood,2015-07-07,2015-07-13,27.15,80.9,"77.1,23.8,84.7,30.5",Low,emdat_official_state,2015-0333-IND,state,start:day|end:day,Admin Units|GADM|Location
-E013,Uttarakhand,Uttarakhand,flood,2015-07-07,2015-07-13,30.1,79.35,"77.6,28.7,81.1,31.5",Low,emdat_official_state,2015-0333-IND,state,start:day|end:day,Admin Units|GADM|Location
-E014,Arunachal Pradesh,Arunachal Pradesh,flood,2015-07-14,2015-07-16,28.0,94.45,"91.5,26.5,97.4,29.5",Low,emdat_official_state,2015-0413-IND,state,start:day|end:day,Admin Units|GADM|Location
 E015,Assam,Kokrajhar,flood,2015-07-14,2015-07-16,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2015-0413-IND,state,start:day|end:day,GADM|Location
 E016,Assam,Goalpara,flood,2015-07-15,2015-08-19,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2015-0317-IND,state,start:day|end:day,GADM|Location
 E017,Gujarat,Kachchh,flood,2015-07-15,2015-08-19,22.4,71.35,"68.2,20.1,74.5,24.7",High,emdat_official_state,2015-0317-IND,state,start:day|end:day,GADM|Location
@@ -35,8 +30,6 @@ E037,Assam,Golaghat,flood,2016-07-17,2016-07-19,26.0,92.85,"89.7,24.1,96.0,27.9"
 E038,Assam,Barpeta,flood,2016-07-28,2016-07-30,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2016-0267-IND,state,start:day|end:day,GADM|Location
 E039,Gujarat,Navsari,flood,2016-08-01,2016-08-03,22.4,71.35,"68.2,20.1,74.5,24.7",High,emdat_official_state,2016-0304-IND,state,start:day|end:day,GADM|Location
 E040,Maharashtra,Kolhapur,flood,2016-08-01,2016-08-03,18.8,76.75,"72.6,15.6,80.9,22.0",High,emdat_official_state,2016-0304-IND,state,start:day|end:day,GADM|Location
-E041,Andhra Pradesh,Andhra Pradesh,flood,2016-09-21,2016-09-29,16.2,80.9,"77.0,12.5,84.8,19.9",Middle,emdat_official_state,2016-0391-IND,state,start:day|end:day,Admin Units|GADM|Location
-E042,Telangana,Telangana,flood,2016-09-21,2016-09-29,17.85,79.25,"77.2,15.8,81.3,19.9",High,emdat_official_state,2016-0391-IND,state,start:day|end:day,GADM|Location
 E044,Gujarat,Gujarat,flood,2017-06-01,2017-08-31,22.4,71.35,"68.2,20.1,74.5,24.7",High,emdat_official_state,2017-0294-IND,state,start:month|end:month,Location
 E045,Rajasthan,Rajasthan,flood,2017-06-01,2017-08-31,26.6,73.9,"69.5,23.0,78.3,30.2",Low,emdat_official_state,2017-0294-IND,state,start:month|end:month,Location
 E046,West Bengal,West Bengal,flood,2017-06-01,2017-08-31,24.5,87.85,"85.8,21.5,89.9,27.5",Middle,emdat_official_state,2017-0294-IND,state,start:month|end:month,Location
@@ -56,20 +49,15 @@ E059,Tripura,Tripura,flood,2018-05-17,2018-05-20,23.75,91.75,"91.2,22.9,92.3,24.
 E060,Karnataka,Dakshina Kannada,flood,2018-05-29,2018-05-31,15.05,76.35,"74.1,11.6,78.6,18.5",High,emdat_official_state,2018-0216-IND,state,start:day|end:day,GADM
 E061,Assam,Assam,flood,2018-06-22,2018-07-03,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2018-0205-IND,state,start:day|end:day,Admin Units|GADM|Location
 E064,Odisha,Odisha,flood,2018-07-20,2018-07-23,20.2,84.45,"81.4,17.8,87.5,22.6",Low,emdat_official_state,2018-0286-IND,state,start:day|end:day,Admin Units|GADM|Location
-E065,Rajasthan,Rajasthan,flood,2018-07-26,2018-07-28,26.6,73.9,"69.5,23.0,78.3,30.2",Low,emdat_official_state,2018-0267-IND,state,start:day|end:day,Admin Units|GADM|Location
-E066,Uttar Pradesh,Uttar Pradesh,flood,2018-07-26,2018-07-28,27.15,80.9,"77.1,23.8,84.7,30.5",Low,emdat_official_state,2018-0267-IND,state,start:day|end:day,Admin Units|GADM|Location
 E067,Assam,Golaghat,flood,2018-08-02,2018-08-06,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2018-0345-IND,state,start:day|end:day,GADM|Location
 E068,West Bengal,West Bengal,flood,2018-08-02,2018-08-06,24.5,87.85,"85.8,21.5,89.9,27.5",Middle,emdat_official_state,2018-0345-IND,state,start:day|end:day,Location
 E069,Assam,Assam,flood,2018-08-07,2018-08-20,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2018-0295-IND,state,start:day|end:day,Admin Units|GADM|Location
 E070,Himachal Pradesh,Himachal Pradesh,flood,2018-08-07,2018-08-20,31.8,77.3,"75.6,30.4,79.0,33.2",Low,emdat_official_state,2018-0295-IND,state,start:day|end:day,Admin Units|GADM|Location
 E071,Kerala,Thrissur,flood,2018-08-07,2018-08-20,10.55,76.2,"74.8,8.3,77.6,12.8",Middle,emdat_official_state,2018-0295-IND,state,start:day|end:day,GADM|Location
-E072,Maharashtra,Maharashtra,flood,2018-08-07,2018-08-20,18.8,76.75,"72.6,15.6,80.9,22.0",High,emdat_official_state,2018-0295-IND,state,start:day|end:day,Admin Units|GADM|Location
 E073,Nagaland,Nagaland,flood,2018-08-07,2018-08-20,26.15,94.3,"93.3,25.2,95.3,27.1",Low,emdat_official_state,2018-0295-IND,state,start:day|end:day,Admin Units|GADM|Location
-E074,Odisha,Odisha,flood,2018-08-07,2018-08-20,20.2,84.45,"81.4,17.8,87.5,22.6",Low,emdat_official_state,2018-0295-IND,state,start:day|end:day,Admin Units|GADM|Location
 E075,Uttar Pradesh,Uttar Pradesh,flood,2018-08-07,2018-08-20,27.15,80.9,"77.1,23.8,84.7,30.5",Low,emdat_official_state,2018-0295-IND,state,start:day|end:day,Admin Units|GADM|Location
 E076,West Bengal,West Bengal,flood,2018-08-07,2018-08-20,24.5,87.85,"85.8,21.5,89.9,27.5",Middle,emdat_official_state,2018-0295-IND,state,start:day|end:day,Admin Units|GADM|Location
 E077,Uttar Pradesh,Uttar Pradesh,flood,2018-09-01,2018-10-06,27.15,80.9,"77.1,23.8,84.7,30.5",Low,emdat_official_state,2018-0370-IND,state,start:day|end:day,Admin Units|GADM|Location
-E078,Haryana,Haryana,flood,2018-09-23,2018-09-24,29.3,76.05,"74.5,27.7,77.6,30.9",High,emdat_official_state,2018-0372-IND,state,start:day|end:day,Admin Units|GADM|Location
 E079,Punjab,Punjab,flood,2018-09-23,2018-09-24,31.0,75.4,"73.9,29.5,76.9,32.5",Middle,emdat_official_state,2018-0372-IND,state,start:day|end:day,Admin Units|GADM|Location
 E080,Maharashtra,Mumbai City,flood,2019-06-28,2019-07-04,18.8,76.75,"72.6,15.6,80.9,22.0",High,emdat_official_state,2019-0288-IND,state,start:day|end:day,GADM|Location
 E081,Assam,Assam,flood,2019-07-14,2019-09-30,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2019-0331-IND,state,start:day|end:day,GADM|Location
@@ -89,11 +77,9 @@ E095,Odisha,Odisha,flood,2019-08-12,2019-08-15,20.2,84.45,"81.4,17.8,87.5,22.6",
 E096,West Bengal,West Bengal,flood,2019-08-12,2019-08-15,24.5,87.85,"85.8,21.5,89.9,27.5",Middle,emdat_official_state,2019-0383-IND,state,start:day|end:day,Admin Units|GADM|Location
 E097,Karnataka,Gadag,flood,2019-10-19,2019-10-23,15.05,76.35,"74.1,11.6,78.6,18.5",High,emdat_official_state,2019-0499-IND,state,start:day|end:day,GADM|Location
 E098,Kerala,Kerala,flood,2019-10-19,2019-10-23,10.55,76.2,"74.8,8.3,77.6,12.8",Middle,emdat_official_state,2019-0499-IND,state,start:day|end:day,Admin Units|GADM|Location
-E099,Tamil Nadu,Tamil Nadu,flood,2019-10-19,2019-10-23,10.8,78.3,"76.2,8.0,80.4,13.6",Middle,emdat_official_state,2019-0499-IND,state,start:day|end:day,Admin Units|GADM|Location
 E100,Puducherry,Puducherry,flood,2019-11-29,2019-12-04,11.95,79.7,"79.5,11.8,79.9,12.1",Middle,emdat_official_state,2019-0574-IND,state,start:day|end:day,Admin Units|GADM
 E101,Tamil Nadu,Nagappattinam,flood,2019-11-29,2019-12-04,10.8,78.3,"76.2,8.0,80.4,13.6",Middle,emdat_official_state,2019-0574-IND,state,start:day|end:day,GADM|Location
 E103,Assam,Goalpara,flood,2020-05-24,2020-05-26,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2020-0206-IND,state,start:day|end:day,GADM|Location
-E104,Sikkim,Sikkim,flood,2020-05-24,2020-05-26,27.6,88.45,"88.0,27.1,88.9,28.1",Low,emdat_official_state,2020-0206-IND,state,start:day|end:day,Admin Units|GADM|Location
 E106,Arunachal Pradesh,Arunachal Pradesh,flood,2020-06-01,2020-08-16,28.0,94.45,"91.5,26.5,97.4,29.5",Low,emdat_official_state,2020-0304-IND,state,start:month|end:day,Admin Units|GADM|Location
 E107,Assam,Assam,flood,2020-06-01,2020-08-16,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2020-0304-IND,state,start:month|end:day,Admin Units|GADM|Location
 E108,Bihar,Bihar,flood,2020-06-01,2020-08-16,25.9,85.8,"83.3,24.3,88.3,27.5",Low,emdat_official_state,2020-0304-IND,state,start:month|end:day,Admin Units|GADM|Location
@@ -161,7 +147,6 @@ E173,Delhi,Delhi,flood,2023-06-26,2023-07-12,28.65,77.2,"76.8,28.4,77.6,28.9",Hi
 E174,Haryana,Haryana,flood,2023-06-26,2023-07-12,29.3,76.05,"74.5,27.7,77.6,30.9",High,emdat_official_state,2023-0359-IND,state,start:day|end:day,Admin Units|GADM|Location
 E175,Himachal Pradesh,Solan,flood,2023-06-26,2023-07-12,31.8,77.3,"75.6,30.4,79.0,33.2",Low,emdat_official_state,2023-0359-IND,state,start:day|end:day,GADM|Location
 E176,Punjab,Punjab,flood,2023-06-26,2023-07-12,31.0,75.4,"73.9,29.5,76.9,32.5",Middle,emdat_official_state,2023-0359-IND,state,start:day|end:day,Admin Units|GADM|Location
-E177,Uttarakhand,Uttarakhand,flood,2023-06-26,2023-07-12,30.1,79.35,"77.6,28.7,81.1,31.5",Low,emdat_official_state,2023-0359-IND,state,start:day|end:day,Admin Units|GADM|Location
 E178,Telangana,Telangana,flood,2023-07-27,2023-07-31,17.85,79.25,"77.2,15.8,81.3,19.9",High,emdat_official_state,2023-0486-IND,state,start:day|end:day,Location
 E179,Tamil Nadu,Thoothukkudi,flood,2023-12-18,2023-12-20,10.8,78.3,"76.2,8.0,80.4,13.6",Middle,emdat_official_state,2023-0846-IND,state,start:day|end:day,GADM|Location
 E180,Assam,Assam,flood,2024-05-01,2024-07-08,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2024-0399-IND,state,start:month|end:day,Location
@@ -173,7 +158,6 @@ E185,Tripura,Tripura,flood,2024-08-19,2024-08-23,23.75,91.75,"91.2,22.9,92.3,24.
 E186,Gujarat,Gujarat,flood,2024-08-26,2024-08-27,22.4,71.35,"68.2,20.1,74.5,24.7",High,emdat_official_state,2024-0647-IND,state,start:day|end:day,Location
 E187,Maharashtra,Maharashtra,flood,2024-08-26,2024-08-27,18.8,76.75,"72.6,15.6,80.9,22.0",High,emdat_official_state,2024-0647-IND,state,start:day|end:day,Location
 E188,Tripura,Tripura,flood,2024-08-26,2024-08-27,23.75,91.75,"91.2,22.9,92.3,24.6",Low,emdat_official_state,2024-0647-IND,state,start:day|end:day,Location
-E189,Meghalaya,Meghalaya,flood,2024-10-04,2024-10-07,25.55,91.3,"89.8,25.0,92.8,26.1",Low,emdat_official_state,2024-0719-IND,state,start:day|end:day,Location
 E190,Arunachal Pradesh,Arunachal Pradesh,flood,2025-05-31,2025-06-01,28.0,94.45,"91.5,26.5,97.4,29.5",Low,emdat_official_state,2025-0402-IND,state,start:day|end:day,Location
 E191,Assam,Assam,flood,2025-05-31,2025-06-01,26.0,92.85,"89.7,24.1,96.0,27.9",Low,emdat_official_state,2025-0402-IND,state,start:day|end:day,Location
 E192,Manipur,Manipur,flood,2025-05-31,2025-06-01,24.75,93.9,"93.0,23.8,94.8,25.7",Low,emdat_official_state,2025-0402-IND,state,start:day|end:day,Location

@@ -6,10 +6,39 @@ import pandas as pd
 from cvnd_layout import ROOT, data_path
 from district_articles import registry_fingerprint
 from gdelt_backend import _atomic_write
+from district_keys import key_from_stem
 
 ARTIFACTS = ("district_aoi", "district_flood_extent", "district_sits_patches_index",
              "district_flood_combined", "district_flood_area")
 IDENTITY = ("event_id", "source_record_id", "state", "district", "start_date")
+
+
+def archive_removed_binary_caches(new_registry, archive):
+    """Move caches for removed IDs into the registry archive before later runs."""
+    retained = set(new_registry["event_district_id"].astype(str))
+    records = []
+    for key in ("district_sits_patches", "district_sits_scores"):
+        source = data_path(key)
+        if not source.exists():
+            continue
+        destination = archive / source.relative_to(ROOT / "data")
+        for path in source.iterdir():
+            stem = path.name
+            if stem.endswith(".h5.blocks.json"):
+                stem = stem[:-len(".h5.blocks.json")]
+            elif path.suffix in (".h5", ".npz"):
+                stem = path.stem
+            else:
+                continue
+            if key_from_stem(stem) in retained:
+                continue
+            destination.mkdir(parents=True, exist_ok=True)
+            target = destination / path.name
+            if target.exists():
+                target = destination / f"{path.name}.{len(records)}"
+            shutil.move(str(path), str(target))
+            records.append({"artifact": key, "archive": str(target), "action": "moved_removed_id"})
+    return records
 
 
 def compatible_rows(frame, old_registry, new_registry, aoi=None):
@@ -42,6 +71,7 @@ def reconcile(old_registry, new_registry):
     archive = ROOT / "data/archive/registry" / old_hash
     archive.mkdir(parents=True, exist_ok=True)
     records = []
+    records.extend(archive_removed_binary_caches(new_registry, archive))
     aoi_path = data_path("district_aoi")
     aoi = pd.read_csv(aoi_path, dtype=str, keep_default_na=False) if aoi_path.exists() else None
     for key in ARTIFACTS:

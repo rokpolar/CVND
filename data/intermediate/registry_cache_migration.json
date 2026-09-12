@@ -1,19 +1,19 @@
 {
-  "old_registry_sha256": "a5a029cc665d4ce7cc41954eea744e005a107d1cbbb32abc588affebc9d34866",
-  "registry_sha256": "33bff3b5412f00b922cfe8c71c06823d5afbe2ae71b5f0b466b4e754a468af9f",
+  "old_registry_sha256": "1d1ee1954190d7d402142a101b8c06cf1d90ba130f3d4dc20e922255cb40a34a",
+  "registry_sha256": "7d5469d40d13b2a836a3f673fef8279369e44a3af07e87a471687e6b2bdceb95",
   "status": "derived_outputs_stale",
   "artifacts": [
     {
       "artifact": "district_aoi",
-      "previous_rows": 1630,
-      "retained_rows": 1616,
-      "archive": "/home/home/CVND/data/archive/registry/a5a029cc665d4ce7cc41954eea744e005a107d1cbbb32abc588affebc9d34866/intermediate/district_aoi.csv"
+      "previous_rows": 1551,
+      "retained_rows": 1546,
+      "archive": "/home/home/CVND/data/archive/registry/1d1ee1954190d7d402142a101b8c06cf1d90ba130f3d4dc20e922255cb40a34a/intermediate/district_aoi.csv"
     },
     {
       "artifact": "district_flood_extent",
-      "previous_rows": 1630,
-      "retained_rows": 455,
-      "archive": "/home/home/CVND/data/archive/registry/a5a029cc665d4ce7cc41954eea744e005a107d1cbbb32abc588affebc9d34866/cache/district/flood_extent.csv"
+      "previous_rows": 440,
+      "retained_rows": 438,
+      "archive": "/home/home/CVND/data/archive/registry/1d1ee1954190d7d402142a101b8c06cf1d90ba130f3d4dc20e922255cb40a34a/cache/district/flood_extent.csv"
     }
   ]
 }
