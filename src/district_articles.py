@@ -861,6 +861,8 @@ def main(argv: Iterable[str] | None = None) -> int:
                 f"missing {args.article_output}"
             )
         articles = list(_open_jsonl(args.article_output)) if args.article_output.exists() else []
+        if manifest.get("mode") == "local_state_reuse" and args.article_database == _path_for("district_article_database"):
+            args.article_database = data_path("gdelt_article_database")
         counts = build_district_counts(
             normalized,
             articles,
