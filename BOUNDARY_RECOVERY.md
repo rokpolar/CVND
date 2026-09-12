@@ -1,5 +1,17 @@
 # District boundary recovery — 2026-09-13 KST
 
+## 완료 결과
+
+매칭 누락 464건 중 458건(98.7%)을 추가 연결하고 재계산까지 완료했다.
+추가 결과는 OK 444건, NO_IMAGERY 14건이다. 전체 1,630건의 최종 상태는
+OK 1,549건 / NO_IMAGERY 75건 / ERROR 6건이다. 기존 나머지 1,172건은
+변경하지 않았으며, 관련 테스트 66개와 최종 데이터 일관성 검사를 통과했다.
+
+최종 행별 대응표: `data/intermediate/aoi_matching_final.csv`.
+미해결 사유: `data/intermediate/aoi_remaining_unresolved.csv`.
+검증 결과: `data/intermediate/reference_recovery_verification.json`.
+출처와 연도가 다른 경계가 섞여 있으므로 **지역별 면적을 단순 합산하지 말 것**.
+
 ## Scope and interpretation
 
 This recovery reconnects previously failed event-district identities. It does
@@ -54,6 +66,11 @@ newer child districts, even though the newer ADM2 layer is internally consistent
 the smaller polygon. The initial complete planned-geometry audit found 422 pairs
 across 101 events (419 mixed-source pairs).
 
+Three same-source pairs are exact geometry duplicates under different registry
+labels: E056 Bara Banki/Barabanki, E081 West Karbi-Anglong/West Karbi Anglong,
+and E154 Ri-Bhoi/Ri Bhoi. Their original rows are preserved; downstream unique
+district counts and models should not double-count them.
+
 **Do not sum these district flood areas into event totals.** A valid event total
 needs a common non-overlapping geography or a union of pixel flood masks, not
 addition of existing area numbers. Previously completed rows were deliberately
@@ -96,6 +113,12 @@ transaction: after an abrupt stop, verify their cross-file consistency before
 resuming downstream analysis.
 
 Tests: `venv/bin/python -m unittest tests.test_district_satellite tests.test_aoi_spacing tests.test_boundary_recovery`.
+
+Large-region reductions now use one shared four-worker split pool. Grid-aligned
+partitions, 10 m pixels, masks and combination order are unchanged. For known
+whole-region failures, `CVND_SPLIT_FIRST=1` skips the expensive failed whole-AOI
+attempt; this was used only for the final two Kutch rows. Regression tests also
+cover `tests.test_split_reduction`.
 
 Recompute approved remaining failures: `venv/bin/python scripts/run_boundary_recovery.py --workers 8`.
 Use `--supplemental-only` for the seven supplemental rows after the main batch.

@@ -1,7 +1,27 @@
 """Merge accepted district recovery rows while retaining source provenance."""
 import json
 import pandas as pd
+from functools import lru_cache
+from pathlib import Path
 from district_keys import make_event_district_id, normalize_name
+
+
+@lru_cache(maxsize=2048)
+def district_search_terms(district):
+    """Retain source spellings for queries after canonical identity merging."""
+    path = Path(__file__).resolve().parents[1] / 'data/raw/district_recovery_aliases.csv'
+    rows = pd.read_csv(path, keep_default_na=False).to_dict('records') if path.exists() else []
+    values = {normalize_name(district)}
+    changed = True
+    while changed:
+        changed = False
+        for row in rows:
+            if row['action'] == 'alias_merge' and normalize_name(row['canonical_value']) in values:
+                alias = normalize_name(row['source_value'])
+                if alias not in values:
+                    values.add(alias)
+                    changed = True
+    return sorted(values)
 
 
 def apply_recovery(registry, evidence, aliases=()):
@@ -20,7 +40,9 @@ def apply_recovery(registry, evidence, aliases=()):
             return [name]
         if action['action'] == 'drop_non_district':
             return []
-        return [x.strip() for x in action['canonical_value'].split('|') if x.strip()]
+        targets = [x.strip() for x in action['canonical_value'].split('|') if x.strip()]
+        return [resolved for target in targets for resolved in
+                ([target] if normalize_name(target) == normalize_name(name) else names(target))]
 
     rows = {}
 

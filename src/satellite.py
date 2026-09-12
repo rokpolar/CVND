@@ -346,22 +346,34 @@ def _histogram_parts(parts):
     return {band: arr.tolist() for band, arr in out.items()}
 
 
+# Shared across all districts: bounded fallback concurrency, not four extra
+# workers per district. Executor.map preserves grid order for stable summation.
+_SPLIT_REDUCTION_POOL = ThreadPoolExecutor(max_workers=4)
+
+
 def reduce_grid(image, reducer, region, grid, spec, combine):
     """reduceRegion over the AOI on the district grid, never at a coarser
     scale (bestEffort off). When the whole AOI exceeds Earth Engine limits it
     is summed over grid-aligned sub-rectangles instead: the same pixels at the
     same scale, combined with ``combine``."""
-    try:
-        return _reduce_region(image, reducer, region, grid, spec)
-    except Exception as exc:
-        if not _limit_error(exc):
-            raise
+    split_first = os.getenv('CVND_SPLIT_FIRST', '') == '1'
+    if not split_first:
+        try:
+            return _reduce_region(image, reducer, region, grid, spec)
+        except Exception as exc:
+            if not _limit_error(exc):
+                raise
     rects = grid.sub_rects(spec.reduce_split_m)
-    print(f"    (whole-AOI reduction hit an Earth Engine limit -> {len(rects)} sub-rectangles)")
-    parts = [_reduce_region(image, reducer,
-                            region.intersection(grid_rectangle(grid, rect), ee.ErrorMargin(1)),
-                            grid, spec)
-             for rect in rects]
+    print(f"    (split reduction -> {len(rects)} sub-rectangles, shared 4-worker pool)", flush=True)
+    def reduce_part(rect):
+        return _reduce_region(image, reducer,
+                              region.intersection(grid_rectangle(grid, rect), ee.ErrorMargin(1)),
+                              grid, spec)
+    parts = []
+    for i, part in enumerate(_SPLIT_REDUCTION_POOL.map(reduce_part, rects), 1):
+        parts.append(part)
+        if i % 10 == 0 or i == len(rects):
+            print(f"    (split reduction: {i}/{len(rects)})", flush=True)
     return combine(parts)
 
 

@@ -1,0 +1,16 @@
+{
+  "rows": 1630,
+  "approved_target_rows": 458,
+  "changed_rows": 458,
+  "unchanged_rows": 1172,
+  "approved_rows_still_error": 0,
+  "status_counts": {
+    "NO_IMAGERY": 75,
+    "OK": 1549,
+    "ERROR": 6
+  },
+  "original_successes_preserved": true,
+  "identity_and_aoi_consistency": "passed",
+  "final": true,
+  "baseline_backup": "data/cache/district/before_reference_recovery_20260912T151529Z"
+}

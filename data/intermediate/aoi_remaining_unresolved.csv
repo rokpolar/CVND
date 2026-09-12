@@ -1,0 +1,7 @@
+event_district_id,state,district,error,review_reason
+E053::jogbani,Bihar,Jogbani,ERROR: district AOI match failed for Bihar/Jogbani: 0 exact candidates,"Municipality, not a district; do not substitute Araria district."
+E071::chengannur,Kerala,Chengannur,ERROR: district AOI match failed for Kerala/Chengannur: 0 exact candidates,"Town/taluk, not a district; do not substitute Alappuzha district."
+E080::mumbai,Maharashtra,Mumbai,ERROR: district AOI match failed for Maharashtra/Mumbai: 0 exact candidates,City versus suburban district scope is ambiguous; do not choose one or union both.
+E190::itanagar%20capital%20region,Arunachal Pradesh,Itanagar Capital Region,ERROR: district AOI match failed for Arunachal Pradesh/Itanagar Capital Region: 0 exact candidates,No district polygon returned.
+E195::chumoukedima,Nagaland,Chumoukedima,ERROR: district AOI match failed for Nagaland/Chumoukedima: 0 exact candidates,Conflicting published area and OSM polygon; not verified.
+E195::shamator,Nagaland,Shamator,ERROR: district AOI match failed for Nagaland/Shamator: 0 exact candidates,OSM polygon 193 km2 versus official 469 km2; rejected incomplete extent.

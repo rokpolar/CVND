@@ -692,6 +692,10 @@ def main(argv: Iterable[str] | None = None) -> int:
         if args.dry_run:
             return 0
 
+        if args.event_district_output == data_path("event_districts") and args.event_district_output.exists():
+            from registry_cache import reconcile
+            reconcile(pd.read_csv(args.event_district_output, dtype=str, keep_default_na=False), event_districts)
+
         args.events_output.parent.mkdir(parents=True, exist_ok=True)
         registry.to_csv(args.events_output, index=False)
         print(f"Wrote event registry: {args.events_output}")

@@ -629,6 +629,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--limit", type=int, help="Maximum URLs to attempt this run")
     parser.add_argument("--retry-failed", action="store_true")
+    parser.add_argument("--input-only", action="store_true", help="Restrict retries/downloads to URLs in this input file")
     parser.add_argument(
         "--retry-before",
         type=parse_utc_timestamp,
@@ -686,13 +687,21 @@ def main(argv: Iterable[str] | None = None) -> int:
             urls = select_download_urls(
                 connection,
                 retry_failed=args.retry_failed,
-                limit=args.limit,
+                limit=None if args.input_only else args.limit,
                 retry_before=args.retry_before,
             )
             print(
                 f"Scheduled {len(urls):,} URLs with {args.workers} network / "
                 f"{args.extract_workers} extraction workers"
             )
+            if args.input_only:
+                import gzip
+                opener = gzip.open if str(args.input).endswith('.gz') else open
+                with opener(args.input, 'rt', encoding='utf-8') as handle:
+                    allowed = {json.loads(line)['url'] for line in handle if line.strip()}
+                urls = [url for url in urls if url in allowed]
+                if args.limit is not None:
+                    urls = urls[:args.limit]
             asyncio.run(download_urls(connection, urls, args))
             counts = dict(
                 connection.execute(

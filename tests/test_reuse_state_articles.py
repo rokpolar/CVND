@@ -14,9 +14,9 @@ class ReuseTests(unittest.TestCase):
         self.assertEqual(candidates(row, [window]), [window])
         self.assertEqual(candidates({**row, 'published_at': '2017-06-14T23:59:59Z'}, [window]), [window])
         for change in ({'published_at': '2017-06-15'}, {'published_at': None},
-                       {'published_at': 'invalid'}, {'state': 'Punjab'},
-                       {'source_record_id': 'other'}):
+                       {'published_at': 'invalid'}, {'state': 'Punjab'}):
             self.assertEqual(candidates({**row, **change}, [window]), [])
+        self.assertEqual(candidates({**row, 'source_record_id': 'other'}, [window]), [window])
 
 
 if __name__ == '__main__':
