@@ -54,6 +54,8 @@ def inspect_artifacts():
         'district_article_counts_heuristic': ['event_district_id', 'final_article_count', 'collection_status'],
     }
     rows = []
+    registry_path = data_path('event_districts')
+    registry = pd.read_csv(registry_path, dtype=str, keep_default_na=False) if registry_path.exists() else None
     for key, columns in required.items():
         path = data_path(key)
         status = 'present' if path.exists() else 'missing'
@@ -74,6 +76,14 @@ def inspect_artifacts():
                     raise ValueError(f'missing columns {sorted(missing)}')
                 if 'event_district_id' in columns and (frame.event_district_id.isna().any() or frame.event_district_id.duplicated().any()):
                     raise ValueError('empty or duplicate district key')
+                if registry is not None and key != 'event_districts' and 'event_district_id' in frame:
+                    if not set(frame.event_district_id) <= set(registry.event_district_id):
+                        raise ValueError('stale registry: unknown district IDs')
+                    common = [c for c in ('event_id', 'source_record_id', 'state', 'district', 'start_date') if c in frame]
+                    audit = frame[['event_district_id'] + common].fillna('').astype(str).merge(
+                        registry[['event_district_id'] + common], on='event_district_id', suffixes=('_cache', '_registry'))
+                    if any(not audit[c+'_cache'].equals(audit[c+'_registry']) for c in common):
+                        raise ValueError('stale registry: changed identity')
                 if 'aoi_level' in frame and not frame.aoi_level.eq('district').all():
                     raise ValueError('contains a non-district AOI: cache is not district-only')
                 details = f'{len(frame)} rows'

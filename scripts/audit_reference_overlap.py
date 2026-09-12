@@ -39,7 +39,7 @@ def main():
     for event,rows in grouped.items():
         for i,(left,lr,lg,ls) in enumerate(rows):
             for right,rr,rg,rs in rows[i+1:]:
-                if lr['state']!=rr['state'] or not lg.intersects(rg): continue
+                if not lg.intersects(rg): continue
                 shared=lg.intersection(rg)
                 fraction=shared.area/min(lg.area,rg.area)
                 if fraction<=.01: continue

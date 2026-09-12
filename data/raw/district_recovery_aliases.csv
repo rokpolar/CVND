@@ -1,4 +1,11 @@
 source_value,canonical_value,action,note
+Badaun,Budaun,alias_merge,Canonical spelling
+Bara Banki,Barabanki,alias_merge,Canonical spelling
+Mumbai,Mumbai City,alias_merge,Registry district identity
+West Karbi-Anglong,West Karbi Anglong,alias_merge,Canonical spelling
+Ri-Bhoi,Ri Bhoi,alias_merge,Canonical spelling
+Kanniyakumari,Kanyakumari,alias_merge,Canonical spelling
+Thoothukkudi,Thoothukudi,alias_merge,Canonical spelling
 Virudunagar,Virudhunagar,alias_merge,
 Dhuburi,Dhubri,alias_merge,
 Marigaon,Morigaon,alias_merge,

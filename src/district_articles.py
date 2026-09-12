@@ -45,6 +45,7 @@ from gdelt_backend import (
 )
 from district_heuristics import classify_heuristic
 from district_keys import is_missing_name, make_event_district_id, normalize_name
+from district_recovery import district_search_terms
 
 
 from cvnd_config import PRIMARY_MEDIA_WINDOW_DAYS
@@ -203,7 +204,7 @@ def prepare_district_windows(
                 # query_end is retained as a convenient inclusive partition
                 # endpoint; the join always uses query_end_exclusive.
                 "query_end": end_exclusive - timedelta(days=1),
-                "location_terms": [normalize_district(row["district"])],
+                "location_terms": district_search_terms(row["district"]),
                 "state_terms": list(dict.fromkeys(
                     [normalize_district(row["state"])]
                     + [normalize_district(alias) for alias in DISTRICT_STATE_ALIASES.get(row["state"], ())]
@@ -517,6 +518,7 @@ def execute_district_query(
     article_output: Path,
     windows: Sequence[Mapping[str, Any]],
     maximum_bytes_billed: int | None = None,
+    job_id: str | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Run BigQuery and atomically publish article metadata and summaries."""
     try:
@@ -527,7 +529,16 @@ def execute_district_query(
     config = bigquery.QueryJobConfig()
     if maximum_bytes_billed is not None:
         config.maximum_bytes_billed = maximum_bytes_billed
-    job = client.query(sql, job_config=config)
+    if job_id is None:
+        job = client.query(sql, job_config=config)
+    else:
+        from google.api_core.exceptions import Conflict
+        try:
+            job = client.query(sql, job_config=config, job_id=job_id, location="US")
+        except Conflict:
+            job = client.get_job(job_id, location="US")
+            if job.query != sql:
+                raise ValueError("Existing BigQuery job has a different query")
     result = job.result(page_size=5000)
     article_output.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_name = tempfile.mkstemp(prefix=f".{article_output.name}.", dir=article_output.parent)
@@ -684,10 +695,11 @@ def _title_mentions(title, term):
 def has_district_evidence(row):
     method = clean_scalar(row.get('district_evidence'))
     if method == 'gkg_location':
-        return structured_location_matches(row.get('locations_lower', ''), state=row['state'], district=row['district'])
+        return any(structured_location_matches(row.get('locations_lower', ''), state=row['state'], district=term)
+                   for term in district_search_terms(row['district']))
     if method == 'title':
         state_terms = [row['state'], *DISTRICT_STATE_ALIASES.get(row['state'], ())]
-        return _title_mentions(row.get('title'), row['district']) and any(_title_mentions(row.get('title'), term) for term in state_terms)
+        return any(_title_mentions(row.get('title'), term) for term in district_search_terms(row['district'])) and any(_title_mentions(row.get('title'), term) for term in state_terms)
     return False
 
 

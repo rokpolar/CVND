@@ -341,6 +341,8 @@ def analyze(table):
         imputed = full['date_precision'].fillna('').str.contains('start:month').sum()
         if imputed:
             notes.append(f'{imputed} registry onset dates are month-imputed; their 14-day news windows have timing uncertainty.')
+    if 'coverage_scope' in full and full.coverage_scope.eq('local_state_plus_targeted_bigquery').any():
+        notes.append('Article counts use the local state corpus plus targeted BigQuery supplementation of districts without usable local candidates. This is conditional corpus coverage, not exhaustive district recollection; districts with some local coverage may still have missed articles.')
     rows, fits, inference, statuses = [], {}, {}, {}
     for name, formula in FORMULAS.items():
         if name == 'model_3' and sample['year'].nunique() < 2:

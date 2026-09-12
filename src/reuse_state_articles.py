@@ -16,7 +16,7 @@ from district_keys import normalize_name
 
 
 def candidates(row, windows):
-    """Use official event identity, state, and half-open 14-day window."""
+    """Reassign historical articles using current state and date windows."""
     try:
         published = pd.to_datetime(row.get('published_at'), utc=True, errors='raise')
         if pd.isna(published):
@@ -25,8 +25,7 @@ def candidates(row, windows):
     except (ValueError, TypeError):
         return []
     return [w for w in windows
-            if str(row.get('source_record_id', '')) == w['source_record_id']
-            and normalize_name(row.get('state', '')) == normalize_name(w['state'])
+            if normalize_name(row.get('state', '')) == normalize_name(w['state'])
             and w['query_start'] <= published < w['query_end_exclusive']]
 
 
@@ -51,7 +50,7 @@ def main():
         data_path('event_districts'), dtype=str, keep_default_na=False))
     by_source = defaultdict(list)
     for window in prepare_district_windows(registry):
-        by_source[(window['source_record_id'], normalize_name(window['state']))].append(window)
+        by_source[normalize_name(window['state'])].append(window)
     connection = sqlite3.connect(database.resolve().as_uri() + '?mode=ro', uri=True)
     try:
         titles = {url: (status, title) for url, status, title in connection.execute(
@@ -70,8 +69,7 @@ def main():
         with gzip.open(accepted_path, 'wt', encoding='utf-8') as accepted, gzip.open(pending_path, 'wt', encoding='utf-8') as pending:
             for row in _open_jsonl(source):
                 totals['input_rows'] += 1
-                options = candidates(row, by_source.get((str(row.get('source_record_id', '')),
-                                     normalize_name(row.get('state', ''))), []))
+                options = candidates(row, by_source.get(normalize_name(row.get('state', '')), []))
                 if not options:
                     totals['outside_window_or_unmatched_identity'] += 1
                     continue

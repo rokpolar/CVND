@@ -47,6 +47,22 @@ def main():
     unresolved=[{'event_district_id':k,'state':r['state'],'district':r['district'],'error':r['baseline_status']}
                 for k,r in after.items() if r['baseline_status'].startswith('ERROR')]
     if args.final:
+        audit=pd.read_csv(ROOT/'data/intermediate/aoi_boundary_decisions.csv').fillna('')
+        reasons={(r['state'],r['district']):r['note'] for _,r in audit.iterrows()}
+        rejected=json.loads((ROOT/'data/raw/osm_boundary_review/recovery_manifest.json').read_text())['rejected']
+        for r in unresolved:
+            r['review_reason']=rejected.get(r['district'],reasons.get((r['state'],r['district']),''))
+        final_rows=[]
+        for k,r in before.items():
+            if not r['baseline_status'].startswith('ERROR'): continue
+            current=after[k]
+            fields=('event_district_id','state','district','baseline_status','aoi_match_status',
+                    'aoi_source','geometry_id','aoi_match_method','aoi_boundary_year',
+                    'aoi_historical_boundary_verified','aoi_match_evidence','aoi_boundary_note')
+            record={field:current.get(field) for field in fields}
+            record['review_reason']=current.get('aoi_boundary_note') or rejected.get(r['district'],reasons.get((r['state'],r['district']),''))
+            final_rows.append(record)
+        pd.DataFrame(final_rows).to_csv(ROOT/'data/intermediate/aoi_matching_final.csv',index=False)
         (ROOT/'data/intermediate/reference_recovery_verification.json').write_text(json.dumps(result,indent=2))
         pd.DataFrame(unresolved).to_csv(ROOT/'data/intermediate/aoi_remaining_unresolved.csv',index=False)
     print(json.dumps(result,indent=2))

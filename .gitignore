@@ -37,3 +37,6 @@ data/results/event_articles.csv.gz
 data/cache/district/
 data/intermediate/district_gdelt.articles.jsonl.gz
 data/intermediate/district_gdelt.manifest.json
+# Resumable article QA bodies, requests, provider outputs and cache backups.
+data/intermediate/article_qa/
+data/archive/registry/

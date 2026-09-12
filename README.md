@@ -76,6 +76,12 @@ Required external inputs/services:
 
 ## Outputs and interpretation
 
+The resumable local-corpus/targeted-BigQuery and Luna Batch workflow is documented
+in [Article QA operations](docs/article_qa.md). Set `REUSE_STATE_ARTICLES=1` to
+prepare its local candidates; `RUN_ARTICLE_SUPPLEMENT=1` and `RUN_LLM_QA=1`
+explicitly enable external supplementation and paid Batch submission.
+Its 14-day QA counts feed the primary join; 30-day counts have a separate table.
+
 [Artifact schemas](data/README.md) and [district methodology](docs/district_methodology.md) describe each output. Key outputs are:
 
 - `data/results/district_flood_articles.csv`: one row per event-district, including excluded rows.
@@ -90,16 +96,17 @@ State-only area, article-classification, and join entry points were removed. The
 
 For existing state articles, run `venv/bin/python src/reuse_state_articles.py`
 (add `--overwrite` only when regenerating derived files). This reads the existing
-state JSONL and SQLite bodies without downloading anything. Official source ID,
-state, and the 14-day window select candidates; explicit district/state evidence
+state JSONL and SQLite bodies without downloading anything. Current state
+and the 14-day window select candidates; explicit district/state evidence
 in GKG locations or cached titles permits provisional district assignment.
 All eligible articles, including unresolved ones, are retained in
 `data/intermediate/district_article_qa_candidates.jsonl.gz` with candidate
 districts and a URL reference to the existing body database. No LLM is submitted.
 Coverage remains incomplete and final counts remain NA pending validation;
 candidate counts are not final research observations. Original files are preserved.
-`REUSE_STATE_ARTICLES=1` gives this local path precedence over article collection
-in the pipeline. Subsequent counts-only runs reuse the state body database.
+The script above is the legacy provisional export. `REUSE_STATE_ARTICLES=1`
+now selects the resumable `article_qa.py` workflow in the pipeline; see
+[Article QA operations](docs/article_qa.md) for supplementation and Batch steps.
 
 ## Relative coverage candidates (separate from H1/H2)
 

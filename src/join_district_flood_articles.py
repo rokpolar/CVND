@@ -58,7 +58,7 @@ def build_district_table(registry, flood, articles, covariates):
     flood_columns = FLOOD_COLUMNS + [c for c in OPTIONAL_FLOOD_COLUMNS if c in flood]
     result = merge_observations(result, flood, flood_columns, 'district flood')
     article_columns = ['final_article_count', 'collection_status', 'count_source']
-    article_columns += [c for c in ['query_collection_status', 'missing_text_count', 'candidate_article_count', 'heuristic_pass_count'] if c in articles]
+    article_columns += [c for c in ['query_collection_status', 'missing_text_count', 'candidate_article_count', 'heuristic_pass_count', 'coverage_scope', 'window_days', 'uncertain_count'] if c in articles]
     result = merge_observations(result, articles, article_columns, 'district article counts')
     result = result.rename(columns={'final_article_count': 'article_count', 'collection_status': 'article_collection_status'})
     require(covariates, ['state', 'district', 'urban_population_share', 'total_population', 'urban_population', 'rural_population', 'match_status', 'census_year', 'source'], 'Census covariates')

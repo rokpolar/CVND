@@ -12,6 +12,10 @@ SETUP_DEPS="${SETUP_DEPS:-0}"
 SKIP_GEE="${SKIP_GEE:-1}"
 SKIP_ARTICLES="${SKIP_ARTICLES:-1}"
 REUSE_STATE_ARTICLES="${REUSE_STATE_ARTICLES:-0}"
+RUN_ARTICLE_SUPPLEMENT="${RUN_ARTICLE_SUPPLEMENT:-0}"
+GDELT_SUPPLEMENT_MAX_TIB="${GDELT_SUPPLEMENT_MAX_TIB:-0.25}"
+RUN_LLM_QA="${RUN_LLM_QA:-0}"
+LLM_QA_MODEL="${LLM_QA_MODEL:-gpt-5.6-luna}"
 SKIP_COVARIATES="${SKIP_COVARIATES:-0}"
 SKIP_ANALYSIS="${SKIP_ANALYSIS:-0}"
 DRY_RUN="${DRY_RUN:-0}"
@@ -76,18 +80,38 @@ if [[ "$SATELLITE_ROUTING" == "sits_primary" ]]; then
 fi
 run src/merge_results.py --routing "$SATELLITE_ROUTING"
 run src/build_flood_area_table.py
-if [[ "$REUSE_STATE_ARTICLES" == 1 ]]; then
-  run src/reuse_state_articles.py --overwrite
+if [[ "$REUSE_STATE_ARTICLES" == 1 || "$RUN_ARTICLE_SUPPLEMENT" == 1 || "$RUN_LLM_QA" == 1 ]]; then
+  run src/article_qa.py prepare --model "$LLM_QA_MODEL"
+  if [[ "$RUN_ARTICLE_SUPPLEMENT" == 1 ]]; then
+    run src/article_qa.py retry-text
+    run src/article_qa.py prepare --model "$LLM_QA_MODEL"
+    run src/article_qa.py supplement --execute --maximum-tib "$GDELT_SUPPLEMENT_MAX_TIB"
+    run src/article_qa.py download-new
+    run src/article_qa.py prepare --model "$LLM_QA_MODEL"
+  fi
+  if [[ "$RUN_LLM_QA" == 1 ]]; then
+    run src/article_qa.py run-batches --execute
+  fi
+  run src/article_qa.py counts
+  ARTICLE_QA_ACTIVE=1
 elif [[ "$SKIP_ARTICLES" != 1 ]]; then
   run src/district_articles.py --execute --overwrite
   article_input="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_gdelt_articles'))")"
   article_database="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_article_database'))")"
   run src/download_articles.py "$article_input" --output "$article_database"
 fi
-if [[ "$REUSE_STATE_ARTICLES" != 1 ]]; then
+if [[ "${ARTICLE_QA_ACTIVE:-0}" != 1 ]]; then
   run src/district_articles.py --counts-only
 fi
-run src/join_district_flood_articles.py
+if [[ "${ARTICLE_QA_ACTIVE:-0}" == 1 ]]; then
+  run src/join_district_flood_articles.py --articles data/intermediate/article_qa/counts_14d.csv
+  run src/join_district_flood_articles.py --articles data/intermediate/article_qa/counts_30d.csv \
+    --output data/results/district_flood_articles_30d.csv \
+    --exclusions data/results/district_analysis_exclusions_30d.csv \
+    --qc data/results/district_qc_30d.json
+else
+  run src/join_district_flood_articles.py
+fi
 if [[ "$SKIP_ANALYSIS" != 1 ]]; then
   run src/analyze_coverage_disparity.py
   run src/score_coverage.py
