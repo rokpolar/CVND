@@ -11,6 +11,7 @@ fi
 SETUP_DEPS="${SETUP_DEPS:-0}"
 SKIP_GEE="${SKIP_GEE:-1}"
 SKIP_ARTICLES="${SKIP_ARTICLES:-1}"
+REUSE_STATE_ARTICLES="${REUSE_STATE_ARTICLES:-0}"
 SKIP_COVARIATES="${SKIP_COVARIATES:-0}"
 SKIP_ANALYSIS="${SKIP_ANALYSIS:-0}"
 DRY_RUN="${DRY_RUN:-0}"
@@ -75,13 +76,17 @@ if [[ "$SATELLITE_ROUTING" == "sits_primary" ]]; then
 fi
 run src/merge_results.py --routing "$SATELLITE_ROUTING"
 run src/build_flood_area_table.py
-if [[ "$SKIP_ARTICLES" != 1 ]]; then
+if [[ "$REUSE_STATE_ARTICLES" == 1 ]]; then
+  run src/reuse_state_articles.py --overwrite
+elif [[ "$SKIP_ARTICLES" != 1 ]]; then
   run src/district_articles.py --execute --overwrite
   article_input="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_gdelt_articles'))")"
   article_database="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_article_database'))")"
   run src/download_articles.py "$article_input" --output "$article_database"
 fi
-run src/district_articles.py --counts-only
+if [[ "$REUSE_STATE_ARTICLES" != 1 ]]; then
+  run src/district_articles.py --counts-only
+fi
 run src/join_district_flood_articles.py
 if [[ "$SKIP_ANALYSIS" != 1 ]]; then
   run src/analyze_coverage_disparity.py

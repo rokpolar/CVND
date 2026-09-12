@@ -47,6 +47,9 @@ SETUP_DEPS=1 SKIP_GEE=0 SKIP_ARTICLES=0 bash scripts/run_pipeline.sh
 
 # Reuse district caches and downloaded article text.
 SKIP_GEE=1 SKIP_ARTICLES=1 SKIP_COVARIATES=1 bash scripts/run_pipeline.sh
+
+# Reprocess existing state metadata and bodies locally; no article network calls.
+REUSE_STATE_ARTICLES=1 SKIP_GEE=1 SKIP_ARTICLES=1 bash scripts/run_pipeline.sh
 ```
 
 **Measurement specification.** Every satellite area is produced under one frozen `MeasurementSpec` in `src/flood_spec.py`: post window `[onset, onset + 14 d)` (the news window), pre window `[onset − 30 d, onset)` median, a max-water post composite, one eligibility mask (JRC permanent water, slope < 5°, India LSIB) on every sensor path, `ee.Image.pixelArea()` sums at 10 m, and the same new-water definition for S1, S2 NDWI and SITS tiles. Its hash, `spec_version`, is printed by `src/pipeline_preflight.py` and stored on every Track A row, H5 patch, score archive, merged row and area-table row. Changing `flood_spec.SPEC` invalidates all satellite caches by design; stale rows are discarded, never reused. `analyze_coverage_disparity.py` additionally reports `model_2_source_fe` (Model 2 + `C(satellite_source)`) and by-source Model 2 subsamples as sensitivity analyses. They never enter the conclusion.
@@ -84,6 +87,19 @@ Required external inputs/services:
 The report only supports statements about **similar observed flood extent**. It cannot establish intentional neglect, causal discrimination, or equal total damage. Census 2011 predates many floods, GAUL 2015 boundaries can differ from Census/GADM, EM-DAT onset dates may be month-imputed, and news/satellite completeness can depend on geography. Selection QC reports excluded proportions by known urbanization tercile; districts without Census matches have unknown urbanization and cannot enter that comparison. Population size is deliberately not controlled in the short primary specification; it remains a potential explanation for the association.
 
 State-only area, article-classification, and join entry points were removed. The primary workflow is district-only: `district_articles.py` applies the multilingual heuristic and `join_district_flood_articles.py --audit-missing` records absent satellite/article artifacts as NA, never zero. An analysis report on this audit states N=0 and unavailable models.
+
+For existing state articles, run `venv/bin/python src/reuse_state_articles.py`
+(add `--overwrite` only when regenerating derived files). This reads the existing
+state JSONL and SQLite bodies without downloading anything. Official source ID,
+state, and the 14-day window select candidates; explicit district/state evidence
+in GKG locations or cached titles permits provisional district assignment.
+All eligible articles, including unresolved ones, are retained in
+`data/intermediate/district_article_qa_candidates.jsonl.gz` with candidate
+districts and a URL reference to the existing body database. No LLM is submitted.
+Coverage remains incomplete and final counts remain NA pending validation;
+candidate counts are not final research observations. Original files are preserved.
+`REUSE_STATE_ARTICLES=1` gives this local path precedence over article collection
+in the pipeline. Subsequent counts-only runs reuse the state body database.
 
 ## Relative coverage candidates (separate from H1/H2)
 
