@@ -1,0 +1,295 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1789111110792,
+  "projectRoot": "C:\\CVNDrefact",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": "snake_case",
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "scripts",
+      "src",
+      "tests"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "data": {
+      "path": "data",
+      "purpose": "Data files",
+      "fileCount": 1,
+      "lastAccessed": 1789111110725,
+      "keyFiles": [
+        "README.md"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 4,
+      "lastAccessed": 1789111110727,
+      "keyFiles": [
+        "coverage_scoring_methodology.md",
+        "district_methodology.md",
+        "implementation_validation.md",
+        "use_cases.md"
+      ]
+    },
+    "outputs": {
+      "path": "outputs",
+      "purpose": null,
+      "fileCount": 4,
+      "lastAccessed": 1789111110728,
+      "keyFiles": [
+        "coverage_summary.json",
+        "flood_area_vs_articles.png",
+        "paper_results.md",
+        "urbanization_adjusted_coverage.png"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1789111110730,
+      "keyFiles": [
+        "run_pipeline.sh"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 22,
+      "lastAccessed": 1789111110732,
+      "keyFiles": [
+        "analyze_coverage_disparity.py",
+        "article_extractor.py",
+        "article_fetcher.py",
+        "build_district_covariates.py",
+        "build_emdat_events.py"
+      ]
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 11,
+      "lastAccessed": 1789111110735,
+      "keyFiles": [
+        "test_build_emdat_events.py",
+        "test_collect_emdat.py",
+        "test_coverage_disparity.py",
+        "test_coverage_scoring.py",
+        "test_district_articles.py"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src/run_sits_inference.py",
+      "accessCount": 24,
+      "lastAccessed": 1789133417932,
+      "type": "file"
+    },
+    {
+      "path": "src/merge_results.py",
+      "accessCount": 11,
+      "lastAccessed": 1789133418502,
+      "type": "file"
+    },
+    {
+      "path": "src/satellite.py",
+      "accessCount": 10,
+      "lastAccessed": 1789133414458,
+      "type": "file"
+    },
+    {
+      "path": "src/cvnd_layout.py",
+      "accessCount": 8,
+      "lastAccessed": 1789115611986,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 7,
+      "lastAccessed": 1789115628188,
+      "type": "file"
+    },
+    {
+      "path": "src/cvnd_config.py",
+      "accessCount": 6,
+      "lastAccessed": 1789114443448,
+      "type": "file"
+    },
+    {
+      "path": "scripts/run_pipeline.sh",
+      "accessCount": 6,
+      "lastAccessed": 1789115610667,
+      "type": "file"
+    },
+    {
+      "path": "data/README.md",
+      "accessCount": 6,
+      "lastAccessed": 1789115661881,
+      "type": "file"
+    },
+    {
+      "path": "src/flood_spec.py",
+      "accessCount": 6,
+      "lastAccessed": 1789133414596,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 5,
+      "lastAccessed": 1789112670951,
+      "type": "directory"
+    },
+    {
+      "path": "src/pipeline_preflight.py",
+      "accessCount": 5,
+      "lastAccessed": 1789115370660,
+      "type": "file"
+    },
+    {
+      "path": "event_aoi_area.py",
+      "accessCount": 4,
+      "lastAccessed": 1789113963585,
+      "type": "file"
+    },
+    {
+      "path": "post_cloud.py",
+      "accessCount": 4,
+      "lastAccessed": 1789113964439,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_run_sits_inference.py",
+      "accessCount": 4,
+      "lastAccessed": 1789116569848,
+      "type": "file"
+    },
+    {
+      "path": "src/gee_config.py",
+      "accessCount": 3,
+      "lastAccessed": 1789112560003,
+      "type": "file"
+    },
+    {
+      "path": "estimate_blocks.py",
+      "accessCount": 3,
+      "lastAccessed": 1789113965020,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 3,
+      "lastAccessed": 1789133441860,
+      "type": "directory"
+    },
+    {
+      "path": "tests/test_merge_routing.py",
+      "accessCount": 2,
+      "lastAccessed": 1789116832533,
+      "type": "file"
+    },
+    {
+      "path": "src/estimate_blocks.py",
+      "accessCount": 2,
+      "lastAccessed": 1789133424362,
+      "type": "file"
+    },
+    {
+      "path": "src/event_aoi_area.py",
+      "accessCount": 2,
+      "lastAccessed": 1789133424804,
+      "type": "file"
+    },
+    {
+      "path": "PIPELINE_AUDIT.md",
+      "accessCount": 2,
+      "lastAccessed": 1789133447227,
+      "type": "directory"
+    },
+    {
+      "path": "tests",
+      "accessCount": 2,
+      "lastAccessed": 1789133737512,
+      "type": "directory"
+    },
+    {
+      "path": "src/collect_emdat.py",
+      "accessCount": 1,
+      "lastAccessed": 1789111220272,
+      "type": "file"
+    },
+    {
+      "path": "src/archive/test_gee.py",
+      "accessCount": 1,
+      "lastAccessed": 1789111230894,
+      "type": "file"
+    },
+    {
+      "path": "docs/implementation_validation.md",
+      "accessCount": 1,
+      "lastAccessed": 1789111235383,
+      "type": "file"
+    },
+    {
+      "path": "src/repair_article_database.py",
+      "accessCount": 1,
+      "lastAccessed": 1789111303866,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_flood_spec.py",
+      "accessCount": 1,
+      "lastAccessed": 1789114463307,
+      "type": "file"
+    },
+    {
+      "path": "tests/fake_ee.py",
+      "accessCount": 1,
+      "lastAccessed": 1789114851479,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_pipeline_preflight.py",
+      "accessCount": 1,
+      "lastAccessed": 1789115376388,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

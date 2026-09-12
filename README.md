@@ -8,8 +8,8 @@ CVND measures whether disaster news visibility differs across urban and rural ar
 
 1. `build_emdat_events.py` reads the official `EM-DAT-BASE.xlsx`, preserves the legacy parent registry and expands credible affected districts. Structured GADM/Admin Units are preferred. Conservatively parsed Location evidence remains separately identifiable; unresolved districts remain audit rows. No capital or fuzzy district replacement is invented.
 2. `build_district_covariates.py` reads official Census of India 2011 district population counts. `urban_population_share = urban_population / total_population` remains continuous. Missing inputs fail with an actionable schema message. An explicit, documented crosswalk is required for district name/history changes; the supplied template has no invented mappings.
-3. `event_aoi_area.py` resolves a unique India/state/district FAO GAUL 2015 level-2 polygon and records its identifier, source, area and match status. Unmatched districts have no primary flood measurement.
-4. `satellite.py` runs the existing S1/S2 flood detection stack on that AOI. Optional Track B prepares district SITS patches. `merge_results.py` uses the existing SITS/NDWI/S1 quality and cloud routing. Missing observations remain missing, including empty reductions; observed zero is distinct.
+3. `src/event_aoi_area.py` resolves a unique India/state/district FAO GAUL 2015 level-2 polygon and records its identifier, source, area and match status. Unmatched districts have no primary flood measurement.
+4. `satellite.py` measures new flood water on that AOI with S1 (Otsu) and S2 NDWI, plus post-window cloud QA (Track A). Optional Track B prepares district SITS patches with per-pixel measurement layers. `merge_results.py` routes the comparable S1/NDWI/SITS-NDWI candidates by SITS quality and cloud cover, and records the chosen `satellite_source` and `route_reason`. Missing observations remain missing, including empty reductions; observed zero is distinct.
 5. `district_articles.py` uses historical GKG BigQuery metadata with a fixed window **start_date ≤ article_date < start_date + 14 days (UTC)**. Explicit district location evidence is required, with state disambiguation. A state mention alone cannot create district coverage. Within a district, one URL is assigned to its nearest eligible event onset; the same URL can count for multiple explicitly mentioned districts.
 6. `download_articles.py` retrieves accessible article text. `district_articles.py --counts-only` reuses the existing multilingual flood keyword heuristic, keeps district assignments, and preserves collection/text incompleteness. Query success with no matching candidates yields zero; unexecuted/failed/incomplete observation yields missing. Counts represent confirmed, accessible, heuristic-positive GDELT articles, not all reporting.
 7. `join_district_flood_articles.py` checks identities and one-to-one keys, joins Census covariates many-to-one, retains every registry row, and writes exclusion reasons and stage QC.
@@ -40,7 +40,7 @@ bash scripts/run_pipeline.sh --dry-run
 
 # Tests and syntax checks.
 venv/bin/python -m unittest discover -s tests
-venv/bin/python -m compileall -q src tests event_aoi_area.py post_cloud.py
+venv/bin/python -m compileall -q src tests
 
 # First real district run, after checking Census input and authenticating services.
 SETUP_DEPS=1 SKIP_GEE=0 SKIP_ARTICLES=0 bash scripts/run_pipeline.sh
@@ -48,6 +48,8 @@ SETUP_DEPS=1 SKIP_GEE=0 SKIP_ARTICLES=0 bash scripts/run_pipeline.sh
 # Reuse district caches and downloaded article text.
 SKIP_GEE=1 SKIP_ARTICLES=1 SKIP_COVARIATES=1 bash scripts/run_pipeline.sh
 ```
+
+**Measurement specification.** Every satellite area is produced under one frozen `MeasurementSpec` in `src/flood_spec.py`: post window `[onset, onset + 14 d)` (the news window), pre window `[onset − 30 d, onset)` median, a max-water post composite, one eligibility mask (JRC permanent water, slope < 5°, India LSIB) on every sensor path, `ee.Image.pixelArea()` sums at 10 m, and the same new-water definition for S1, S2 NDWI and SITS tiles. Its hash, `spec_version`, is printed by `src/pipeline_preflight.py` and stored on every Track A row, H5 patch, score archive, merged row and area-table row. Changing `flood_spec.SPEC` invalidates all satellite caches by design; stale rows are discarded, never reused. `analyze_coverage_disparity.py` additionally reports `model_2_source_fe` (Model 2 + `C(satellite_source)`) and by-source Model 2 subsamples as sensitivity analyses. They never enter the conclusion.
 
 `PYTHON` may select an existing environment. `SETUP_DEPS=0` is the default. `SKIP_GEE=1` and `SKIP_ARTICLES=1` are the defaults, requiring previously generated **district** artifacts. `SKIP_COVARIATES=1` reuses district covariates; `SKIP_ANALYSIS=1` stops after joining. Missing required files fail; skipping does not manufacture observations. `SATELLITE_TRACK=A` is the explicit default; `both` also prepares SITS patches.
 

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "entries": {
+    "79a93d4a2f8f50b95f852280616242fee1855dc99a3c75211917f55e72e95fae": {
+      "last_emitted_at_ms": 1789113731271,
+      "message": "Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests)."
+    },
+    "445ed27a3872b681d98190bae61ccb84954e1bc4e140df5370be958dee776b3a": {
+      "last_emitted_at_ms": 1789113718670,
+      "message": "Verify changes work after editing. Test functionality before marking complete."
+    },
+    "459c54e5f35d6a58dcd90d2aecc21fa6d1f35d241bc5b134c506f87dc7b6d67b": {
+      "last_emitted_at_ms": 1789112545922,
+      "message": "Combine searches in parallel when investigating multiple patterns."
+    },
+    "466399dafa2d20f60587180bad0a07358eb7f2bce724df0ff682f038ad33f5ad": {
+      "last_emitted_at_ms": 1789112542161,
+      "message": "Read multiple files in parallel when possible for faster analysis."
+    },
+    "61bf4296059e264a5dbee66b2049c3657f12eb23eeb2310d346678be5b592e1f": {
+      "last_emitted_at_ms": 1789112541766,
+      "message": "Spawning agent: Plan (inherit) [BACKGROUND] | Task: Design satellite area refactor plan"
+    },
+    "b44f4ef448e724c42b0aa6e51d6933d2605e3f5a1625971f2e1e279aef5521d8": {
+      "last_emitted_at_ms": 1789111213834,
+      "message": "Spawning agent: Explore (inherit) | Task: Explore other pipeline problems | Active agents: 2"
+    },
+    "951bda8997250865817d0c8e9dd3564c7ca2349ef8148fb11762629d84a528af": {
+      "last_emitted_at_ms": 1789111201292,
+      "message": "Spawning agent: Explore (inherit) | Task: Explore district vs state resolution | Active agents: 1"
+    },
+    "aac14235d2469f29edd48fb59eda2b12eec090b5ac6e59ac6e32a4949c0dfad5": {
+      "last_emitted_at_ms": 1789111187445,
+      "message": "Spawning agent: Explore (inherit) | Task: Explore area computation code paths"
+    }
+  },
+  "updated_at": "2026-09-11T08:02:11.271Z"
+}

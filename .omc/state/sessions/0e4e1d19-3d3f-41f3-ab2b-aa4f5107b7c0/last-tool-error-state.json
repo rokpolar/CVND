@@ -1,0 +1,7 @@
+{
+  "tool_name": "PowerShell",
+  "tool_input_preview": "{\"command\":\"python -m unittest discover -s tests 2>&1 | Select-String -Pattern \\\"^(Ran |OK|FAILED|ERROR:|FAIL:)\\\"\",\"timeout\":600000,\"description\":\"Run full test suite with torch\"}",
+  "error": "Exit code 1\nERROR: test_download_articles (unittest.loader._FailedTest.test_download_articles)\r\nFAIL: test_offline_runner_and_skip_analysis (test_coverage_scoring.ScoringTests.test_offline_runner_and_skip_analysis)\r\nRan 122 tests in 25.397s\r\nFAILED (failures=1, errors=1)",
+  "timestamp": "2026-09-11T08:52:34.669Z",
+  "retry_count": 1
+}

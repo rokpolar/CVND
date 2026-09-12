@@ -9,10 +9,16 @@ import numpy as np
 import pandas as pd
 
 from cvnd_layout import data_path
-from district_keys import normalize_name
+from district_keys import AOI_MATCHED, SATELLITE_OBSERVED, normalize_name
+from flood_spec import MEASURED_SOURCES
 
 KEY = 'event_district_id'
 IDENTITY = ['event_id', 'source_record_id', 'state', 'district', 'start_date']
+FLOOD_COLUMNS = ['flood_area_km2', 'flood_ratio', 'aoi_area_km2', 'satellite_source', 'satellite_status', 'aoi_match_status']
+OPTIONAL_FLOOD_COLUMNS = ['geometry_id', 'aoi_source', 'route_reason', 'spec_version',
+                          'sits_status', 'converter_decision', 'eligible_km2',
+                          'flood_ratio_eligible', 'legacy_flood_area_km2',
+                          'legacy_satellite_source']
 
 
 def require(frame, columns, label):
@@ -49,8 +55,7 @@ def build_district_table(registry, flood, articles, covariates):
     result = registry.copy()
     # Registry AOI status is a pre-resolution placeholder. Measured provenance is authoritative.
     result = result.drop(columns=['aoi_match_status'], errors='ignore')
-    flood_columns = ['flood_area_km2', 'flood_ratio', 'aoi_area_km2', 'satellite_source', 'satellite_status', 'aoi_match_status']
-    flood_columns += [c for c in ['geometry_id', 'aoi_source'] if c in flood]
+    flood_columns = FLOOD_COLUMNS + [c for c in OPTIONAL_FLOOD_COLUMNS if c in flood]
     result = merge_observations(result, flood, flood_columns, 'district flood')
     article_columns = ['final_article_count', 'collection_status', 'count_source']
     article_columns += [c for c in ['query_collection_status', 'missing_text_count', 'candidate_article_count', 'heuristic_pass_count'] if c in articles]
@@ -81,7 +86,8 @@ def build_district_table(registry, flood, articles, covariates):
         result[column] = pd.to_numeric(result[column], errors='coerce')
     # Values arriving with a failed status never become valid observations.
     collection_ok = result['article_collection_status'].eq('complete')
-    satellite_ok = result['satellite_status'].isin(['observed', 'ok', 'OK'])
+    source_invalid = result['flood_area_km2'].notna() & ~result['satellite_source'].isin(MEASURED_SOURCES)
+    satellite_ok = result['satellite_status'].isin(SATELLITE_OBSERVED) & ~source_invalid
     result.loc[~collection_ok, 'article_count'] = np.nan
     result.loc[~satellite_ok, ['flood_area_km2', 'flood_ratio']] = np.nan
     reasons = [[] for _ in range(len(result))]
@@ -91,7 +97,8 @@ def build_district_table(registry, flood, articles, covariates):
             reasons[i].append(reason)
 
     exclude(~result['district_match_status'].isin(['high', 'exact', 'resolved', 'matched']), 'district_unresolved')
-    exclude(~result['aoi_level'].eq('district') | ~result['aoi_match_status'].isin(['matched', 'exact']), 'district_aoi_unmatched')
+    exclude(~result['aoi_level'].eq('district') | ~result['aoi_match_status'].isin(AOI_MATCHED), 'district_aoi_unmatched')
+    exclude(source_invalid, 'satellite_source_invalid')
     exclude(~satellite_ok | ~np.isfinite(result['flood_area_km2']) | result['flood_area_km2'].lt(0), 'satellite_missing_or_invalid')
     exclude(~np.isfinite(result['aoi_area_km2']) | result['aoi_area_km2'].le(0) | result['flood_area_km2'].gt(result['aoi_area_km2']), 'aoi_area_invalid')
     exclude(~collection_ok, 'article_collection_incomplete')
@@ -119,15 +126,19 @@ def qc_summary(table):
     n = len(table)
     def rate(mask):
         return {'success': int(mask.sum()), 'total': n, 'rate': float(mask.mean()) if n else None}
-    return {
+    summary = {
         'district_extraction': rate(table['district_match_status'].isin(['high', 'exact', 'resolved', 'matched'])),
-        'district_aoi_match': rate(table['aoi_match_status'].isin(['matched', 'exact'])),
+        'district_aoi_match': rate(table['aoi_match_status'].isin(AOI_MATCHED)),
         'census_match': rate(table['census_match_status'].isin(['matched', 'exact', 'crosswalk', 'matched_crosswalk'])),
-        'satellite_observation': rate(table['satellite_status'].isin(['observed', 'ok', 'OK']) & table['flood_area_km2'].notna()),
+        'satellite_observation': rate(table['satellite_status'].isin(SATELLITE_OBSERVED) & table['flood_area_km2'].notna()),
         'gdelt_collection': rate(table.get('query_collection_status', table['article_collection_status']).eq('complete')),
         'article_observation': rate(table['article_collection_status'].eq('complete') & table['article_count'].notna()),
         'final_analyzable': rate(table['analysis_eligible']),
     }
+    if 'satellite_source' in table:
+        eligible = table['analysis_eligible'].astype(bool)
+        summary['satellite_source_counts'] = {str(k): int(v) for k, v in table.loc[eligible, 'satellite_source'].value_counts().items()}
+    return summary
 
 
 def main(argv=None):
@@ -140,7 +151,7 @@ def main(argv=None):
     for name in ['events', 'flood', 'articles', 'covariates']:
         path = getattr(args, name)
         if not path.exists() and args.audit_missing and name in ['flood', 'articles']:
-            columns = ([KEY, 'flood_area_km2', 'flood_ratio', 'aoi_area_km2', 'satellite_source', 'satellite_status', 'aoi_match_status'] if name == 'flood' else [KEY, 'final_article_count', 'collection_status', 'count_source', 'query_collection_status'])
+            columns = ([KEY] + FLOOD_COLUMNS + ['route_reason'] if name == 'flood' else [KEY, 'final_article_count', 'collection_status', 'count_source', 'query_collection_status'])
             frames.append(pd.DataFrame(columns=columns))
             print(f'AUDIT ONLY: {path} absent; all observations from this stage remain missing')
             continue
