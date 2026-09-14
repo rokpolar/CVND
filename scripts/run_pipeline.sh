@@ -16,6 +16,14 @@ RUN_ARTICLE_SUPPLEMENT="${RUN_ARTICLE_SUPPLEMENT:-0}"
 GDELT_SUPPLEMENT_MAX_TIB="${GDELT_SUPPLEMENT_MAX_TIB:-0.25}"
 RUN_LLM_QA="${RUN_LLM_QA:-0}"
 LLM_QA_MODEL="${LLM_QA_MODEL:-gpt-5.6-luna}"
+SITS_INFERENCE_WATCH="${SITS_INFERENCE_WATCH:-1}"
+SITS_INFERENCE_WATCH_INTERVAL="${SITS_INFERENCE_WATCH_INTERVAL:-10}"
+# Track-B download tuning.  Start aggressively and let the adaptive gate
+# reduce concurrency on 429/Restricted Mode; set SITS_BLOCK_WORKERS=1 to force
+# serial mode if the project quota is exhausted.
+SITS_BLOCK_WORKERS="${SITS_BLOCK_WORKERS:-16}"
+SITS_MAX_INFLIGHT_REQUESTS="${SITS_MAX_INFLIGHT_REQUESTS:-32}"
+SITS_MIN_INFLIGHT_REQUESTS="${SITS_MIN_INFLIGHT_REQUESTS:-4}"
 SKIP_COVARIATES="${SKIP_COVARIATES:-0}"
 SKIP_ANALYSIS="${SKIP_ANALYSIS:-0}"
 DRY_RUN="${DRY_RUN:-0}"
@@ -23,6 +31,7 @@ DRY_RUN="${DRY_RUN:-0}"
 # every district (SATELLITE_TRACK=both) and the compare_tracks converter.
 SATELLITE_TRACK="${SATELLITE_TRACK:-A}"
 SATELLITE_ROUTING="${SATELLITE_ROUTING:-s1_interim}"
+SITS_BACKEND="${SITS_BACKEND:-gee}"
 if [[ "${1:-}" == "--dry-run" ]]; then DRY_RUN=1; shift; fi
 if [[ $# -ne 0 ]]; then echo 'Usage: run_pipeline.sh [--dry-run]' >&2; exit 2; fi
 # Interpreter: $PYTHON if given; else the project venv; else the first python
@@ -59,14 +68,60 @@ run() {
 }
 if [[ "$SETUP_DEPS" == 1 ]]; then run -m pip install -r requirements.txt; fi
 echo 'CVND PRIMARY: event × district; legacy state caches are incompatible.'
-echo "SKIP_GEE=$SKIP_GEE SKIP_ARTICLES=$SKIP_ARTICLES SKIP_COVARIATES=$SKIP_COVARIATES SKIP_ANALYSIS=$SKIP_ANALYSIS DRY_RUN=$DRY_RUN SATELLITE_TRACK=$SATELLITE_TRACK SATELLITE_ROUTING=$SATELLITE_ROUTING"
+export SITS_BLOCK_WORKERS SITS_MAX_INFLIGHT_REQUESTS SITS_MIN_INFLIGHT_REQUESTS SITS_BACKEND
+echo "SKIP_GEE=$SKIP_GEE SKIP_ARTICLES=$SKIP_ARTICLES SKIP_COVARIATES=$SKIP_COVARIATES SKIP_ANALYSIS=$SKIP_ANALYSIS DRY_RUN=$DRY_RUN SATELLITE_TRACK=$SATELLITE_TRACK SATELLITE_ROUTING=$SATELLITE_ROUTING SITS_BACKEND=$SITS_BACKEND SITS_BLOCK_WORKERS=$SITS_BLOCK_WORKERS SITS_MAX_INFLIGHT_REQUESTS=$SITS_MAX_INFLIGHT_REQUESTS SITS_MIN_INFLIGHT_REQUESTS=$SITS_MIN_INFLIGHT_REQUESTS"
 run src/build_emdat_events.py
 if [[ "$SKIP_COVARIATES" != 1 ]]; then run src/build_district_covariates.py; fi
 if [[ "$SKIP_GEE" != 1 ]]; then
-  run src/event_aoi_area.py
-  run src/satellite.py --track "$SATELLITE_TRACK"
-  if [[ "$SATELLITE_TRACK" == "B" || "$SATELLITE_TRACK" == "both" ]]; then
-    run src/run_sits_inference.py
+  if [[ "$SITS_BACKEND" == "cdse-local" && "$SATELLITE_TRACK" == "B" ]]; then
+    echo 'Using pinned local district AOI cache; no Earth Engine AOI calls.'
+  else
+    run src/event_aoi_area.py
+  fi
+  if [[ "$SATELLITE_TRACK" == "B" || "$SATELLITE_TRACK" == "both" ]] \
+      && [[ "$DRY_RUN" != 1 && "$SITS_INFERENCE_WATCH" == 1 ]]; then
+    # Track-B writes an atomic block checkpoint beside every H5.  Keep a
+    # watcher alongside the downloader so completed H5 files are inferred
+    # immediately while partial files remain excluded by the inference code.
+    printf '>>> '
+    printf '%q ' "$PYTHON" src/satellite.py --track "$SATELLITE_TRACK" --backend "$SITS_BACKEND"
+    printf '& (SITS inference watcher enabled)\n'
+    "$PYTHON" src/satellite.py --track "$SATELLITE_TRACK" --backend "$SITS_BACKEND" &
+    satellite_pid=$!
+    watcher_pid=''
+    cleanup_sits_watcher() {
+      if [[ -n "${satellite_pid:-}" ]] && kill -0 "$satellite_pid" 2>/dev/null; then
+        kill -TERM "$satellite_pid" 2>/dev/null || true
+      fi
+      if [[ -n "${watcher_pid:-}" ]] && kill -0 "$watcher_pid" 2>/dev/null; then
+        kill -TERM "$watcher_pid" 2>/dev/null || true
+      fi
+    }
+    trap cleanup_sits_watcher EXIT INT TERM
+    "$PYTHON" scripts/watch_sits_inference.py \
+      --satellite-pid "$satellite_pid" \
+      --interval "$SITS_INFERENCE_WATCH_INTERVAL" \
+      --device auto &
+    watcher_pid=$!
+    set +e
+    wait "$satellite_pid"
+    satellite_status=$?
+    wait "$watcher_pid"
+    watcher_status=$?
+    set -e
+    trap - EXIT INT TERM
+    if (( satellite_status != 0 )); then
+      exit "$satellite_status"
+    fi
+    if (( watcher_status != 0 )); then
+      echo "SITS inference watcher failed (status=$watcher_status)" >&2
+      exit "$watcher_status"
+    fi
+  else
+    run src/satellite.py --track "$SATELLITE_TRACK" --backend "$SITS_BACKEND"
+    if [[ "$SATELLITE_TRACK" == "B" || "$SATELLITE_TRACK" == "both" ]]; then
+      run src/run_sits_inference.py
+    fi
   fi
 else
   echo 'Using district satellite caches only; missing artifacts fail explicitly.'

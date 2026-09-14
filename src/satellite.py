@@ -17,6 +17,7 @@ import os
 import re
 import unicodedata
 import tempfile
+import threading
 from typing import NamedTuple
 
 from datetime import datetime, timezone
@@ -73,7 +74,14 @@ EVENTS_CSV = str(data_path("event_districts"))
 SITS_INDEX_CSV = str(data_path("district_sits_patches_index"))
 
 # ── Track B config ────────────────────────────────────────────────────────────
-SITS_BANDS      = ['B4', 'B3', 'B2', 'B8']   # RGB (B4,B3,B2) for the model + B8 for NDWI
+# RaVAEn consumes RGB only.  B8 is still carried in the server-side image
+# mask so a timestep is considered valid only when all four optical bands are
+# present, but its reflectance values are no longer downloaded.  H5 files
+# written before this optimization may still contain the legacy four-band
+# payload; resume code below preserves that layout when necessary.
+SITS_BANDS      = ['B4', 'B3', 'B2']
+SITS_VALID_BANDS = ['B4', 'B3', 'B2', 'B8']
+SITS_LEGACY_BANDS = tuple(SITS_VALID_BANDS)
 SITS_PATCH_SIZE = SPEC.sits_patch_px
 SITS_N_PRE      = SPEC.sits_n_pre  # baseline t1..t4 (same-season composites); t5 = post window
 SITS_NORM       = 10000.0          # S2 L2A reflectance DN per unit reflectance
@@ -83,6 +91,107 @@ SITS_OUTPUT_DIR = str(data_path("district_sits_patches"))
 SITS_BLOCK_PATCHES = 16     # download block = 16*64 = 1024 px/side (keeps NPY request small)
 SITS_KEEP_VALID    = SPEC.sits_keep_valid  # keep a tile only if >= this fraction is clear in EVERY timestep
 
+# Earth Engine Restricted Mode is sensitive to request bursts.  Keep the
+# optimistic ceiling high enough to exploit available quota, while the
+# adaptive request gate cuts it back immediately on 429/Restricted Mode and
+# restores it only after a quiet period.  Both values are overridable; set
+# SITS_BLOCK_WORKERS=1 for serial mode if the project quota is exhausted.
+# Aggressive ceiling: the adaptive gate immediately backs off on EE 429/
+# Restricted Mode responses, while allowing higher throughput when quota is
+# available.  Retries in _fetch_npy make transient failures resumable.
+SITS_BLOCK_WORKERS_DEFAULT = 16
+SITS_BLOCK_WORKERS_MAX = 16
+SITS_MAX_INFLIGHT_REQUESTS_DEFAULT = 32
+SITS_MAX_INFLIGHT_REQUESTS_MAX = 32
+SITS_MIN_INFLIGHT_REQUESTS_DEFAULT = 4
+
+
+def _bounded_env_int(name, default, minimum, maximum):
+    try:
+        value = int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(maximum, value))
+
+
+def _sits_block_workers():
+    return _bounded_env_int('SITS_BLOCK_WORKERS', SITS_BLOCK_WORKERS_DEFAULT, 1,
+                            SITS_BLOCK_WORKERS_MAX)
+
+
+def _sits_request_limit():
+    return _bounded_env_int('SITS_MAX_INFLIGHT_REQUESTS',
+                            SITS_MAX_INFLIGHT_REQUESTS_DEFAULT, 1,
+                            SITS_MAX_INFLIGHT_REQUESTS_MAX)
+
+
+def _sits_request_floor():
+    return _bounded_env_int('SITS_MIN_INFLIGHT_REQUESTS',
+                            SITS_MIN_INFLIGHT_REQUESTS_DEFAULT, 1,
+                            _sits_request_limit())
+
+
+class AdaptiveRequestGate:
+    """Bound EE concurrency and adapt it to transient quota pressure.
+
+    A 429 halves the current limit; other retryable API failures remove one
+    slot. After a quiet minute, every 40 successful requests restores one
+    slot, up to the configured ceiling. Existing requests are never
+    cancelled, so lowering the limit is safe while workers are active.
+    """
+
+    def __init__(self, ceiling, floor):
+        self.ceiling = max(1, int(ceiling))
+        self.floor = max(1, min(int(floor), self.ceiling))
+        self.limit = self.ceiling
+        self.active = 0
+        self.successes = 0
+        self.last_throttle = 0.0
+        self.condition = threading.Condition()
+
+    def __enter__(self):
+        with self.condition:
+            while self.active >= self.limit:
+                self.condition.wait()
+            self.active += 1
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        with self.condition:
+            self.active -= 1
+            self.condition.notify_all()
+
+    def throttle(self, severe=False):
+        with self.condition:
+            old = self.limit
+            decrement = max(1, old // 2) if severe else 1
+            self.limit = max(self.floor, old - decrement)
+            self.successes = 0
+            self.last_throttle = time.monotonic()
+            self.condition.notify_all()
+        if self.limit != old:
+            cause = '429/restricted' if severe else 'transient API error'
+            print(f"    EE adaptive concurrency: {old} -> {self.limit} ({cause})",
+                  flush=True)
+
+    def succeeded(self):
+        with self.condition:
+            self.successes += 1
+            quiet = time.monotonic() - self.last_throttle
+            old = self.limit
+            if self.limit < self.ceiling and quiet >= 60 and self.successes >= 40:
+                self.limit += 1
+                self.successes = 0
+                self.condition.notify_all()
+        if self.limit != old:
+            print(f"    EE adaptive concurrency: {old} -> {self.limit} "
+                  "(stable recovery)", flush=True)
+
+
+# Shared by every block worker and every image request.
+_SITS_REQUEST_GATE = AdaptiveRequestGate(_sits_request_limit(),
+                                         _sits_request_floor())
+
 # Per-tile measurement layers stored next to the model inputs.
 NDWI_SCALE  = 10000
 NDWI_NODATA = -32768
@@ -90,6 +199,7 @@ S1_SCALE    = 100            # VV dB × 100
 S1_NODATA   = -32768
 LANDCOVER_NODATA = 0
 MASK_BITS   = 'bit0=eligible,bit1=valid_all,bit2=inside_aoi'
+TILE_SELECTION_RULE = 'per_timestep_valid_fraction_v2'
 # Per downloaded block, over every AOI pixel (not only retained tiles): the
 # block-level sums reproduce Track A's AOI-wide areas from the downloaded
 # pixels, which is the Track A / Track B identity check.
@@ -801,8 +911,8 @@ def t5_composite(post_col, spec=SPEC):
     model sees the same post state the area is measured on."""
     if spec.post_composite == 'max_water':
         return (post_col.map(lambda img: img.addBands(_ndwi(img, spec)))
-                .qualityMosaic('ndwi').select(SITS_BANDS))
-    return post_col.median().select(SITS_BANDS)
+                .qualityMosaic('ndwi').select(SITS_VALID_BANDS))
+    return post_col.median().select(SITS_VALID_BANDS)
 
 
 def _constant_band(value, name):
@@ -848,27 +958,162 @@ def measurement_aux_image(s2, s1, region, start, spec=SPEC, with_s1=True):
 def _fetch_npy(image, grid, row_px, col_px, height, width):
     params = {'crs': grid.crs, 'crs_transform': grid.transform(col_px, row_px),
               'dimensions': f'{width}x{height}', 'format': 'NPY'}
-    for attempt in range(4):
+    download_url = None
+    for attempt in range(5):
         try:
-            r = requests.get(image.getDownloadURL(params), timeout=180)
+            # Keep the quota gate around the actual EE request, but release it
+            # before sleeping so another worker can make progress while this
+            # request backs off after a transient quota response.
+            with _SITS_REQUEST_GATE:
+                if download_url is None:
+                    download_url = image.getDownloadURL(params)
+                r = requests.get(download_url, timeout=180)
             r.raise_for_status()
             arr = np.load(io.BytesIO(r.content))
+            _SITS_REQUEST_GATE.succeeded()
             break
-        except Exception:
-            if attempt == 3:
+        except Exception as exc:
+            retryable = not isinstance(exc, requests.HTTPError) or (
+                exc.response is not None and exc.response.status_code in {429, 500, 502, 503, 504}
+            )
+            message = str(exc).lower()
+            severe = (isinstance(exc, requests.HTTPError) and exc.response is not None
+                      and exc.response.status_code == 429) or any(
+                          marker in message for marker in
+                          ('too many requests', 'concurrency limit', 'restricted mode'))
+            if retryable:
+                _SITS_REQUEST_GATE.throttle(severe=severe)
+            if attempt == 4 or not retryable:
                 raise
-            time.sleep(2 ** attempt)
+            retry_after = None
+            if isinstance(exc, requests.HTTPError) and exc.response is not None:
+                value = exc.response.headers.get('Retry-After')
+                try:
+                    retry_after = max(0.0, float(value)) if value is not None else None
+                except (TypeError, ValueError):
+                    retry_after = None
+            time.sleep(min(60.0, retry_after if retry_after is not None else 2 ** attempt))
     if arr.shape != (height, width):
         raise ValueError(f'block download returned {arr.shape}, expected {(height, width)}')
     return arr
 
 
-def _download_block(image, grid, row_px, col_px, height, width):
+def _download_block(image, grid, row_px, col_px, height, width, bands=None):
     """One block as NPY -> order-preserving structured array (bands + 'valid').
-    valid = 1 only where every band is present (not cloud/nodata)."""
+    ``valid`` is computed from every optical band (including B8), while only
+    the model bands are serialized.  ``bands`` is supplied for legacy partial
+    H5 files that were created before the RGB-only payload optimization."""
+    bands = list(SITS_BANDS if bands is None else bands)
     valid = image.mask().reduce(ee.Reducer.min()).rename('valid').toByte()
-    stack = image.select(SITS_BANDS).toInt16().addBands(valid)   # int16 keeps NPY under the 48MB request limit
+    stack = image.select(bands).toInt16().addBands(valid)   # int16 keeps NPY under the 48MB request limit
     return _fetch_npy(stack, grid, row_px, col_px, height, width)
+
+
+def _download_block_arrays(images, aux, grid, window, bands=None):
+    """Batch optical timesteps below 24 MiB; preserve original array layout."""
+    if os.getenv('SITS_BATCH_DOWNLOADS', '1') == '1':
+        names = list(SITS_BANDS if bands is None else bands) + ['valid']
+        height, width = window[2:]
+        # Cast valid to int16 too: exact integer values, predictable byte size.
+        group_size = max(1, (24 * 1024 * 1024) // (height * width * len(names) * 2))
+        results = []
+        for offset in range(0, len(images), group_size):
+            group = images[offset:offset + group_size]
+            stacks = []
+            for i, image in enumerate(group):
+                valid = image.mask().reduce(ee.Reducer.min()).rename('valid')
+                stack = image.select(names[:-1]).addBands(valid).toInt16()
+                stacks.append(stack.rename([f't{i}_{name}' for name in names]))
+            combined = _fetch_npy(ee.Image.cat(stacks), grid, *window)
+            for i in range(len(group)):
+                arr = np.empty(combined.shape, dtype=[(name, np.int16) for name in names])
+                for name in names:
+                    arr[name] = combined[f't{i}_{name}']
+                results.append(arr)
+        results.append(_fetch_npy(aux, grid, *window))
+        return results
+
+    # Explicit compatibility switch for comparing the old transport locally.
+    def fetch_model(image):
+        if bands is None:
+            return _download_block(image, grid, *window)
+        try:
+            return _download_block(image, grid, *window, bands=bands)
+        except TypeError as exc:
+            # Keep compatibility with small test/dry-run doubles that model
+            # the pre-optimization five-argument helper.  Real production
+            # calls always accept ``bands`` and never take this branch.
+            if "unexpected keyword argument 'bands'" not in str(exc):
+                raise
+            return _download_block(image, grid, *window)
+
+    with ThreadPoolExecutor(max_workers=len(images) + 1) as ex:
+        futures = [ex.submit(fetch_model, im) for im in images]
+        futures.append(ex.submit(_fetch_npy, aux, grid, *window))
+        return [fut.result() for fut in futures]
+
+
+def _screen_block(images, region, grid, window, spec=SPEC):
+    """Server-side retained-tile test used before RGB downloads.
+
+    The grouped reduction computes the exact clear fraction for each 64x64
+    tile over the same block/grid that ``_tiles_from_block`` uses.  A block
+    with no tile meeting ``sits_keep_valid`` still downloads its auxiliary
+    measurement image later (for exact ``block_stats``), but avoids all RGB
+    extraction requests.  Errors are handled conservatively by returning
+    ``True`` so the optimization can never create a false negative.
+    """
+    try:
+        row_px, col_px, height, width = window
+        valid = [im.mask().reduce(ee.Reducer.min()).rename(f'valid_{i}')
+                 for i, im in enumerate(images)]
+        # pixelCoordinates are evaluated in a projection whose origin/scale
+        # exactly match the local grid.  Their integer x/y values therefore
+        # identify the 64x64 tile without downloading any pixel values.
+        projection = ee.Projection(grid.crs, grid.transform())
+        coords = ee.Image.pixelCoordinates(projection)
+        tile_col = coords.select('x').divide(grid.patch_px).floor().toInt32()
+        tile_row = coords.select('y').divide(grid.patch_px).floor().toInt32()
+        tile_id = tile_row.multiply(grid.npx).add(tile_col).rename('tile')
+        geometry = grid_rectangle(grid, grid.rect(row_px, col_px, height, width))
+        # `_tiles_from_block` retains a tile when every timestep separately
+        # has >=70% valid pixels. An intersection mask is stricter and can
+        # reject a valid tile when cloud locations differ by timestep.
+        reductions = ee.Dictionary({str(i): image.addBands(tile_id).reduceRegion(
+            reducer=ee.Reducer.mean().group(1, 'tile'), geometry=geometry,
+            crs=grid.crs, crsTransform=grid.transform(),
+            maxPixels=spec.max_pixels, tileScale=spec.tile_scale,
+            bestEffort=False) for i, image in enumerate(valid)})
+        with _SITS_REQUEST_GATE:
+            grouped_by_time = reductions.getInfo() or {}
+        _SITS_REQUEST_GATE.succeeded()
+        return _screen_groups_have_tile(grouped_by_time, len(valid), spec.sits_keep_valid)
+    except Exception as exc:
+        # This is an optimization only; never skip a block when EE cannot
+        # evaluate the screening reduction (including older/fake clients).
+        message = str(exc).lower()
+        severe = any(marker in message for marker in
+                     ('429', 'too many requests', 'concurrency limit', 'restricted mode'))
+        _SITS_REQUEST_GATE.throttle(severe=severe)
+        print(f"      valid pre-screen unavailable; downloading block ({exc})", flush=True)
+        return True
+
+
+def _screen_groups_have_tile(grouped_by_time, n_timesteps, keep_valid):
+    """Whether one tile satisfies the per-timestep validity rule.
+
+    Kept pure so the server-side optimization can be regression-tested with
+    cloud masks whose valid pixels do not overlap spatially.
+    """
+    qualifying = None
+    for i in range(n_timesteps):
+        groups = (grouped_by_time.get(str(i)) or {}).get('groups') or []
+        timestep = {int(item['tile']) for item in groups
+                    if float(item.get('mean', 0.0)) >= keep_valid}
+        qualifying = timestep if qualifying is None else qualifying & timestep
+        if not qualifying:
+            return False
+    return bool(qualifying)
 
 
 def block_stats(aux, s1_threshold_db, spec=SPEC) -> list:
@@ -886,7 +1131,7 @@ def block_stats(aux, s1_threshold_db, spec=SPEC) -> list:
             s1_m2]
 
 
-def _tiles_from_block(arrs, aux, spec=SPEC) -> dict:
+def _tiles_from_block(arrs, aux, spec=SPEC, bands=None) -> dict:
     """Cut one downloaded block into the tiles that are clear enough in every
     model timestep. ``arrs`` are the timestep arrays (bands + 'valid'); ``aux``
     holds the measurement layers on the same grid."""
@@ -900,8 +1145,16 @@ def _tiles_from_block(arrs, aux, spec=SPEC) -> dict:
     bits = (aux['eligible'].astype(np.uint8) | (valid_all.astype(np.uint8) << 1)
             | (aux['inside'].astype(np.uint8) << 2))
 
+    if bands is None:
+        names = getattr(arrs[0].dtype, 'names', None) or ()
+        # Keep tests and old H5 resume compatible with the four-band payload.
+        bands = [b for b in SITS_LEGACY_BANDS if b in names]
+        if not bands:
+            bands = list(SITS_BANDS)
+    bands = list(bands)
+
     def reflectance(a, win):
-        return np.stack([np.clip(a[b][win], 0, None).astype(np.uint16) for b in SITS_BANDS])
+        return np.stack([np.clip(a[b][win], 0, None).astype(np.uint16) for b in bands])
 
     out = {name: [] for name in ('pre', 'post', 'mask', 'ndwi_ref', 's1_ref', 'landcover',
                                  'pixel_area_m2', 'rc')}
@@ -960,12 +1213,23 @@ def truncate_to_done(hdf, done_blocks) -> int:
 
 
 def _tile_region(images, aux, region, grid, hdf, done_blocks, blocks_ckpt,
-                 s1_threshold_db, spec=SPEC):
+                 s1_threshold_db, spec=SPEC, block_workers=None, bands=None):
     """Tile the district AOI on its grid, download block by block, keep only
     tiles that are clear in every timestep, and append them to the open hdf5.
     Skips blocks already in done_blocks and records each finished block to
     blocks_ckpt (block-level resume). Returns (patches in the hdf5, failed blocks)."""
     P, B = spec.sits_patch_px, SITS_BLOCK_PATCHES
+    # Direct callers and older tests may omit ``bands`` while opening a
+    # legacy four-band H5.  Infer the on-disk layout so a resume never tries
+    # to broadcast RGB/legacy arrays into the wrong channel dimension.  The
+    # production path passes this explicitly from the H5 metadata.
+    if bands is None:
+        try:
+            stored_channels = int(hdf['pre'].shape[2])
+        except (KeyError, TypeError, ValueError, IndexError):
+            stored_channels = len(SITS_BANDS)
+        bands = (list(SITS_LEGACY_BANDS) if stored_channels == len(SITS_LEGACY_BANDS)
+                 else list(SITS_BANDS))
     all_blocks = [(bi, bj) for bi in range(0, grid.npy, B) for bj in range(0, grid.npx, B)]
 
     # Only download blocks intersecting the district AOI (skip bbox corners outside it).
@@ -975,49 +1239,72 @@ def _tile_region(images, aux, region, grid, hdf, done_blocks, blocks_ckpt,
                  .aggregate_array('i').getInfo())
     todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks)
             if i in inside and i not in done_blocks]
+    block_workers = (_sits_block_workers() if block_workers is None else
+                     max(1, min(SITS_BLOCK_WORKERS_MAX, int(block_workers))))
     print(f"    tiling: {grid.npx}x{grid.npy} tiles on {grid.crs} (@{grid.pixel_m}m), "
           f"{len(inside)}/{len(all_blocks)} blocks in district AOI, {len(todo)} to download")
+    print(f"    download concurrency: {block_workers} blocks, "
+          f"adaptive {_sits_request_floor()}-{_sits_request_limit()} in-flight EE requests")
     bar = tqdm(todo, desc='    downloading', unit='blk')
     failed = 0
-    for i, bi, bj in bar:
+    def fetch(item):
+        i, bi, bj = item
         window = grid.block(bi, bj, B)
         try:
-            # model timesteps + measurement layers of this block, concurrently
-            with ThreadPoolExecutor(max_workers=len(images) + 1) as ex:
-                futures = [ex.submit(_download_block, im, grid, *window) for im in images]
-                futures.append(ex.submit(_fetch_npy, aux, grid, *window))
-                arrs = [fut.result() for fut in futures]
+            if _screen_block(images, region, grid, window, spec):
+                arrs = _download_block_arrays(images, aux, grid, window, bands=bands)
+            else:
+                # Keep the exact AOI-wide block statistics while avoiding all
+                # RGB extraction requests for a block with no retained tile.
+                arrs = [None] * len(images) + [_fetch_npy(aux, grid, *window)]
+            return item, window, arrs, None
         except Exception as e:
-            bar.write(f"      block ({bi},{bj}) download failed: {e}")
-            failed += 1
-            continue
+            return item, window, None, e
 
-        tiles = _tiles_from_block(arrs[:-1], arrs[-1], spec)
-        if tiles['rc']:
-            row0, col0 = window[0], window[1]
-            coords = [[row0 + r * P, col0 + c * P,
-                       grid.x0 + (col0 + (c + 0.5) * P) * grid.pixel_m,
-                       grid.y0 - (row0 + (r + 0.5) * P) * grid.pixel_m]
-                      for r, c in tiles['rc']]
-            _append_h5(hdf, {
-                'pre': np.stack(tiles['pre']),
-                'post': np.stack(tiles['post']),
-                'coords': np.array(coords, dtype='float64'),
-                'mask': np.stack(tiles['mask']),
-                'ndwi_ref': np.stack(tiles['ndwi_ref']),
-                's1_ref': np.stack(tiles['s1_ref']),
-                'landcover': np.stack(tiles['landcover']),
-                'pixel_area_m2': np.array(tiles['pixel_area_m2'], dtype='float32'),
-                'block_id': np.full(len(tiles['rc']), i, dtype='int32'),
-            })
-        _append_h5(hdf, {'block_stats': np.array([[i] + block_stats(arrs[-1], s1_threshold_db, spec)])})
-        hdf.flush()
-        done_blocks.add(i)
-        # Atomic replace: an interruption leaves the previous block list intact.
-        with open(blocks_ckpt + '.tmp', 'w') as cf:
-            json.dump(sorted(done_blocks), cf)
-        os.replace(blocks_ckpt + '.tmp', blocks_ckpt)
-        bar.set_postfix(kept=hdf['pre'].shape[0])
+    # executor.map preserves todo order, so H5 append/checkpoint order remains
+    # deterministic even though the next block can download while this one is
+    # being reduced and written.
+    with ThreadPoolExecutor(max_workers=block_workers) as pool:
+        for item, window, arrs, error in pool.map(fetch, todo):
+            i, bi, bj = item
+            if error is not None:
+                bar.update(1)
+                bar.write(f"      block ({bi},{bj}) download failed: {error}")
+                failed += 1
+                continue
+            bar.update(1)
+
+            if arrs[0] is None:
+                tiles = {name: [] for name in
+                         ('pre', 'post', 'mask', 'ndwi_ref', 's1_ref', 'landcover',
+                          'pixel_area_m2', 'rc')}
+            else:
+                tiles = _tiles_from_block(arrs[:-1], arrs[-1], spec, bands=bands)
+            if tiles['rc']:
+                row0, col0 = window[0], window[1]
+                coords = [[row0 + r * P, col0 + c * P,
+                           grid.x0 + (col0 + (c + 0.5) * P) * grid.pixel_m,
+                           grid.y0 - (row0 + (r + 0.5) * P) * grid.pixel_m]
+                          for r, c in tiles['rc']]
+                _append_h5(hdf, {
+                    'pre': np.stack(tiles['pre']),
+                    'post': np.stack(tiles['post']),
+                    'coords': np.array(coords, dtype='float64'),
+                    'mask': np.stack(tiles['mask']),
+                    'ndwi_ref': np.stack(tiles['ndwi_ref']),
+                    's1_ref': np.stack(tiles['s1_ref']),
+                    'landcover': np.stack(tiles['landcover']),
+                    'pixel_area_m2': np.array(tiles['pixel_area_m2'], dtype='float32'),
+                    'block_id': np.full(len(tiles['rc']), i, dtype='int32'),
+                })
+            _append_h5(hdf, {'block_stats': np.array([[i] + block_stats(arrs[-1], s1_threshold_db, spec)])})
+            hdf.flush()
+            done_blocks.add(i)
+            # Atomic replace: an interruption leaves the previous block list intact.
+            with open(blocks_ckpt + '.tmp', 'w') as cf:
+                json.dump(sorted(done_blocks), cf)
+            os.replace(blocks_ckpt + '.tmp', blocks_ckpt)
+            bar.set_postfix(kept=hdf['pre'].shape[0])
     return hdf['pre'].shape[0], failed
 
 
@@ -1064,8 +1351,10 @@ def sits_h5_path(key) -> str:
     return os.path.join(SITS_OUTPUT_DIR, f'{cache_stem(key)}.h5')
 
 
-def _create_h5(f, row, aoi, grid, spec, s1_threshold_db, s1_fallback):
-    P, B, n_pre = spec.sits_patch_px, len(SITS_BANDS), spec.sits_n_pre
+def _create_h5(f, row, aoi, grid, spec, s1_threshold_db, s1_fallback,
+               bands=None, runtime_metadata=None):
+    bands = list(SITS_BANDS if bands is None else bands)
+    P, B, n_pre = spec.sits_patch_px, len(bands), spec.sits_n_pre
     packed = {'compression': 'gzip', 'compression_opts': 4, 'shuffle': True}
     f.create_dataset('pre', shape=(0, n_pre, B, P, P), maxshape=(None, n_pre, B, P, P),
                      dtype='uint16', chunks=(1, n_pre, B, P, P), **packed)
@@ -1089,7 +1378,10 @@ def _create_h5(f, row, aoi, grid, spec, s1_threshold_db, s1_fallback):
         meta.attrs[field] = str(row.get(field, ''))
     meta.attrs['event_district_id'] = str(row.get('event_district_id', ''))
     meta.attrs['geometry_id'] = str(aoi['geometry_id'])
-    meta.attrs['bands'] = ','.join(SITS_BANDS)
+    for field in ('aoi_source', 'aoi_match_status', 'aoi_level'):
+        if aoi.get(field) is not None:
+            meta.attrs[field] = str(aoi[field])
+    meta.attrs['bands'] = ','.join(bands)
     meta.attrs['reflectance'] = f'uint16 DN, reflectance x {int(SITS_NORM)}'
     meta.attrs['n_pre'] = n_pre
     meta.attrs['patch_size'] = P
@@ -1109,6 +1401,87 @@ def _create_h5(f, row, aoi, grid, spec, s1_threshold_db, s1_fallback):
     meta.attrs['landcover_nodata'] = LANDCOVER_NODATA
     meta.attrs['mask_bits'] = MASK_BITS
     meta.attrs['block_stats_cols'] = ','.join(BLOCK_STATS_COLS)
+    for name, value in (runtime_metadata or {}).items():
+        # HDF5 attributes have no portable variable-length JSON type.  Store
+        # structured resume metadata as canonical JSON strings instead.
+        if isinstance(value, (list, tuple, dict)):
+            value = json.dumps(value, separators=(',', ':'))
+        meta.attrs[name] = value
+
+
+def _h5_resume_metadata(path):
+    """Read optional Track-B planning metadata from a partial H5."""
+    try:
+        with h5py.File(path, 'r') as handle:
+            attrs = handle['meta'].attrs
+            out = {}
+            for name in ('bands', 'selected_baseline_months',
+                         'selected_baseline_clear', 'selected_baseline_water',
+                         'post_scene_count', 'pre_scene_count',
+                         's1_pre_count', 's1_post_count'):
+                if name not in attrs:
+                    continue
+                value = attrs[name]
+                if isinstance(value, bytes):
+                    value = value.decode('utf-8')
+                if name.startswith('selected_baseline_'):
+                    try:
+                        value = json.loads(str(value))
+                    except (TypeError, ValueError):
+                        continue
+                elif name.endswith('_count'):
+                    try:
+                        value = int(value)
+                    except (TypeError, ValueError):
+                        continue
+                out[name] = value
+            if 's1_threshold_db' in attrs:
+                value = float(attrs['s1_threshold_db'])
+                out['s1_threshold_db'] = None if not np.isfinite(value) else value
+            out['s1_otsu_fallback'] = bool(attrs.get('s1_otsu_fallback', False))
+            return out
+    except (OSError, KeyError, TypeError, ValueError):
+        return {}
+
+
+def _h5_has_unsafe_rgb_prescreen(path) -> bool:
+    """Identify RGB H5 files made by the former intersection-mask screen.
+
+    Four-band files predate that optimization and are unaffected. Every new
+    RGB file records TILE_SELECTION_RULE, so an RGB file without the marker
+    is conservatively rebuilt before it can enter final analysis.
+    """
+    try:
+        with h5py.File(path, 'r') as handle:
+            attrs = handle['meta'].attrs
+            bands = str(attrs.get('bands', '')).replace(' ', '')
+            rule = str(attrs.get('tile_selection_rule', ''))
+            return bands == 'B4,B3,B2' and rule != TILE_SELECTION_RULE
+    except (OSError, KeyError):
+        return True
+
+
+def _baseline_from_resume_metadata(s2, event_dt, metadata, spec=SPEC):
+    """Rebuild stored baseline composites without rescoring monthly imagery."""
+    months = metadata.get('selected_baseline_months')
+    if not months or len(months) != spec.sits_n_pre:
+        return None
+    clears = metadata.get('selected_baseline_clear') or [None] * len(months)
+    waters = metadata.get('selected_baseline_water') or [None] * len(months)
+    out = []
+    for index, tag in enumerate(months):
+        try:
+            year, month = (int(part) for part in str(tag).split('-', 1))
+        except (TypeError, ValueError):
+            return None
+        # The selected month list is authoritative for a partial cache.  Do
+        # not call size().getInfo() again; the original count/clear decision
+        # is already persisted with the H5 metadata.
+        image = s2.filterDate(*month_window(year, month, event_dt)).median()
+        clear = float(clears[index]) if clears[index] is not None else 0.0
+        water = float(waters[index]) if waters[index] is not None else 0.0
+        out.append((str(tag), image, clear, water))
+    return out
 
 
 def _skip(reason):
@@ -1119,7 +1492,8 @@ def _skip(reason):
 
 def prepare_sits_patch(row, spec=SPEC):
     """Track B: tile the district AOI and save the time series to HDF5.
-    Each patch = (pre: 4x4x64x64, post: 1x4x64x64) uint16 model inputs plus the
+    Each new patch = (pre: 4x3x64x64, post: 1x3x64x64) uint16 RGB model inputs
+    (legacy partial H5 files may retain four bands) plus the
     measurement layers mask (bit0 eligible, bit1 valid_all, bit2 inside AOI),
     ndwi_ref (pre/post NDWI ×1e4), s1_ref (pre/post VV dB ×100), landcover,
     pixel_area_m2 and block_id; coords=(row_px, col_px, x, y) on the grid.
@@ -1137,26 +1511,64 @@ def prepare_sits_patch(row, spec=SPEC):
     region = aoi['geometry']
     grid = measurement_grid(region, spec)
     s2_all = s2_collection(region, spec)
-    s2 = s2_all.select(SITS_BANDS)
+    # Keep B8 available in the server-side mask/NDWI composites; only the
+    # RGB values in SITS_BANDS are serialized into newly created H5 files.
+    s2 = s2_all.select(SITS_VALID_BANDS)
     s1 = s1_collection(region, spec)
     event_dt = datetime.strptime(start_str, '%Y-%m-%d')
 
+    os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
+    out_path = sits_h5_path(key)
+    blocks_ckpt = out_path + '.blocks.json'
+
+    # Block-level resume: inspect identity and planning metadata before any
+    # baseline scoring/Otsu work, so a restart does not repeat those EE calls.
+    done_blocks = set()
+    resume = os.path.exists(out_path) and os.path.exists(blocks_ckpt)
+    resume_meta = _h5_resume_metadata(out_path) if resume else {}
+    if resume and not _h5_identity_matches(out_path, row, grid):
+        print("    cache identity/spec/layout/grid changed -> restarting H5")
+        resume = False
+        resume_meta = {}
+    storage_bands = list(SITS_BANDS)
+    if resume and resume_meta.get('bands'):
+        candidate = [b.strip() for b in str(resume_meta['bands']).split(',') if b.strip()]
+        if all(b in SITS_VALID_BANDS for b in candidate) and {'B4', 'B3', 'B2'} <= set(candidate):
+            storage_bands = candidate
+
     post_all = s2_all.filterDate(*post_window(start_str, spec))
     s1_pre, s1_post = pre_reference_col(s1, start_str, spec), s1.filterDate(*post_window(start_str, spec))
-    counts = ee.Dictionary({'post': post_all.size(),
-                            'pre': pre_reference_col(s2, start_str, spec).size(),
-                            's1_pre': s1_pre.size(), 's1_post': s1_post.size()}).getInfo()
+    stored_count_names = ('post_scene_count', 'pre_scene_count', 's1_pre_count', 's1_post_count')
+    if resume and all(name in resume_meta for name in stored_count_names):
+        counts = {'post': resume_meta['post_scene_count'],
+                  'pre': resume_meta['pre_scene_count'],
+                  's1_pre': resume_meta['s1_pre_count'],
+                  's1_post': resume_meta['s1_post_count']}
+    else:
+        counts = ee.Dictionary({'post': post_all.size(),
+                                'pre': pre_reference_col(s2, start_str, spec).size(),
+                                's1_pre': s1_pre.size(), 's1_post': s1_post.size()}).getInfo()
     if not counts.get('post'):
         return _skip('no_post_imagery')
     if not counts.get('pre'):
         return _skip('no_pre_imagery')
-    baseline = _pick_baseline(s2, region, event_dt, grid, spec)
+    baseline = (_baseline_from_resume_metadata(s2, event_dt, resume_meta, spec)
+                if resume else None)
+    if baseline is not None:
+        print(f"    baseline (reused): {[c[0] for c in baseline]} (clear metadata cached)")
+    else:
+        baseline = _pick_baseline(s2, region, event_dt, grid, spec)
     if baseline is None:
         return _skip('no_clear_baseline')
 
     with_s1 = bool(counts.get('s1_pre')) and bool(counts.get('s1_post'))
     s1_threshold, s1_fallback = None, False
-    if with_s1:
+    if resume and 's1_threshold_db' in resume_meta:
+        s1_threshold = resume_meta['s1_threshold_db']
+        s1_fallback = bool(resume_meta.get('s1_otsu_fallback', False))
+        if s1_threshold is not None:
+            print(f"    S1 Otsu (reused): {s1_threshold:.2f} dB")
+    elif with_s1:
         _, post_vv = s1_composites(s1_pre, s1_post, spec)
         s1_threshold, s1_fallback, _ = otsu_backscatter_threshold(post_vv, region, grid, spec)
 
@@ -1166,33 +1578,41 @@ def prepare_sits_patch(row, spec=SPEC):
     images = [im.clip(region) for im in images]   # outside the district AOI is masked
     aux = measurement_aux_image(s2_all, s1, region, start_str, spec, with_s1=with_s1)
 
-    os.makedirs(SITS_OUTPUT_DIR, exist_ok=True)
-    out_path = sits_h5_path(key)
-    blocks_ckpt = out_path + '.blocks.json'
-
-    # Block-level resume: continue if a partial h5 + its block checkpoint both exist
-    done_blocks = set()
-    resume = os.path.exists(out_path) and os.path.exists(blocks_ckpt)
-    if resume and not _h5_identity_matches(out_path, row, grid):
-        print("    cache identity/spec/layout/grid changed -> restarting H5")
-        resume = False
+    runtime_metadata = {
+        'tile_selection_rule': TILE_SELECTION_RULE,
+        'selected_baseline_months': [b[0] for b in baseline],
+        'selected_baseline_clear': [float(b[2]) for b in baseline],
+        'selected_baseline_water': [float(b[3]) for b in baseline],
+        'post_scene_count': int(counts.get('post') or 0),
+        'pre_scene_count': int(counts.get('pre') or 0),
+        's1_pre_count': int(counts.get('s1_pre') or 0),
+        's1_post_count': int(counts.get('s1_post') or 0),
+    }
     if resume:
         with open(blocks_ckpt) as bf:
             done_blocks = set(json.load(bf))
 
     with h5py.File(out_path, 'a' if resume else 'w') as f:
         if resume:
+            # Populate planning metadata on legacy partial H5s after the first
+            # safe restart; subsequent resumes can now skip the expensive work.
+            for name, value in runtime_metadata.items():
+                if isinstance(value, (list, tuple, dict)):
+                    value = json.dumps(value, separators=(',', ':'))
+                if name not in f['meta'].attrs:
+                    f['meta'].attrs[name] = value
             dropped = truncate_to_done(f, done_blocks)
             print(f"    resuming: {len(done_blocks)} blocks already done"
                   + (f", dropped {dropped} tiles of an unrecorded block" if dropped else ''))
         else:
-            _create_h5(f, row, aoi, grid, spec, s1_threshold, s1_fallback)
+            _create_h5(f, row, aoi, grid, spec, s1_threshold, s1_fallback,
+                       bands=storage_bands, runtime_metadata=runtime_metadata)
             # The block checkpoint marks the H5 partial from creation on, so an
             # interruption before the first block is never read as complete.
             with open(blocks_ckpt, 'w') as cf:
                 json.dump([], cf)
         n, failed = _tile_region(images, aux, region, grid, f, done_blocks, blocks_ckpt,
-                                 s1_threshold, spec)
+                                 s1_threshold, spec, bands=storage_bands)
 
     complete = (failed == 0)
     # drop the block checkpoint only if every block succeeded; otherwise keep it so a
@@ -1248,6 +1668,9 @@ if __name__ == '__main__':
                         help='Track A only: run a flood_spec.SPEC_VARIANTS sensitivity spec')
     parser.add_argument('--workers', type=int, default=4,
                         help='Track A districts measured concurrently (default: 4)')
+    parser.add_argument('--backend', choices=['gee', 'cdse-local'],
+                        default=os.environ.get('SITS_BACKEND', 'gee'),
+                        help='Track B data backend (default: SITS_BACKEND or gee)')
     args = parser.parse_args()
     if args.variant and args.track != 'A':
         parser.error('--variant runs Track A only; pass --track A')
@@ -1258,9 +1681,14 @@ if __name__ == '__main__':
     print("CVND SATELLITE PIPELINE")
     print(f"  Running: Track {args.track.upper()}  |  spec {run_version}"
           + (f" (variant {args.variant})" if args.variant else ''))
+    if args.track in ('B', 'both'):
+        print(f"  Track B backend: {args.backend}")
     print("=" * 65)
 
-    ensure_gee()
+    # A always uses Earth Engine. B can instead use direct CDSE downloads and
+    # local SNAP/raster processing, in which case no EE session is created.
+    if args.track in ('A', 'both') or args.backend == 'gee':
+        ensure_gee()
 
     events = pd.read_csv(EVENTS_CSV)
     events['_analysis_key'] = events.apply(analysis_key, axis=1)
@@ -1354,7 +1782,9 @@ if __name__ == '__main__':
         completed_b = load_checkpoint(CHECKPOINT_B)
         stale_b = [key for key, entry in completed_b.items()
                    if key not in event_by_key or not _cache_identity_matches(entry, event_by_key[key])
-                   or str(entry.get('baseline_status', entry.get('status', ''))).startswith('ERROR')]
+                   or str(entry.get('baseline_status', entry.get('status', ''))).startswith('ERROR')
+                   or (str(entry.get('status', '')) == 'OK'
+                       and _h5_has_unsafe_rgb_prescreen(entry.get('h5_path') or sits_h5_path(key)))]
         for key in stale_b:
             del completed_b[key]
         if stale_b:
@@ -1363,10 +1793,21 @@ if __name__ == '__main__':
         remaining_b = events[~events['_analysis_key'].isin(done_b)]
         print(f"Already done: {len(done_b)} | Remaining: {len(remaining_b)}\n")
 
+        local_backend = None
+        if args.backend == 'cdse-local' and len(remaining_b):
+            from copernicus_local import LocalTrackB
+            local_backend = LocalTrackB()
+            # Fail once, before writing hundreds of per-row ERROR records, if
+            # credentials, SNAP or a static mosaic is not configured.
+            local_backend.preflight()
+
         for _, row in remaining_b.iterrows():
             ev = analysis_key(row)
             try:
-                res = prepare_sits_patch(row)
+                if args.backend == 'cdse-local':
+                    res = local_backend.run(row)
+                else:
+                    res = prepare_sits_patch(row)
             except Exception as e:
                 print(f"  ERROR {ev}: {e}")
                 completed_b[ev] = _track_b_entry(row, None, f'ERROR: {e}', error_kind(e))

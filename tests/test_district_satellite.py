@@ -7,7 +7,7 @@ import unittest
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import h5py
 import numpy as np
@@ -368,6 +368,17 @@ def aux_block(h, w):
 
 
 class TileTests(unittest.TestCase):
+    def test_prescreen_uses_each_timestep_not_valid_pixel_intersection(self):
+        # Tile 7 is 80% clear at both timesteps. The clear pixels may be in
+        # different positions; the production rule still retains the tile.
+        grouped = {
+            "0": {"groups": [{"tile": 7, "mean": 0.8}]},
+            "1": {"groups": [{"tile": 7, "mean": 0.8}]},
+        }
+        self.assertTrue(satellite._screen_groups_have_tile(grouped, 2, 0.7))
+        grouped["1"]["groups"][0]["mean"] = 0.69
+        self.assertFalse(satellite._screen_groups_have_tile(grouped, 2, 0.7))
+
     def test_tiles_keep_measurement_layers(self):
         P = SPEC.sits_patch_px
         arrs = [timestep_block(P, 2 * P) for _ in range(5)]
@@ -436,6 +447,68 @@ class TileTests(unittest.TestCase):
                 satellite._fetch_npy(image, grid, 0, 0, 128, 64)
 
 
+class AdaptiveRequestGateTests(unittest.TestCase):
+    def test_retry_reuses_download_url(self):
+        buf = io.BytesIO()
+        np.save(buf, np.zeros((2, 2), dtype=[('a', 'u1')]))
+        image = MagicMock()
+        image.getDownloadURL.return_value = 'url'
+        good = MagicMock(content=buf.getvalue())
+        grid = satellite.grid_from_utm_bounds(UTM, 0, 0, 1279, 1279)
+        with patch.object(satellite.requests, 'get', side_effect=[
+                satellite.requests.ConnectionError('reset'), good]) as get, \
+                patch.object(satellite.time, 'sleep'), \
+                patch.object(satellite, '_SITS_REQUEST_GATE', MagicMock()):
+            satellite._fetch_npy(image, grid, 0, 0, 2, 2)
+        self.assertEqual(get.call_count, 2)
+        self.assertEqual(image.getDownloadURL.call_count, 1)
+
+    def test_batched_download_preserves_timestep_values_and_order(self):
+        images = [MagicMock() for _ in range(5)]
+        names = ['B4', 'B3', 'B2', 'valid']
+        calls = []
+        def fetch(image, grid, *window):
+            calls.append(image)
+            if len(calls) == 3:
+                return 'aux'
+            offset, count = (0, 3) if len(calls) == 1 else (3, 2)
+            arr = np.zeros((2, 2), dtype=[(f't{i}_{n}', 'i2')
+                           for i in range(count) for n in names])
+            for i in range(count):
+                for n in names:
+                    arr[f't{i}_{n}'] = offset + i + 1
+            return arr
+        with patch.dict(satellite.os.environ, {'SITS_BATCH_DOWNLOADS': '1'}), \
+                patch.object(satellite, 'ee', MagicMock()), \
+                patch.object(satellite, '_fetch_npy', side_effect=fetch):
+            result = satellite._download_block_arrays(images, object(), None,
+                                                       (0, 0, 1024, 1024))
+        self.assertEqual(len(calls), 3)
+        self.assertEqual(result[-1], 'aux')
+        for i, arr in enumerate(result[:-1]):
+            self.assertEqual(arr.dtype.names, tuple(names))
+            for n in names:
+                np.testing.assert_array_equal(arr[n], i + 1)
+
+    def test_429_halves_then_stable_successes_restore_one_slot(self):
+        gate = satellite.AdaptiveRequestGate(ceiling=12, floor=4)
+        with patch.object(satellite.time, "monotonic", return_value=100.0):
+            gate.throttle(severe=True)
+        self.assertEqual(gate.limit, 6)
+        with patch.object(satellite.time, "monotonic", return_value=161.0):
+            for _ in range(40):
+                gate.succeeded()
+        self.assertEqual(gate.limit, 7)
+
+    def test_transient_errors_decrease_one_slot_but_not_below_floor(self):
+        gate = satellite.AdaptiveRequestGate(ceiling=6, floor=4)
+        gate.throttle()
+        self.assertEqual(gate.limit, 5)
+        gate.throttle()
+        gate.throttle()
+        self.assertEqual(gate.limit, 4)
+
+
 class ResumeTests(unittest.TestCase):
     def test_checkpoint_write_is_atomic_and_leaves_no_temporary_file(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -469,7 +542,8 @@ class ResumeTests(unittest.TestCase):
             real_dump(obj, handle)
 
         ckpt = str(path) + ".blocks.json"
-        with patch.object(satellite, "ee", fake), \
+        with patch.dict(satellite.os.environ, {'SITS_BATCH_DOWNLOADS': '0'}), \
+                patch.object(satellite, "ee", fake), \
                 patch.object(satellite, "_download_block", download), \
                 patch.object(satellite, "_fetch_npy", fetch), \
                 patch.object(satellite.json, "dump", dump), \

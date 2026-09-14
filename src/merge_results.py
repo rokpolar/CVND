@@ -58,6 +58,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
+import h5py
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import s1_converter  # noqa: E402
@@ -73,6 +74,7 @@ PATCH_DIR = str(data_path("district_sits_patches"))
 TRACK_A_CSV = str(data_path("district_flood_extent"))
 SITS_INDEX_CSV = str(data_path("district_sits_patches_index"))
 OUT_CSV = str(data_path("district_flood_combined"))
+TILE_SELECTION_RULE = 'per_timestep_valid_fraction_v2'
 
 
 def _otsu(x, spec=SPEC):
@@ -322,6 +324,22 @@ def _score_archives(track_a) -> dict:
     result = {}
     for key, path in archives.items():
         if key in track_a:
+            h5_path = os.path.join(PATCH_DIR, f'{cache_stem(key)}.h5')
+            if os.path.exists(h5_path):
+                try:
+                    with h5py.File(h5_path, 'r') as hdf:
+                        attrs = hdf['meta'].attrs
+                        bands = str(attrs.get('bands', '')).replace(' ', '')
+                        rule = str(attrs.get('tile_selection_rule', ''))
+                    if bands == 'B4,B3,B2' and rule != TILE_SELECTION_RULE:
+                        print(f'WARN: ignoring {os.path.basename(path)}: stale Track-B tile pre-screen')
+                        continue
+                except (OSError, KeyError):
+                    # The score archive's own H5 checksum/spec validation
+                    # remains authoritative for legacy/test fixtures. Real
+                    # production H5 files are readable and take the guard
+                    # above; do not redefine unrelated archive validation.
+                    pass
             result[key] = path
         elif key in parents:
             # A parent-event cache is not a district artifact. Never union it into
