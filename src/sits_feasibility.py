@@ -254,18 +254,18 @@ def l1c_collection(region, spec=SPEC):
     scenes = (ee.ImageCollection(L1C_COLLECTION).filterBounds(region)
               .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', spec.s2_cloudy_pixel_pct_max)))
     return scenes.linkCollection(prob, ['probability']).map(
-        lambda img: img.select(sat.SITS_BANDS)
+        lambda img: img.select(sat.SITS_VALID_BANDS)
         .updateMask(img.select('probability').lt(CLOUD_PROB_MAX)))
 
 
 def source_collection(region, source, spec=SPEC):
     if source == 'sr':
-        return sat.s2_collection(region, spec).select(sat.SITS_BANDS)
+        return sat.s2_collection(region, spec).select(sat.SITS_VALID_BANDS)
     return l1c_collection(region, spec)
 
 
 def _median_or_empty(col):
-    empty = (ee.Image.constant([0] * len(sat.SITS_BANDS)).rename(sat.SITS_BANDS)
+    empty = (ee.Image.constant([0] * len(sat.SITS_VALID_BANDS)).rename(sat.SITS_VALID_BANDS)
              .updateMask(ee.Image.constant(0)))
     return ee.Image(ee.Algorithms.If(col.size().gt(0), col.median(), empty))
 

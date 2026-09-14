@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
+import h5py
 import pandas as pd
 from cvnd_layout import data_path
 from flood_spec import CONVERTER_RULES_VERSION, SPEC_VERSION, stale_spec_mask
@@ -91,7 +93,65 @@ def inspect_artifacts():
                 status, details = 'invalid', str(exc)
         rows.append({'artifact': key, 'path': str(path), 'status': status, 'details': details})
     rows.extend(_inspect_json(key, fields) for key, fields in JSON_ARTIFACTS.items())
+    rows.extend(_inspect_track_b(registry))
+    rows.append(_inspect_article_qa(registry))
     return rows
+
+
+def _inspect_track_b(registry):
+    path = data_path('district_sits_patches_index')
+    if registry is None or not path.exists():
+        return [{'artifact': 'track_b_completion', 'path': str(path), 'status': 'missing',
+                 'details': 'registry or Track-B index missing'}]
+    try:
+        index = pd.read_csv(path, dtype=str, keep_default_na=False)
+        current = set(registry.event_district_id)
+        indexed = set(index.event_district_id)
+        unknown = indexed - current
+        complete = index.status.isin(['OK', 'SKIPPED_NO_IMAGERY'])
+        errors = int((~complete).sum())
+        absent = len(current - indexed)
+        unsafe = []
+        patch_dir = data_path('district_sits_patches')
+        for h5_path in patch_dir.glob('*.h5'):
+            if Path(str(h5_path) + '.blocks.json').exists():
+                continue
+            with h5py.File(h5_path, 'r') as hdf:
+                attrs = hdf['meta'].attrs
+                bands = str(attrs.get('bands', '')).replace(' ', '')
+                rule = str(attrs.get('tile_selection_rule', ''))
+                if bands == 'B4,B3,B2' and rule != 'per_timestep_valid_fraction_v2':
+                    unsafe.append(h5_path.name)
+        status = 'present' if not unknown and not errors and not absent and not unsafe else 'invalid'
+        details = (f'complete={int(complete.sum())}/{len(current)}, errors={errors}, absent={absent}, '
+                   f'unsafe_prescreen={len(unsafe)}, unknown={len(unknown)}')
+        return [{'artifact': 'track_b_completion', 'path': str(path), 'status': status,
+                 'details': details}]
+    except (OSError, ValueError, KeyError) as exc:
+        return [{'artifact': 'track_b_completion', 'path': str(path), 'status': 'invalid',
+                 'details': str(exc)}]
+
+
+def _inspect_article_qa(registry):
+    path = data_path('event_districts').parent / 'article_qa' / 'counts_14d.csv'
+    if registry is None or not path.exists():
+        return {'artifact': 'article_qa_14d', 'path': str(path), 'status': 'missing', 'details': ''}
+    try:
+        frame = pd.read_csv(path, dtype=str, keep_default_na=False)
+        required = {'event_district_id', 'final_article_count', 'collection_status'}
+        if not required <= set(frame):
+            raise ValueError(f'missing columns {sorted(required - set(frame))}')
+        current, found = set(registry.event_district_id), set(frame.event_district_id)
+        extra, missing = found - current, current - found
+        incomplete = int((frame.collection_status != 'complete').sum())
+        unobserved = int(frame.final_article_count.eq('').sum())
+        status = 'present' if not extra and not missing and not incomplete and not unobserved else 'invalid'
+        details = (f'rows={len(frame)}, extra={len(extra)}, missing={len(missing)}, '
+                   f'incomplete={incomplete}, final_count_missing={unobserved}')
+        return {'artifact': 'article_qa_14d', 'path': str(path), 'status': status, 'details': details}
+    except (OSError, ValueError, KeyError) as exc:
+        return {'artifact': 'article_qa_14d', 'path': str(path), 'status': 'invalid',
+                'details': str(exc)}
 
 
 def main(argv=None):

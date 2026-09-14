@@ -1,0 +1,42 @@
+<graph id="CVND-S1-GRD">
+  <version>1.0</version>
+  <node id="Read">
+    <operator>Read</operator>
+    <sources/>
+    <parameters><file>${input}</file></parameters>
+  </node>
+  <node id="Orbit">
+    <operator>Apply-Orbit-File</operator>
+    <sources><sourceProduct refid="Read"/></sources>
+    <parameters><orbitType>Sentinel Precise (Auto Download)</orbitType><polyDegree>3</polyDegree><continueOnFail>true</continueOnFail></parameters>
+  </node>
+  <node id="BorderNoise">
+    <operator>Remove-GRD-Border-Noise</operator>
+    <sources><sourceProduct refid="Orbit"/></sources>
+    <parameters><selectedPolarisations>VV</selectedPolarisations></parameters>
+  </node>
+  <node id="Noise">
+    <operator>ThermalNoiseRemoval</operator>
+    <sources><sourceProduct refid="BorderNoise"/></sources>
+    <parameters><selectedPolarisations>VV</selectedPolarisations><removeThermalNoise>true</removeThermalNoise></parameters>
+  </node>
+  <node id="Calibration">
+    <operator>Calibration</operator>
+    <sources><sourceProduct refid="Noise"/></sources>
+    <parameters><outputSigmaBand>true</outputSigmaBand><selectedPolarisations>VV</selectedPolarisations><outputImageScaleInDb>false</outputImageScaleInDb></parameters>
+  </node>
+  <node id="TerrainCorrection">
+    <operator>Terrain-Correction</operator>
+    <sources><sourceProduct refid="Calibration"/></sources>
+    <parameters><demName>SRTM 1Sec HGT</demName><pixelSpacingInMeter>10.0</pixelSpacingInMeter><mapProjection>AUTO:42001</mapProjection><nodataValueAtSea>true</nodataValueAtSea><saveSelectedSourceBand>true</saveSelectedSourceBand></parameters>
+  </node>
+  <node id="ToDb">
+    <operator>LinearToFromdB</operator>
+    <sources><sourceProduct refid="TerrainCorrection"/></sources>
+  </node>
+  <node id="Write">
+    <operator>Write</operator>
+    <sources><sourceProduct refid="ToDb"/></sources>
+    <parameters><file>${output}</file><formatName>GeoTIFF-BigTIFF</formatName></parameters>
+  </node>
+</graph>

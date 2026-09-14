@@ -20,7 +20,13 @@ import argparse
 import hashlib
 import os
 import sys
+from functools import wraps
 from pathlib import Path
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - Windows fallback
+    fcntl = None
 
 import h5py
 import numpy as np
@@ -52,6 +58,7 @@ class StaleSpecError(ValueError):
 
 PATCH_DIR = data_path("district_sits_patches")
 SCORE_DIR = data_path("district_sits_scores")
+INFERENCE_LOCK = SCORE_DIR / ".inference.lock"
 CHECKPOINT = (
     ROOT
     / "SITS-ExtremeEvents-main"
@@ -112,6 +119,22 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def with_inference_lock(function):
+    """Serialize watcher, wrapper, and manually launched inference runs."""
+    @wraps(function)
+    def locked(*args, **kwargs):
+        SCORE_DIR.mkdir(parents=True, exist_ok=True)
+        if fcntl is None:
+            return function(*args, **kwargs)
+        with INFERENCE_LOCK.open("w", encoding="utf-8") as handle:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                return function(*args, **kwargs)
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    return locked
 
 
 def ensure_checkpoint(
@@ -202,7 +225,10 @@ def _band_indices(hdf: h5py.File) -> list[int]:
     if isinstance(raw, bytes):
         raw = raw.decode("utf-8")
     bands = [item.strip() for item in str(raw).split(",") if item.strip()]
-    required = ["B4", "B3", "B2", "B8"]
+    # New H5 files store RGB only; legacy files may still include B8.  The
+    # neural network consumes RGB, while B8 is retained only in legacy
+    # metadata/validity semantics and is not read by the model.
+    required = ["B4", "B3", "B2"]
     missing = [band for band in required if band not in bands]
     if missing:
         raise ValueError(f"H5 is missing required bands {missing}: found {bands}")
@@ -498,6 +524,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+@with_inference_lock
 def main() -> int:
     args = parse_args()
     event_ids = set(args.events) if args.events else None

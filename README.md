@@ -56,7 +56,7 @@ REUSE_STATE_ARTICLES=1 SKIP_GEE=1 SKIP_ARTICLES=1 bash scripts/run_pipeline.sh
 
 `PYTHON` may select an existing environment. `SETUP_DEPS=0` is the default. `SKIP_GEE=1` and `SKIP_ARTICLES=1` are the defaults, requiring previously generated **district** artifacts. `SKIP_COVARIATES=1` reuses district covariates; `SKIP_ANALYSIS=1` stops after joining. Missing required files fail; skipping does not manufacture observations. `SATELLITE_TRACK=A` is the explicit default; `both` also prepares SITS patches.
 
-Track B stores completed HDF5 patches under `data/cache/district/sits_patches/`. When the local upstream checkpoint is available, `src/run_sits_inference.py` scores those patches on CPU or GPU and writes provenance-bearing NPZ files under `data/cache/district/sits_scores/`; HDF5 inputs are retained. The checkpoint is checksum-verified and is never downloaded by the pipeline. Baseline S1/S2 remains usable without SITS, and old state score files are incompatible with the district cache.
+Track B stores completed HDF5 patches under `data/cache/district/sits_patches/`. When the local upstream checkpoint is available, `src/run_sits_inference.py` scores those patches on CPU or GPU and writes provenance-bearing NPZ files under `data/cache/district/sits_scores/`; HDF5 inputs are retained. The checkpoint is checksum-verified and is never downloaded by the pipeline. Baseline S1/S2 remains usable without SITS, and old state score files are incompatible with the district cache. `SITS_BACKEND=cdse-local` uses Copernicus Data Space direct S3 downloads plus local raster/SNAP processing for Track B and creates no Earth Engine requests; see [the local backend guide](docs/copernicus_local_backend.md).
 
 ```bash
 # Prepare or resume district SITS patches.
