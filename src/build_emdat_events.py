@@ -391,6 +391,42 @@ def resolve_state_districts(row: pd.Series) -> list[dict[str, Any]]:
         for district in legacy_districts:
             add_district(only_state, district, "admin_units", district, "high")
 
+    # Reviewed source-specific correction, not a general guess from a place name.
+    # The source explicitly names Mulugu; NRSC report 2023/FL/TS/03 p.2
+    # independently records inundation there on 2023-07-28. Geometry and Census
+    # matching remain separate downstream gates (Mulugu was created in 2019).
+    if (str(row.get("DisNo.")) == "2023-0486-IND"
+            and location.strip() == "Mulugu District (western Telangana)"
+            and "Telangana" in state_evidence):
+        add_district(
+            "Telangana", "Mulugu", "reviewed_official",
+            "EM-DAT Location: Mulugu District (western Telangana); "
+            "https://ndem.nrsc.gov.in/documents/Disaster_Document/2023/TS/"
+            "tsflood50dsc28072023_1800hrs/"
+            "tsflood50dsc28072023_1800hrs_report.pdf#page=2", "high",
+        )
+
+    # Reviewed incident evidence supplements only states with no named district.
+    # Exact source identity, Location and dates prevent applying a regional
+    # report to a neighboring or subsequently revised event.
+    recovery_path = Path(__file__).resolve().parents[1] / "data/review/reviewed_district_recoveries.json"
+    recoveries = json.loads(recovery_path.read_text(encoding="utf-8"))
+    date_fields = ("Start Year", "Start Month", "Start Day", "End Year", "End Month", "End Day")
+    for recovery in recoveries:
+        state = recovery["state"]
+        if (str(row.get("DisNo.")) != recovery["source_record_id"]
+                or location.strip() != recovery["location"]
+                or state not in state_evidence
+                or any(entry_state == state for entry_state, _ in candidates)
+                or any((not pd.isna(row.get(field))) if expected is None
+                       else (pd.isna(row.get(field)) or row.get(field) != expected)
+                       for field, expected in zip(date_fields, recovery["date_components"]))):
+            continue
+        evidence = json.dumps({key: value for key, value in recovery.items()
+                               if key != "districts"}, ensure_ascii=False, sort_keys=True)
+        for district in recovery["districts"]:
+            add_district(state, district, "reviewed_official", evidence, "high")
+
     resolved: list[dict[str, Any]] = []
     for state in sorted(state_evidence, key=normalize_name):
         district_rows = [entry for (entry_state, _key), entry in candidates.items() if entry_state == state]
@@ -697,7 +733,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             reconcile(pd.read_csv(args.event_district_output, dtype=str, keep_default_na=False), event_districts)
 
         args.events_output.parent.mkdir(parents=True, exist_ok=True)
-        registry.to_csv(args.events_output, index=False)
+        event_districts.to_csv(args.events_output, index=False)
         print(f"Wrote event registry: {args.events_output}")
         args.event_district_output.parent.mkdir(parents=True, exist_ok=True)
         event_districts.to_csv(args.event_district_output, index=False)

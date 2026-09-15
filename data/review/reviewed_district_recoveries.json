@@ -1,0 +1,104 @@
+[
+  {
+    "source_record_id": "2024-0624-IND",
+    "location": "Tripura state",
+    "state": "Tripura",
+    "date_components": [
+      2024,
+      8,
+      19,
+      2024,
+      8,
+      23
+    ],
+    "districts": [
+      "Dhalai",
+      "Gomati",
+      "Khowai",
+      "North Tripura",
+      "Sepahijala",
+      "South Tripura",
+      "Unakoti",
+      "West Tripura"
+    ],
+    "source_url": "https://ndmindia.mha.gov.in/ndmi/viewUploadedDocument?uid=NEW2166#page=7",
+    "report_date": "2024-08-23",
+    "district_list_completeness": "complete_as_of_report",
+    "event_link_status": "reviewed_incident_match",
+    "evidence_note": "MHA Annexure I links flood onset to 19 August and reports flood impact in all eight districts; names enumerated in the same annexure. Not linked to the separate 26 August EM-DAT event.",
+    "boundary_status": "pending",
+    "reviewed_on": "2026-09-11"
+  },
+  {
+    "source_record_id": "2025-0751-IND",
+    "location": "Punjab state",
+    "state": "Punjab",
+    "date_components": [
+      2025,
+      8,
+      15,
+      2025,
+      9,
+      19
+    ],
+    "districts": [
+      "Amritsar",
+      "Kapurthala",
+      "Gurdaspur"
+    ],
+    "source_url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2163906&lang=2&reg=3",
+    "report_date": "2025-09-04",
+    "district_list_completeness": "partial",
+    "event_link_status": "reviewed_incident_match",
+    "evidence_note": "Ministry inspection identifies submerged crop fields in these three districts during this event. Visited districts are not an exhaustive damage inventory.",
+    "boundary_status": "pending",
+    "reviewed_on": "2026-09-11"
+  },
+  {
+    "source_record_id": "2024-0719-IND",
+    "location": "Meghalaya",
+    "state": "Meghalaya",
+    "date_components": [
+      2024,
+      10,
+      4,
+      2024,
+      10,
+      7
+    ],
+    "districts": [
+      "West Garo Hills",
+      "South Garo Hills"
+    ],
+    "source_url": "https://meghalaya.gov.in/sites/default/files/press_release/Press_Release_383.pdf#page=1",
+    "report_date": "2024-10-05",
+    "district_list_completeness": "partial",
+    "event_link_status": "reviewed_incident_match",
+    "evidence_note": "SDMA identifies flooding at Dalu in West Garo Hills and a washed-away river bridge at Gasuapara in South Garo Hills. Other districts occur in aggregated flood/landslide reporting and are not promoted here.",
+    "boundary_status": "pending",
+    "reviewed_on": "2026-09-11"
+  },
+  {
+    "source_record_id": "2020-0304-IND",
+    "location": "Assam, Bihar, Gujarat, Chhattisgarh, Kerala, Karnataka, Madhya Pradesh, Odisha, Uttar Pradesh, West Bengal, Arunachal Pradesh, Maharashtraa.",
+    "state": "West Bengal",
+    "date_components": [
+      2020,
+      6,
+      null,
+      2020,
+      8,
+      16
+    ],
+    "districts": [
+      "Jalpaiguri"
+    ],
+    "source_url": "https://imdpune.gov.in/library/public/DWE-2020.pdf#page=92",
+    "report_date": null,
+    "district_list_completeness": "partial",
+    "event_link_status": "reviewed_incident_match",
+    "evidence_note": "IMD Disastrous Weather Events 2020, printed page 84 (PDF page 92), West Bengal row 3: 8-20 July heavy rains and floods; damage column explicitly identifies submerged houses in Jalpaiguri. Within the June-August parent interval, with no overlapping West Bengal parent in the audited registry. Not a complete affected-district inventory. EM-DAT Start Day is missing and remains missing; report publication day is unspecified. NIDM August 2021 webinar report page 5 also cites Jalpaiguri inundation (ECHO 13 July 2020).",
+    "boundary_status": "pending",
+    "reviewed_on": "2026-09-11"
+  }
+]
