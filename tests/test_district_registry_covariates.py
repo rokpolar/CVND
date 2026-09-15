@@ -64,6 +64,56 @@ class DistrictRegistryTests(unittest.TestCase):
         self.assertEqual(normalize_state_name("ASSAM"), "Assam")
         self.assertNotEqual(make_event_district_id("E1", "A B"), make_event_district_id("E1", "A_B"))
 
+    def test_reviewed_mulugu_recovery_requires_source_identity_and_text(self):
+        base = self._base().iloc[[1]].copy()
+        base['DisNo.'] = '2023-0486-IND'
+        base['GADM Admin Units'] = '[]'
+        base['Location'] = 'Mulugu District (western Telangana)'
+        result = build_event_districts(base)
+        self.assertEqual(result.iloc[0]['district'], 'Mulugu')
+        self.assertEqual(result.iloc[0]['district_source'], 'reviewed_official')
+        self.assertEqual(result.iloc[0]['aoi_match_status'], 'pending')
+        self.assertIn('nrsc.gov.in', result.iloc[0]['district_resolution_evidence'])
+        base['DisNo.'] = '2023-9999-IND'
+        self.assertEqual(build_event_districts(base).iloc[0]['district'], 'district_missing')
+        base['DisNo.'] = '2023-0486-IND'
+        base['Location'] = 'Telangana state'
+        self.assertEqual(build_event_districts(base).iloc[0]['district'], 'district_missing')
+
+
+    def test_official_recoveries_are_guarded_and_do_not_replace_structured_data(self):
+        import json
+        recoveries = json.loads((SRC.parent / "data/review/reviewed_district_recoveries.json").read_text())
+        fields = ("Start Year", "Start Month", "Start Day", "End Year", "End Month", "End Day")
+        for recovery in recoveries:
+            with self.subTest(source=recovery["source_record_id"]):
+                base = self._base().iloc[[1]].copy()
+                base["DisNo."] = recovery["source_record_id"]
+                base["Location"] = recovery["location"]
+                base["GADM Admin Units"] = "[]"
+                for field, value in zip(fields, recovery["date_components"]):
+                    base[field] = value
+                def state_rows(frame):
+                    rows = build_event_districts(frame)
+                    return rows.loc[rows.state.eq(recovery["state"])]
+
+                result = state_rows(base)
+                self.assertEqual(set(result.district), set(recovery["districts"]))
+                self.assertTrue(result.aoi_match_status.eq("pending").all())
+                self.assertTrue(result.district_resolution_evidence.str.contains(recovery["district_list_completeness"]).all())
+                for field, changed in [("DisNo.", "2099-9999-IND"), ("Start Day", 1), ("End Day", 1), ("Location", recovery["state"] + " region")]:
+                    altered = base.copy()
+                    altered[field] = changed
+                    self.assertEqual(state_rows(altered).district.tolist(), ["district_missing"])
+                for field, value in zip(fields, recovery["date_components"]):
+                    if not field.endswith("Day"):
+                        continue  # The base registry requires year and month.
+                    altered = base.copy()
+                    altered[field] = 2 if value is None else None
+                    self.assertEqual(state_rows(altered).district.tolist(), ["district_missing"])
+                base["Admin Units"] = json.dumps([{"adm1_name": recovery["state"], "adm2_name": "Existing district"}])
+                self.assertEqual(state_rows(base).district.tolist(), ["Existing district"])
+
 
 class DistrictCovariateTests(unittest.TestCase):
     def test_official_long_layout_and_share(self):
