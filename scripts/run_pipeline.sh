@@ -169,6 +169,12 @@ else
 fi
 if [[ "$SKIP_ANALYSIS" != 1 ]]; then
   run src/analyze_coverage_disparity.py
+  if [[ "${ARTICLE_QA_ACTIVE:-0}" == 1 ]]; then
+    run src/analyze_coverage_disparity.py \
+      --input data/results/district_flood_articles_30d.csv \
+      --output-dir outputs/sensitivity_30d \
+      --results-dir data/results/sensitivity_30d
+  fi
   run src/score_coverage.py
 fi
 if [[ "$DRY_RUN" == 1 ]]; then

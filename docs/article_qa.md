@@ -91,9 +91,11 @@ queries, downloads, submission or artifact replacement:
       bash scripts/run_pipeline.sh --dry-run
 
 The pipeline waits for QA batches. Failed requests stop automatic progression
-until retry; missing text and uncertain verdicts remain unobserved, with final
-count NA for the affected district. Completed relevant decisions count once per
-URL/canonical district, assigned to the nearest eligible onset.
+until retry. A district with no validated LLM decision remains NA. When validated
+decisions and unresolved candidates coexist, completed relevant decisions count
+once per URL/canonical district as an observed lower bound, the row is marked
+partial, and unresolved/missing-text totals remain explicit. Nothing unresolved
+is imputed as not relevant or zero. URLs are assigned to the nearest eligible onset.
 
 counts_14d.csv feeds the primary join. counts_30d.csv feeds
 data/results/district_flood_articles_30d.csv with separate QC/exclusions.

@@ -132,6 +132,9 @@ class ScoringTests(unittest.TestCase):
             scoring.prepare_scoring(duplicate)
         with self.assertRaisesRegex(ValueError, 'quality contract'):
             scoring.prepare_scoring(self.table.assign(article_collection_status='incomplete'))
+        _, partial = scoring.prepare_scoring(
+            self.table.assign(article_collection_status='partial'))
+        self.assertEqual(len(partial), len(self.table))
         with self.assertRaisesRegex(ValueError, 'aoi_area'):
             scoring.prepare_scoring(self.table.assign(aoi_area_km2=0))
         with self.assertRaisesRegex(ValueError, 'Census'):

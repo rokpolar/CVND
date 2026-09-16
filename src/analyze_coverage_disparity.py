@@ -343,6 +343,9 @@ def analyze(table):
             notes.append(f'{imputed} registry onset dates are month-imputed; their 14-day news windows have timing uncertainty.')
     if 'coverage_scope' in full and full.coverage_scope.eq('local_state_plus_targeted_bigquery').any():
         notes.append('Article counts use the local state corpus plus targeted BigQuery supplementation of districts without usable local candidates. This is conditional corpus coverage, not exhaustive district recollection; districts with some local coverage may still have missed articles.')
+    if 'article_collection_status' in full and full.article_collection_status.eq('partial').any():
+        partial_n = int(full.article_collection_status.eq('partial').sum())
+        notes.append(f'{partial_n} article counts are observed LLM-QA lower bounds: validated relevant decisions are counted, while unavailable-body, uncertain and unsubmitted candidates remain unresolved and are not imputed as zero.')
     rows, fits, inference, statuses = [], {}, {}, {}
     for name, formula in FORMULAS.items():
         if name == 'model_3' and sample['year'].nunique() < 2:

@@ -102,8 +102,11 @@ in GKG locations or cached titles permits provisional district assignment.
 All eligible articles, including unresolved ones, are retained in
 `data/intermediate/district_article_qa_candidates.jsonl.gz` with candidate
 districts and a URL reference to the existing body database. No LLM is submitted.
-Coverage remains incomplete and final counts remain NA pending validation;
-candidate counts are not final research observations. Original files are preserved.
+Coverage remains incomplete pending validation. Districts with no validated LLM
+decision retain final count NA; districts with both validated and unresolved
+candidates retain the validated relevant count as a partial observed lower bound,
+with unresolved counts and provenance explicit. Nothing unresolved is imputed as
+not relevant or zero. Original files are preserved.
 The script above is the legacy provisional export. `REUSE_STATE_ARTICLES=1`
 now selects the resumable `article_qa.py` workflow in the pipeline; see
 [Article QA operations](docs/article_qa.md) for supplementation and Batch steps.

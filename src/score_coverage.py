@@ -88,7 +88,7 @@ def prepare_scoring(table):
     checks = {'district_match_status': ['high', 'exact', 'resolved', 'matched'],
               'aoi_level': ['district'], 'aoi_match_status': sorted(AOI_MATCHED),
               'satellite_status': sorted(SATELLITE_OBSERVED),
-              'article_collection_status': ['complete'],
+              'article_collection_status': ['complete', 'partial'],
               'census_match_status': ['matched', 'exact', 'crosswalk', 'matched_crosswalk']}
     for column, allowed in checks.items():
         if column in sample and not sample[column].isin(allowed).all():

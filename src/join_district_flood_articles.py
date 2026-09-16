@@ -58,7 +58,7 @@ def build_district_table(registry, flood, articles, covariates):
     flood_columns = FLOOD_COLUMNS + [c for c in OPTIONAL_FLOOD_COLUMNS if c in flood]
     result = merge_observations(result, flood, flood_columns, 'district flood')
     article_columns = ['final_article_count', 'collection_status', 'count_source']
-    article_columns += [c for c in ['query_collection_status', 'missing_text_count', 'candidate_article_count', 'heuristic_pass_count', 'coverage_scope', 'window_days', 'uncertain_count'] if c in articles]
+    article_columns += [c for c in ['query_collection_status', 'missing_text_count', 'candidate_article_count', 'heuristic_pass_count', 'classified_article_count', 'unresolved_article_count', 'article_count_is_lower_bound', 'coverage_scope', 'window_days', 'uncertain_count'] if c in articles]
     result = merge_observations(result, articles, article_columns, 'district article counts')
     result = result.rename(columns={'final_article_count': 'article_count', 'collection_status': 'article_collection_status'})
     require(covariates, ['state', 'district', 'urban_population_share', 'total_population', 'urban_population', 'rural_population', 'match_status', 'census_year', 'source'], 'Census covariates')
@@ -93,7 +93,7 @@ def build_district_table(registry, flood, articles, covariates):
     for column in numeric:
         result[column] = pd.to_numeric(result[column], errors='coerce')
     # Values arriving with a failed status never become valid observations.
-    collection_ok = result['article_collection_status'].eq('complete')
+    collection_ok = result['article_collection_status'].isin(['complete', 'partial'])
     source_invalid = result['flood_area_km2'].notna() & ~result['satellite_source'].isin(MEASURED_SOURCES)
     satellite_ok = result['satellite_status'].isin(SATELLITE_OBSERVED) & ~source_invalid
     result.loc[~collection_ok, 'article_count'] = np.nan
@@ -140,7 +140,9 @@ def qc_summary(table):
         'census_match': rate(table['census_match_status'].isin(['matched', 'exact', 'crosswalk', 'matched_crosswalk'])),
         'satellite_observation': rate(table['satellite_status'].isin(SATELLITE_OBSERVED) & table['flood_area_km2'].notna()),
         'gdelt_collection': rate(table.get('query_collection_status', table['article_collection_status']).eq('complete')),
-        'article_observation': rate(table['article_collection_status'].eq('complete') & table['article_count'].notna()),
+        'article_observation': rate(table['article_collection_status'].isin(['complete', 'partial']) & table['article_count'].notna()),
+        'article_complete': rate(table['article_collection_status'].eq('complete') & table['article_count'].notna()),
+        'article_partial_lower_bound': rate(table['article_collection_status'].eq('partial') & table['article_count'].notna()),
         'final_analyzable': rate(table['analysis_eligible']),
     }
     if 'satellite_source' in table:

@@ -9,18 +9,18 @@
   "definitions": {
     "b_primary": {
       "status": "estimated",
-      "n": 1069,
+      "n": 1191,
       "se_type": "state_clustered",
-      "urban_coefficient": 0.7066378945,
+      "urban_coefficient": 1.4155381636,
       "urban_ci": [
-        -0.1289293268,
-        1.5422051157
+        0.4610664558,
+        2.3700098715
       ],
-      "urban_p": 0.0942178376,
-      "log_area_coefficient": -0.0218590438,
+      "urban_p": 0.0050611491,
+      "log_area_coefficient": 0.0061895004,
       "log_area_ci": [
-        -0.293782846,
-        0.2500647583
+        -0.2240453408,
+        0.2364243416
       ]
     },
     "c_sits_only": {
@@ -29,56 +29,56 @@
     },
     "a_legacy": {
       "status": "estimated",
-      "n": 1072,
+      "n": 1196,
       "se_type": "state_clustered",
-      "urban_coefficient": 0.8217160713,
+      "urban_coefficient": 1.4674023345,
       "urban_ci": [
-        -0.0147067416,
-        1.6581388841
+        0.4996924458,
+        2.4351122232
       ],
-      "urban_p": 0.0538876362,
-      "log_area_coefficient": 0.0097061289,
+      "urban_p": 0.0042639775,
+      "log_area_coefficient": 0.025817039,
       "log_area_ci": [
-        -0.2503246293,
-        0.269736887
+        -0.1968136574,
+        0.2484477355
       ]
     },
     "a_legacy_common": {
       "status": "estimated",
-      "n": 1069,
+      "n": 1191,
       "se_type": "state_clustered",
-      "urban_coefficient": 0.8177382035,
+      "urban_coefficient": 1.4643766147,
       "urban_ci": [
-        -0.0189475637,
-        1.6544239706
+        0.4975993452,
+        2.4311538842
       ],
-      "urban_p": 0.0550553504,
-      "log_area_coefficient": 0.0088618119,
+      "urban_p": 0.0043008523,
+      "log_area_coefficient": 0.0246864602,
       "log_area_ci": [
-        -0.2511676054,
-        0.2688912293
+        -0.1977627002,
+        0.2471356206
       ]
     },
     "b_primary_common": {
       "status": "estimated",
-      "n": 1069,
+      "n": 1191,
       "se_type": "state_clustered",
-      "urban_coefficient": 0.7066378945,
+      "urban_coefficient": 1.4155381636,
       "urban_ci": [
-        -0.1289293268,
-        1.5422051157
+        0.4610664558,
+        2.3700098715
       ],
-      "urban_p": 0.0942178376,
-      "log_area_coefficient": -0.0218590438,
+      "urban_p": 0.0050611491,
+      "log_area_coefficient": 0.0061895004,
       "log_area_ci": [
-        -0.293782846,
-        0.2500647583
+        -0.2240453408,
+        0.2364243416
       ]
     }
   },
   "verdict": {
-    "urban_coefficient_difference": 0.1150781768,
-    "primary_ci_half_width": 0.8355672213,
+    "urban_coefficient_difference": 0.0518641709,
+    "primary_ci_half_width": 0.9544717079,
     "result": "legacy result is robust to the routing change"
   }
 }
