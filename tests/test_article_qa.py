@@ -83,6 +83,25 @@ class QATests(unittest.TestCase):
         qa.counts(self.args)
         count=pd.read_csv(self.args.work/"counts_14d.csv")
         self.assertTrue(pd.isna(count.final_article_count.iloc[0]))
+        self.assertEqual(count.collection_status.iloc[0], "incomplete")
+
+    def test_validated_results_survive_unresolved_candidates_as_lower_bound(self):
+        self.write_articles([
+            dict(url="https://x/a", state="Odisha", published_at="2020-01-02"),
+            dict(url="https://x/missing", state="Odisha", published_at="2020-01-03"),
+        ])
+        _, requests, pending = self.prepare()
+        self.assertEqual(len(requests), 1)
+        self.assertEqual(len(pending), 1)
+        qa.save(self.args.work/"results.json", {requests[0]["custom_id"]: {
+            **self.valid(requests[0]), "usage": {}, "model": qa.MODEL}})
+        qa.counts(self.args)
+        count = pd.read_csv(self.args.work/"counts_14d.csv").iloc[0]
+        self.assertEqual(count.final_article_count, 1)
+        self.assertEqual(count.collection_status, "partial")
+        self.assertEqual(count.classified_article_count, 1)
+        self.assertEqual(count.unresolved_article_count, 1)
+        self.assertTrue(count.article_count_is_lower_bound)
 
     def test_schema_ids_and_evidence(self):
         _,requests,_=self.prepare()
@@ -95,6 +114,21 @@ class QATests(unittest.TestCase):
         good["decisions"][0]["evidence_excerpt"]="invented"
         with self.assertRaises(ValueError):
             qa.validate_response(requests[0],good)
+
+    def test_contextual_evidence_recovery_is_source_grounded(self):
+        _, requests, _ = self.prepare()
+        request = {**requests[0],
+                   "excerpt": "TITLE\nFlood report\n\nBODY\nFlooding affected Puri district after heavy rain."}
+        decision = {"event_district_id": "E001::puri",
+                    "verdict": "relevant",
+                    "reason_code": "flood_in_district",
+                    "evidence_source": "body",
+                    "evidence_excerpt": "flooding in Puri"}
+        validated = qa.validate_response(request, {"decisions": [decision]})
+        self.assertIn("Puri", validated[0]["evidence_excerpt"])
+        fabricated = {**decision, "evidence_excerpt": "invented"}
+        with self.assertRaises(ValueError):
+            qa.validate_response(request, {"decisions": [fabricated]})
 
     def test_estimate_cap_never_executes(self):
         self.write_articles([])

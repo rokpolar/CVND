@@ -53,6 +53,17 @@ class DistrictJoinTests(unittest.TestCase):
         self.assertTrue(pd.isna(table.loc[0, 'article_count']))
         self.assertEqual(table.loc[0, 'article_collection_status'], 'not_executed')
 
+    def test_partial_llm_count_is_observed_lower_bound(self):
+        articles = self.articles.copy()
+        articles.loc[0, 'collection_status'] = 'partial'
+        articles.loc[0, 'final_article_count'] = 2
+        articles['article_count_is_lower_bound'] = [True, False, False]
+        table, _ = build_district_table(self.registry, self.flood, articles, self.cov)
+        self.assertEqual(table.loc[0, 'article_count'], 2)
+        self.assertTrue(table.loc[0, 'analysis_eligible'])
+        self.assertEqual(table.loc[0, 'article_collection_status'], 'partial')
+        self.assertEqual(qc_summary(table)['article_partial_lower_bound']['success'], 1)
+
     def test_invalid_satellite_source_excluded(self):
         for source in ['S1(cloud)', 'NONE']:
             with self.subTest(source=source):

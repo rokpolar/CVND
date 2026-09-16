@@ -1,60 +1,60 @@
 {
   "n_total": 1553,
-  "n_analyzable": 1069,
-  "n_excluded": 484,
-  "districts": 400,
-  "parent_events": 153,
+  "n_analyzable": 1191,
+  "n_excluded": 362,
+  "districts": 429,
+  "parent_events": 160,
   "source_flood_events": 63,
   "satellite_source_counts": {
-    "S1": 1069
+    "S1": 1191
   },
   "sensitivity_formulas": {
     "model_2_source_fe": "article_count ~ log_flood_area + urban_population_share + C(satellite_source)"
   },
   "spearman": {
-    "rho": 0.1567326285,
-    "p_value": 2.6e-07
+    "rho": 0.1583764044,
+    "p_value": 3.91e-08
   },
   "distributions": {
     "flood_area_km2": {
-      "count": 1069.0,
-      "mean": 198.2556417212,
-      "std": 386.5982729276,
+      "count": 1191.0,
+      "mean": 190.2800441646,
+      "std": 371.891609504,
       "min": 0.0147,
-      "25%": 16.6597,
-      "50%": 77.6744,
-      "75%": 233.9059,
+      "25%": 15.9473,
+      "50%": 71.6197,
+      "75%": 225.1028,
       "max": 5894.8599
     },
     "article_count": {
-      "count": 1069.0,
-      "mean": 31.0907390084,
-      "std": 82.6196793848,
+      "count": 1191.0,
+      "mean": 47.8354324097,
+      "std": 143.7357979678,
       "min": 0.0,
-      "25%": 0.0,
-      "50%": 3.0,
-      "75%": 27.0,
-      "max": 1112.0
+      "25%": 1.0,
+      "50%": 7.0,
+      "75%": 46.0,
+      "max": 3291.0
     },
     "urban_population_share": {
-      "count": 1069.0,
-      "mean": 0.2267711483,
-      "std": 0.1995168939,
+      "count": 1191.0,
+      "mean": 0.2223676109,
+      "std": 0.1962573875,
       "min": 0.0,
       "25%": 0.0876401087,
-      "50%": 0.1497659752,
-      "75%": 0.2980065236,
+      "50%": 0.1486321135,
+      "75%": 0.2882068663,
       "max": 1.0
     }
   },
   "missing_counts": {
     "flood_area_km2": 83,
-    "article_count": 345,
+    "article_count": 209,
     "urban_population_share": 124
   },
   "exclusion_counts": {
-    "article_collection_incomplete": 345,
-    "article_count_missing_or_invalid": 345,
+    "article_collection_incomplete": 209,
+    "article_count_missing_or_invalid": 209,
     "census_unmatched": 124,
     "census_invalid": 124,
     "census_population_inconsistent": 124,
@@ -68,7 +68,7 @@
     "model_3": "estimated",
     "model_2_source_fe": "insufficient source variation: fewer than two satellite sources",
     "model_2_by_source_S1": "estimated (sensitivity)",
-    "source_event_robustness": "estimated secondary unconditional source fixed-effects NB2; 59 source events",
+    "source_event_robustness": "estimated secondary unconditional source fixed-effects NB2; 60 source events",
     "exposed_population_robustness": "not implemented: no verified flood-mask \u00d7 gridded-population input contract; area \u00d7 average density is never used"
   },
   "formulas": {
@@ -76,8 +76,8 @@
     "model_2": "article_count ~ log_flood_area + urban_population_share",
     "model_3": "article_count ~ log_flood_area + urban_population_share + C(year)"
   },
-  "article_count_variance": 6826.0114216444,
-  "article_count_mean": 31.0907390084,
+  "article_count_variance": 20659.9796174389,
+  "article_count_mean": 47.8354324097,
   "stage_qc": {
     "district_extraction": {
       "success": 1553,
@@ -105,27 +105,27 @@
       "rate": 1.0
     },
     "article_observation": {
-      "success": 1208,
+      "success": 1344,
       "total": 1553,
-      "rate": 0.7778493239
+      "rate": 0.8654217643
     },
     "article_complete": {
-      "success": 23,
+      "success": 18,
       "total": 1553,
-      "rate": 0.0148100451
+      "rate": 0.0115904701
     },
     "article_partial_lower_bound": {
-      "success": 1185,
+      "success": 1326,
       "total": 1553,
-      "rate": 0.7630392788
+      "rate": 0.8538312943
     },
     "final_analyzable": {
-      "success": 1069,
+      "success": 1191,
       "total": 1553,
-      "rate": 0.6883451384
+      "rate": 0.7669027688
     },
     "satellite_source_counts": {
-      "S1": 1069
+      "S1": 1191
     }
   },
   "available_input_distributions": {
@@ -140,14 +140,14 @@
       "max": 5894.8599
     },
     "article_count": {
-      "count": 1208.0,
-      "mean": 30.6945364238,
-      "std": 80.4600704459,
+      "count": 1344.0,
+      "mean": 47.5959821429,
+      "std": 139.1341152416,
       "min": 0.0,
-      "25%": 0.0,
-      "50%": 4.0,
-      "75%": 25.0,
-      "max": 1112.0
+      "25%": 1.0,
+      "50%": 8.0,
+      "75%": 45.0,
+      "max": 3291.0
     },
     "urban_population_share": {
       "count": 1429.0,
@@ -161,9 +161,9 @@
     }
   },
   "estimated_dispersion": {
-    "model_1": 4.1386198898,
-    "model_2": 4.1151535099,
-    "model_3": 3.7655166746
+    "model_1": 3.6074843251,
+    "model_2": 3.5132867539,
+    "model_3": 3.2714220675
   },
   "warnings": [
     "Associational analysis: flood extent does not control all disaster impacts, outlet availability, population size, or media access.",
@@ -172,10 +172,10 @@
     "District rows within a source flood and repeated districts may be dependent; state clustering is only a partial correction.",
     "244 registry onset dates are month-imputed; their 14-day news windows have timing uncertainty.",
     "Article counts use the local state corpus plus targeted BigQuery supplementation of districts without usable local candidates. This is conditional corpus coverage, not exhaustive district recollection; districts with some local coverage may still have missed articles.",
-    "1185 article counts are observed LLM-QA lower bounds: validated relevant decisions are counted, while unavailable-body, uncertain and unsubmitted candidates remain unresolved and are not imputed as zero.",
+    "1326 article counts are observed LLM-QA lower bounds: validated relevant decisions are counted, while unavailable-body, uncertain and unsubmitted candidates remain unresolved and are not imputed as zero.",
     "Flood area is Sentinel-1 new water over the eligible AOI for every district under the interim routing (satellite_source S1), or, under sits_primary routing, SITS-NDWI on the retained clear tiles with Sentinel-1 converted to the SITS-NDWI scale (S1_TO_SITS) where SITS cannot measure the district; the satellite-source fixed effect, by-source and SITS-only subsamples are sensitivity analyses, not a correction.",
     "Source fixed-effects NB2 is secondary and susceptible to incidental-parameter bias; ordinary SE are reported.",
     "district-based urbanization tercile cutpoints: [0.1369414084546159, 0.2557930624760398]; unknown Census matches cannot be assigned an urbanization level"
   ],
-  "conclusion_candidate": "The analysis provides insufficient evidence for H1 or H2; the hypothesized positive associations are not established."
+  "conclusion_candidate": "H1 is not supported. Higher urbanization is associated with greater expected coverage at similar observed flood extent; this supports H2 alone."
 }

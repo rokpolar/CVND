@@ -1,0 +1,5 @@
+urbanization_group,rows,excluded,exclusion_rate
+high,387,44,0.11369509043927649
+low,660,116,0.17575757575757575
+medium,382,78,0.20418848167539266
+unknown,124,124,1.0

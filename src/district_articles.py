@@ -326,12 +326,12 @@ def build_district_query(
     CROSS JOIN UNNEST(e.district_terms) AS district_term
     WHERE SPLIT(location_ref, '#')[SAFE_OFFSET(2)] = 'in'
       AND EXISTS (
-        SELECT 1 FROM UNNEST(SPLIT(COALESCE(SPLIT(location_ref, '#')[SAFE_OFFSET(1]), ''), ',')) AS location_part
+        SELECT 1 FROM UNNEST(SPLIT(COALESCE(SPLIT(location_ref, '#')[SAFE_OFFSET(1)], ''), ',')) AS location_part
         WHERE TRIM(location_part) = district_term
       )
       AND EXISTS (
         SELECT 1
-        FROM UNNEST(SPLIT(COALESCE(SPLIT(location_ref, '#')[SAFE_OFFSET(1]), ''), ',')) AS state_location_part
+        FROM UNNEST(SPLIT(COALESCE(SPLIT(location_ref, '#')[SAFE_OFFSET(1)], ''), ',')) AS state_location_part
         CROSS JOIN UNNEST(e.state_terms) AS state_term
         WHERE TRIM(state_location_part) = state_term
       )

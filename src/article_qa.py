@@ -7,15 +7,18 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+import difflib
 from datetime import date, timedelta
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import re
 import sqlite3
 import subprocess
 import sys
+import unicodedata
 
 import pandas as pd
 
@@ -35,6 +38,13 @@ SCOPE = "local_state_plus_targeted_bigquery"
 DEFAULT_WORK = ROOT / "data/intermediate/article_qa"
 TRANSIENT = {"request_error", "host_deferred", "pending", "internal_error"}
 VERDICTS = {"relevant", "not_relevant", "uncertain"}
+
+
+def max_active_batches():
+    value = int(os.getenv("LLM_QA_MAX_ACTIVE_BATCHES", "1"))
+    if not 1 <= value <= 6:
+        raise ValueError("LLM_QA_MAX_ACTIVE_BATCHES must be between 1 and 6")
+    return value
 
 
 def digest(value):
@@ -386,13 +396,138 @@ def batch_line(request):
     )
     return {"custom_id": request["custom_id"], "method": "POST", "url": "/v1/responses",
             "body": {"model": request["model"], "reasoning": {"effort": "none"},
-                     "max_output_tokens": 8000,
+                     "max_output_tokens": 4000,
                      "input": [{"role": "system", "content": instructions},
                                {"role": "user", "content": json.dumps({
                                    k: request[k] for k in ["event_id", "state", "start_date", "published_at", "districts", "excerpt"]
                                }, ensure_ascii=False)}],
                      "text": {"format": {"type": "json_schema", "name": "district_qa",
                                           "strict": True, "schema": response_schema(request)}}}}
+
+
+def _evidence_tokens(text):
+    """Return case-folded word tokens with their original coordinates."""
+    normalized = unicodedata.normalize("NFKC", text)
+    return [(match.group(0).casefold(), match.start(), match.end())
+            for match in re.finditer(r"[\w]+", normalized, re.UNICODE)]
+
+
+def _canonical_evidence_excerpt(source, supplied):
+    """Map harmless formatting differences back to an exact source span.
+
+    The model is instructed to copy evidence, but it may change case, line
+    breaks, punctuation, or use an ellipsis. We only accept a contiguous token
+    sequence (or ordered token sequences around an ellipsis) that is present
+    in the supplied source; otherwise the evidence remains invalid.
+    """
+    if supplied and supplied in source:
+        return supplied
+    source_tokens = _evidence_tokens(source)
+    supplied_normalized = unicodedata.normalize("NFKC", supplied)
+    pieces = [part.strip() for part in re.split(r"(?:\.\.\.|…)", supplied_normalized)
+              if part.strip()]
+    if not pieces:
+        return None
+    # Models often shorten a sentence as "lead ... district". A short
+    # fragment is safe only when another longer anchor is present: every
+    # fragment must still occur as exact tokens in the source and the span
+    # returned below is the contiguous source text between those anchors.
+    token_pieces = [[token for token, _, _ in _evidence_tokens(piece)]
+                    for piece in pieces]
+    if not any(len(wanted) >= 3 for wanted in token_pieces):
+        return None
+    if any(len(wanted) < 2 and
+           (not wanted or len(wanted[0]) < 4) for wanted in token_pieces):
+        return None
+    cursor = 0
+    first = last = None
+    for wanted in token_pieces:
+        found = None
+        found_end = None
+        # Match an exact token subsequence, allowing at most two omitted
+        # source tokens or one obvious spelling/OCR variation.
+        # This handles faithful excerpts that omit a neighbouring place name
+        # while still rejecting paraphrases.
+        for index in range(cursor, len(source_tokens)):
+            pos = index
+            cost = 0
+            matched = []
+            ok = True
+            for want in wanted:
+                candidate = None
+                for j in range(pos, min(len(source_tokens), pos + 3)):
+                    gap = j - pos
+                    if cost + gap > 2:
+                        break
+                    got = source_tokens[j][0]
+                    if got == want:
+                        candidate = (j, 0)
+                        break
+                    if (len(wanted) >= 4 and cost + gap == 0
+                            and difflib.SequenceMatcher(None, want, got).ratio() >= 0.78):
+                        candidate = (j, 2)
+                        break
+                if candidate is None:
+                    ok = False
+                    break
+                j, edit = candidate
+                cost += (j - pos) + edit
+                matched.append(j)
+                pos = j + 1
+            if ok and matched and cost <= 2:
+                found = matched[0]
+                found_end = matched[-1] + 1
+                break
+        if found is None:
+            return None
+        end = found_end
+        if first is None:
+            first = found
+        last = end
+        cursor = end
+    if first is None:
+        return None
+    return source[source_tokens[first][1]:source_tokens[last - 1][2]]
+
+
+def _contextual_evidence_excerpt(request, decision, radius=350):
+    """Recover a source-grounded excerpt when the model paraphrased its quote.
+
+    This is deliberately narrower than accepting a free-form paraphrase:
+    the supplied quote must contain an exact candidate district alias, and the
+    original request excerpt must contain that alias near an explicit flood
+    keyword. The returned value is always a literal slice of the source.
+    """
+    supplied = decision.get("evidence_excerpt", "")
+    district = next((d for d in request.get("districts", [])
+                     if d.get("event_district_id") == decision.get("event_district_id")), None)
+    if not district:
+        return None
+    aliases = [str(term) for term in district.get("aliases", []) if term]
+    if not aliases:
+        aliases = [str(district.get("district", ""))]
+    # Do not turn a fabricated quote into evidence: the quote must name the
+    # candidate district (case/Unicode/whitespace-insensitive).
+    if not any(mentions(supplied, [term]) for term in aliases):
+        return None
+    source = request.get("excerpt", "")
+    source_norm = unicodedata.normalize("NFKC", source)
+    flood_hits = keyword_occurrences(source)
+    if not flood_hits:
+        return None
+    for alias in aliases:
+        alias_norm = unicodedata.normalize("NFKC", alias)
+        pattern = re.compile(r"(?<!\w)" + re.escape(alias_norm).replace(r"\ ", r"\s+")
+                            + r"(?!\w)", re.IGNORECASE)
+        for match in pattern.finditer(source_norm):
+            for _label, flood_start, flood_end in flood_hits:
+                if abs(flood_start - match.start()) <= radius or abs(flood_end - match.end()) <= radius:
+                    start = max(0, min(match.start(), flood_start) - 120)
+                    end = min(len(source), max(match.end(), flood_end) + 120)
+                    excerpt = source[start:end].strip()
+                    if excerpt:
+                        return excerpt
+    return None
 
 
 def validate_response(request, payload):
@@ -411,8 +546,17 @@ def validate_response(request, payload):
             raise ValueError("Invalid reason")
         if item["evidence_source"] not in {"title", "body", "none"} or not isinstance(item["evidence_excerpt"], str):
             raise ValueError("Invalid evidence")
-        if item["verdict"] == "relevant" and (not item["evidence_excerpt"] or item["evidence_excerpt"] not in request["excerpt"] or item["evidence_source"] == "none"):
-            raise ValueError("Relevant decision has no verifiable excerpt")
+        if item["verdict"] == "relevant":
+            if item["evidence_source"] == "none":
+                raise ValueError("Relevant decision has no verifiable excerpt")
+            canonical = _canonical_evidence_excerpt(request["excerpt"], item["evidence_excerpt"])
+            if not canonical:
+                canonical = _contextual_evidence_excerpt(request, item)
+            if not canonical:
+                raise ValueError("Relevant decision has no verifiable excerpt")
+            # Persist the exact source span so downstream audit/counts can
+            # validate the same evidence deterministically.
+            item["evidence_excerpt"] = canonical
     return decisions
 
 
@@ -442,22 +586,28 @@ def submit(args, client):
             entry.update(id=batch.id, status=batch.status)
             save(args.work / "batches.json", ledger)
             return
+    # Keep provider-side cancelling batches reserved until terminal to prevent duplicate paid requests.
+    active_statuses = {"submitting", "validating", "in_progress", "finalizing", "cancelling"}
+    slot_statuses = active_statuses - {"cancelling"} if os.getenv("LLM_QA_ALLOW_DISJOINT_WHILE_CANCELLING") == "1" else active_statuses
+    active_count = sum(batch["status"] in slot_statuses for batch in ledger)
     occupied = {key for batch in ledger for key in batch["custom_ids"]
-                if batch["status"] not in {"completed", "failed", "expired", "cancelled"}}
+                if batch["status"] in active_statuses}
     previously = {key for batch in ledger for key in batch["custom_ids"]}
+    failed_ids = set(read(args.work / "errors.json", {})) if args.retry_failed else set()
     pending = [r for r in requests if r["custom_id"] not in results and r["custom_id"] not in occupied
-               and (args.retry_failed or r["custom_id"] not in previously)]
+               and ((r["custom_id"] in failed_ids) if args.retry_failed else r["custom_id"] not in previously)]
     # Small shards fit tier-1 queues for ordinary excerpts. Count estimated input
-    # conservatively by UTF-8 bytes; never enqueue more than one shard at a time.
-    if occupied or not pending:
-        print("An active batch exists or no unsubmitted requests remain")
+    # conservatively by UTF-8 bytes and keep concurrency explicitly bounded.
+    if active_count >= max_active_batches() or not pending:
+        print("The active batch limit was reached or no unsubmitted requests remain")
         return
     shard = []
+    shard_limit = max(1, int(os.getenv("LLM_QA_SHARD_LIMIT", "1000")))
     size = 0
     for request in pending:
         encoded = json.dumps(batch_line(request), ensure_ascii=False) + "\n"
         n = len(encoded.encode())
-        if shard and (len(shard) >= 1000 or size+n > 4_000_000):
+        if shard and (len(shard) >= shard_limit or size+n > 4_000_000):
             break
         shard.append(request)
         size += n
@@ -593,13 +743,22 @@ def counts(args):
         for key, p in sorted(profiles.items()):
             rows = grouped[key]
             unresolved = sum(r["verdict"] not in {"relevant", "not_relevant"} for r in rows)
-            complete = supplement_ok and not unresolved and p["primary_eligible"]
+            classified = sum(r["verdict"] in {"relevant", "not_relevant"} for r in rows)
+            eligible = supplement_ok and p["primary_eligible"]
+            complete = eligible and not unresolved
+            partial = eligible and unresolved > 0 and classified > 0
+            observed = complete or partial
+            collection_status = "complete" if complete else ("partial" if partial else "incomplete")
             output.append({**{k: p[k] for k in ["event_district_id", "event_id", "source_record_id", "state", "district", "start_date"]},
                            "candidate_article_count": len(rows), "heuristic_pass_count": 0,
-                           "final_article_count": sum(r["verdict"] == "relevant" for r in rows) if complete else float("nan"),
-                           "count_source": "llm_qa", "collection_status": "complete" if complete else "incomplete",
+                           "final_article_count": sum(r["verdict"] == "relevant" for r in rows) if observed else float("nan"),
+                           "count_source": "llm_qa_observed_lower_bound" if partial else "llm_qa",
+                           "collection_status": collection_status,
                            "query_collection_status": "complete" if supplement_ok else "incomplete",
                            "missing_text_count": sum(r["verdict"] in {"missing_text", "transient_failure", "permanent_failure"} for r in rows),
+                           "classified_article_count": classified,
+                           "unresolved_article_count": unresolved,
+                           "article_count_is_lower_bound": partial,
                            "uncertain_count": unresolved, "coverage_scope": SCOPE, "window_days": days})
         frame = pd.DataFrame(output)
         _atomic_write(args.work / f"counts_{days}d.csv", frame.to_csv(index=False))
@@ -636,12 +795,22 @@ def run_batches(args, client):
         if wanted <= results.keys():
             return
         ledger = read(args.work / "batches.json", [])
-        active = any(b["status"] not in {"completed", "failed", "expired", "cancelled"} for b in ledger)
+        active_statuses = {"submitting", "validating", "in_progress", "finalizing", "cancelling"}
+        allow_disjoint = os.getenv("LLM_QA_ALLOW_DISJOINT_WHILE_CANCELLING") == "1"
+        slot_statuses = active_statuses - {"cancelling"} if allow_disjoint else active_statuses
+        active_count = sum(b["status"] in slot_statuses for b in ledger)
+        active = active_count > 0
+        cancelling = any(b["status"] == "cancelling" for b in ledger)
         failed = wanted.intersection(read(args.work / "errors.json", {})) - results.keys()
-        if failed and not active:
+        previously = {key for batch in ledger for key in batch["custom_ids"]}
+        unsubmitted = wanted - previously
+        if failed and not active and not unsubmitted and not (allow_disjoint and cancelling):
             raise ValueError(f"{len(failed)} requests failed. Inspect errors.json; submit --execute --retry-failed to retry.")
-        if not active or any(not b.get("id") for b in ledger):
+        if any(not b.get("id") for b in ledger):
             submit(args, client)
+        else:
+            for _ in range(max_active_batches() - active_count):
+                submit(args, client)
         print(f"QA completed {len(wanted.intersection(results))}/{len(wanted)}", flush=True)
         time.sleep(60)
 
