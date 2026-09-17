@@ -94,7 +94,7 @@ def inspect_artifacts():
         rows.append({'artifact': key, 'path': str(path), 'status': status, 'details': details})
     rows.extend(_inspect_json(key, fields) for key, fields in JSON_ARTIFACTS.items())
     rows.extend(_inspect_track_b(registry))
-    rows.append(_inspect_article_qa(registry))
+    rows.extend(_inspect_article_qa(registry))
     return rows
 
 
@@ -133,25 +133,57 @@ def _inspect_track_b(registry):
 
 
 def _inspect_article_qa(registry):
-    path = data_path('event_districts').parent / 'article_qa' / 'counts_14d.csv'
-    if registry is None or not path.exists():
-        return {'artifact': 'article_qa_14d', 'path': str(path), 'status': 'missing', 'details': ''}
-    try:
-        frame = pd.read_csv(path, dtype=str, keep_default_na=False)
-        required = {'event_district_id', 'final_article_count', 'collection_status'}
-        if not required <= set(frame):
-            raise ValueError(f'missing columns {sorted(required - set(frame))}')
-        current, found = set(registry.event_district_id), set(frame.event_district_id)
-        extra, missing = found - current, current - found
-        incomplete = int((frame.collection_status != 'complete').sum())
-        unobserved = int(frame.final_article_count.eq('').sum())
-        status = 'present' if not extra and not missing and not incomplete and not unobserved else 'invalid'
-        details = (f'rows={len(frame)}, extra={len(extra)}, missing={len(missing)}, '
-                   f'incomplete={incomplete}, final_count_missing={unobserved}')
-        return {'artifact': 'article_qa_14d', 'path': str(path), 'status': status, 'details': details}
-    except (OSError, ValueError, KeyError) as exc:
-        return {'artifact': 'article_qa_14d', 'path': str(path), 'status': 'invalid',
-                'details': str(exc)}
+    from types import SimpleNamespace
+    from article_qa import article_pipeline_state
+    from cvnd_config import PRIMARY_NEWS_WINDOW_DAYS, SENSITIVITY_NEWS_WINDOW_DAYS
+
+    work = data_path('event_districts').parent / 'article_qa'
+    reuse_state = 'none'
+    if registry is not None:
+        args = SimpleNamespace(registry=data_path('event_districts'),
+                               source=data_path('gdelt_articles'), work=work)
+        reuse_state = article_pipeline_state(args)
+    rows = []
+    for days, label in ((PRIMARY_NEWS_WINDOW_DAYS, 'primary'),
+                        (SENSITIVITY_NEWS_WINDOW_DAYS, 'sensitivity')):
+        path = work / f'counts_{days}d.csv'
+        artifact = f'article_qa_{label}_{days}d'
+        if registry is None or not path.exists():
+            rows.append({'artifact': artifact, 'path': str(path), 'status': 'missing',
+                         'details': f'pipeline_state={reuse_state}'})
+            continue
+        try:
+            frame = pd.read_csv(path, dtype=str, keep_default_na=False)
+            required = {'event_district_id', 'final_article_count', 'collection_status',
+                        'article_count_is_lower_bound', 'window_days'}
+            if not required <= set(frame):
+                raise ValueError(f'missing columns {sorted(required - set(frame))}')
+            current, found = set(registry.event_district_id), set(frame.event_district_id)
+            if frame.event_district_id.duplicated().any() or current != found:
+                raise ValueError(f'registry mismatch extra={len(found-current)} missing={len(current-found)}')
+            if set(frame.window_days) != {str(days)}:
+                raise ValueError('wrong window_days')
+            statuses = frame.collection_status.str.strip().str.lower()
+            if not statuses.isin({'complete', 'partial', 'incomplete'}).all():
+                raise ValueError('invalid collection_status')
+            observed = statuses.isin({'complete', 'partial'})
+            counts = pd.to_numeric(frame.final_article_count, errors='coerce')
+            if counts[observed].isna().any():
+                raise ValueError('observed row missing final_article_count')
+            lower = frame.article_count_is_lower_bound.str.lower().isin({'true', '1'})
+            if not lower[statuses.eq('partial')].all():
+                raise ValueError('partial row is not marked as a lower bound')
+            status = 'present' if reuse_state == 'llm_complete' else 'invalid'
+            details = (f'rows={len(frame)}, complete={int(statuses.eq("complete").sum())}, '
+                       f'partial={int(statuses.eq("partial").sum())}, '
+                       f'incomplete={int(statuses.eq("incomplete").sum())}, '
+                       f'pipeline_state={reuse_state}')
+            rows.append({'artifact': artifact, 'path': str(path), 'status': status,
+                         'details': details})
+        except (OSError, ValueError, KeyError) as exc:
+            rows.append({'artifact': artifact, 'path': str(path), 'status': 'invalid',
+                         'details': str(exc)})
+    return rows
 
 
 def main(argv=None):

@@ -47,8 +47,8 @@ class ObservationContractTests(unittest.TestCase):
         self.assertEqual(counts.loc['Puri', 'final_article_count'], 1)
         self.assertEqual(counts.loc['Cuttack', 'final_article_count'], 0)
 
-    def test_window_includes_onset_excludes_day_fourteen(self):
-        for date, expected in [('2020-01-01',1),('2020-01-14T23:59:59Z',1),('2020-01-15',0),('2019-12-31',0)]:
+    def test_primary_window_includes_onset_excludes_day_thirty(self):
+        for date, expected in [('2020-01-01',1),('2020-01-30T23:59:59Z',1),('2020-01-31',0),('2019-12-31',0)]:
             self.assertEqual(self.counts([self.article(published_at=date)]).final_article_count.sum(), expected)
 
     def test_missing_manifest_or_incomplete_text_never_becomes_zero(self):

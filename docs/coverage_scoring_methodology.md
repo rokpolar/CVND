@@ -75,7 +75,7 @@ Pearson 잔차는 정규 z-score가 아니며 ±1.96으로 분류하지 않는�
 
 ```bash
 python src/score_coverage.py
-python src/score_coverage.py --input data/results/district_flood_articles.csv \
+python src/score_coverage.py --input data/results/primary_30d/district_flood_articles.csv \
   --results-dir /tmp/cvnd-scoring-audit/results \
   --output-dir /tmp/cvnd-scoring-audit/outputs --sensitivity-no-population
 bash scripts/run_pipeline.sh --dry-run
@@ -85,11 +85,11 @@ pipeline은 기존 H1/H2 분석 다음 scorer를 실행한다. `SKIP_ANALYSIS=1`
 
 | 파일 | 내용 |
 | --- | --- |
-| `data/results/coverage_scores.csv` | 모든 원래 열·행·제외 사유 + fold_id, scoring_status, scoring_reason, expected_article_count_oof, alpha_oof, coverage_difference, coverage_ratio, pearson_residual, p_lower, p_upper, predictive_low_90, predictive_high_90, coverage_class, extrapolation_flag |
-| `data/results/coverage_oof_diagnostics.csv` | 성공한 model × test 행별 fold, 키, 관측/예상/alpha, 오차, 음의 log 확률, 구간·포함 여부·폭, 관측 0·예측 0 확률 |
-| `outputs/coverage_scoring_summary.json` | 공식·변환·설정, 읽은 입력 바이트 SHA-256, 가능할 때 Git SHA, 라이브러리 버전, N/source, 결측·제외·실패 사유, fold, OOF 비교·calibration·한계 |
-| `outputs/coverage_scoring_report.md` | 가용성, 설정/출처, 진단, fold, 해석 한계 |
-| `outputs/coverage_scoring_actual_vs_expected.png`, `coverage_scoring_calibration.png` | 별도 주 NB2 OOF 그림; N=0이면 명시적 가용성 안내 |
+| `data/results/primary_30d/coverage_scores.csv` | 모든 원래 열·행·제외 사유 + fold_id, scoring_status, scoring_reason, expected_article_count_oof, alpha_oof, coverage_difference, coverage_ratio, pearson_residual, p_lower, p_upper, predictive_low_90, predictive_high_90, coverage_class, extrapolation_flag |
+| `data/results/primary_30d/coverage_oof_diagnostics.csv` | 성공한 model × test 행별 fold, 키, 관측/예상/alpha, 오차, 음의 log 확률, 구간·포함 여부·폭, 관측 0·예측 0 확률 |
+| `outputs/primary_30d/coverage_scoring_summary.json` | 공식·변환·설정, 읽은 입력 바이트 SHA-256, 가능할 때 Git SHA, 라이브러리 버전, N/source, 결측·제외·실패 사유, fold, OOF 비교·calibration·한계 |
+| `outputs/primary_30d/coverage_scoring_report.md` | 가용성, 설정/출처, 진단, fold, 해석 한계 |
+| `outputs/primary_30d/coverage_scoring_actual_vs_expected.png`, `coverage_scoring_calibration.png` | 별도 주 NB2 OOF 그림; N=0이면 명시적 가용성 안내 |
 
 `scoring_status`는 `scored` 또는 `not_scored`이다. `scoring_reason`은 input 제외, 자료 부족, 구체적 fold 실패 또는 OOF 성공을 기록한다. summary 상태는 전체 최소조건 미달 `insufficient_data`, 전부 성공 `available`, 일부 주 fold 성공 `partially_available`, 적합 가능한 크기이나 주 fold 전부 실패 `unavailable`이다. Poisson/민감도 가용성은 각 모형 상태로 구분한다. JSON 비유한 값은 null, CSV 결측은 빈 셀이다.
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Collect and count GDELT articles for the CVND district primary unit.
 
-District analysis has one fixed window (onset <= publication < onset + 14 days)
+Primary district collection uses onset <= publication < onset + 30 days;
+the 14-day sensitivity is derived from the same candidate corpus.
 and requires an
 explicit district location in the GKG location block or, when requested, the
 article title.  A state match by itself can never create a district article.
@@ -48,9 +49,9 @@ from district_keys import is_missing_name, make_event_district_id, normalize_nam
 from district_recovery import district_search_terms
 
 
-from cvnd_config import PRIMARY_MEDIA_WINDOW_DAYS
+from cvnd_config import PRIMARY_NEWS_WINDOW_DAYS
 
-DISTRICT_WINDOW_DAYS = PRIMARY_MEDIA_WINDOW_DAYS
+DISTRICT_WINDOW_DAYS = PRIMARY_NEWS_WINDOW_DAYS
 # State labels only: the legacy collector also uses city terms for recall.
 DISTRICT_STATE_ALIASES = {
     "Delhi": ("NCT of Delhi",),
@@ -183,7 +184,9 @@ def prepare_district_windows(
 ) -> list[dict[str, Any]]:
     """Return fixed half-open district windows for eligible registry rows."""
     if window_days != DISTRICT_WINDOW_DAYS:
-        raise ValueError("Primary district collection requires a fixed 14-day window")
+        raise ValueError(
+            f"Primary district collection requires a fixed {DISTRICT_WINDOW_DAYS}-day window"
+        )
     frame = prepare_district_registry(events)
     if not include_ineligible:
         frame = frame[frame["primary_eligible"]].copy()
@@ -723,7 +726,9 @@ def build_district_counts(
         if manifest.get('schema_version') != 2:
             raise ValueError('Unsupported district collection manifest version; regenerate district collection')
         if manifest.get('spatial_unit') != PRIMARY_SPATIAL_UNIT or manifest.get('window_days') != DISTRICT_WINDOW_DAYS:
-            raise ValueError('district manifest has wrong spatial unit or 14-day window')
+            raise ValueError(
+                f'district manifest has wrong spatial unit or {DISTRICT_WINDOW_DAYS}-day window'
+            )
         if manifest.get('registry_sha256') != registry_fingerprint(frame):
             raise ValueError('district collection manifest does not match this registry')
         expected = manifest.get('article_payload_sha256')

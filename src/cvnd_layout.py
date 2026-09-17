@@ -20,7 +20,6 @@ ARCHIVE_DATA = DATA / "archive"
 
 DATA_FILES: dict[str, str] = {
     # raw
-    "events": "raw/events.csv",
     "population": "raw/population.csv",
     "state_area": "raw/state_area.csv",
     # Official EM-DAT workbook and its parent-event audit workbook.
@@ -68,6 +67,7 @@ DATA_FILES.update({
     "census_district_input": "raw/census_2011_district_urban_rural.xlsx",
     "census_district_metadata": "raw/census_2011_district_urban_rural.meta.json",
     "district_crosswalk": "raw/district_name_crosswalk.csv",
+    "district_recovery_mapping": "raw/district_recovery_mapping.csv",
     "event_districts": "intermediate/event_districts.csv",
     "event_districts_news_sensitivity": "intermediate/event_districts.news_sensitivity.csv",
     "event_registry_exclusions": "intermediate/event_registry_exclusions.csv",
@@ -84,7 +84,7 @@ DATA_FILES.update({
     "track_agreement": "results/track_agreement.csv",
     "track_agreement_summary": "results/track_agreement_summary.json",
     "s1_to_sits_converter": "results/s1_to_sits_converter.json",
-    "routing_comparison": "results/routing_comparison.json",
+    "routing_comparison": "results/primary_30d/routing_comparison.json",
     "district_sits_feasibility": "results/sits_feasibility.csv",
     "district_sits_feasibility_summary": "results/sits_feasibility_summary.json",
     "district_flood_combined": "intermediate/district_flood_combined.csv",
@@ -95,25 +95,28 @@ DATA_FILES.update({
     "district_gdelt_counts": "results/district_article_counts.heuristic.csv",
     "district_article_database": "cache/district/articles.sqlite",
     "district_article_counts_heuristic": "results/district_article_counts.heuristic.csv",
-    "district_flood_articles": "results/district_flood_articles.csv",
-    "district_analysis_exclusions": "results/district_analysis_exclusions.csv",
-    "district_qc": "results/district_qc.json",
-    "district_selection_bias": "results/district_selection_bias.csv",
-    "coverage_model_results": "results/coverage_model_results.csv",
-    "coverage_predictions": "results/coverage_predictions.csv",
-    "coverage_scores": "results/coverage_scores.csv",
-    "coverage_oof_diagnostics": "results/coverage_oof_diagnostics.csv",
+    "district_flood_articles": "results/primary_30d/district_flood_articles.csv",
+    "district_analysis_exclusions": "results/primary_30d/district_analysis_exclusions.csv",
+    "district_qc": "results/primary_30d/district_qc.json",
+    "district_selection_bias": "results/primary_30d/district_selection_bias.csv",
+    "coverage_model_results": "results/primary_30d/coverage_model_results.csv",
+    "coverage_predictions": "results/primary_30d/coverage_predictions.csv",
+    "coverage_scores": "results/primary_30d/coverage_scores.csv",
+    "coverage_oof_diagnostics": "results/primary_30d/coverage_oof_diagnostics.csv",
+    "district_flood_articles_14d": "results/sensitivity_14d/district_flood_articles.csv",
+    "district_analysis_exclusions_14d": "results/sensitivity_14d/district_analysis_exclusions.csv",
+    "district_qc_14d": "results/sensitivity_14d/district_qc.json",
 })
 
 OUTPUT_FILES: dict[str, str] = {
-    "flood_area_vs_articles": "flood_area_vs_articles.png",
-    "urbanization_adjusted_coverage": "urbanization_adjusted_coverage.png",
-    "paper_results": "paper_results.md",
-    "coverage_summary": "coverage_summary.json",
-    "coverage_scoring_summary": "coverage_scoring_summary.json",
-    "coverage_scoring_report": "coverage_scoring_report.md",
-    "coverage_scoring_actual_vs_expected": "coverage_scoring_actual_vs_expected.png",
-    "coverage_scoring_calibration": "coverage_scoring_calibration.png",
+    "flood_area_vs_articles": "primary_30d/flood_area_vs_articles.png",
+    "urbanization_adjusted_coverage": "primary_30d/urbanization_adjusted_coverage.png",
+    "paper_results": "primary_30d/paper_results.md",
+    "coverage_summary": "primary_30d/coverage_summary.json",
+    "coverage_scoring_summary": "primary_30d/coverage_scoring_summary.json",
+    "coverage_scoring_report": "primary_30d/coverage_scoring_report.md",
+    "coverage_scoring_actual_vs_expected": "primary_30d/coverage_scoring_actual_vs_expected.png",
+    "coverage_scoring_calibration": "primary_30d/coverage_scoring_calibration.png",
 }
 
 

@@ -334,13 +334,27 @@ def conclusion_candidate(results):
     return 'The analysis provides insufficient evidence for H1 or H2; the hypothesized positive associations are not established.'
 
 
+def analysis_window_days(table) -> int:
+    """Return the one declared news window; mixed or implicit inputs are invalid."""
+    if 'window_days' not in table:
+        raise ValueError('Analysis input missing window_days')
+    values = pd.to_numeric(table['window_days'], errors='coerce')
+    if values.isna().any() or (values <= 0).any() or (values % 1 != 0).any():
+        raise ValueError('window_days must contain one positive integer on every row')
+    unique = sorted(values.astype(int).unique())
+    if len(unique) != 1:
+        raise ValueError(f'Analysis input mixes window_days values: {unique}')
+    return int(unique[0])
+
+
 def analyze(table):
+    window_days = analysis_window_days(table)
     full, sample = prepare_analysis(table)
     notes = ['Associational analysis: flood extent does not control all disaster impacts, outlet availability, population size, or media access.', 'Census 2011 and GAUL 2015 may not represent event-year district boundaries or urbanization.', 'GDELT-indexed district-explicit coverage is not all disaster reporting; location extraction and language coverage can affect selection.', 'District rows within a source flood and repeated districts may be dependent; state clustering is only a partial correction.']
     if 'date_precision' in full:
         imputed = full['date_precision'].fillna('').str.contains('start:month').sum()
         if imputed:
-            notes.append(f'{imputed} registry onset dates are month-imputed; their 14-day news windows have timing uncertainty.')
+            notes.append(f'{imputed} registry onset dates are month-imputed; their {window_days}-day news windows have timing uncertainty.')
     if 'coverage_scope' in full and full.coverage_scope.eq('local_state_plus_targeted_bigquery').any():
         notes.append('Article counts use the local state corpus plus targeted BigQuery supplementation of districts without usable local candidates. This is conditional corpus coverage, not exhaustive district recollection; districts with some local coverage may still have missed articles.')
     if 'article_collection_status' in full and full.article_collection_status.eq('partial').any():
@@ -379,7 +393,7 @@ def analyze(table):
         rho, p = spearmanr(sample['flood_area_km2'], sample['article_count'])
         corr = {'rho': float(rho), 'p_value': float(p)}
     distribution_columns = ['flood_area_km2', 'article_count', 'urban_population_share']
-    summary = {'n_total': len(full), 'n_analyzable': len(sample), 'n_excluded': len(full) - len(sample), 'districts': len(sample[['state', 'district']].drop_duplicates()), 'parent_events': int(sample.event_id.nunique()), 'source_flood_events': int(sample.source_record_id.nunique()), 'satellite_source_counts': {str(k): int(v) for k, v in sample['satellite_source'].value_counts().items()}, 'sensitivity_formulas': SENSITIVITY_FORMULAS, 'spearman': corr, 'distributions': sample[distribution_columns].describe().to_dict(), 'missing_counts': {c: int(full[c].isna().sum()) for c in distribution_columns}, 'exclusion_counts': full['exclusion_reason'].fillna('').str.split(';').explode().loc[lambda s: s.ne('')].value_counts().to_dict(), 'model_status': statuses, 'formulas': FORMULAS, 'article_count_variance': float(sample.article_count.var()) if len(sample) > 1 else None, 'article_count_mean': float(sample.article_count.mean()) if len(sample) else None}
+    summary = {'window_days': window_days, 'n_total': len(full), 'n_analyzable': len(sample), 'n_excluded': len(full) - len(sample), 'districts': len(sample[['state', 'district']].drop_duplicates()), 'parent_events': int(sample.event_id.nunique()), 'source_flood_events': int(sample.source_record_id.nunique()), 'satellite_source_counts': {str(k): int(v) for k, v in sample['satellite_source'].value_counts().items()}, 'sensitivity_formulas': SENSITIVITY_FORMULAS, 'spearman': corr, 'distributions': sample[distribution_columns].describe().to_dict(), 'missing_counts': {c: int(full[c].isna().sum()) for c in distribution_columns}, 'exclusion_counts': full['exclusion_reason'].fillna('').str.split(';').explode().loc[lambda s: s.ne('')].value_counts().to_dict(), 'model_status': statuses, 'formulas': FORMULAS, 'article_count_variance': float(sample.article_count.var()) if len(sample) > 1 else None, 'article_count_mean': float(sample.article_count.mean()) if len(sample) else None}
     results = pd.DataFrame(rows, columns=RESULT_COLUMNS)
     bias, selection_note = selection_bias(full)
     notes.append(selection_note)
@@ -402,7 +416,7 @@ def analyze(table):
     return summary, results, sample, predictions, bias
 
 
-def write_figures(sample, predictions, figure1, figure2):
+def write_figures(sample, predictions, figure1, figure2, window_days):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -424,13 +438,14 @@ def write_figures(sample, predictions, figure1, figure2):
         ax.legend(frameon=False, fontsize=9)
     else:
         ax.text(.5, .5, 'Model 2 unavailable\nNo adjusted effect estimated', transform=ax.transAxes, ha='center')
-    ax.set(xlabel='District urban population share (2011)', ylabel='Expected article count in 14 days')
+    ax.set(xlabel='District urban population share (2011)',
+           ylabel=f'Expected article count in {window_days} days')
     fig.savefig(figure2, dpi=300)
     plt.close(fig)
 
 
 def write_report(summary, results, bias, path):
-    lines = ['# Coverage disparity results', '', f"N = {summary['n_analyzable']} district-event observations; {summary['districts']} districts; {summary['parent_events']} parent events; {summary['source_flood_events']} source floods.", f"Excluded: {summary['n_excluded']} of {summary['n_total']} registry rows.", f"Spearman rho = {summary['spearman']['rho']}; p = {summary['spearman']['p_value']}.", '', 'Primary model: log E[article_count] = intercept + beta_flood log(1 + flood_area_km2) + beta_urban urban_population_share. NB2 variance = mu + alpha * mu²; alpha is estimated.', '', 'M1/M2/M3 use the same complete-case sample. Fixed decision rule: positive coefficient and two-sided p < 0.05; prefer state-clustered inference when the prespecified cluster rule is met. No cutoff on urbanization enters the model.', '', '| Model / SE | Term | Coefficient (SE) | 95% CI | p | IRR [95% CI] | 10pp IRR [95% CI] |', '| --- | --- | --- | --- | --- | --- | --- |']
+    lines = ['# Coverage disparity results', '', f"News window: {summary['window_days']} days.", f"N = {summary['n_analyzable']} district-event observations; {summary['districts']} districts; {summary['parent_events']} parent events; {summary['source_flood_events']} source floods.", f"Excluded: {summary['n_excluded']} of {summary['n_total']} registry rows.", f"Spearman rho = {summary['spearman']['rho']}; p = {summary['spearman']['p_value']}.", '', 'Primary model: log E[article_count] = intercept + beta_flood log(1 + flood_area_km2) + beta_urban urban_population_share. NB2 variance = mu + alpha * mu²; alpha is estimated.', '', 'M1/M2/M3 use the same complete-case sample. Fixed decision rule: positive coefficient and two-sided p < 0.05; prefer state-clustered inference when the prespecified cluster rule is met. No cutoff on urbanization enters the model.', '', '| Model / SE | Term | Coefficient (SE) | 95% CI | p | IRR [95% CI] | 10pp IRR [95% CI] |', '| --- | --- | --- | --- | --- | --- | --- |']
     for r in results.itertuples():
         irr10 = f'{r.irr_10pp:.3f} [{r.irr_10pp_ci_low:.3f}, {r.irr_10pp_ci_high:.3f}]' if pd.notna(r.irr_10pp) else '—'
         lines.append(f'| {r.model} / {r.se_type} | {r.term} | {r.coefficient:.4f} ({r.standard_error:.4f}) | [{r.ci_low:.4f}, {r.ci_high:.4f}] | {r.p_value:.4g} | {r.irr:.3f} [{r.irr_ci_low:.3f}, {r.irr_ci_high:.3f}] | {irr10} |')
@@ -494,7 +509,8 @@ def main(argv=None):
     # Convert pandas NaN to JSON null for portable, strict JSON outputs.
     clean_summary = json.loads(pd.Series(summary).to_json())
     out('coverage_summary').write_text(json.dumps(clean_summary, indent=2, allow_nan=False) + '\n')
-    write_figures(sample, predictions, out('flood_area_vs_articles'), out('urbanization_adjusted_coverage'))
+    write_figures(sample, predictions, out('flood_area_vs_articles'),
+                  out('urbanization_adjusted_coverage'), summary['window_days'])
     write_report(clean_summary, results, bias, out('paper_results'))
     print(f"Analyzable N={len(sample)}; report: {out('paper_results')}")
     print(summary['conclusion_candidate'])

@@ -10,7 +10,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import district_keys  # noqa: E402
 import flood_spec  # noqa: E402
-from cvnd_config import PRIMARY_MEDIA_WINDOW_DAYS  # noqa: E402
+from cvnd_config import (PRIMARY_NEWS_WINDOW_DAYS, SATELLITE_POST_WINDOW_DAYS,
+                         SENSITIVITY_NEWS_WINDOW_DAYS)  # noqa: E402
 from flood_spec import SPEC, SPEC_VERSION, otsu_from_histogram, spec_version  # noqa: E402
 
 
@@ -21,9 +22,11 @@ class MeasurementSpecTests(unittest.TestCase):
         self.assertNotEqual(spec_version(replace(SPEC, post_window_days=7)), SPEC_VERSION)
         self.assertNotEqual(spec_version(replace(SPEC, post_composite="median")), SPEC_VERSION)
 
-    def test_post_window_is_the_media_window(self):
-        self.assertEqual(SPEC.post_window_days, PRIMARY_MEDIA_WINDOW_DAYS)
+    def test_satellite_and_news_windows_are_explicitly_separate(self):
+        self.assertEqual(SPEC.post_window_days, SATELLITE_POST_WINDOW_DAYS)
         self.assertEqual(SPEC.post_window_days, 14)
+        self.assertEqual(PRIMARY_NEWS_WINDOW_DAYS, 30)
+        self.assertEqual(SENSITIVITY_NEWS_WINDOW_DAYS, 14)
 
     def test_scale_off_the_sits_grid_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "SITS grid"):
@@ -56,7 +59,8 @@ class MeasurementSpecTests(unittest.TestCase):
             flood_spec.variant_spec("nope")
 
     def test_source_vocabulary(self):
-        self.assertEqual(flood_spec.MEASURED_SOURCES, ("SITS_NDWI", "SITS_NDWI_RESTORED", "S1_TO_SITS", "S1"))
+        self.assertEqual(flood_spec.MEASURED_SOURCES,
+                         ("SITS_NDWI", "SITS_NDWI_RESTORED", "S1_TO_SITS", "S1", "NDWI"))
         self.assertNotIn("NONE", flood_spec.MEASURED_SOURCES)
         self.assertIn(flood_spec.DEFAULT_ROUTING, flood_spec.ROUTING_MODES)
         self.assertTrue(set(flood_spec.CONVERTING_DECISIONS) < set(flood_spec.CONVERTER_DECISIONS))

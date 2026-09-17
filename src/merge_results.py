@@ -35,15 +35,13 @@ The pre-refactor routing is kept as legacy_route_area and written to the
 legacy_* columns for the before/after comparison.
 
 Routing mode (--routing, flood_spec.ROUTING_MODES):
-  s1_interim (default until Track B covers every district and the converter
-      is decided): every district is measured by Track A Sentinel-1 new water
-      over the eligible AOI alone (satellite_source S1, route_reason
-      interim_s1_only). One sensor for all districts, so no sensor mixing;
-      SITS columns are still filled where Track B exists, for reference only.
+  s1_then_s2 (default): use Track A Sentinel-1 new water whenever it is
+      observed, including zero. Only districts without an S1 observation use
+      Track A Sentinel-2 NDWI; missing both remains missing.
   sits_primary: the SITS-first routing above.
 
 Output: data/intermediate/district_flood_combined.csv (flood_spec.COMBINED_COLUMNS)
-Run:    python src/merge_results.py [--routing s1_interim|sits_primary]
+Run:    python src/merge_results.py [--routing s1_then_s2|sits_primary]
         (numpy + pandas only; no model / GEE)
 """
 from __future__ import annotations
@@ -240,14 +238,17 @@ def route_area(c: Candidates, spec=SPEC) -> Route:
     return Route(full, 'SITS_NDWI', 'sits_gate_failed', 'sits_tiles')
 
 
-def interim_route_area(c: Candidates) -> Route:
-    """s1_interim: Track A S1 new water for every district, whatever Track B did."""
+def s1_then_s2_route_area(c: Candidates) -> Route:
+    """Prefer observed S1 (zero included), then use S2 NDWI as fallback."""
     if not c.aoi_matched:
         return Route(None, 'NONE', 'aoi_failed')
     s1 = _value(c.s1_km2)
-    if s1 is None:
-        return Route(None, 'NONE', 'no_s1')
-    return Route(s1, 'S1', 'interim_s1_only', 'aoi')
+    if s1 is not None:
+        return Route(s1, 'S1', 's1_primary', 'aoi')
+    ndwi = _value(c.ndwi_trackA_km2)
+    if ndwi is not None and (c.s2_post_images or 0) > 0:
+        return Route(ndwi, 'NDWI', 's2_fallback', 'aoi')
+    return Route(None, 'NONE', 'no_s1_or_s2')
 
 
 def legacy_route_area(c: Candidates, spec=SPEC) -> Route:
@@ -441,7 +442,7 @@ def merge_row(a, archive=None, index_entry=None, converter=None, spec=SPEC,
         converter_decision=decision,
     )
     route = (route_area(candidates, spec) if routing == 'sits_primary'
-             else interim_route_area(candidates))
+             else s1_then_s2_route_area(candidates))
     legacy = legacy_route_area(candidates, spec)
     optical = bool(sits) or (candidates.ndwi_trackA_km2 is not None and (candidates.s2_post_images or 0) > 0)
     measured = aoi_matched

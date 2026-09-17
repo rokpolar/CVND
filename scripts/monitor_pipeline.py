@@ -31,7 +31,6 @@ def tail(path: Path, limit: int = 12) -> list[str]:
 
 def artifact_counts(root: Path) -> list[str]:
     paths = [
-        root / "data/raw/events.csv",
         root / "data/intermediate/event_districts.csv",
         root / "data/intermediate/district_covariates.csv",
         root / "data/cache/district/flood_extent.csv",
@@ -41,7 +40,8 @@ def artifact_counts(root: Path) -> list[str]:
         root / "data/intermediate/article_qa/manifest.json",
         root / "data/intermediate/article_qa/batches.json",
         root / "data/intermediate/article_qa/results.json",
-        root / "data/results/district_flood_articles.csv",
+        root / "data/results/primary_30d/district_flood_articles.csv",
+        root / "data/results/sensitivity_14d/district_flood_articles.csv",
     ]
     rows = []
     for path in paths:
