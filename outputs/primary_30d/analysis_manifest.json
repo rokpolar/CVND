@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "primary": {
+    "path": "data/results/primary_30d/district_flood_articles.csv",
+    "sha256": "3ff0313a2b8823528553124310c16b5ef272cd92f8a219087c088a626a2d8cc8",
+    "rows": 1553,
+    "eligible_rows": 1191,
+    "window_days": 30
+  },
+  "sensitivity": {
+    "path": "data/results/sensitivity_14d/district_flood_articles.csv",
+    "sha256": "79281623bc814617ac6906f6c0c44168872f9bc45cc60212ada92810067d35bd",
+    "rows": 1553,
+    "eligible_rows": 1069,
+    "window_days": 14
+  },
+  "git_head": "c0c390f5a434911723e89d119dadebf1c05b4083",
+  "git_dirty": true,
+  "source_diff_sha256": "00e894f82911f7b9204719ceed27725dbee8ce8a7327ad3d474f978f24ad27b2",
+  "requirements_lock_sha256": "7ae90623075b1e951d50e19cd9b57b7c6ac742a6841141da367d4f345b549bb6"
+}

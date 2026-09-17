@@ -543,24 +543,32 @@ def _date_from_ms(value):
     return datetime.fromtimestamp(float(value) / 1000, tz=timezone.utc).strftime('%Y-%m-%d')
 
 
-def track_a_measure(region, start, grid, spec=SPEC) -> dict:
+def track_a_measure(region, start, grid, spec=SPEC, sensor='both') -> dict:
     """S1 and S2 NDWI new water, the S2 observation footprint, S1 on it and the
     WorldCover strata over the district AOI, in one reduction on the grid.
 
     Areas are None (not zero) when a sensor lacks pre or post imagery. cloud_pct
     is the share of the AOI never seen clear post-onset (legacy routing only).
     """
+    if sensor not in {'s1', 's2', 'both'}:
+        raise ValueError("sensor must be 's1', 's2', or 'both'")
     eligible = measurement_mask(spec)
-    s2, s1 = s2_collection(region, spec), s1_collection(region, spec)
-    s2_pre, s2_post = pre_reference_col(s2, start, spec), s2.filterDate(*post_window(start, spec))
-    s1_pre, s1_post = pre_reference_col(s1, start, spec), s1.filterDate(*post_window(start, spec))
-    info = ee.Dictionary({
-        's2_pre': s2_pre.size(), 's2_post': s2_post.size(),
-        's1_pre': s1_pre.size(), 's1_post': s1_post.size(),
-        's1_passes': s1_post.aggregate_array('orbitProperties_pass').distinct(),
-        's2_first': s2_post.aggregate_min('system:time_start'),
-        's1_first': s1_post.aggregate_min('system:time_start'),
-    }).getInfo() or {}
+    s1_pre = s1_post = s2_pre = s2_post = None
+    info_request = {}
+    if sensor in {'s2', 'both'}:
+        s2 = s2_collection(region, spec)
+        s2_pre = pre_reference_col(s2, start, spec)
+        s2_post = s2.filterDate(*post_window(start, spec))
+        info_request.update(s2_pre=s2_pre.size(), s2_post=s2_post.size(),
+                            s2_first=s2_post.aggregate_min('system:time_start'))
+    if sensor in {'s1', 'both'}:
+        s1 = s1_collection(region, spec)
+        s1_pre = pre_reference_col(s1, start, spec)
+        s1_post = s1.filterDate(*post_window(start, spec))
+        info_request.update(s1_pre=s1_pre.size(), s1_post=s1_post.size(),
+                            s1_passes=s1_post.aggregate_array('orbitProperties_pass').distinct(),
+                            s1_first=s1_post.aggregate_min('system:time_start'))
+    info = ee.Dictionary(info_request).getInfo() or {}
     n = {key: int(info.get(key) or 0) for key in ('s2_pre', 's2_post', 's1_pre', 's1_post')}
     passes = sorted(set(info.get('s1_passes') or []))
     result = {column: None for column in TRACK_A_COLUMNS}
@@ -802,7 +810,7 @@ def _aoi_context(row, spec=SPEC) -> dict:
     }
 
 
-def detect_flood_baseline(row, spec=SPEC):
+def detect_flood_baseline(row, spec=SPEC, sensor='both'):
     """Track A: S1 and S2 new water over the district AOI, under one spec.
 
     Both areas are reported side by side; choosing between them is the merge's
@@ -822,11 +830,11 @@ def detect_flood_baseline(row, spec=SPEC):
     try:
         region = aoi['geometry']
         grid = measurement_grid(region, spec)
-        measured = track_a_measure(region, row['start_date'], grid, spec)
+        measured = track_a_measure(region, row['start_date'], grid, spec, sensor=sensor)
         observed = (measured['area_s1_km2'] is not None
                     or measured['area_s2_km2'] is not None)
         measured['baseline_status'] = 'OK' if observed else 'NO_IMAGERY'
-        print(f"    S1: {measured['area_s1_km2']} km² ({measured['s1_post_images']} post imgs, "
+        print(f"    sensor={sensor}  S1: {measured['area_s1_km2']} km² ({measured['s1_post_images']} post imgs, "
               f"{measured['s1_orbit']})  S2 NDWI: {measured['area_s2_km2']} km² "
               f"({measured['s2_post_images']} post imgs, observed "
               f"{measured['optical_observed_frac']} of eligible)")
@@ -1654,12 +1662,40 @@ def track_a_paths(variant=None):
 # MAIN
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _observed(value) -> bool:
+    return value is not None and not pd.isna(value)
+
+
+def _sensor_attempted(entry: dict, sensor: str) -> bool:
+    prefixes = ('s1_pre_images', 's1_post_images') if sensor == 's1' else (
+        's2_pre_images', 's2_post_images')
+    return all(_observed(entry.get(column)) for column in prefixes)
+
+
+def _merge_track_a_entry(previous: dict | None, fresh: dict) -> dict:
+    """Merge a sensor-only Track-A attempt without erasing the other sensor."""
+    merged = dict(previous or {})
+    for key, value in fresh.items():
+        if _observed(value) or key not in merged:
+            merged[key] = value
+    if _observed(merged.get('area_s1_km2')) or _observed(merged.get('area_s2_km2')):
+        merged['baseline_status'] = 'OK'
+        merged['error_kind'] = None
+    elif str(fresh.get('baseline_status', '')).startswith('ERROR'):
+        merged['baseline_status'] = fresh['baseline_status']
+        merged['error_kind'] = fresh.get('error_kind')
+    else:
+        merged['baseline_status'] = 'NO_IMAGERY'
+    return merged
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--track', choices=['A', 'B', 'both'],
                         default='both',
                         help='Which track to run (default: both; Track B is required for every district)')
+    parser.add_argument('--sensor', choices=['s1', 's2', 'both'], default='both',
+                        help='Track A sensor subset. Pipeline order is s1 first, then s2 fallback.')
     parser.add_argument('--events', nargs='*', default=None,
                         help='Only run these event_district_ids or event_ids. Default: all')
     parser.add_argument('--reverse', action='store_true',
@@ -1707,18 +1743,17 @@ if __name__ == '__main__':
     # ── Track A ───────────────────────────────────────────────────────────────
     if args.track in ('A', 'both'):
         print("\n" + "─" * 65)
-        print("TRACK A — S1 OTSU + S2 NDWI NEW WATER (one measurement spec)")
+        print(f"TRACK A — {args.sensor.upper()} NEW WATER (one measurement spec)")
         print("─" * 65)
 
         completed_a = load_checkpoint(checkpoint_a)
         stale_a = [key for key, entry in completed_a.items()
                    if key not in event_by_key
-                   or not _cache_identity_matches(entry, event_by_key[key], run_version)
-                   or str(entry.get('baseline_status', entry.get('status', ''))).startswith('ERROR')]
+                   or not _cache_identity_matches(entry, event_by_key[key], run_version)]
         for key in stale_a:
             del completed_a[key]
         if stale_a:
-            print(f"Discarded {len(stale_a)} stale Track-A cache entries (identity, spec or ERROR)")
+            print(f"Discarded {len(stale_a)} stale Track-A cache entries (identity or spec)")
 
         # Seed with an existing flood_extent CSV if the checkpoint is empty
         if not completed_a and os.path.exists(extent_csv):
@@ -1734,18 +1769,29 @@ if __name__ == '__main__':
                 save_checkpoint(completed_a, checkpoint_a)
                 print(f"Seeded {len(completed_a)} events from existing {extent_csv}")
 
+        if args.sensor == 's2':
+            fallback = {key for key, entry in completed_a.items()
+                        if str(entry.get('aoi_match_status', '')).strip().lower() == 'matched'
+                        and not _observed(entry.get('area_s1_km2'))}
+            before = len(events)
+            events = events[events['_analysis_key'].isin(fallback)]
+            print(f"S2 fallback cohort: {len(events)}/{before} rows with matched AOI and missing S1")
+
         track_a_columns = list(IDENTITY_COLUMNS + AOI_COLUMNS + TRACK_A_COLUMNS)
-        done_a     = set(completed_a.keys())
+        required_sensors = ('s1', 's2') if args.sensor == 'both' else (args.sensor,)
+        done_a = {key for key, entry in completed_a.items()
+                  if all(_sensor_attempted(entry, sensor) for sensor in required_sensors)}
         remaining_a = events[~events['_analysis_key'].isin(done_a)]
         print(f"Already done: {len(done_a)} | Remaining: {len(remaining_a)}\n")
 
         # Districts are independent Earth Engine requests; results are written
         # by this thread only, one checkpoint save per finished district.
         with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
-            futures = {pool.submit(detect_flood_baseline, row, run_spec): analysis_key(row)
+            futures = {pool.submit(detect_flood_baseline, row, run_spec, args.sensor): analysis_key(row)
                        for _, row in remaining_a.iterrows()}
             for i, future in enumerate(as_completed(futures), 1):
-                completed_a[futures[future]] = future.result()
+                key = futures[future]
+                completed_a[key] = _merge_track_a_entry(completed_a.get(key), future.result())
                 save_checkpoint(completed_a, checkpoint_a)
 
                 if (len(done_a) + i) % 10 == 0:

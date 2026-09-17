@@ -1,108 +1,51 @@
-# Article QA operations (WSL)
+# Article QA operations
 
-The primary observation remains 14 UTC days from onset. The 30-day table is a
-separate sensitivity artifact; satellite post-windows remain 14 days.
-The coverage scope is local_state_plus_targeted_bigquery. Targeted supplementation
-cannot establish exhaustive coverage of all districts with some local candidates.
+뉴스 결과의 primary window는 `[onset, onset+30 days)`이고 sensitivity는 그 안의 14일이다. 위성 post window는 별도로 14일을 유지한다. 후보는 30일까지 한 번 수집하고 heuristic을 통과한 후보만 LLM-QA에 전달한다.
 
-## Prepare without paid calls
+## 자동 재개 계약
 
-Run from the project root:
+기본값은 `ARTICLE_PIPELINE_MODE=auto`다. `src/article_qa.py state`는 파일 존재가 아니라 다음 provenance를 검사한다.
 
-    venv/bin/python src/build_emdat_events.py
-    venv/bin/python src/build_district_covariates.py
-    venv/bin/python src/article_qa.py prepare
-    venv/bin/python src/article_qa.py counts
+- 현재 event×district registry와 source corpus hash
+- prompt와 model
+- request와 result hash
+- `counts_30d.csv`, `counts_14d.csv`, `counts.manifest.json`의 키·window·상태 계약
 
-The state JSONL and SQLite are read-only. Derived files are in
-data/intermediate/article_qa/. requests.jsonl contains one article/event request
-with district candidates; pending.jsonl retains missing/failed bodies.
-No confidence field is emitted. Prior source_record_id does not restrict
-reassignment to current state/date windows.
+반환 상태는 다음과 같다.
 
-Registry changes archive affected CSV caches under data/archive/registry/.
-Only unchanged IDs, identities and geometry IDs survive migration. Geometry
-values from different references are never combined. Old article manifests
-fail registry hash checks and must be regenerated.
+- `llm_complete`: heuristic과 LLM-QA 모두 생략
+- `heuristic_complete`: heuristic 생략, LLM-QA부터 재개
+- `none`: stale/누락 상태이므로 GDELT·본문·heuristic부터 실행
 
-## Targeted supplementation
+`complete`와 `partial`은 관측값으로 join한다. `partial`은 확정 relevant 수를 lower bound로 보존한다. `incomplete`는 article count가 결측인 정상 데이터 상태다. 해결되지 않은 후보를 irrelevant 또는 0으로 대체하지 않는다.
 
-    venv/bin/python src/article_qa.py retry-text
-    venv/bin/python src/article_qa.py prepare
-    venv/bin/python src/article_qa.py supplement --maximum-tib 0.25
-    venv/bin/python src/article_qa.py supplement --execute --maximum-tib 0.25
-    venv/bin/python src/article_qa.py download-new
-    venv/bin/python src/article_qa.py prepare
+## 수동 실행
 
-The first supplement command is a BigQuery dry-run estimate, not a billed query.
-Execution also estimates before submitting. One combined query covers all gaps,
-so the cap applies to the whole run. Returning fewer URLs does not imply a
-smaller scan. The query targets districts without usable local district evidence
-in the 30-day window, with strict themes, district/state evidence, rich metadata
-and title fallback. Successful zero-result queries are recorded.
-Known URLs retain new district metadata but are not downloaded again.
-Body downloads respect the existing downloader's robots and host controls.
-Only explicitly selected transient URLs are retried, with one network retry,
-four workers and no browser fallback.
+```bash
+venv/bin/python src/article_qa.py prepare
+venv/bin/python src/article_qa.py run-batches --execute
+venv/bin/python src/article_qa.py counts
+venv/bin/python src/article_qa.py state
+```
 
-## Luna Batch
+`OPENAI_API_KEY`가 필요한 실제 Batch 제출은 `--execute`에서만 일어난다. 중단 후 같은 명령을 실행하면 ledger에서 재개한다. 하나의 structured response에는 모든 candidate ID가 정확히 한 번 있어야 하며, relevant evidence는 제공한 본문의 정확한 excerpt여야 한다.
 
-Set OPENAI_API_KEY in the environment. The shell pipeline reads .env; direct
-Python commands use exported variables. No key is printed or saved in artifacts.
+선택적 targeted supplement:
 
-    venv/bin/python src/article_qa.py submit --execute
-    venv/bin/python src/article_qa.py status
-    venv/bin/python src/article_qa.py collect
-    venv/bin/python src/article_qa.py counts
+```bash
+venv/bin/python src/article_qa.py supplement --maximum-tib 0.25
+venv/bin/python src/article_qa.py supplement --execute --maximum-tib 0.25
+venv/bin/python src/article_qa.py download-new
+venv/bin/python src/article_qa.py prepare
+```
 
-For automatic sequential submission and collection:
+첫 supplement 명령은 BigQuery dry-run 추정이다. 실행도 scan estimate와 cap을 먼저 확인한다. `manifest.json`, supplement/batch ledger, requests/results, provider raw output은 최종 count와 함께 보존해야 한다.
 
-    venv/bin/python src/article_qa.py run-batches --execute
+## 파이프라인
 
-The command polls every 60 seconds. Ctrl-C preserves its ledger. Invoke the same
-command to resume. Each shard contains at most 1,000 requests and 4 MB of JSONL,
-and only one batch is active. Account-specific queue limits may still reject a
-submission; the recorded error must be resolved before retrying.
+```bash
+ARTICLE_PIPELINE_MODE=auto RUN_ARTICLE_SUPPLEMENT=0 bash scripts/run_pipeline.sh
+bash scripts/run_pipeline.sh --dry-run
+```
 
-For failed, expired, refused or invalid outputs, inspect errors.json and use:
-
-    venv/bin/python src/article_qa.py submit --execute --retry-failed
-    venv/bin/python src/article_qa.py run-batches --execute
-
-Only requests without valid results are retried.
-If submission acknowledgement was lost, the runner first searches
-provider batch metadata. An unresolvable submission stops until an explicit
-retry, rather than assuming that the first attempt was rejected.
-Every candidate must appear
-exactly once in the structured response. Unknown/duplicate/missing IDs fail the
-request. Relevant evidence must be an exact excerpt of the supplied text.
-Article content is untrusted input, never an instruction to the classifier.
-
-## Full pipeline and outputs
-
-    REUSE_STATE_ARTICLES=1 RUN_ARTICLE_SUPPLEMENT=1 RUN_LLM_QA=1 \
-      GDELT_SUPPLEMENT_MAX_TIB=0.25 LLM_QA_MODEL=gpt-5.6-luna \
-      bash scripts/run_pipeline.sh
-
-Satellite options retain their existing meanings. To inspect commands without
-queries, downloads, submission or artifact replacement:
-
-    REUSE_STATE_ARTICLES=1 RUN_ARTICLE_SUPPLEMENT=1 RUN_LLM_QA=1 \
-      bash scripts/run_pipeline.sh --dry-run
-
-The pipeline waits for QA batches. Failed requests stop automatic progression
-until retry. A district with no validated LLM decision remains NA. When validated
-decisions and unresolved candidates coexist, completed relevant decisions count
-once per URL/canonical district as an observed lower bound, the row is marked
-partial, and unresolved/missing-text totals remain explicit. Nothing unresolved
-is imputed as not relevant or zero. URLs are assigned to the nearest eligible onset.
-
-counts_14d.csv feeds the primary join. counts_30d.csv feeds
-data/results/district_flood_articles_30d.csv with separate QC/exclusions.
-The existing statistical model runs on the primary table. The 30-day table is
-available for separately labelled sensitivity modeling.
-
-Always retain manifest.json, supplement.json, batches.json, results.json and
-the raw provider output beside the final decisions. Token usage belongs to a
-request and is repeated in pair records for provenance: deduplicate by custom_id
-when totaling cost.
+최종 count는 `data/intermediate/article_qa/counts_30d.csv`와 `counts_14d.csv`다. 각각 `data/results/primary_30d/`와 `data/results/sensitivity_14d/`의 join·분석·OOF scoring으로 이어진다.

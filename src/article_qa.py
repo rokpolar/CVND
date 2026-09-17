@@ -23,13 +23,14 @@ import unicodedata
 import pandas as pd
 
 from cvnd_layout import ROOT, data_path
+from cvnd_config import PRIMARY_NEWS_WINDOW_DAYS, SENSITIVITY_NEWS_WINDOW_DAYS
 from district_articles import (
     _open_jsonl, prepare_district_registry, prepare_district_windows,
     registry_fingerprint, build_district_query, execute_district_query,
     structured_location_matches,
 )
 from district_keys import normalize_name, normalize_state_name
-from district_heuristics import keyword_occurrences
+from district_heuristics import classify_heuristic, keyword_occurrences
 from gdelt_backend import _atomic_write, estimate_query, INDIA_MEDIA_LANGUAGES
 
 PROMPT_VERSION = "district-qa-v1"
@@ -168,7 +169,7 @@ def matching_events(row, by_state):
     state = normalize_name(normalize_state_name(row.get("state", "")))
     return [(profile, (published-profile["onset"]).days)
             for profile in by_state.get(state, [])
-            if 0 <= (published-profile["onset"]).days < 30]
+            if 0 <= (published-profile["onset"]).days < PRIMARY_NEWS_WINDOW_DAYS]
 
 
 def prepare(args):
@@ -219,12 +220,19 @@ def prepare(args):
                     # Missing bodies are unresolved candidates for every eligible district.
                     if quality == "usable" and not explicit:
                         continue
+                    heuristic_status, _heuristic_excerpt, heuristic_matches = classify_heuristic(
+                        document.get("status"), body, title
+                    )
+                    if quality == "usable" and not heuristic_status.endswith("keyword_match"):
+                        continue
                     key = (article, profile["event_id"])
                     group = groups.setdefault(key, {
                         "article_key": article, "url": url, "event_id": profile["event_id"],
                         "published_at": row["published_at"], "day": day,
                         "state": profile["state"], "start_date": profile["start_date"],
                         "quality": quality, "body": body, "title": title,
+                        "heuristic_status": heuristic_status,
+                        "heuristic_matches": heuristic_matches,
                         "origins": set(), "districts": {},
                     })
                     group["origins"].add(origin)
@@ -265,7 +273,9 @@ def prepare(args):
             for key in sorted(profiles) if profiles[key]["primary_eligible"] and not local_usable[key]]
     manifest = {
         "schema_version": 1, "registry_sha256": registry_hash,
-        "coverage_scope": SCOPE, "primary_window_days": 14, "sensitivity_window_days": 30,
+        "coverage_scope": SCOPE,
+        "primary_window_days": PRIMARY_NEWS_WINDOW_DAYS,
+        "sensitivity_window_days": SENSITIVITY_NEWS_WINDOW_DAYS,
         "request_sha256": digest(requests), "pending_sha256": digest(pending),
         "gaps": gaps, "request_count": len(requests), "missing_count": len(pending),
         "source_sha256": file_hash(args.source), "model": args.model,
@@ -293,6 +303,11 @@ def checked(args):
     manifest = read(args.work / "manifest.json")
     if not manifest:
         raise ValueError("Run prepare first")
+    if (manifest.get("primary_window_days") != PRIMARY_NEWS_WINDOW_DAYS or
+            manifest.get("sensitivity_window_days") != SENSITIVITY_NEWS_WINDOW_DAYS):
+        raise ValueError("Stale QA news-window contract; run prepare")
+    if manifest.get("model") != args.model or manifest.get("prompt_version") != PROMPT_VERSION:
+        raise ValueError("Stale QA model or prompt contract; run prepare")
     if manifest["registry_sha256"] != registry_fingerprint(load_registry(args.registry)):
         raise ValueError("Stale QA registry; regenerate candidates")
     if file_hash(args.source) != manifest["source_sha256"]:
@@ -304,6 +319,58 @@ def checked(args):
     return manifest, requests, pending
 
 
+def validate_count_artifacts(args):
+    """Validate reusable QA counts without requiring every row to be observed."""
+    manifest, _requests, _pending = checked(args)
+    count_manifest = read(args.work / "counts.manifest.json")
+    if not count_manifest:
+        raise ValueError("counts.manifest.json missing")
+    results = read(args.work / "results.json", {})
+    if count_manifest.get("results_sha256") != digest(results):
+        raise ValueError("QA results hash mismatch")
+    registry = load_registry(args.registry)
+    expected = set(registry.event_district_id)
+    for days in (PRIMARY_NEWS_WINDOW_DAYS, SENSITIVITY_NEWS_WINDOW_DAYS):
+        path = args.work / f"counts_{days}d.csv"
+        if not path.exists():
+            raise ValueError(f"{path.name} missing")
+        frame = pd.read_csv(path, dtype=str, keep_default_na=False)
+        required = {"event_district_id", "final_article_count", "collection_status",
+                    "article_count_is_lower_bound", "window_days"}
+        if not required <= set(frame):
+            raise ValueError(f"{path.name} missing columns {sorted(required - set(frame))}")
+        if frame.event_district_id.duplicated().any() or set(frame.event_district_id) != expected:
+            raise ValueError(f"{path.name} does not match the current registry")
+        if set(frame.window_days) != {str(days)}:
+            raise ValueError(f"{path.name} has the wrong window_days")
+        statuses = frame.collection_status.str.strip().str.lower()
+        if not statuses.isin({"complete", "partial", "incomplete"}).all():
+            raise ValueError(f"{path.name} has an invalid collection_status")
+        observed = statuses.isin({"complete", "partial"})
+        counts = pd.to_numeric(frame.final_article_count, errors="coerce")
+        if (counts[observed].isna().any() or (counts[observed] < 0).any()
+                or (counts[observed] % 1 != 0).any()):
+            raise ValueError(f"{path.name} has invalid observed counts")
+        lower = frame.article_count_is_lower_bound.str.strip().str.lower().isin({"true", "1"})
+        if not lower[statuses.eq("partial")].all():
+            raise ValueError(f"{path.name} partial rows must be lower bounds")
+    return manifest
+
+
+def article_pipeline_state(args) -> str:
+    """Return the highest reusable local stage under the current fingerprints."""
+    try:
+        validate_count_artifacts(args)
+        return "llm_complete"
+    except (OSError, ValueError, KeyError):
+        pass
+    try:
+        checked(args)
+        return "heuristic_complete"
+    except (OSError, ValueError, KeyError):
+        return "none"
+
+
 def supplement_query(registry, gap_ids):
     selected = registry[registry.event_district_id.isin(gap_ids)]
     if selected.empty:
@@ -311,13 +378,15 @@ def supplement_query(registry, gap_ids):
     windows = prepare_district_windows(selected)
     profiles = profiles_for(selected)
     for window in windows:
-        window["query_end_exclusive"] = window["onset_date"] + timedelta(days=30)
+        window["query_end_exclusive"] = window["onset_date"] + timedelta(
+            days=PRIMARY_NEWS_WINDOW_DAYS
+        )
         window["query_end"] = window["query_end_exclusive"] - timedelta(days=1)
         window["location_terms"] = profiles[window["event_district_id"]]["terms"]
     sql = build_district_query(windows, topic_profile="strict",
                               languages=INDIA_MEDIA_LANGUAGES, title_fallback=True,
                               article_metadata_profile="rich")
-    return sql.replace("onset+14.", "onset+30."), windows
+    return sql.replace("onset+14.", f"onset+{PRIMARY_NEWS_WINDOW_DAYS}."), windows
 
 
 def supplement(args, estimator=estimate_query, executor=execute_district_query):
@@ -333,7 +402,7 @@ def supplement(args, estimator=estimate_query, executor=execute_district_query):
     gap_ids = [r["event_district_id"] for r in manifest["gaps"]]
     query = supplement_query(load_registry(args.registry), gap_ids)
     state = {"registry_sha256": manifest["registry_sha256"], "coverage_scope": SCOPE,
-             "gaps": manifest["gaps"], "window_days": 30}
+             "gaps": manifest["gaps"], "window_days": PRIMARY_NEWS_WINDOW_DAYS}
     if query is None:
         save(args.work / "supplement.json", {**state, "status": "complete", "query_required": False})
         return
@@ -719,13 +788,15 @@ def counts(args):
                 "article_key": request["article_key"], "url": request["url"],
                 "event_id": request["event_id"], "event_district_id": d["event_district_id"],
                 "day": request["day"], "verdict": verdict,
+                "heuristic_status": request.get("heuristic_status"),
+                "heuristic_matches": request.get("heuristic_matches", []),
                 **decisions.get(d["event_district_id"], {}),
                 "custom_id": request["custom_id"], "model": (result or {}).get("model", request["model"]),
                 "prompt_version": PROMPT_VERSION, "batch_id": (result or {}).get("batch_id"),
                 "token_usage": (result or {}).get("usage"), "response_sha256": (result or {}).get("response_sha256"),
             })
     write_rows(args.work / "decisions.jsonl", pair_rows)
-    for days in (14, 30):
+    for days in (PRIMARY_NEWS_WINDOW_DAYS, SENSITIVITY_NEWS_WINDOW_DAYS):
         # Assign a URL once per canonical district to nearest eligible onset.
         selected = {}
         for row in pair_rows:
@@ -750,7 +821,11 @@ def counts(args):
             observed = complete or partial
             collection_status = "complete" if complete else ("partial" if partial else "incomplete")
             output.append({**{k: p[k] for k in ["event_district_id", "event_id", "source_record_id", "state", "district", "start_date"]},
-                           "candidate_article_count": len(rows), "heuristic_pass_count": 0,
+                           "candidate_article_count": len(rows),
+                           "heuristic_pass_count": sum(
+                               str(r.get("heuristic_status", "")).endswith("keyword_match")
+                               for r in rows
+                           ),
                            "final_article_count": sum(r["verdict"] == "relevant" for r in rows) if observed else float("nan"),
                            "count_source": "llm_qa_observed_lower_bound" if partial else "llm_qa",
                            "collection_status": collection_status,
@@ -817,7 +892,7 @@ def run_batches(args, client):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["prepare", "retry-text", "supplement", "download-new", "submit", "status", "collect", "counts", "run-batches"])
+    parser.add_argument("action", choices=["prepare", "retry-text", "supplement", "download-new", "submit", "status", "collect", "counts", "run-batches", "state"])
     parser.add_argument("--registry", type=Path, default=data_path("event_districts"))
     parser.add_argument("--source", type=Path, default=data_path("gdelt_articles"))
     parser.add_argument("--database", type=Path, default=data_path("gdelt_article_database"))
@@ -835,7 +910,9 @@ def main(argv=None):
         fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
         raise RuntimeError("Another article QA command is running in this work directory")
-    if args.action == "prepare":
+    if args.action == "state":
+        print(article_pipeline_state(args))
+    elif args.action == "prepare":
         prepare(args)
     elif args.action == "supplement":
         import os

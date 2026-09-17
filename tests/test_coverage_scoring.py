@@ -35,7 +35,7 @@ def synthetic(n=750):
                          'article_count': y, 'flood_area_km2': np.expm1(flood),
                          'total_population': 1e6 * np.exp(pop), 'urban_population_share': .4,
                          'satellite_source': [('S1_TO_SITS', 'SITS_NDWI_RESTORED', 'SITS_NDWI')[i % 3] for i in range(n)],
-                         'analysis_eligible': True, 'exclusion_reason': ''})
+                         'analysis_eligible': True, 'exclusion_reason': '', 'window_days': 30})
 
 
 class ScoringTests(unittest.TestCase):
@@ -142,7 +142,7 @@ class ScoringTests(unittest.TestCase):
 
     def test_insufficient_and_empty_never_fit(self):
         cases = [self.table.head(49), self.table.assign(source_record_id='only_one'),
-                 self.table.assign(analysis_eligible=False, exclusion_reason='not_observed', article_count=np.nan, flood_area_km2=np.nan), self.table.head(0)]
+                 self.table.assign(analysis_eligible=False, exclusion_reason='not_observed', article_count=np.nan, flood_area_km2=np.nan)]
         with patch.object(scoring, 'fit_model', side_effect=AssertionError('must not fit')):
             for table in cases:
                 scored, diag, summary = scoring.score_coverage(table)
@@ -152,6 +152,8 @@ class ScoringTests(unittest.TestCase):
                 self.assertTrue(scored[scoring.NUMERIC_SCORES].isna().all().all())
                 self.assertTrue(scored.coverage_class.eq('not_scored').all())
                 json.dumps(scoring.json_ready(summary), allow_nan=False)
+        with self.assertRaisesRegex(ValueError, 'mixes window_days'):
+            scoring.score_coverage(self.table.head(0))
 
     def test_train_gates_and_collinearity(self):
         for table, settings in [(self.table, scoring.Settings(min_train_rows=1000)),

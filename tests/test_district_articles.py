@@ -46,10 +46,10 @@ class DistrictArticlesTests(unittest.TestCase):
         self.assertEqual(set(first["source_record_id"]), {"2020-0001-IND"})
         self.assertEqual(set(first["event_district_id"]), {"E1::puri", "E1::cuttack"})
 
-    def test_window_is_fixed_half_open_fourteen_days(self):
+    def test_primary_window_is_fixed_half_open_thirty_days(self):
         windows = district_articles.prepare_district_windows(self.registry)
         self.assertEqual(windows[0]["query_start"].isoformat(), "2020-01-01")
-        self.assertEqual(windows[0]["query_end_exclusive"].isoformat(), "2020-01-15")
+        self.assertEqual(windows[0]["query_end_exclusive"].isoformat(), "2020-01-31")
         query = district_articles.build_district_query(windows)
         self.assertIn("DATE(g.published_at) < e.query_end_exclusive", query)
         self.assertIn("PARTITION BY normalized_url, state, district", query)

@@ -17,7 +17,8 @@ from scipy.stats import nbinom, poisson, spearmanr
 from sklearn.model_selection import GroupKFold
 import statsmodels.formula.api as smf
 
-from analyze_coverage_disparity import MIN_OBSERVATIONS, fit_nb, prepare_analysis
+from analyze_coverage_disparity import (MIN_OBSERVATIONS, analysis_window_days,
+                                        fit_nb, prepare_analysis)
 from cvnd_layout import ROOT, data_path, output_path
 from district_keys import AOI_MATCHED, SATELLITE_OBSERVED
 
@@ -221,6 +222,7 @@ def calibration(frame):
 
 def score_coverage(table, settings=None, sensitivity_no_population=False):
     settings = settings or Settings()
+    window_days = analysis_window_days(table)
     full, sample = prepare_scoring(table)
     single_year = sample.year_c.nunique() == 1
     formula = FORMULA.replace(' + year_c', '') if single_year else FORMULA
@@ -241,7 +243,7 @@ def score_coverage(table, settings=None, sensitivity_no_population=False):
                'year_term_omitted': single_year,
                'existing_nb_fit_guards': {'min_rows': MIN_OBSERVATIONS, 'rows_per_parameter': 5, 'require_outcome_variation': True},
                'variance': 'mu + alpha * mu^2; alpha estimated by maximum likelihood',
-               'n_total': len(full), 'n_eligible': len(sample), 'n_sources': n_sources,
+               'window_days': window_days, 'n_total': len(full), 'n_eligible': len(sample), 'n_sources': n_sources,
                'satellite_source_counts': sample.satellite_source.value_counts().to_dict(),
                'n_input_sources': int(full.source_record_id.nunique()),
                'n_excluded': len(full) - len(sample), 'folds': [], 'limitations': LIMITATIONS,
@@ -378,6 +380,7 @@ def write_outputs(scores, diagnostics, summary, results_dir, output_dir):
         fig.savefig(output_dir / (name + '.png'), dpi=200)
         plt.close(fig)
     report = ['# Relative coverage scoring', '',
+              f"News window: {summary['window_days']} days.", '',
               f"Status: {summary['status']}. Input rows: {summary['n_total']}; eligible: {summary['n_eligible']}; source events: {summary['n_sources']}; scored: {summary['n_scored']}.",
               '', f"Formula: `{summary['formulas']['nb2']}`. Estimated NB2 alpha; source-group five-fold OOF only.",
               '', 'No empirical conclusion is available.' if not summary['n_scored'] else 'Labels identify exploratory relative coverage candidates under the fitted observed-count distribution.',

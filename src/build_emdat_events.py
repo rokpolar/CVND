@@ -691,7 +691,6 @@ def build_summary(base_path: Path, base: pd.DataFrame, full: pd.DataFrame) -> di
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", type=Path, default=data_path("emdat_base"))
-    parser.add_argument("--events-output", type=Path, default=data_path("events"))
     parser.add_argument(
         "--event-district-output",
         type=Path,
@@ -712,9 +711,9 @@ def main(argv: Iterable[str] | None = None) -> int:
         unresolved_registry = build_event_districts(base, registry)
         from district_recovery import recover_from_files
         event_districts = recover_from_files(
-            unresolved_registry, data_path("events").parent / "district_recovery_mapping.csv")
+            unresolved_registry, data_path("district_recovery_mapping"))
         sensitivity = recover_from_files(
-            unresolved_registry, data_path("events").parent / "district_recovery_mapping.csv",
+            unresolved_registry, data_path("district_recovery_mapping"),
             include_circularity_risk=True)
         retained_event_ids = set(event_districts["event_id"])
         sensitivity_event_ids = set(sensitivity["event_id"])
@@ -741,9 +740,6 @@ def main(argv: Iterable[str] | None = None) -> int:
             from registry_cache import reconcile
             reconcile(pd.read_csv(args.event_district_output, dtype=str, keep_default_na=False), event_districts)
 
-        args.events_output.parent.mkdir(parents=True, exist_ok=True)
-        event_districts.to_csv(args.events_output, index=False)
-        print(f"Wrote event registry: {args.events_output}")
         args.event_district_output.parent.mkdir(parents=True, exist_ok=True)
         event_districts.to_csv(args.event_district_output, index=False)
         print(f"Wrote event × district registry: {args.event_district_output} ({len(event_districts)} rows)")

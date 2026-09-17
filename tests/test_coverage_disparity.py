@@ -16,7 +16,7 @@ def synthetic(n=1500):
     mu = np.exp(-.5 + .6 * flood + 1.1 * urban)
     alpha = .7
     y = rng.negative_binomial(1 / alpha, 1 / (1 + alpha * mu))
-    return pd.DataFrame({'event_district_id': ['ED' + str(i) for i in range(n)], 'event_id': ['E' + str(i // 3) for i in range(n)], 'source_record_id': ['S' + str(i // 3) for i in range(n)], 'state': ['state' + str(i % 25) for i in range(n)], 'district': ['district' + str(i) for i in range(n)], 'start_date': ['2020-01-01' if i % 2 else '2021-01-01' for i in range(n)], 'article_count': y, 'flood_area_km2': np.expm1(flood), 'log_flood_area': flood, 'urban_population_share': urban, 'satellite_source': [('S1_TO_SITS', 'SITS_NDWI_RESTORED', 'SITS_NDWI')[i % 3] for i in range(n)], 'analysis_eligible': True, 'exclusion_reason': ''})
+    return pd.DataFrame({'event_district_id': ['ED' + str(i) for i in range(n)], 'event_id': ['E' + str(i // 3) for i in range(n)], 'source_record_id': ['S' + str(i // 3) for i in range(n)], 'state': ['state' + str(i % 25) for i in range(n)], 'district': ['district' + str(i) for i in range(n)], 'start_date': ['2020-01-01' if i % 2 else '2021-01-01' for i in range(n)], 'article_count': y, 'flood_area_km2': np.expm1(flood), 'log_flood_area': flood, 'urban_population_share': urban, 'satellite_source': [('S1_TO_SITS', 'SITS_NDWI_RESTORED', 'SITS_NDWI')[i % 3] for i in range(n)], 'analysis_eligible': True, 'exclusion_reason': '', 'window_days': 30})
 
 
 class CoverageModelsTests(unittest.TestCase):
@@ -88,6 +88,14 @@ class CoverageModelsTests(unittest.TestCase):
         self.assertIsNone(predictions)
         self.assertEqual(list(results.columns), RESULT_COLUMNS)
         self.assertIn('No empirical conclusion', summary['conclusion_candidate'])
+
+    def test_window_days_is_required_and_cannot_be_mixed(self):
+        with self.assertRaisesRegex(ValueError, 'missing window_days'):
+            analyze(self.data.drop(columns='window_days'))
+        mixed = self.data.head(20).copy()
+        mixed.loc[mixed.index[0], 'window_days'] = 14
+        with self.assertRaisesRegex(ValueError, 'mixes window_days'):
+            analyze(mixed)
 
     def test_routing_comparison_definitions_and_verdict(self):
         from analyze_coverage_disparity import prepare_analysis, routing_comparison

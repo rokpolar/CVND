@@ -10,11 +10,9 @@ if [[ -f "$ROOT/.env" ]]; then
 fi
 SETUP_DEPS="${SETUP_DEPS:-0}"
 SKIP_GEE="${SKIP_GEE:-1}"
-SKIP_ARTICLES="${SKIP_ARTICLES:-1}"
-REUSE_STATE_ARTICLES="${REUSE_STATE_ARTICLES:-0}"
+ARTICLE_PIPELINE_MODE="${ARTICLE_PIPELINE_MODE:-auto}"
 RUN_ARTICLE_SUPPLEMENT="${RUN_ARTICLE_SUPPLEMENT:-0}"
 GDELT_SUPPLEMENT_MAX_TIB="${GDELT_SUPPLEMENT_MAX_TIB:-0.25}"
-RUN_LLM_QA="${RUN_LLM_QA:-0}"
 LLM_QA_MODEL="${LLM_QA_MODEL:-gpt-5.6-luna}"
 SITS_INFERENCE_WATCH="${SITS_INFERENCE_WATCH:-1}"
 SITS_INFERENCE_WATCH_INTERVAL="${SITS_INFERENCE_WATCH_INTERVAL:-10}"
@@ -27,13 +25,16 @@ SITS_MIN_INFLIGHT_REQUESTS="${SITS_MIN_INFLIGHT_REQUESTS:-4}"
 SKIP_COVARIATES="${SKIP_COVARIATES:-0}"
 SKIP_ANALYSIS="${SKIP_ANALYSIS:-0}"
 DRY_RUN="${DRY_RUN:-0}"
-# Track A alone feeds the interim S1 routing. sits_primary needs Track B for
-# every district (SATELLITE_TRACK=both) and the compare_tracks converter.
+# Track A feeds the default S1-first, S2-fallback routing. sits_primary needs
+# Track B for every district (SATELLITE_TRACK=both) and compare_tracks.
 SATELLITE_TRACK="${SATELLITE_TRACK:-A}"
-SATELLITE_ROUTING="${SATELLITE_ROUTING:-s1_interim}"
+SATELLITE_ROUTING="${SATELLITE_ROUTING:-s1_then_s2}"
 SITS_BACKEND="${SITS_BACKEND:-gee}"
 if [[ "${1:-}" == "--dry-run" ]]; then DRY_RUN=1; shift; fi
 if [[ $# -ne 0 ]]; then echo 'Usage: run_pipeline.sh [--dry-run]' >&2; exit 2; fi
+if [[ "$ARTICLE_PIPELINE_MODE" != auto && "$ARTICLE_PIPELINE_MODE" != force && "$ARTICLE_PIPELINE_MODE" != skip ]]; then
+  echo 'ARTICLE_PIPELINE_MODE must be auto, force, or skip' >&2; exit 2
+fi
 # Interpreter: $PYTHON if given; else the project venv; else the first python
 # on PATH that has the pipeline's packages. On Windows `python3` can be the
 # Microsoft Store stub, which exists but cannot run anything, so every
@@ -66,10 +67,10 @@ run() {
   printf '\n'
   if [[ "$DRY_RUN" != 1 ]]; then "$PYTHON" "$@"; fi
 }
-if [[ "$SETUP_DEPS" == 1 ]]; then run -m pip install -r requirements.txt; fi
+if [[ "$SETUP_DEPS" == 1 ]]; then run -m pip install -r requirements-lock.txt; fi
 echo 'CVND PRIMARY: event × district; legacy state caches are incompatible.'
 export SITS_BLOCK_WORKERS SITS_MAX_INFLIGHT_REQUESTS SITS_MIN_INFLIGHT_REQUESTS SITS_BACKEND
-echo "SKIP_GEE=$SKIP_GEE SKIP_ARTICLES=$SKIP_ARTICLES SKIP_COVARIATES=$SKIP_COVARIATES SKIP_ANALYSIS=$SKIP_ANALYSIS DRY_RUN=$DRY_RUN SATELLITE_TRACK=$SATELLITE_TRACK SATELLITE_ROUTING=$SATELLITE_ROUTING SITS_BACKEND=$SITS_BACKEND SITS_BLOCK_WORKERS=$SITS_BLOCK_WORKERS SITS_MAX_INFLIGHT_REQUESTS=$SITS_MAX_INFLIGHT_REQUESTS SITS_MIN_INFLIGHT_REQUESTS=$SITS_MIN_INFLIGHT_REQUESTS"
+echo "SKIP_GEE=$SKIP_GEE ARTICLE_PIPELINE_MODE=$ARTICLE_PIPELINE_MODE SKIP_COVARIATES=$SKIP_COVARIATES SKIP_ANALYSIS=$SKIP_ANALYSIS DRY_RUN=$DRY_RUN SATELLITE_TRACK=$SATELLITE_TRACK SATELLITE_ROUTING=$SATELLITE_ROUTING SITS_BACKEND=$SITS_BACKEND SITS_BLOCK_WORKERS=$SITS_BLOCK_WORKERS SITS_MAX_INFLIGHT_REQUESTS=$SITS_MAX_INFLIGHT_REQUESTS SITS_MIN_INFLIGHT_REQUESTS=$SITS_MIN_INFLIGHT_REQUESTS"
 run src/build_emdat_events.py
 if [[ "$SKIP_COVARIATES" != 1 ]]; then run src/build_district_covariates.py; fi
 if [[ "$SKIP_GEE" != 1 ]]; then
@@ -78,15 +79,19 @@ if [[ "$SKIP_GEE" != 1 ]]; then
   else
     run src/event_aoi_area.py
   fi
+  if [[ "$SATELLITE_TRACK" == "A" || "$SATELLITE_TRACK" == "both" ]]; then
+    run src/satellite.py --track A --sensor s1 --backend "$SITS_BACKEND"
+    run src/satellite.py --track A --sensor s2 --backend "$SITS_BACKEND"
+  fi
   if [[ "$SATELLITE_TRACK" == "B" || "$SATELLITE_TRACK" == "both" ]] \
       && [[ "$DRY_RUN" != 1 && "$SITS_INFERENCE_WATCH" == 1 ]]; then
     # Track-B writes an atomic block checkpoint beside every H5.  Keep a
     # watcher alongside the downloader so completed H5 files are inferred
     # immediately while partial files remain excluded by the inference code.
     printf '>>> '
-    printf '%q ' "$PYTHON" src/satellite.py --track "$SATELLITE_TRACK" --backend "$SITS_BACKEND"
+    printf '%q ' "$PYTHON" src/satellite.py --track B --backend "$SITS_BACKEND"
     printf '& (SITS inference watcher enabled)\n'
-    "$PYTHON" src/satellite.py --track "$SATELLITE_TRACK" --backend "$SITS_BACKEND" &
+    "$PYTHON" src/satellite.py --track B --backend "$SITS_BACKEND" &
     satellite_pid=$!
     watcher_pid=''
     cleanup_sits_watcher() {
@@ -117,16 +122,14 @@ if [[ "$SKIP_GEE" != 1 ]]; then
       echo "SITS inference watcher failed (status=$watcher_status)" >&2
       exit "$watcher_status"
     fi
-  else
-    run src/satellite.py --track "$SATELLITE_TRACK" --backend "$SITS_BACKEND"
-    if [[ "$SATELLITE_TRACK" == "B" || "$SATELLITE_TRACK" == "both" ]]; then
-      run src/run_sits_inference.py
-    fi
+  elif [[ "$SATELLITE_TRACK" == "B" || "$SATELLITE_TRACK" == "both" ]]; then
+    run src/satellite.py --track B --backend "$SITS_BACKEND"
+    run src/run_sits_inference.py
   fi
 else
   echo 'Using district satellite caches only; missing artifacts fail explicitly.'
 fi
-# s1_interim: every district is measured by Track A Sentinel-1 new water.
+# s1_then_s2: use S1 when observed and S2 NDWI only for missing-S1 districts.
 # sits_primary: SITS (Track B) first; a district whose Track B is not finished
 # stays missing (sits_pending), never S1, and compare_tracks.py decides the
 # S1 -> SITS-NDWI converter for districts SITS cannot measure.
@@ -135,47 +138,55 @@ if [[ "$SATELLITE_ROUTING" == "sits_primary" ]]; then
 fi
 run src/merge_results.py --routing "$SATELLITE_ROUTING"
 run src/build_flood_area_table.py
-if [[ "$REUSE_STATE_ARTICLES" == 1 || "$RUN_ARTICLE_SUPPLEMENT" == 1 || "$RUN_LLM_QA" == 1 ]]; then
-  run src/article_qa.py prepare --model "$LLM_QA_MODEL"
-  if [[ "$RUN_ARTICLE_SUPPLEMENT" == 1 ]]; then
-    run src/article_qa.py retry-text
-    run src/article_qa.py prepare --model "$LLM_QA_MODEL"
-    run src/article_qa.py supplement --execute --maximum-tib "$GDELT_SUPPLEMENT_MAX_TIB"
-    run src/article_qa.py download-new
-    run src/article_qa.py prepare --model "$LLM_QA_MODEL"
-  fi
-  if [[ "$RUN_LLM_QA" == 1 ]]; then
-    run src/article_qa.py run-batches --execute
-  fi
-  run src/article_qa.py counts
-  ARTICLE_QA_ACTIVE=1
-elif [[ "$SKIP_ARTICLES" != 1 ]]; then
-  run src/district_articles.py --execute --overwrite
-  article_input="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_gdelt_articles'))")"
-  article_database="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_article_database'))")"
-  run src/download_articles.py "$article_input" --output "$article_database"
-fi
-if [[ "${ARTICLE_QA_ACTIVE:-0}" != 1 ]]; then
-  run src/district_articles.py --counts-only
-fi
-if [[ "${ARTICLE_QA_ACTIVE:-0}" == 1 ]]; then
-  run src/join_district_flood_articles.py --articles data/intermediate/article_qa/counts_14d.csv
-  run src/join_district_flood_articles.py --articles data/intermediate/article_qa/counts_30d.csv \
-    --output data/results/district_flood_articles_30d.csv \
-    --exclusions data/results/district_analysis_exclusions_30d.csv \
-    --qc data/results/district_qc_30d.json
+article_input="$ROOT/data/intermediate/district_gdelt.articles.jsonl.gz"
+article_database="$ROOT/data/cache/district/articles.sqlite"
+qa_args=(--source "$article_input" --database "$article_database" --model "$LLM_QA_MODEL")
+if [[ "$ARTICLE_PIPELINE_MODE" == skip ]]; then
+  ARTICLE_STATE=skip
+elif [[ "$ARTICLE_PIPELINE_MODE" == force ]]; then
+  ARTICLE_STATE=none
 else
-  run src/join_district_flood_articles.py
+  ARTICLE_STATE="$("$PYTHON" src/article_qa.py state "${qa_args[@]}")"
 fi
-if [[ "$SKIP_ANALYSIS" != 1 ]]; then
-  run src/analyze_coverage_disparity.py
-  if [[ "${ARTICLE_QA_ACTIVE:-0}" == 1 ]]; then
-    run src/analyze_coverage_disparity.py \
-      --input data/results/district_flood_articles_30d.csv \
-      --output-dir outputs/sensitivity_30d \
-      --results-dir data/results/sensitivity_30d
+echo "Article pipeline state: $ARTICLE_STATE"
+if [[ "$ARTICLE_STATE" == none ]]; then
+  run src/district_articles.py --execute --overwrite
+  run src/download_articles.py "$article_input" --output "$article_database"
+  run src/district_articles.py --counts-only
+  run src/article_qa.py prepare "${qa_args[@]}"
+  ARTICLE_STATE=heuristic_complete
+fi
+if [[ "$ARTICLE_STATE" == heuristic_complete ]]; then
+  if [[ "$RUN_ARTICLE_SUPPLEMENT" == 1 ]]; then
+    run src/article_qa.py retry-text "${qa_args[@]}"
+    run src/article_qa.py prepare "${qa_args[@]}"
+    run src/article_qa.py supplement "${qa_args[@]}" --execute --maximum-tib "$GDELT_SUPPLEMENT_MAX_TIB"
+    run src/article_qa.py download-new "${qa_args[@]}"
+    run src/article_qa.py prepare "${qa_args[@]}"
   fi
+  run src/article_qa.py run-batches "${qa_args[@]}" --execute
+  run src/article_qa.py counts "${qa_args[@]}"
+  ARTICLE_STATE=llm_complete
+fi
+if [[ "$ARTICLE_STATE" == llm_complete ]]; then
+  run src/join_district_flood_articles.py --articles data/intermediate/article_qa/counts_30d.csv
+  run src/join_district_flood_articles.py --articles data/intermediate/article_qa/counts_14d.csv \
+    --output data/results/sensitivity_14d/district_flood_articles.csv \
+    --exclusions data/results/sensitivity_14d/district_analysis_exclusions.csv \
+    --qc data/results/sensitivity_14d/district_qc.json
+fi
+if [[ "$SKIP_ANALYSIS" != 1 && "$ARTICLE_STATE" != skip ]]; then
+  run src/analyze_coverage_disparity.py
+  run src/analyze_coverage_disparity.py \
+    --input data/results/sensitivity_14d/district_flood_articles.csv \
+    --output-dir outputs/sensitivity_14d \
+    --results-dir data/results/sensitivity_14d
   run src/score_coverage.py
+  run src/score_coverage.py \
+    --input data/results/sensitivity_14d/district_flood_articles.csv \
+    --output-dir outputs/sensitivity_14d \
+    --results-dir data/results/sensitivity_14d
+  run scripts/build_analysis_package.py
 fi
 if [[ "$DRY_RUN" == 1 ]]; then
   echo 'Offline validation (no queries, downloads, model fitting, or artifact replacement):'

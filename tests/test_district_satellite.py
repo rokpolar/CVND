@@ -65,13 +65,13 @@ def reduce_handler(areas=None, hist=None):
     return reduce
 
 
-def run_track_a(fake, spec=SPEC, **patches):
+def run_track_a(fake, spec=SPEC, sensor="both", **patches):
     with patch.object(satellite, "ee", fake), \
             patch.object(satellite, "resolve_aoi", lambda row, spec=SPEC: fake_aoi(fake)):
         if "measurement_mask" in patches:
             with patch.object(satellite, "measurement_mask", patches["measurement_mask"]):
-                return satellite.detect_flood_baseline(pd.Series(ROW), spec)
-        return satellite.detect_flood_baseline(pd.Series(ROW), spec)
+                return satellite.detect_flood_baseline(pd.Series(ROW), spec, sensor=sensor)
+        return satellite.detect_flood_baseline(pd.Series(ROW), spec, sensor=sensor)
 
 
 def area_reductions(fake):
@@ -80,6 +80,29 @@ def area_reductions(fake):
 
 
 class TrackAMeasurementSpecTests(unittest.TestCase):
+    def test_sensor_specific_runs_do_not_touch_the_other_collection(self):
+        fake = FakeEE(reduce=reduce_handler())
+        with patch.object(satellite, "s2_collection", side_effect=AssertionError("S2 called")):
+            row = run_track_a(fake, sensor="s1")
+        self.assertEqual(row["area_s1_km2"], 12.0)
+        self.assertIsNone(row["area_s2_km2"])
+
+        fake = FakeEE(reduce=reduce_handler())
+        with patch.object(satellite, "s1_collection", side_effect=AssertionError("S1 called")):
+            row = run_track_a(fake, sensor="s2")
+        self.assertEqual(row["area_s2_km2"], 4.0)
+        self.assertIsNone(row["area_s1_km2"])
+
+    def test_sensor_entries_merge_without_losing_observed_zero(self):
+        s1 = {**ROW, "aoi_match_status": "matched", "area_s1_km2": 0.0,
+              "s1_pre_images": 1, "s1_post_images": 1, "baseline_status": "OK"}
+        s2 = {**ROW, "aoi_match_status": "matched", "area_s2_km2": 4.0,
+              "s2_pre_images": 2, "s2_post_images": 2, "baseline_status": "OK"}
+        merged = satellite._merge_track_a_entry(s1, s2)
+        self.assertEqual(merged["area_s1_km2"], 0.0)
+        self.assertEqual(merged["area_s2_km2"], 4.0)
+        self.assertTrue(satellite._sensor_attempted(merged, "s1"))
+        self.assertTrue(satellite._sensor_attempted(merged, "s2"))
     def test_windows_are_spec_windows(self):
         fake = FakeEE(reduce=reduce_handler())
         run_track_a(fake)
@@ -829,12 +852,11 @@ class DistrictSatelliteTests(unittest.TestCase):
         result = self._one_district(satellite_source="NONE")
         self.assertTrue(pd.isna(result.loc[0, "flood_area_km2"]))
         self.assertEqual(result.loc[0, "satellite_status"], "missing")
-        # The interim routing's S1 label is a measured source.
-        result = self._one_district(satellite_source="S1", route_reason="interim_s1_only")
+        # The sequential routing's S1 and NDWI labels are measured sources.
+        result = self._one_district(satellite_source="S1", route_reason="s1_primary")
         self.assertEqual(result.loc[0, "flood_area_km2"], 3.0)
-        # NDWI was a legacy-only label.
-        result = self._one_district(satellite_source="NDWI")
-        self.assertTrue(pd.isna(result.loc[0, "flood_area_km2"]))
+        result = self._one_district(satellite_source="NDWI", route_reason="s2_fallback")
+        self.assertEqual(result.loc[0, "flood_area_km2"], 3.0)
 
     def test_state_combined_schema_cannot_feed_district_table(self):
         registry = pd.DataFrame([{
@@ -887,9 +909,9 @@ class DistrictSatelliteTests(unittest.TestCase):
             result = pd.read_csv(output)
             self.assertNotIn("E1", set(result["event_district_id"].dropna()))
             self.assertEqual(result.loc[0, "event_district_id"], "E1__a")
-            # Default interim routing: the district's own Track A S1, never the parent cache.
+            # Default sequential routing: the district's own Track A S1, never the parent cache.
             self.assertEqual(result.loc[0, "combined_km2"], 25.0)
-            self.assertEqual(result.loc[0, "route_reason"], "interim_s1_only")
+            self.assertEqual(result.loc[0, "route_reason"], "s1_primary")
             self.assertEqual(result.loc[0, "sits_status"], "pending")
             self.assertEqual(result.loc[0, "legacy_combined_km2"], 25.0)
             self.assertEqual(result.loc[0, "legacy_route_reason"], "no_optical_s1")

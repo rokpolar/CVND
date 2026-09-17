@@ -18,7 +18,7 @@ from district_keys import cache_stem  # noqa: E402
 from flood_spec import (CONVERTER_RULES_VERSION, H5_LAYOUT_VERSION,  # noqa: E402
                         LEGACY_ROUTE_REASONS, LEGACY_SATELLITE_SOURCES, MEASURED_SOURCES,
                         ROUTE_REASONS, SATELLITE_SOURCES, SPEC_VERSION)
-from merge_results import (Candidates, Route, interim_route_area, legacy_route_area,  # noqa: E402
+from merge_results import (Candidates, Route, s1_then_s2_route_area, legacy_route_area,  # noqa: E402
                            route_area)
 
 OK = dict(aoi_matched=True, sits_status="ok", eligible_km2=100.0, sits_usable_km2=80.0)
@@ -154,17 +154,23 @@ class RouteAreaTests(unittest.TestCase):
             self.assertIn(route.route_reason, ROUTE_REASONS)
             self.assertEqual(route.combined_km2 is None, route.satellite_source == "NONE")
         self.assertEqual({route_area(c).satellite_source for _, c, _ in GOLDEN} - {"NONE"},
-                         set(MEASURED_SOURCES) - {"S1"})
+                         set(MEASURED_SOURCES) - {"S1", "NDWI"})
 
-    def test_interim_routing_is_s1_for_every_district(self):
+    def test_s1_then_s2_routing(self):
         for status in ("pending", "unavailable", "ok"):
             c = Candidates(True, sits_status=status, s1_km2=40.0, sits_full_km2=6, sits_gated_km2=3,
                            sits_method="ndwi-calib", eligible_km2=100.0, sits_usable_km2=90.0)
-            self.assertEqual(interim_route_area(c), Route(40.0, "S1", "interim_s1_only", "aoi"))
-        self.assertEqual(interim_route_area(Candidates(True, s1_km2=0.0)).combined_km2, 0.0)
-        self.assertEqual(interim_route_area(Candidates(True)), Route(None, "NONE", "no_s1"))
-        self.assertEqual(interim_route_area(Candidates(False, s1_km2=4.0)), Route(None, "NONE", "aoi_failed"))
-        for route in (interim_route_area(Candidates(True, s1_km2=1.0)), interim_route_area(Candidates(True))):
+            self.assertEqual(s1_then_s2_route_area(c), Route(40.0, "S1", "s1_primary", "aoi"))
+        self.assertEqual(s1_then_s2_route_area(Candidates(True, s1_km2=0.0)).combined_km2, 0.0)
+        self.assertEqual(s1_then_s2_route_area(
+            Candidates(True, ndwi_trackA_km2=4.0, s2_post_images=2)),
+            Route(4.0, "NDWI", "s2_fallback", "aoi"))
+        self.assertEqual(s1_then_s2_route_area(Candidates(True)),
+                         Route(None, "NONE", "no_s1_or_s2"))
+        self.assertEqual(s1_then_s2_route_area(Candidates(False, s1_km2=4.0)),
+                         Route(None, "NONE", "aoi_failed"))
+        for route in (s1_then_s2_route_area(Candidates(True, s1_km2=1.0)),
+                      s1_then_s2_route_area(Candidates(True))):
             self.assertIn(route.satellite_source, SATELLITE_SOURCES)
             self.assertIn(route.route_reason, ROUTE_REASONS)
 
@@ -283,16 +289,17 @@ class MergeMainTests(unittest.TestCase):
         self.assertEqual(result.loc[0, "route_reason"], "sits_unavailable_excluded")
         self.assertTrue(pd.isna(result.loc[0, "combined_km2"]))
 
-    def test_interim_main_needs_no_track_b_or_converter(self):
+    def test_s1_then_s2_main_needs_no_track_b_or_converter(self):
         result = self.run_merge([track_a_row(), track_a_row(event_district_id="E1::b", district="B", area_s1_km2=None)],
-                                [("E1::a", {})], converter=None, routing="s1_interim")
+                                [("E1::a", {})], converter=None, routing="s1_then_s2")
         a, b = result.iloc[0], result.iloc[1]
-        self.assertEqual((a["satellite_source"], a["combined_km2"], a["route_reason"]), ("S1", 12.0, "interim_s1_only"))
-        self.assertEqual(a["routing_mode"], "s1_interim")
+        self.assertEqual((a["satellite_source"], a["combined_km2"], a["route_reason"]),
+                         ("S1", 12.0, "s1_primary"))
+        self.assertEqual(a["routing_mode"], "s1_then_s2")
         self.assertEqual(a["sits_status"], "ok")          # SITS columns kept for reference
         self.assertTrue(pd.notna(a["sits_ndwi_gated_km2"]))
-        self.assertTrue(pd.isna(b["combined_km2"]))
-        self.assertEqual(b["route_reason"], "no_s1")
+        self.assertEqual((b["satellite_source"], b["combined_km2"], b["route_reason"]),
+                         ("NDWI", 5.0, "s2_fallback"))
         self.assertTrue(pd.isna(a["converter_decision"]))
 
     def test_stale_track_a_rows_are_dropped_not_reused(self):

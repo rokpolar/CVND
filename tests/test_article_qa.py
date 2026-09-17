@@ -102,6 +102,19 @@ class QATests(unittest.TestCase):
         self.assertEqual(count.classified_article_count, 1)
         self.assertEqual(count.unresolved_article_count, 1)
         self.assertTrue(count.article_count_is_lower_bound)
+        self.assertEqual(qa.article_pipeline_state(self.args), "llm_complete")
+
+    def test_pipeline_state_resumes_at_highest_valid_stage(self):
+        self.assertEqual(qa.article_pipeline_state(self.args), "none")
+        _, requests, _ = self.prepare()
+        self.assertEqual(qa.article_pipeline_state(self.args), "heuristic_complete")
+        qa.save(self.args.work / "results.json", {requests[0]["custom_id"]: {
+            **self.valid(requests[0]), "usage": {}, "model": qa.MODEL}})
+        qa.counts(self.args)
+        self.assertEqual(qa.article_pipeline_state(self.args), "llm_complete")
+        self.write_articles([dict(url="https://x/changed", published_at="2020-01-03",
+                                  state="Odisha", source_record_id="old")])
+        self.assertEqual(qa.article_pipeline_state(self.args), "none")
 
     def test_schema_ids_and_evidence(self):
         _,requests,_=self.prepare()

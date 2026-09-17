@@ -1,0 +1,9 @@
+analysis,model,se_type,effect,term,effect_size,effect_low,effect_high,p_value,n
+30-day primary,model_2,state_clustered,Flood area,log_flood_area,1.0062086949630875,0.7992788936194342,1.2667117146488638,0.9565292429620388,1191
+30-day primary,model_2,state_clustered,Urban share (+10 pp),urban_population_share,1.1520625024074045,1.0471860827663648,1.2674423689312249,0.0050611491313955,1191
+30-day primary,model_3,state_clustered,Flood area,log_flood_area,1.0085263901235606,0.8609458904032103,1.181404651457603,0.9133609722825108,1191
+30-day primary,model_3,state_clustered,Urban share (+10 pp),urban_population_share,1.150711148906561,1.0455100325029905,1.266497792515511,0.00557355774145,1191
+14-day sensitivity,model_2,state_clustered,Flood area,log_flood_area,0.978378133747642,0.7454383487714945,1.284108570712861,0.8703909992929663,1069
+14-day sensitivity,model_2,state_clustered,Urban share (+10 pp),urban_population_share,1.0732203372001663,0.9871898251279342,1.1667481398836057,0.0942178376160513,1069
+14-day sensitivity,model_3,state_clustered,Flood area,log_flood_area,1.0085614179593585,0.8330426186490695,1.2210613371087309,0.9278775894036628,1069
+14-day sensitivity,model_3,state_clustered,Urban share (+10 pp),urban_population_share,1.0977581827495155,0.998099035459115,1.20736819191414,0.0544406991213673,1069

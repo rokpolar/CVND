@@ -1,127 +1,51 @@
-# Primary district data artifacts
-
-All paths are registered in `src/cvnd_layout.py`. Primary satellite caches live under `data/cache/district/`, and primary article/covariate tables use district-specific names. An `event_id`-only state table is never an acceptable district input.
-
-## Required Census input
-
-Supply the official Census of India 2011 district urban/rural population file at `data/raw/census_2011_district_urban_rural.xlsx` (or pass `--input`). The verified input is ORGI [Basic Population Figures of India/State/District/Sub-District/Village, 2011](https://censusindia.gov.in/nada/index.php/catalog/42557), file `2011-IndiaStateDist-0000.xlsx`. Its actual `Data` and `Record Structure` sheets were inspected; 2,028 input rows include 1,920 district/residence rows representing 640 districts. The parser recognizes:
-
-- PCA SD machine columns: `State`, `District`, `Level`, `Name`, `TRU`, `TOT_P`. State/district are location codes; district names come from `Name`, residence from `TRU` (`Total`, `Rural`, `Urban`), and person counts from `TOT_P`.
-- Named-geography long format: `state`, `district`, `Residence` (`Total/Rural/Urban`), `Population - Persons`; optional district code.
-- A transparent wide extraction of the official source: `state`, `district`, `total_population`, `urban_population`, `rural_population`; optional `census_district_code`, `census_year` (must be 2011).
-
-Counts must be nonnegative and consistent (`total = urban + rural`). Zero denominators remain invalid rather than generating urbanization zero. The builder never infers a missing urban count from a district's reputation. Unsupported headers or missing required population rows fail explicitly. The original official file should be preserved, with any extraction or header conversion recorded. The exact official workbook was downloaded on 2026-09-08 and is present locally at the configured input path. `census_2011_district_urban_rural.meta.json` records its download URL and SHA-256 (`acb01ddb965be41cf22a20f0e641fdbcc1f4a16e6b7bc9cf91478ce289f853e8`). No header conversion was needed. The default projected lookup contains 261 registry geographies: 166 matched, 64 unmatched, 31 unresolved placeholders; this is not 261 independent measured observations.
-
-`district_name_crosswalk.csv` is an empty template. Its keys are `registry_state,registry_district,census_state,census_district` with evidence fields. Only documented geographic equivalences belong here; modern split districts cannot simply inherit an entire old district's Census counts. Telangana has no separate 2011 Census state code; correct boundary matching requires evidence rather than silently substituting Andhra Pradesh.
-
-## Primary artifacts and schemas
-
-| Artifact | Key columns / contract |
-| --- | --- |
-| `intermediate/event_districts.csv` | `event_district_id` PK; parent `event_id`, `source_record_id`, state, district, start/end dates, district source/evidence, AOI level/status |
-| `intermediate/district_covariates.csv` | one state/district row; Census code, total/urban/rural population, continuous urban share, Census year/source, match status |
-| `intermediate/district_aoi.csv` | district PK, parent/source/geography, AOI level/source/match status, geometry ID, geodesic `aoi_area_km2`, `spec_version`; failed matches retained |
-| `cache/district/flood_extent.csv` | district PK with identity/AOI provenance; `area_s1_km2`, `area_s2_km2`, `ndwi_pre_water_km2`, `ndwi_during_water_km2`, S1/S2 pre/post image counts, `cloud_pct` (share of the AOI never seen clear in the post window), `otsu_threshold_db`, `otsu_fallback_used`, `otsu_separability`, `s1_orbit` (ASCENDING/DESCENDING/BOTH), `baseline_status` (OK/NO_IMAGERY/ERROR: …), `spec_version` |
-| `cache/district/sits_patches/` | optional H5 patches named `cache_stem(event_district_id).h5` (percent-encoded; Windows-safe). Model inputs `pre`/`post`/`coords` plus measurement layers `mask` (bit0 eligible, bit1 clear in every timestep), `ndwi_ref` (pre/post NDWI ×1e4, nodata −32768), `pixel_area_m2`; meta `spec_version`; never state patches |
-| `cache/district/sits_scores/` | optional external NPZ SITS scores for those district patches: `scores` (encoder mean), per-tile `ndwi_flood`/`usable_px` pixel counts, `ndwi_flood_km2`, `ndwi_pre_km2`, `ndwi_during_km2`, `tile_area_km2`, `spec_version`; requires valid provenance |
-| `intermediate/district_flood_combined.csv` | district PK and AOI provenance; `combined_km2`; `satellite_source` (S1, NDWI, SITS_NDWI, SITS_NDWI_RESTORED, NONE); `route_reason`; `optical_footprint` (aoi or sits_tiles); every candidate area; SITS gate and footprint; cloud and Otsu QA; `aoi_area_km2`; `spec_version`. No flood ratio |
-| `intermediate/district_flood_area.csv` | district PK, parent/source/geography/date, `flood_area_km2`, `flood_ratio` (computed once from the AOI table), `aoi_area_km2`, `satellite_source`, `satellite_status` (observed/missing/failed_aoi), `aoi_match_status`, `route_reason`, `cloud_pct`, `otsu_fallback_used`, `s1_orbit`, `spec_version` |
-| `intermediate/district_gdelt.sql` | reproducible 14-day query and district assignment logic |
-| `intermediate/district_gdelt.articles.jsonl.gz` | district PK, parent/source/geography, URL, publication date, location evidence and GKG metadata |
-| `intermediate/district_gdelt.manifest.json` | spatial/window contract, collection completeness and provenance; needed to distinguish missing from zero |
-| `cache/district/articles.sqlite` | original URL documents, retrieved title/body and retrieval status; district metadata remains authoritative in JSONL |
-| `results/district_article_counts.heuristic.csv` | district PK, parent/geography, candidate/pass/final counts, count source, collection status and text missingness |
-| `results/district_flood_articles.csv` | district PK; parent/source/state/district/date; flood area/ratio; article count; urban share/populations; satellite/collection/district/Census statuses; `analysis_eligible`, `exclusion_reason` |
-| `results/district_analysis_exclusions.csv` | same schema as joined table, restricted to excluded rows; multiple reasons separated by semicolons |
-| `results/district_qc.json` | stage success numerator, denominator, fraction and final analyzable N |
-| `results/district_selection_bias.csv` | known urbanization tercile/unknown, number of rows/exclusions and exclusion rate |
-| `results/coverage_model_results.csv` | model/term/SE type, coefficient, SE, p-value, coefficient CI, IRR CI, urban 10pp IRR CI, N, estimated alpha |
-| `results/coverage_predictions.csv` | Model 2 urbanization grid, fixed median flood extent, expected count and mean CI |
-| `../outputs/paper_results.md` | numeric results, model availability, exclusions, quality warnings and conditional conclusion |
-| `../outputs/coverage_summary.json` | machine-readable descriptive/model/QC results; unavailable values are JSON null |
-| `../outputs/flood_area_vs_articles.png` | 300 dpi observed log1p scatter |
-| `../outputs/urbanization_adjusted_coverage.png` | 300 dpi Model 2 adjusted mean and 95% CI |
-
-## Legacy state artifacts (retained)
-
-The following previous layout remains for compatibility. Its references to “primary” describe the former state workflow, not the current runner. Do not reuse its state flood/count caches as district values.
-
 # CVND data layout
 
-Tiered folders under `data/`. Primary pipeline scripts resolve paths via
-`data_path(key)` in [`src/cvnd_layout.py`](../src/cvnd_layout.py).
+모든 production 경로는 `src/cvnd_layout.py`에서 관리한다. 분석 단위는 event×district이며 `event_id`만 있는 state cache를 district 관측으로 사용할 수 없다.
 
-## Tiers
+## External inputs
 
-| Folder | Role |
+- `raw/EM-DAT-BASE.xlsx`: 공식 EM-DAT 원본
+- `raw/census_2011_district_urban_rural.xlsx`: 공식 Census 2011 district urban/rural population 원본
+- `raw/district_name_crosswalk.csv`: 외부 근거가 있는 행정구역 대응만 허용하는 명시적 crosswalk
+
+`src/build_emdat_events.py`는 `intermediate/event_districts.csv` 하나만 생성한다. legacy `raw/events.csv`는 지원하지 않는다.
+
+## Intermediate and cache artifacts
+
+| Path | Contract |
 | --- | --- |
-| `raw/` | External inputs (events, EM-DAT, GDELT export) |
-| `cache/` | Satellite / GEE artifacts (rebuild when `SKIP_GEE=0`) |
-| `intermediate/` | Flood area, article classification, retrieval QC |
-| `results/` | Heuristic article counts and joined flood + article tables |
-| `archive/` | Legacy fallbacks (not used by default) |
+| `intermediate/event_districts.csv` | `event_district_id` PK, parent/source/date/geography/evidence |
+| `intermediate/district_covariates.csv` | Census total/urban/rural population, continuous urban share, match provenance |
+| `intermediate/district_aoi.csv` | unique AOI status, geometry ID, area, `spec_version` |
+| `cache/district/flood_extent.csv` | sensor-independent checkpoint; S1 and S2 attempt/observation fields |
+| `intermediate/district_flood_combined.csv` | default S1→S2 route and all candidate areas/statuses |
+| `intermediate/district_flood_area.csv` | selected area, AOI ratio, source/status/reason |
+| `intermediate/district_gdelt.articles.jsonl.gz` | 30-day district-explicit candidate corpus |
+| `cache/district/articles.sqlite` | retrieved article title/body/status |
+| `intermediate/article_qa/` | requests, ledgers, results, two count windows and manifests |
 
-## Files by tier
+S1은 모든 유효 AOI에서 먼저 실행하고 S1 면적 결측 키에만 S2를 실행한다. 유한한 S1 `0 km²`는 성공이다. optional Track B/SITS 파일은 `cache/district/sits_patches/`와 `sits_scores/`에만 저장한다.
 
-### `raw/`
+## Canonical result trees
 
-| File | Key | Producer | Consumers |
-| --- | --- | --- | --- |
-| `EM-DAT-BASE.xlsx` | `emdat_base` | Exact official portal export | `build_emdat_events.py` |
-| `EM-DAT.xlsx` | `emdat_state` | `build_emdat_events.py` + workbook export | Parent-event audit data |
-| `events.csv` | `events` | `build_emdat_events.py` | All pipeline steps |
-| `population.csv` | `population` | External reference | Not used by primary flood stack |
-| `emdat_api_raw.csv` | `emdat_api_csv` | `collect_emdat.py` (optional API staging) | Manual comparison before promotion |
-| `emdat_api_raw.meta.json` | `emdat_meta` | `collect_emdat.py` provenance | Audit / reproducibility |
-| `events_quarantine.csv` | `events_quarantine` | Manual QC | Optional downstream filtering |
+```text
+results/primary_30d/
+  district_flood_articles.csv
+  district_analysis_exclusions.csv
+  district_qc.json
+  district_selection_bias.csv
+  coverage_model_results.csv
+  coverage_predictions.csv
+  coverage_scores.csv
+  coverage_oof_diagnostics.csv
 
-### `cache/`
+results/sensitivity_14d/
+  # same schemas, window_days=14
 
-| File | Key | Producer | Consumers |
-| --- | --- | --- | --- |
-| `cache/district/flood_extent.csv` | `district_flood_extent` | `satellite.py` | `merge_results.py` |
-| `cache/district/sits_scores/*.npz` | `district_sits_scores` | `run_sits_inference.py` | `merge_results.py` |
-| `cache/district/sits_patches/*.h5` | `district_sits_patches` | `satellite.py` Track B | Local SITS inference; retained after scoring |
-| `cache/district/sits_patches_index.csv` | `district_sits_patches_index` | `satellite.py` Track B | Audit / resume |
-| `cache/district/satellite_checkpoint_*.json` | `district_satellite_checkpoint_*` | `satellite.py` | GEE resume |
-| `ne_india_states.gpkg` | `ne_india_states` | Optional map tooling | Choropleth exports |
+../outputs/primary_30d/
+../outputs/sensitivity_14d/
+```
 
-The local SITS model checkpoint is loaded from
-`SITS-ExtremeEvents-main/checkpoints/ravaen/`, outside the data cache.
+Joined tables retain every registry row and `exclusion_reason`. `complete` and lower-bound `partial` article states are observations; `incomplete` is missing. Primary rows must all have `window_days=30`, sensitivity rows `window_days=14`. Analysis refuses missing or mixed window values.
 
-### `intermediate/`
-
-| File | Key | Producer | Consumers |
-| --- | --- | --- | --- |
-| `district_flood_combined.csv` | `district_flood_combined` | `merge_results.py` | `build_flood_area_table.py` |
-| `district_aoi.csv` | `district_aoi` | `src/event_aoi_area.py` | `build_flood_area_table.py` |
-| `district_flood_area.csv` | `district_flood_area` | `build_flood_area_table.py` | `join_district_flood_articles.py` |
-
-### `results/`
-
-| File | Key | Producer |
-| --- | --- | --- |
-| `district_article_counts.heuristic.csv` | `district_article_counts_heuristic` | `district_articles.py` |
-| `district_flood_articles.csv` | `district_flood_articles` | `join_district_flood_articles.py` |
-| `district_analysis_exclusions.csv` | `district_analysis_exclusions` | `join_district_flood_articles.py` |
-
-## Current source coverage
-
-| Stage | Rows | Notes |
-| --- | ---: | --- |
-| `EM-DAT-BASE.xlsx` | 75 | Official source records |
-| `events.csv` | 204 | Parent event registry retained for district IDs; not an analysis table |
-
-## Provenance
-
-- **EM-DAT-BASE.xlsx** — sole official event truth, preserved byte-for-byte.
-- **EM-DAT.xlsx** — one row per unique official `DisNo.` and resolved parent
-  geography. All 47 original columns are retained; manual seeds and cross-event
-  date merging are prohibited.
-- **events.csv** — lean registry derived from the same rows. `source_record_id`
-  is always the exact official `DisNo.` and `event_source` is
-  `emdat_official_state`.
-- **population.csv** — retained as reference data only (not used by the
-  primary flood-area stack).
-- State-area and state-event analysis artifacts are no longer consumed by the
-  supported district pipeline.
+`outputs/primary_30d/analysis_manifest.json` records input hashes, row/eligible counts, Git provenance and dependency-lock hash. Flat result/output files and `sensitivity_30d/` are legacy and must not be regenerated.

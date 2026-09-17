@@ -19,7 +19,7 @@ from dataclasses import asdict, dataclass, replace
 import numpy as np
 import pandas as pd
 
-from cvnd_config import PRIMARY_MEDIA_WINDOW_DAYS
+from cvnd_config import SATELLITE_POST_WINDOW_DAYS
 
 POST_COMPOSITES = ('max_water', 'median')
 PRE_REFERENCES = ('pre30d', 'same_season_3y')
@@ -33,7 +33,7 @@ H5_LAYOUT_VERSION = 'h5-2'
 @dataclass(frozen=True)
 class MeasurementSpec:
     # Windows are half-open: post [onset, onset + post), pre [onset - pre, onset).
-    post_window_days: int = PRIMARY_MEDIA_WINDOW_DAYS
+    post_window_days: int = SATELLITE_POST_WINDOW_DAYS
     pre_window_days: int = 30
     pre_composite: str = 'median'
     # pre30d: the pre window above. same_season_3y (sensitivity variant, B2):
@@ -209,20 +209,20 @@ def variant_spec(name: str) -> MeasurementSpec:
 # cannot measure. A district whose Track B has not finished is missing, never
 # silently measured by another sensor.
 #
-# Routing modes. sits_primary is the design above; it needs Track B for every
-# district and the converter. s1_interim measures every district with Track A
-# Sentinel-1 new water alone (one sensor, no SITS, no conversion) until those
-# exist; its source label is 'S1'.
-ROUTING_MODES = ('s1_interim', 'sits_primary')
-DEFAULT_ROUTING = 's1_interim'
-SATELLITE_SOURCES = ('SITS_NDWI', 'SITS_NDWI_RESTORED', 'S1_TO_SITS', 'S1', 'NONE')
+# Routing modes.  s1_then_s2 uses Sentinel-1 whenever it produced an observed
+# value (including zero) and falls back to S2 NDWI only when S1 is missing.
+# Track B/SITS remains an explicit opt-in research route.
+ROUTING_MODES = ('s1_then_s2', 'sits_primary')
+DEFAULT_ROUTING = 's1_then_s2'
+SATELLITE_SOURCES = ('SITS_NDWI', 'SITS_NDWI_RESTORED', 'S1_TO_SITS', 'S1', 'NDWI', 'NONE')
 MEASURED_SOURCES = SATELLITE_SOURCES[:-1]
 SITS_SOURCES = ('SITS_NDWI', 'SITS_NDWI_RESTORED')
 ROUTE_REASONS = (
     'sits_gate_passed', 'sits_restored_by_s1', 'sits_gate_failed',
     'sits_footprint_small', 'sits_footprint_small_excluded',
     'sits_unavailable_converted', 'sits_unavailable_excluded',
-    'sits_pending', 'converter_missing', 'interim_s1_only', 'no_s1', 'aoi_failed',
+    'sits_pending', 'converter_missing', 's1_primary', 's2_fallback',
+    'no_s1_or_s2', 'no_s1', 'aoi_failed',
 )
 SITS_STATUSES = ('ok', 'unavailable', 'pending')
 CONVERTER_DECISIONS = ('identity', 'linear', 'stratified', 'excluded', 'insufficient')

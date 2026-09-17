@@ -677,11 +677,11 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
         choices=("district",),
         default="district",
         help=(
-            "Dispatch to src/district_articles.py with the fixed 14-day "
+            "Dispatch to src/district_articles.py with the fixed 30-day "
             "district-primary contract."
         ),
     )
-    parser.add_argument("--events", type=Path, default=data_path("events"))
+    parser.add_argument("--events", type=Path, default=data_path("event_districts"))
     parser.add_argument("--sql-output", type=Path, default=data_path("gdelt_sql"))
     parser.add_argument("--output", type=Path, default=data_path("gdelt_bq"))
     parser.add_argument(
