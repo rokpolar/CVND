@@ -1,0 +1,388 @@
+%=======================================================================
+%  ICCJ 2026 - 3-page conference submission
+%  Template: IEEEtran (conference option). Compile with pdfLaTeX.
+%=======================================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage[T1]{fontenc}
+
+\begin{document}
+
+\title{Provenance-Locked Measurement of Flood Extent and\\
+District News Visibility: Pipeline Design and\\
+Feasibility Findings for 190 Indian Flood Events}
+
+\author{\IEEEauthorblockN{Seongmin Roh}
+\IEEEauthorblockA{\textit{Affiliation (to be completed)}\\
+Seoul, Republic of Korea\\
+smroh0509@gmail.com}}
+
+\maketitle
+
+\begin{abstract}
+Whether local news visibility of a disaster depends on how urban the affected
+area is can only be tested if physical severity is held fixed at the same
+spatial unit as the news measurement. We present CVND, a reproducible pipeline
+that joins satellite-observed flood extent, Census~2011 urbanization and
+GDELT-indexed news counts at the flood-event~$\times$~district level for India
+(190 EM-DAT parent events, 2015--2025, 1{,}630 event--district rows, 556
+districts). Its design principle is that measurement provenance outranks sample
+size: every satellite area carries the hash of a frozen measurement
+specification, changing that specification invalidates caches by construction,
+and a pre-specified estimability gate reports \emph{not estimable} rather than
+fitting an underpowered model. We report three audit findings obtained under
+this discipline. First, 458 of 464 unmatched district areas-of-interest (98.7\%)
+were recovered, but only by mixing boundary vintages, which makes district areas
+non-additive: 422 same-event polygon overlaps across 101 events. Second,
+Sentinel-2 L2A is unavailable for 63.5\% of probed district-events and the
+failures are concentrated before 2019; an L1C + \textit{s2cloudless} path
+recovers 36.4\% of them, at lower median usable tile fraction. Third, a
+507{,}076-article state-level GDELT corpus yields district-explicit evidence for
+only 762 rows (0.6\% of in-window candidates), so state-level coverage cannot be
+down-scaled to districts. Under the pre-specified gates the primary
+negative-binomial models are currently not estimable ($N=0$); we report that
+status rather than relax the specification.
+\end{abstract}
+
+\begin{IEEEkeywords}
+disaster informatics, flood mapping, media coverage, GDELT, Sentinel-1/2,
+reproducible pipelines, measurement provenance
+\end{IEEEkeywords}
+
+%=======================================================================
+\section{Introduction}
+%=======================================================================
+Disaster relief and political attention track news coverage rather than physical
+severity alone~\cite{eisensee2007}. If coverage is systematically thinner where
+fewer people live in towns, then rural populations are disadvantaged twice: once
+by the flood and again by the response it attracts. Satellite archives now make
+the physical side of that comparison measurable at scale~\cite{tellman2021}, but
+testing the claim requires comparing districts \emph{at similar observed flood
+extent}---which means the physical measurement and the news measurement must
+exist at the same administrative unit.
+
+Most existing comparisons operate at country or state level, where a single
+coverage count is attributed to a heterogeneous area. India's states routinely
+contain both metropolitan and predominantly rural districts, so a state-level
+comparison cannot separate the two. We therefore target the district (admin-2)
+unit throughout, and treat any state-level quantity as inadmissible evidence for
+a district observation.
+
+This paper reports the construction, not the conclusion. We contribute a frozen,
+hash-identified measurement specification that makes every satellite area
+self-invalidating when its definition changes (Sec.~\ref{sec:spec}); a
+conservative boundary recovery procedure carrying vintage provenance and an
+explicit non-additivity constraint (Sec.~\ref{sec:boundary}); a Sentinel-2
+availability probe establishing when an optical-primary measurement is feasible
+(Sec.~\ref{sec:s2}); a negative result on corpus reuse (Sec.~\ref{sec:news});
+and a pre-specified estimability gate, demonstrated by reporting a currently
+unestimable primary model (Sec.~\ref{sec:status}).
+
+%=======================================================================
+\section{Study Design}
+%=======================================================================
+\subsection{Observation unit and event registry}
+The primary key is the flood event~$\times$~district. \texttt{event\_id} is the
+parent EM-DAT~\cite{emdat} event identifier, \texttt{source\_record\_id} is the
+official DisNo., and \texttt{event\_district\_id} is a deterministic district
+key. The registry holds 190 parent events drawn from 72 EM-DAT source records,
+expanded to 1{,}630 event--district rows over 556 districts and 31 states, with
+onsets from 2015-03-20 to 2025-10-03. Structured GADM/Admin-Unit fields are
+preferred; conservatively parsed free-text location evidence stays separately
+identifiable, and unresolved districts remain audit rows rather than being
+replaced by a state capital or a fuzzy name match. Onset precision is retained:
+244 rows (15.0\%) have month-imputed onsets, so their 14-day news windows carry
+timing uncertainty.
+
+\subsection{Frozen measurement specification}\label{sec:spec}
+Every satellite area is produced under one \texttt{MeasurementSpec}: a post
+window $[t_0,\,t_0+14\,\mathrm{d})$ matching the news window, a pre-window
+median over $[t_0-30\,\mathrm{d},\,t_0)$, a maximum-water post composite, one
+eligibility mask applied on every sensor path (JRC permanent
+water~\cite{pekel2016}, slope $<5^\circ$, India LSIB), pixel-area sums at
+10\,m~\cite{gorelick2017}, and an identical new-water definition for
+Sentinel-1 Otsu thresholding~\cite{torres2012,otsu1979}, Sentinel-2
+NDWI~\cite{drusch2012,mcfeeters1996} and the satellite image time-series (SITS)
+path.
+
+The specification is hashed (\texttt{spec\_version} \texttt{fs1-3016a20fd3ad})
+and that hash is stamped on every Track-A row, HDF5 patch, score archive, merged
+row and area-table row. Editing the specification therefore invalidates all
+satellite caches by construction: stale rows are discarded, never silently
+reused. The same mechanism applies to the event registry, whose fingerprint is
+carried by every derived artifact and every news collection manifest.
+
+\subsection{Pre-specified inference and estimability gates}
+The primary model is a negative binomial (NB2) count
+regression~\cite{hilbe2011}:
+\begin{align}
+Y_{ed} &\sim \mathrm{NB2}(\mu_{ed}, \alpha),\nonumber\\
+\log \mu_{ed} &= \beta_0 + \beta_{f}\log\!\left(1 + A_{ed}\right)
+                        + \beta_{u} u_{d},
+\end{align}
+where $A_{ed}$ is flood area in km$^2$, $u_d$ is the Census~2011 district urban
+population share~\cite{census2011}, and $\mathrm{Var}(Y_{ed}) = \mu_{ed} +
+\alpha\mu_{ed}^2$ with $\alpha$ estimated by maximum likelihood rather than
+fixed. Model~1 omits $u_d$; Model~3 adds year fixed effects; all three use the
+same complete-case sample. The urbanization effect is reported as
+$\exp(0.1\,\beta_u)$ per 10 percentage points, so no arbitrary urban/rural
+cutoff enters the specification.
+
+Crucially, the numerical safeguards are fixed in advance and do not depend on
+the direction of the result. A model is estimated only with $N \ge 20$, at least
+five observations per estimated parameter, a full-rank design and stable
+convergence; otherwise the pipeline emits a typed \emph{not estimable} status.
+State-clustered covariance with a finite-sample correction and $t(G-1)$
+inference~\cite{cameron2015} is added only when $G \ge 20$ and $N > 2G$;
+otherwise the independence assumption is stated as an explicit limitation.
+Synthetic exposure proxies are excluded by design: area~$\times$~average-density
+is never used as an exposed-population surrogate.
+
+%=======================================================================
+\section{Pipeline}
+%=======================================================================
+The runner executes eleven stages: event registry construction; Census
+covariates; district AOI resolution; Sentinel-1/2 measurement (Track~A) with
+optional SITS patch preparation (Track~B); local SITS inference; candidate
+routing; flood-area table assembly; district news collection; article
+classification; identity-checked joining; and coverage analysis. Each stage
+refuses to manufacture observations: a successful query with zero matching
+candidates yields an observed zero, whereas an unexecuted, failed or incomplete
+stage yields missing. An offline \texttt{--dry-run} mode prints the command plan
+and audits input and cache schemas without external calls, and the repository
+carries 218 unit tests.
+
+%=======================================================================
+\section{Feasibility and Audit Findings}
+%=======================================================================
+\subsection{District boundary recovery and non-additivity}\label{sec:boundary}
+Resolving a unique polygon per district is the binding constraint on the
+physical measurement. An initial FAO GAUL~2015 level-2 lookup left 464 rows
+unmatched. A manifest-driven recovery reconnected 458 of them (98.7\%) using
+pinned geoBoundaries gbOpen India ADM2 polygons~\cite{runfola2020} for 173
+district names and five reviewed OpenStreetMap relations, raising the cache to
+1{,}549 \textsc{ok} / 75 \textsc{no\_imagery} / 6 \textsc{error}. Matching is
+explicit: state-scoped aliases and manually reviewed renames only, with no fuzzy
+nearest-name fallback and no substitution of a parent district or state.
+Candidate polygons were checked for validity, unique identity, $\ge 90\%$
+overlap with their named state layer and no $>1\%$ overlap with a neighbour in
+the same layer. Six identities remain deliberately unresolved rather than
+approximated, including a supplemental polygon (Shamator,
+$\approx$193\,km$^2$ in OSM versus 469\,km$^2$ officially) rejected as
+incomplete.
+
+The recovery buys coverage at a documented price. The resulting dataset mixes
+reference vintages---GAUL~2015 parents alongside a 2021 ADM2 layer---so older
+parent polygons can overlap newer child districts. An audit found 422
+same-event overlapping pairs across 101 events, 419 of them cross-source.
+District flood areas therefore \emph{must not be summed} into event totals; a
+valid event total requires a common non-overlapping geography or a union of
+pixel-level flood masks. Each row therefore carries \texttt{aoi\_source},
+\texttt{geometry\_id}, \texttt{aoi\_match\_method},
+\texttt{aoi\_boundary\_year} and an explicit
+\texttt{aoi\_historical\_boundary\_verified} flag, because a successful match
+means a polygon was deliberately selected---not that it equals the boundary in
+force on the event date.
+
+\subsection{Sentinel-2 availability for district-scale SITS}\label{sec:s2}
+Before committing to an optical-primary route we probed 495 registry rows, of
+which 255 were AOI-matched, under the frozen specification
+(Table~\ref{tab:s2}). Surface-reflectance (L2A) imagery is unavailable for
+63.5\% of probed district-events, dominated by absent post-window imagery
+(148 of 162 failures). The failures are not random in time: 95.1\% of them fall
+in years up to 2018, consistent with the L2A archive's start, and the yearly
+unavailability rate falls from 1.00 (2015--2016) to 0.00 for 2021--2022 and
+2024--2025. An L1C path with \textit{s2cloudless} probability $<40$ lowers
+unavailability to 40.4\% and rescues 36.4\% of the L2A failures, but its median
+usable tile fraction is 0.095 against 0.283 for L2A---more scenes, thinner
+scenes. The pre-specified gate accordingly returns \texttt{consider\_l1c}
+rather than an unconditional switch, and records that L1C still exceeds the
+0.30 maximum unavailability target. The probe also sizes the commitment: a
+planned-layout L1C build is 119.7\,GB of HDF5 over 584{,}536 retained tiles and
+roughly 59 GPU-hours, against 92.3\,GB and 40 hours for L2A.
+
+\begin{table}[t]
+\caption{Sentinel-2 availability probe (255 AOI-matched district-events)}
+\label{tab:s2}
+\centering
+\begin{tabular}{lrr}
+\toprule
+ & L2A (SR) & L1C + \textit{s2cloudless} \\
+\midrule
+Unavailable rows          & 162 (63.5\%) & 103 (40.4\%) \\
+\quad no post imagery     & 148 & 91 \\
+\quad no pre imagery      & 10  & 5  \\
+\quad no retained tiles   & 4   & 5  \\
+\quad no clear baseline   & 0   & 2  \\
+Median usable tile frac.  & 0.283 & 0.095 \\
+Retained tiles            & 450{,}358 & 584{,}536 \\
+Planned HDF5 volume       & 92.3\,GB & 119.7\,GB \\
+Est. inference hours      & 40.3 & 59.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{State news corpora do not transfer to districts}\label{sec:news}
+News counts use historical GDELT GKG metadata~\cite{leetaru2013} within a fixed
+window $t_0 \le t_{\text{article}} < t_0 + 14$\,d (UTC). Explicit district
+location evidence with state disambiguation is required; a state mention alone
+cannot create district coverage. Within a district, one URL is assigned to its
+nearest eligible onset, and the same URL may count for several districts it
+explicitly names. We tested whether an existing state-level corpus could
+substitute for district collection. Of 507{,}076 archived state-event article rows, 127{,}252 (25.1\%)
+passed event identity, state and window selection, but only 762 could be
+provisionally assigned to a district from available evidence---0.15\% of the
+corpus and 0.6\% of in-window candidates. The remaining 126{,}557 in-window rows
+carry no resolvable district. State-level corpora are therefore not a shortcut:
+district-explicit collection or per-article adjudication is unavoidable, and
+counts obtained this way remain candidates, not research observations.
+
+\subsection{Current estimability status}\label{sec:status}
+Table~\ref{tab:qc} gives stage completion against analysis admission. District
+identity extraction succeeds for all 1{,}630 rows and Census matching for 1{,}488
+(91.3\%). The satellite cache reached 1{,}549 resolved rows, yet zero rows are
+admitted to analysis: the event registry was regenerated, its fingerprint
+changed, and the invalidation mechanism of Sec.~\ref{sec:spec} correctly
+discarded the derived satellite artifacts that had been produced against the
+previous registry. District news collection is likewise recorded as incomplete
+rather than zero.
+
+Consequently $N=0$ and all pre-specified models return typed failures
+(\texttt{insufficient sample: N=0 < 20} for Models~1--2, fewer than two years
+for Model~3, fewer than two satellite sources for the source fixed-effect
+sensitivity). No estimate of $\beta_f$ or $\beta_u$ is reported, and the
+conclusion field reads \emph{no empirical conclusion is available}. Selection
+QC confirms the exclusion is uniform---411/411 high, 399/399 medium, 692/692 low
+and 128/128 unknown-urbanization rows---so the present attrition is a pipeline
+state, not a differential one. Among rows that do carry covariates, district
+urban population share has mean 0.221 and median 0.150 ($n=1{,}502$),
+confirming that the registry spans a wide urbanization range once measurement
+resumes.
+
+\begin{table}[t]
+\caption{Stage completion vs.\ analysis admission (1{,}630 rows)}
+\label{tab:qc}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Stage & Resolved & Rate & Admitted \\
+\midrule
+District identity extraction   & 1{,}630 & 1.000 & 1{,}630 \\
+Census 2011 covariate match    & 1{,}488 & 0.913 & 1{,}488 \\
+AOI polygon (after recovery)   & 1{,}549 & 0.950 & 0\textsuperscript{a} \\
+District flood extent          & 0       & 0.000 & 0 \\
+District news counts           & 0       & 0.000 & 0 \\
+\midrule
+Final analyzable               & ---     & ---   & \textbf{0} \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+\footnotesize\textsuperscript{a}Resolved against the previous registry
+fingerprint; invalidated by design when the registry was regenerated.
+\end{table}
+
+%=======================================================================
+\section{Discussion}
+%=======================================================================
+The findings above are the kind a pipeline surfaces only if it is allowed to
+fail loudly. A system that reused the state corpus would have produced 127{,}252
+plausible article rows with no district validity; one that reused the
+pre-regeneration satellite cache would have produced 1{,}549 areas measured
+against a registry that no longer exists; one without an estimability gate would
+have fitted an NB2 model to whatever survived. Each of those is a defensible
+engineering shortcut and each would have yielded a publishable-looking
+coefficient. Reporting $N=0$ is the cost of refusing all three, and we regard
+the refusal, not the count, as the transferable result.
+
+Three limitations bound any future estimate. Census~2011 predates most events,
+so urbanization is a fixed pre-period covariate. Boundary references are
+mixed-vintage and uncertified against event-date administrative geography. And
+GDELT-indexed, district-explicit coverage is a subset of all reporting whose
+language and indexing behaviour may itself correlate with urbanization---a
+threat the design records rather than solves. Any eventual result would license
+statements about coverage at similar \emph{observed flood extent}, not about
+intent, causal discrimination or equal total damage.
+
+%=======================================================================
+\section{Conclusion}
+%=======================================================================
+We described CVND, a district-level pipeline joining satellite flood extent,
+urbanization and news visibility across 190 Indian flood events, built on the
+principle that a measurement must carry the identity of the specification that
+produced it. The audit yields four reusable results: boundary recovery is
+feasible at 98.7\% but forces a non-additive mixed-vintage geometry; Sentinel-2
+L2A cannot support an optical-primary design before 2019, while L1C recovers
+about a third of those cases at lower per-scene quality; state-level news
+corpora resolve to districts for well under 1\% of in-window articles; and
+pre-specified estimability gates will, and should, return \emph{not estimable}
+when the inputs do not exist. Completing the district satellite measurement and
+district-explicit news collection under the current registry fingerprint is the
+immediate next step, after which the pre-registered NB2 specification can be
+estimated without modification.
+
+%=======================================================================
+\begin{thebibliography}{00}
+
+\bibitem{eisensee2007} T.~Eisensee and D.~Str\"omberg, ``News droughts, news
+floods, and U.S. disaster relief,'' \emph{Quarterly Journal of Economics},
+vol.~122, no.~2, pp.~693--728, 2007.
+
+\bibitem{emdat} Centre for Research on the Epidemiology of Disasters (CRED),
+UCLouvain, ``EM-DAT: The International Disaster Database,'' Brussels, Belgium.
+
+\bibitem{pekel2016} J.-F. Pekel, A.~Cottam, N.~Gorelick, and A.~S. Belward,
+``High-resolution mapping of global surface water and its long-term changes,''
+\emph{Nature}, vol.~540, pp.~418--422, 2016.
+
+\bibitem{gorelick2017} N.~Gorelick \emph{et al.}, ``Google Earth Engine:
+Planetary-scale geospatial analysis for everyone,'' \emph{Remote Sensing of
+Environment}, vol.~202, pp.~18--27, 2017.
+
+\bibitem{torres2012} R.~Torres \emph{et al.}, ``GMES Sentinel-1 mission,''
+\emph{Remote Sensing of Environment}, vol.~120, pp.~9--24, 2012.
+
+\bibitem{otsu1979} N.~Otsu, ``A threshold selection method from gray-level
+histograms,'' \emph{IEEE Trans. Systems, Man, and Cybernetics}, vol.~9, no.~1,
+pp.~62--66, 1979.
+
+\bibitem{drusch2012} M.~Drusch \emph{et al.}, ``Sentinel-2: ESA's optical
+high-resolution mission for GMES operational services,'' \emph{Remote Sensing of
+Environment}, vol.~120, pp.~25--36, 2012.
+
+\bibitem{mcfeeters1996} S.~K. McFeeters, ``The use of the normalized difference
+water index (NDWI) in the delineation of open water features,''
+\emph{International Journal of Remote Sensing}, vol.~17, no.~7, pp.~1425--1432,
+1996.
+
+\bibitem{hilbe2011} J.~M. Hilbe, \emph{Negative Binomial Regression}, 2nd ed.
+Cambridge, U.K.: Cambridge University Press, 2011.
+
+\bibitem{census2011} Office of the Registrar General and Census Commissioner,
+India, ``Census of India 2011: District-level urban and rural population,'' New
+Delhi, India, 2011.
+
+\bibitem{cameron2015} A.~C. Cameron and D.~L. Miller, ``A practitioner's guide
+to cluster-robust inference,'' \emph{Journal of Human Resources}, vol.~50,
+no.~2, pp.~317--372, 2015.
+
+\bibitem{runfola2020} D.~Runfola \emph{et al.}, ``geoBoundaries: A global
+database of political administrative boundaries,'' \emph{PLoS ONE}, vol.~15,
+no.~4, e0231866, 2020.
+
+\bibitem{leetaru2013} K.~Leetaru and P.~A. Schrodt, ``GDELT: Global data on
+events, location and tone, 1979--2012,'' in \emph{Proc. ISA Annual Convention},
+2013.
+
+\bibitem{tellman2021} B.~Tellman \emph{et al.}, ``Satellite imaging reveals
+increased proportion of population exposed to floods,'' \emph{Nature}, vol.~596,
+pp.~80--86, 2021.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,13 +1,26 @@
 """
 merge_results.py — one district flood area on the SITS-NDWI scale.
 
-Inputs (all measured under flood_spec.SPEC; rows or archives with another
-spec_version are discarded, never reused):
+This step is a pure function of tables. It reads measurements, it never makes
+them: no Earth Engine, no model, no score archive, nothing written outside its
+own --output. Re-routing the same measurements is therefore cheap and safe —
+run it twice with two --routing values and compare the two files.
+
+Inputs (all measured under flood_spec.SPEC; rows with another spec_version are
+discarded, never reused):
+  data/intermediate/event_districts.csv       (the registry: the row skeleton)
   data/cache/district/flood_extent.csv        (Track A: S1 + S2 NDWI, footprints)
-  data/cache/district/sits_patches_index.csv  (Track B status per district)
-  data/cache/district/sits_scores/{cache_stem(event_district_id)}.npz
-                                              (Track B: SITS score + per-tile areas)
+  data/results/district_sits_measurements.csv (Track B: measured district values)
+  data/cache/district/sits_patches_index.csv  (Track B patch status per district)
+  data/intermediate/district_aoi.csv          (AOI identity for rows Track A lacks)
   data/results/s1_to_sits_converter.json      (compare_tracks.py decision)
+
+Every registry row is written out. A stage that did not run is a status
+(track_a_status / track_b_patch_status / sits_measure_status), never a missing
+row: a district must not vanish from the output because one of its inputs is
+absent. --recompute-from-npz re-derives the Track B values from the score
+archives instead of reading the measurement table, for trying another gate
+without re-running inference; it still writes nothing upstream.
 
 SITS (Track B) is the primary measurement. It must run for every district and
 its status decides the route (route_area):
@@ -35,13 +48,19 @@ The pre-refactor routing is kept as legacy_route_area and written to the
 legacy_* columns for the before/after comparison.
 
 Routing mode (--routing, flood_spec.ROUTING_MODES):
-  s1_then_s2 (default): use Track A Sentinel-1 new water whenever it is
+  sits_then_track_a (default): SITS through the gate above for every district
+      Track B measured with enough usable pixels; every other district is
+      measured by s1_then_s2 instead of being left missing (route_reason
+      track_a_sits_pending / _unavailable / _footprint_small). No converter.
+  s1_then_s2: use Track A Sentinel-1 new water whenever it is
       observed, including zero. Only districts without an S1 observation use
       Track A Sentinel-2 NDWI; missing both remains missing.
   sits_primary: the SITS-first routing above.
 
 Output: data/intermediate/district_flood_combined.csv (flood_spec.COMBINED_COLUMNS)
-Run:    python src/merge_results.py [--routing s1_then_s2|sits_primary]
+        or --output, to keep two routings side by side.
+Run:    python src/merge_results.py [--routing sits_then_track_a|s1_then_s2|sits_primary]
+                                    [--output PATH] [--recompute-from-npz]
         (numpy + pandas only; no model / GEE)
 """
 from __future__ import annotations
@@ -60,57 +79,28 @@ import h5py
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import s1_converter  # noqa: E402
+import sits_measure  # noqa: E402
 from cvnd_layout import data_path  # noqa: E402
 from district_keys import AOI_MATCHED, analysis_key, cache_stem, key_from_stem  # noqa: E402
 from flood_spec import (COMBINED_COLUMNS, CONVERTING_DECISIONS,  # noqa: E402
                         DEFAULT_ROUTING, H5_LAYOUT_VERSION, ROUTING_MODES,
                         SATELLITE_SOURCES, SPEC, SPEC_VERSION, TEXT_DTYPES,
-                        otsu_from_histogram, stale_spec_mask)
+                        stale_spec_mask)
+# The Track B aggregation has one implementation, in sits_measure: the merge and
+# the measurement table must agree by construction, not by two copies staying in
+# step. compare_tracks.py reaches for these names through this module.
+from sits_measure import (_otsu, _youden,  # noqa: E402,F401
+                          sits_candidates as _sits_candidates, sits_threshold)
 
 SCORES_DIR = str(data_path("district_sits_scores"))
 PATCH_DIR = str(data_path("district_sits_patches"))
 TRACK_A_CSV = str(data_path("district_flood_extent"))
 SITS_INDEX_CSV = str(data_path("district_sits_patches_index"))
+MEASUREMENTS_CSV = str(data_path("district_sits_measurements"))
+REGISTRY_CSV = str(data_path("event_districts"))
+AOI_CSV = str(data_path("district_aoi"))
 OUT_CSV = str(data_path("district_flood_combined"))
 TILE_SELECTION_RULE = 'per_timestep_valid_fraction_v2'
-
-
-def _otsu(x, spec=SPEC):
-    """Otsu threshold on scores in [0,1]."""
-    hist, edges = np.histogram(x, bins=spec.sits_score_otsu_bins, range=(0.0, 1.0))
-    threshold, _ = otsu_from_histogram(hist, (edges[:-1] + edges[1:]) / 2)
-    return 0.5 if threshold is None else threshold
-
-
-def _youden(scores, labels, spec=SPEC):
-    """Threshold that maximises TPR - FPR against NDWI-flood labels; returns (t, J).
-    This is a *balanced* boundary (not 'capture 85% of positives'), so it does not
-    over-flag the way a low percentile does. J also measures how separable the two are."""
-    P = int(labels.sum())
-    N = int((~labels).sum())
-    if P == 0 or N == 0:
-        return None, 0.0
-    ts = np.quantile(scores, np.linspace(0.02, 0.98, spec.sits_youden_steps))
-    best_t, best_j = float(np.median(scores)), -1.0
-    for t in ts:
-        pred = scores > t
-        tpr = (pred & labels).sum() / P
-        fpr = (pred & ~labels).sum() / N
-        j = tpr - fpr
-        if j > best_j:
-            best_j, best_t = j, float(t)
-    return best_t, best_j
-
-
-def sits_threshold(scores, ndwi_flood, spec=SPEC):
-    """Return (threshold, method): NDWI-calibrated (Youden's J) -> Otsu -> low-confidence."""
-    flood = ndwi_flood >= spec.sits_flood_min_frac * spec.sits_patch_pixels
-    if int(flood.sum()) >= spec.sits_min_pos and int((~flood).sum()) >= spec.sits_min_pos:
-        t, j = _youden(scores, flood, spec)
-        if t is not None and j >= spec.sits_j_min:   # good separation -> trust SITS
-            return t, 'ndwi-calib'
-        return _otsu(scores, spec), 'low-conf'      # NDWI floods don't separate -> SITS unreliable
-    return _otsu(scores, spec), 'otsu'              # too few NDWI positives -> plain Otsu
 
 
 def _text(archive, field):
@@ -251,6 +241,33 @@ def s1_then_s2_route_area(c: Candidates) -> Route:
     return Route(None, 'NONE', 'no_s1_or_s2')
 
 
+def sits_then_track_a_route_area(c: Candidates, spec=SPEC) -> Route:
+    """SITS for every district Track B measured; Track A for the rest.
+
+    Track B decides per district whether SITS is possible. A district it could
+    not measure -- not run yet, no imagery / clear baseline / retained tile, or
+    usable pixels below sits_usable_min_frac -- is measured by Track A (S1,
+    then S2 NDWI) instead of being left missing. SITS rows go through
+    route_area unchanged; route_reason on a Track A row says why SITS was not
+    used, satellite_source says which Track A sensor measured it.
+    """
+    if not c.aoi_matched:
+        return Route(None, 'NONE', 'aoi_failed')
+    if c.sits_status == 'ok':
+        frac = usable_fraction(c)
+        if frac is None or frac >= spec.sits_usable_min_frac:
+            return route_area(c, spec)
+        why = 'track_a_sits_footprint_small'
+    elif c.sits_status == 'unavailable':
+        why = 'track_a_sits_unavailable'
+    else:
+        why = 'track_a_sits_pending'
+    track_a = s1_then_s2_route_area(c)
+    if track_a.satellite_source == 'NONE':
+        return track_a
+    return Route(track_a.combined_km2, track_a.satellite_source, why, track_a.optical_footprint)
+
+
 def legacy_route_area(c: Candidates, spec=SPEC) -> Route:
     """The pre-refactor routing, verbatim (flood_spec.LEGACY_* vocabulary)."""
     if not c.aoi_matched:
@@ -280,7 +297,7 @@ def legacy_route_area(c: Candidates, spec=SPEC) -> Route:
     return Route(None, 'NONE', 'no_measurement')
 
 
-def load_track_a(path=None) -> dict:
+def load_track_a(path=None, with_errors=False):
     path = path or TRACK_A_CSV
     if not os.path.exists(path):
         raise FileNotFoundError(f'{path} missing: run `src/satellite.py --track A` first')
@@ -293,9 +310,10 @@ def load_track_a(path=None) -> dict:
     # A failed computation is not a measurement of "nothing": leave the district
     # out so the area table records it as missing until Track A is rerun.
     failed = frame.get('baseline_status', pd.Series('', index=frame.index)).astype(str).str.startswith('ERROR')
+    error_keys = set(frame.loc[failed].apply(analysis_key, axis=1)) if failed.any() else set()
     if failed.any():
         print(f"Skipped {int(failed.sum())} Track-A ERROR rows; rerun Track A for them: "
-              f"{frame.loc[failed].apply(analysis_key, axis=1).tolist()[:5]}")
+              f"{sorted(error_keys)[:5]}")
         frame = frame.loc[~failed]
     rows = {}
     for _, r in frame.iterrows():
@@ -303,7 +321,42 @@ def load_track_a(path=None) -> dict:
         if key in rows:
             raise ValueError(f'Track A contains duplicate analysis key {key}')
         rows[key] = r
+    return (rows, error_keys) if with_errors else rows
+
+
+def load_registry(path=None) -> dict:
+    """The event-district registry: the row skeleton of the merged output.
+
+    Every row here appears in the output, measured or not. Registry columns are
+    identity only; AOI status in it is a pre-resolution placeholder and is never
+    read as a match (build_flood_area_table.py drops it for the same reason).
+    """
+    path = path or REGISTRY_CSV
+    if not os.path.exists(path):
+        raise FileNotFoundError(
+            f'{path} missing: run `src/build_emdat_events.py` first. The merge needs '
+            f'the registry to know which districts exist, not only which were measured.')
+    frame = pd.read_csv(path, dtype=TEXT_DTYPES)
+    rows = {}
+    for _, r in frame.iterrows():
+        key = analysis_key(r)
+        if key in rows:
+            raise ValueError(f'Registry contains duplicate analysis key {key}')
+        rows[key] = r
     return rows
+
+
+def load_aoi(path=None) -> dict:
+    """Resolved AOI identity per district, for rows Track A never reached."""
+    path = path or AOI_CSV
+    if not os.path.exists(path):
+        return {}
+    frame = pd.read_csv(path, dtype=TEXT_DTYPES)
+    stale = stale_spec_mask(frame)
+    if stale.any():
+        print(f"Ignored {int(stale.sum())} AOI rows not resolved under {SPEC_VERSION}")
+        frame = frame.loc[~stale]
+    return {analysis_key(r): r for _, r in frame.iterrows()}
 
 
 def load_sits_index(path=None) -> dict:
@@ -318,12 +371,23 @@ def load_sits_index(path=None) -> dict:
     return {analysis_key(r): r for _, r in frame.loc[~stale].iterrows()}
 
 
+def load_sits_measurements(path=None) -> dict:
+    """Track B measured values per district (sits_measure.MEASUREMENT_COLUMNS).
+
+    This is the merge's only Track B measurement input. It exists so a re-merge
+    needs neither the model nor the score archives: the expensive part has
+    already been done and written down.
+    """
+    return sits_measure.load_measurements(path or MEASUREMENTS_CSV)
+
+
 def _score_archives(track_a) -> dict:
+    """Score archives that belong to a known district (--recompute-from-npz)."""
     archives = {key_from_stem(os.path.basename(f)[:-4]): f
                 for f in glob.glob(os.path.join(SCORES_DIR, '*.npz'))}
     parents = {str(r.get('event_id')) for r in track_a.values()}
     result = {}
-    for key, path in archives.items():
+    for key, path in sorted(archives.items()):
         if key in track_a:
             h5_path = os.path.join(PATCH_DIR, f'{cache_stem(key)}.h5')
             if os.path.exists(h5_path):
@@ -347,9 +411,28 @@ def _score_archives(track_a) -> dict:
             # a district run where it could be mistaken for one district's score.
             print(f"WARN: ignoring parent-event score archive {os.path.basename(path)}")
         else:
-            raise ValueError(f'SITS scores {os.path.basename(path)} have no Track A row '
-                             f'under {SPEC_VERSION}; rerun Track A for {key}')
+            # Recorded, not fatal: a district whose Track A row is missing still
+            # has a row in the output (track_a_status=not_run). Dying here would
+            # throw away every other district's result over one stale archive.
+            print(f"WARN: SITS scores {os.path.basename(path)} have no Track A row under "
+                  f"{SPEC_VERSION}; not used for routing. Rerun Track A for {key}.")
     return result
+
+
+def track_b_patch_status(key, index_entry=None) -> str:
+    """What Track B's patch preparation did for this district.
+
+    ok          patches prepared, or Track B concluded there is no imagery
+    incomplete  a .blocks.json still sits beside the H5: the download can resume
+    error       Track B raised for this district
+    not_run     the Track B index has no entry for it
+    """
+    if os.path.exists(os.path.join(PATCH_DIR, f'{cache_stem(key)}.h5.blocks.json')):
+        return 'incomplete'
+    if index_entry is None:
+        return 'not_run'
+    status = str(index_entry.get('status', '')).strip()
+    return 'ok' if status in ('OK', 'SKIPPED_NO_IMAGERY') else 'error'
 
 
 def track_b_status(key, index_entry=None, has_scores=False) -> tuple[str, str]:
@@ -374,24 +457,25 @@ def track_b_status(key, index_entry=None, has_scores=False) -> tuple[str, str]:
     return 'pending', 'track_b_error'
 
 
-def _sits_candidates(archive, spec=SPEC) -> dict:
-    """Area candidates from one validated score archive; empty dict = no usable tiles."""
-    scores = archive['scores']
-    if len(scores) == 0 or float(archive['usable_px'].sum()) == 0:
-        return {}
-    thr, method = sits_threshold(scores, archive['ndwi_flood'], spec)
-    flagged = scores > thr
-    flood_km2, tile_km2 = archive['ndwi_flood_km2'], archive['tile_area_km2']
-    return {
-        'sits_threshold': thr, 'sits_method': method,
-        'sits_ndwi_full_km2': float(flood_km2.sum()),
-        'sits_ndwi_gated_km2': float(flood_km2[flagged].sum()),
-        # Flagged-tile extent is NOT a water area; kept for reference only.
-        'sits_detect_km2': float(tile_km2[flagged].sum()),
-        'sits_footprint_km2': float(tile_km2.sum()),
-        'sits_usable_km2': float(archive['usable_km2'].sum()),
-        'sits_s1_usable_km2': float(archive['s1_flood_km2'].sum()),
-    }
+def measurement_identity_error(measurement, reference) -> str | None:
+    """Why a stored Track B row may not be used for this district, or None.
+
+    The table-level analogue of validate_district_scores: a measurement must
+    prove the district and geometry it claims. A mismatch is a provenance fault,
+    not a missing stage, so the caller drops the measurement (and says so)
+    instead of using it or killing the whole merge.
+    """
+    if reference is None:
+        return None
+    for field in ('event_district_id', 'event_id', 'source_record_id', 'state',
+                  'district', 'start_date', 'geometry_id'):
+        expected = reference.get(field)
+        if expected is None or (isinstance(expected, float) and pd.isna(expected)):
+            continue
+        found = measurement.get(field)
+        if str(found).strip() != str(expected).strip():
+            return f'{field}: measured {found!r}, Track A has {expected!r}'
+    return None
 
 
 def _round(value, digits=4):
@@ -404,35 +488,66 @@ def _share(part, whole):
     return None if part is None or not whole else part / whole
 
 
-def merge_row(a, archive=None, index_entry=None, converter=None, spec=SPEC,
-              routing=DEFAULT_ROUTING, h5_path=None) -> dict:
+def _present(value) -> bool:
+    if value is None:
+        return False
+    try:
+        return not pd.isna(value)
+    except (TypeError, ValueError):
+        return True
+
+
+def _first(sources, name):
+    for source in sources:
+        if source is not None and _present(source.get(name)):
+            return source.get(name)
+    return None
+
+
+def merge_row(identity, a=None, sits=None, index_entry=None, converter=None, spec=SPEC,
+              routing=DEFAULT_ROUTING, aoi=None, track_a_status=None) -> dict:
+    """Route one registry district. Pure: every input is an already-loaded row.
+
+    identity  registry row (the skeleton; always present)
+    a         Track A row, or None when Track A has no usable row
+    sits      Track B area candidates: None = not measured, {} = measured with
+              no usable pixel, else sits_measure.sits_candidates() output
+    aoi       AOI table row, consulted only when Track A is absent
+    """
     if routing not in ROUTING_MODES:
         raise ValueError(f'routing must be one of {ROUTING_MODES}')
-    key = analysis_key(a)
-    aoi_matched = str(a.get('aoi_match_status', '')).strip().lower() in AOI_MATCHED
-    status, reason = track_b_status(key, index_entry, archive is not None)
-    sits = {}
-    if archive is not None and aoi_matched and status == 'ok':
-        validate_district_scores(archive, a, h5_path)
-        sits = _sits_candidates(archive, spec)
+    key = analysis_key(identity)
+    # With a Track A row, its identity/AOI fields are used exactly as before, so
+    # a stale Track A row still shows up downstream as an identity mismatch.
+    # Without one, the resolved AOI table stands in; the registry's own
+    # aoi_match_status is a placeholder and never counts as a match.
+    sources = (a, identity) if a is not None else (aoi, identity)
+    ta = a if a is not None else {}
+    aoi_status = _first((a,) if a is not None else (aoi,), 'aoi_match_status')
+    aoi_matched = str(aoi_status or '').strip().lower() in AOI_MATCHED
+    sits_measured = sits is not None
+    status, reason = track_b_status(key, index_entry, sits_measured)
+    if sits_measured and aoi_matched and status == 'ok':
         if not sits:
             status, reason = 'unavailable', 'no_usable_pixels'
-    s1 = _value(a.get('area_s1_km2'))
-    eligible = _value(a.get('eligible_km2'))
-    builtup_frac, cropland_frac = _share(a.get('builtup_km2'), eligible), _share(a.get('cropland_km2'), eligible)
+    else:
+        sits = {}
+    s1 = _value(ta.get('area_s1_km2'))
+    eligible = _value(ta.get('eligible_km2'))
+    builtup_frac, cropland_frac = _share(ta.get('builtup_km2'), eligible), _share(ta.get('cropland_km2'), eligible)
     decision = converter.get('decision') if converter else None
     converted = None
     if converter and decision in CONVERTING_DECISIONS and s1 is not None:
         converted = s1_converter.convert(converter['model'], s1, builtup_frac, cropland_frac)
-    s2_post = _value(a.get('s2_post_images'))
+    s2_post = _value(ta.get('s2_post_images'))
     candidates = Candidates(
         aoi_matched=aoi_matched,
         s1_km2=s1,
-        ndwi_trackA_km2=_value(a.get('area_s2_km2')),
+        ndwi_trackA_km2=_value(ta.get('area_s2_km2')),
         sits_full_km2=sits.get('sits_ndwi_full_km2'),
         sits_gated_km2=sits.get('sits_ndwi_gated_km2'),
         sits_method=sits.get('sits_method'),
-        cloud_pct=_value(a.get('cloud_pct')),
+        cloud_pct=_value(ta.get('cloud_pct')),
         s2_post_images=None if s2_post is None else int(s2_post),
         sits_status=status,
         sits_usable_km2=sits.get('sits_usable_km2'),
@@ -441,15 +556,23 @@ def merge_row(a, archive=None, index_entry=None, converter=None, spec=SPEC,
         s1_converted_km2=converted,
         converter_decision=decision,
     )
-    route = (route_area(candidates, spec) if routing == 'sits_primary'
-             else s1_then_s2_route_area(candidates))
+    if routing == 'sits_primary':
+        route = route_area(candidates, spec)
+    elif routing == 'sits_then_track_a':
+        route = sits_then_track_a_route_area(candidates, spec)
+    else:
+        route = s1_then_s2_route_area(candidates)
     legacy = legacy_route_area(candidates, spec)
     optical = bool(sits) or (candidates.ndwi_trackA_km2 is not None and (candidates.s2_post_images or 0) > 0)
     measured = aoi_matched
+    if track_a_status is None:
+        track_a_status = 'measured' if a is not None else 'not_run'
     return {
-        **{c: a.get(c) for c in ('event_district_id', 'event_id', 'source_record_id',
-                                 'start_date', 'state', 'district', 'aoi_level',
-                                 'aoi_source', 'aoi_match_status', 'geometry_id')},
+        **{c: _first(sources, c) for c in ('event_district_id', 'event_id', 'source_record_id',
+                                           'start_date', 'state', 'district', 'aoi_level',
+                                           'aoi_source')},
+        'aoi_match_status': aoi_status,
+        'geometry_id': _first(sources, 'geometry_id'),
         'combined_km2': _round(route.combined_km2),
         'satellite_source': route.satellite_source,
         'route_reason': route.route_reason,
@@ -457,6 +580,9 @@ def merge_row(a, archive=None, index_entry=None, converter=None, spec=SPEC,
         'optical_footprint': route.optical_footprint,
         'sits_status': status,
         'sits_reason': reason,
+        'track_a_status': track_a_status,
+        'track_b_patch_status': track_b_patch_status(key, index_entry),
+        'sits_measure_status': 'measured' if sits_measured else 'not_run',
         'converter_decision': decision,
         's1_flood_km2': _round(s1) if measured else None,
         'ndwi_flood_km2': _round(candidates.ndwi_trackA_km2) if measured else None,
@@ -471,16 +597,16 @@ def merge_row(a, archive=None, index_entry=None, converter=None, spec=SPEC,
         'sits_method': sits.get('sits_method', 'no-sits'),
         'optical_available': optical and measured,
         'cloud_pct': candidates.cloud_pct,
-        'optical_observed_frac': _value(a.get('optical_observed_frac')),
-        'otsu_threshold_db': a.get('otsu_threshold_db'),
-        'otsu_fallback_used': a.get('otsu_fallback_used'),
-        's1_orbit': a.get('s1_orbit'),
-        's1_post_images': a.get('s1_post_images'),
-        's2_post_images': a.get('s2_post_images'),
+        'optical_observed_frac': _value(ta.get('optical_observed_frac')),
+        'otsu_threshold_db': ta.get('otsu_threshold_db'),
+        'otsu_fallback_used': ta.get('otsu_fallback_used'),
+        's1_orbit': ta.get('s1_orbit'),
+        's1_post_images': ta.get('s1_post_images'),
+        's2_post_images': ta.get('s2_post_images'),
         'eligible_km2': eligible,
-        'builtup_km2': _value(a.get('builtup_km2')),
-        'cropland_km2': _value(a.get('cropland_km2')),
-        'aoi_area_km2': _value(a.get('aoi_area_km2')),
+        'builtup_km2': _value(ta.get('builtup_km2')),
+        'cropland_km2': _value(ta.get('cropland_km2')),
+        'aoi_area_km2': _value(_first(sources, 'aoi_area_km2')),
         'legacy_combined_km2': _round(legacy.combined_km2),
         'legacy_satellite_source': legacy.satellite_source,
         'legacy_route_reason': legacy.route_reason,
@@ -499,43 +625,132 @@ def load_converter():
     return converter
 
 
-def main(routing=DEFAULT_ROUTING):
+def _h5_path(key):
+    return os.path.join(PATCH_DIR, f'{cache_stem(key)}.h5')
+
+
+def stale_tile_rule(bands, rule) -> bool:
+    """An RGB-only H5 records TILE_SELECTION_RULE; one without the current rule
+    was pre-screened under an older rule (the _score_archives guard)."""
+    return (str(bands or '').replace(' ', '') == 'B4,B3,B2'
+            and str(rule or '').strip() != TILE_SELECTION_RULE)
+
+
+def measurement_staleness(row, key) -> str | None:
+    """Why a stored measurement no longer describes the current Track B patches.
+
+    The table-side counterpart of the archive checks: the row must come from a
+    current tile pre-screen, and from the H5 now on disk when there is one. A
+    removed H5 does not invalidate the row -- the table is the durable record.
+    """
+    if stale_tile_rule(row.get('bands'), row.get('tile_selection_rule')):
+        return 'stale Track-B tile pre-screen'
+    h5_path = _h5_path(key)
+    if os.path.exists(h5_path) and str(row.get('patches_sha256')) != _sha256_file(h5_path):
+        return 'measured on other patches than the current H5'
+    return None
+
+
+def _sits_from_table(measurements, track_a, registry=None) -> dict:
+    """{key: candidates} from the measurement table; faulty rows are dropped."""
+    registry = registry or {}
+    result = {}
+    for key, row in measurements.items():
+        reference = track_a.get(key)
+        problem = (measurement_identity_error(row, reference if reference is not None
+                                              else registry.get(key))
+                   or measurement_staleness(row, key))
+        if problem:
+            print(f"WARN: SITS measurement for {key} not used ({problem}); "
+                  f"rerun run_sits_inference.py --events {key} --overwrite")
+            continue
+        result[key] = sits_measure.candidates_from_row(row)
+    return result
+
+
+def _sits_from_archives(track_a, spec=SPEC) -> dict:
+    """{key: candidates} re-derived from the score archives (--recompute-from-npz)."""
+    result = {}
+    for key, path in _score_archives(track_a).items():
+        with np.load(path, allow_pickle=False) as archive:
+            # Scores must belong to the H5 currently on disk (stale after a
+            # Track B re-download).
+            validate_district_scores(archive, track_a[key], _h5_path(key))
+            result[key] = _sits_candidates(archive, spec)
+    return result
+
+
+def main(routing=DEFAULT_ROUTING, output=None, recompute_from_npz=False):
+    """Write one routed row per registry district to ``output``.
+
+    Read-only on every input. The only file written is ``output`` (default
+    OUT_CSV); Track A, the Track B measurement table, the index, the archives,
+    the registry and the AOI table are never opened for writing.
+    """
     if routing not in ROUTING_MODES:
         raise ValueError(f'routing must be one of {ROUTING_MODES}')
+    output = str(output or OUT_CSV)
     print(f"Routing mode: {routing}")
-    track_a = load_track_a()
-    archives = _score_archives(track_a)
+    registry = load_registry()
+    track_a, track_a_errors = load_track_a(with_errors=True)
+    if recompute_from_npz:
+        print(f"Track B values: recomputed from score archives in {SCORES_DIR}")
+        sits_by_key = _sits_from_archives(track_a)
+    else:
+        print(f"Track B values: {MEASUREMENTS_CSV}")
+        sits_by_key = _sits_from_table(load_sits_measurements(), track_a, registry)
     index = load_sits_index()
-    # The interim routing never converts, so it needs no converter artifact.
+    aoi = load_aoi()
+    # s1_then_s2 never converts, so it needs no converter artifact.
     converter = load_converter() if routing == 'sits_primary' else None
+
+    for label, keys in (('Track A', set(track_a) | track_a_errors),
+                        ('SITS measurement', set(sits_by_key))):
+        outside = sorted(keys - set(registry))
+        if outside:
+            print(f"WARN: {len(outside)} {label} key(s) are not in the registry and have no "
+                  f"output row; the registry changed since they were measured: {outside[:5]}")
+
     rows = []
-    for key in sorted(track_a):
-        a = track_a[key]
-        archive = np.load(archives[key], allow_pickle=False) if key in archives else None
-        try:
-            h5_path = os.path.join(PATCH_DIR, f'{cache_stem(key)}.h5')
-            row = merge_row(a, archive, index.get(key), converter, routing=routing,
-                            h5_path=h5_path if archive is not None else None)
-        finally:
-            if archive is not None:
-                archive.close()
+    for key in sorted(registry):
+        a = track_a.get(key)
+        track_a_status = ('measured' if a is not None
+                          else 'error' if key in track_a_errors else 'not_run')
+        row = merge_row(registry[key], a, sits_by_key.get(key), index.get(key), converter,
+                        routing=routing, aoi=aoi.get(key), track_a_status=track_a_status)
         assert row['satellite_source'] in SATELLITE_SOURCES
         rows.append(row)
-        c = row['combined_km2']
-        print(f"  {key}: sits={row['sits_status']}/{row['sits_method']} "
-              f"s1={row['s1_flood_km2']} -> combined={c} "
-              f"({row['satellite_source']}, {row['route_reason']}); "
-              f"legacy={row['legacy_combined_km2']} ({row['legacy_satellite_source']})")
+        if row['satellite_source'] != 'NONE' or a is not None or key in sits_by_key:
+            print(f"  {key}: A={track_a_status} B={row['track_b_patch_status']}/"
+                  f"{row['sits_measure_status']} sits={row['sits_status']}/{row['sits_method']} "
+                  f"s1={row['s1_flood_km2']} -> combined={row['combined_km2']} "
+                  f"({row['satellite_source']}, {row['route_reason']}); "
+                  f"legacy={row['legacy_combined_km2']} ({row['legacy_satellite_source']})")
 
-    os.makedirs(os.path.dirname(OUT_CSV) or '.', exist_ok=True)
-    pd.DataFrame(rows, columns=list(COMBINED_COLUMNS)).to_csv(OUT_CSV, index=False)
-    print(f"\nSaved -> {OUT_CSV}  ({len(rows)} district rows, spec {SPEC_VERSION})")
-    print("route_reason: " + ", ".join(f"{k}={v}" for k, v in
-                                       Counter(r['route_reason'] for r in rows).most_common()))
+    frame = pd.DataFrame(rows, columns=list(COMBINED_COLUMNS))
+    # Rows without Track A leave blanks in these count columns; keep them integers
+    # ("8", not "8.0") as they were when every row came from Track A.
+    for column in ('s1_post_images', 's2_post_images'):
+        frame[column] = pd.to_numeric(frame[column], errors='coerce').round().astype('Int64')
+    os.makedirs(os.path.dirname(output) or '.', exist_ok=True)
+    frame.to_csv(output, index=False)
+    print(f"\nSaved -> {output}  ({len(rows)} registry rows, spec {SPEC_VERSION})")
+    for column in ('track_a_status', 'track_b_patch_status', 'sits_measure_status',
+                   'satellite_source', 'route_reason'):
+        print(f"{column}: " + ", ".join(f"{k}={v}" for k, v in
+                                        Counter(r[column] for r in rows).most_common()))
+    return output
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--routing', choices=ROUTING_MODES, default=DEFAULT_ROUTING)
-    main(parser.parse_args().routing)
+    parser.add_argument('--output', default=None,
+                        help=f'merged CSV to write (default: {OUT_CSV}); give each routing '
+                             f'its own file to compare them')
+    parser.add_argument('--recompute-from-npz', action='store_true',
+                        help='re-derive Track B values from the score archives instead of '
+                             'reading the measurement table (writes nothing upstream)')
+    args = parser.parse_args()
+    main(args.routing, args.output, args.recompute_from_npz)

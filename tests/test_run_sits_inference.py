@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import importlib.util
+import io
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+import pandas as pd
 
 import h5py
 import numpy as np
@@ -62,13 +68,77 @@ def write_h5(path: Path, n: int = 2, spec_version: str = SPEC_VERSION,
         meta.attrs["s1_threshold_db"] = s1_threshold_db
 
 
+class CheckpointResolutionTests(unittest.TestCase):
+    SUBDIR = Path("SITS-ExtremeEvents-main") / "checkpoints" / "ravaen"
+
+    def test_search_order_is_portable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            explicit, env = Path(tmp) / "mine.pth", Path(tmp) / "envdir"
+            candidates = inference.checkpoint_candidates(explicit, str(env))
+        names = sorted(inference.CHECKPOINT_SHA256)
+        self.assertEqual(candidates[0], explicit)
+        self.assertEqual(candidates[1:4], [env / name for name in names])
+        self.assertEqual(candidates[4:7], [ROOT / self.SUBDIR / name for name in names])
+        self.assertEqual(candidates[7:10], [ROOT.parent / self.SUBDIR / name for name in names])
+        self.assertEqual(len(candidates), 10)
+        self.assertFalse(hasattr(inference, "CHECKPOINT"))   # no machine-specific default
+
+    def test_environment_variable_alone_finds_the_checkpoint(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "ravaen"
+            directory.mkdir()
+            checkpoint = directory / "checkpoint_vae_contrastive_43.pth"
+            checkpoint.write_bytes(b"w")
+            with patch.dict(os.environ, {inference.CHECKPOINT_ENV: str(directory)}):
+                self.assertEqual(inference.resolve_checkpoint(), checkpoint)
+            with patch.dict(os.environ, {inference.CHECKPOINT_ENV: str(checkpoint)}):
+                self.assertEqual(inference.resolve_checkpoint(), checkpoint)
+
+    def test_missing_checkpoint_error_explains_everything(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                patch.object(inference, "ROOT", Path(tmp) / "clone" / "repo"):
+            with self.assertRaises(FileNotFoundError) as caught:
+                inference.resolve_checkpoint(environment=str(Path(tmp) / "nowhere"))
+        message = str(caught.exception)
+        for name in inference.CHECKPOINT_SHA256:
+            self.assertIn(name, message)
+        self.assertIn(str(Path(tmp) / "nowhere" / "checkpoint_vae_contrastive_42.pth"), message)
+        self.assertIn(str(Path(tmp) / "clone" / "repo" / self.SUBDIR), message)
+        self.assertIn("github.com/hfangcat/SITS-ExtremeEvents", message)
+        self.assertIn(inference.UPSTREAM_COMMIT, message)
+        self.assertIn("CVND_SITS_CHECKPOINT=", message)
+
+    def test_missing_checkpoint_exits_nonzero_even_with_nothing_to_do(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            environment = {**os.environ, inference.CHECKPOINT_ENV: str(Path(tmp) / "nowhere")}
+            script = ("import sys, runpy; from pathlib import Path; sys.path.insert(0, 'src');"
+                      "import run_sits_inference as m;"
+                      f"m.ROOT = Path({str(Path(tmp) / 'clone')!r});"
+                      f"m.PATCH_DIR = Path({tmp!r}); m.SCORE_DIR = Path({tmp!r});"
+                      "sys.argv = ['run_sits_inference.py']; raise SystemExit(m.main())")
+            done = subprocess.run([sys.executable, "-c", script], cwd=ROOT, env=environment,
+                                  capture_output=True, text=True, timeout=300)
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn("No SITS-Extreme-VAE checkpoint found", done.stderr)
+
+    def test_events_without_completed_input_exit_nonzero(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "E1%3A%3Aa.h5").touch()
+            Path(str(root / "E1%3A%3Aa.h5") + ".blocks.json").write_text("[]")
+            checkpoint = root / "w.pth"
+            checkpoint.write_bytes(b"w")
+            argv = ["run_sits_inference.py", "--events", "E1::a", "E1::b", "--checkpoint", str(checkpoint),
+                    "--expected-sha256", inference.sha256_file(checkpoint)]
+            with patch.object(inference, "PATCH_DIR", root), patch.object(inference, "SCORE_DIR", root), \
+                    patch.object(sys, "argv", argv), patch("sys.stdout", new_callable=io.StringIO) as out:
+                code = inference.main()
+        self.assertNotEqual(code, 0)
+        self.assertIn("E1::a: partial download", out.getvalue())
+        self.assertIn("E1::b: no patch file", out.getvalue())
+
+
 class MeasurementLayerTests(unittest.TestCase):
-    def test_default_checkpoint_uses_local_upstream_tree(self):
-        self.assertEqual(
-            inference.CHECKPOINT,
-            ROOT / "SITS-ExtremeEvents-main" / "checkpoints" / "ravaen"
-            / "checkpoint_vae_contrastive_42.pth",
-        )
 
     def test_partial_h5_is_not_inferred(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -233,6 +303,39 @@ class LocalSitsInferenceTests(unittest.TestCase):
                 self.assertEqual(str(result["layout_version"]), H5_LAYOUT_VERSION)
                 self.assertEqual(str(result["latent"]), "mu")
                 self.assertEqual(str(result["event_id"]), "E001")
+
+    def test_inference_upserts_the_measurement_row(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_h5(root / "E001.h5")
+            table = root / "measurements.csv"
+            pd.DataFrame([{"event_district_id": "E999::other", "event_id": "E999",
+                           "sits_ndwi_full_km2": 1.5}]).to_csv(table, index=False)
+            inference.infer_h5(root / "E001.h5", root / "E001.npz", TinyModel(), torch.device("cpu"),
+                               batch_size=1, checkpoint_hash="c", patches_hash="p",
+                               measurements_path=table)
+            inference.infer_h5(root / "E001.h5", root / "E001.npz", TinyModel(), torch.device("cpu"),
+                               batch_size=2, checkpoint_hash="c", patches_hash="p2",
+                               measurements_path=table)
+            frame = pd.read_csv(table, dtype=str)
+            with np.load(root / "E001.npz") as archive:
+                expected = inference.sits_measure.sits_candidates(archive)
+        self.assertEqual(sorted(frame["event_id"]), ["E001", "E999"])       # other row kept, no duplicate
+        row = frame.set_index("event_id").loc["E001"]
+        self.assertEqual((row["patches_sha256"], row["checkpoint_sha256"]), ("p2", "c"))
+        self.assertEqual(row["spec_version"], SPEC_VERSION)
+        self.assertEqual(row["upstream_commit"], inference.UPSTREAM_COMMIT)
+        self.assertEqual(int(row["n_tiles"]), 2)
+        self.assertEqual(float(row["sits_ndwi_full_km2"]), expected.get("sits_ndwi_full_km2"))
+
+    def test_infer_without_measurement_path_writes_no_table(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_h5(root / "E001.h5")
+            with patch.object(inference.sits_measure, "upsert_measurements") as upsert:
+                inference.infer_h5(root / "E001.h5", root / "E001.npz", TinyModel(),
+                                   torch.device("cpu"), 1, "c")
+            upsert.assert_not_called()
 
     def test_rgb_normalization_reads_dn(self):
         dn = np.full((1, 4, 2, 2), 20000, dtype=np.uint16)   # saturated -> clipped to 1.0 reflectance

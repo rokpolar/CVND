@@ -9,7 +9,7 @@ from gdelt_backend import _atomic_write
 from district_keys import key_from_stem
 
 ARTIFACTS = ("district_aoi", "district_flood_extent", "district_sits_patches_index",
-             "district_flood_combined", "district_flood_area")
+             "district_sits_measurements", "district_flood_combined", "district_flood_area")
 IDENTITY = ("event_id", "source_record_id", "state", "district", "start_date")
 
 
