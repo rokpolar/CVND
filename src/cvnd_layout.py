@@ -80,6 +80,8 @@ DATA_FILES.update({
     "district_sits_patches": "cache/district/sits_patches",
     "district_sits_patches_index": "cache/district/sits_patches_index.csv",
     "district_sits_scores": "cache/district/sits_scores",
+    # Per-district Track B screen (B1-B3, retained tiles, usable share), no download.
+    "district_sits_screen": "cache/district/sits_screen.csv",
     "district_sits_feasibility_checkpoint": "cache/district/sits_feasibility.jsonl",
     "track_agreement": "results/track_agreement.csv",
     "track_agreement_summary": "results/track_agreement_summary.json",

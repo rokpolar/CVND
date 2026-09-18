@@ -25,6 +25,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 from gee_config import initialize_gee
+import sits_screen
 from cvnd_layout import data_path
 from district_keys import analysis_key, cache_stem
 from flood_spec import (AOI_COLUMNS, H5_LAYOUT_VERSION, IDENTITY_COLUMNS, SPEC,
@@ -1075,14 +1076,7 @@ def _screen_block(images, region, grid, window, spec=SPEC):
         row_px, col_px, height, width = window
         valid = [im.mask().reduce(ee.Reducer.min()).rename(f'valid_{i}')
                  for i, im in enumerate(images)]
-        # pixelCoordinates are evaluated in a projection whose origin/scale
-        # exactly match the local grid.  Their integer x/y values therefore
-        # identify the 64x64 tile without downloading any pixel values.
-        projection = ee.Projection(grid.crs, grid.transform())
-        coords = ee.Image.pixelCoordinates(projection)
-        tile_col = coords.select('x').divide(grid.patch_px).floor().toInt32()
-        tile_row = coords.select('y').divide(grid.patch_px).floor().toInt32()
-        tile_id = tile_row.multiply(grid.npx).add(tile_col).rename('tile')
+        tile_id = _tile_id_image(grid)
         geometry = grid_rectangle(grid, grid.rect(row_px, col_px, height, width))
         # `_tiles_from_block` retains a tile when every timestep separately
         # has >=70% valid pixels. An intersection mask is stricter and can
@@ -1111,17 +1105,35 @@ def _screen_groups_have_tile(grouped_by_time, n_timesteps, keep_valid):
     """Whether one tile satisfies the per-timestep validity rule.
 
     Kept pure so the server-side optimization can be regression-tested with
-    cloud masks whose valid pixels do not overlap spatially.
+    cloud masks whose valid pixels do not overlap spatially. The rule itself
+    lives in sits_screen.retained_tile_ids, shared with the no-download screen.
     """
-    qualifying = None
-    for i in range(n_timesteps):
-        groups = (grouped_by_time.get(str(i)) or {}).get('groups') or []
-        timestep = {int(item['tile']) for item in groups
-                    if float(item.get('mean', 0.0)) >= keep_valid}
-        qualifying = timestep if qualifying is None else qualifying & timestep
-        if not qualifying:
-            return False
-    return bool(qualifying)
+    return bool(sits_screen.retained_tile_ids(grouped_by_time, n_timesteps, keep_valid))
+
+
+def _tile_id_image(grid):
+    """Band 'tile' = global id of the 64x64 tile each grid pixel belongs to.
+
+    pixelCoordinates are evaluated in a projection whose origin/scale exactly
+    match the local grid. Their integer x/y values therefore identify the
+    64x64 tile without downloading any pixel values.
+    """
+    projection = ee.Projection(grid.crs, grid.transform())
+    coords = ee.Image.pixelCoordinates(projection)
+    tile_col = coords.select('x').divide(grid.patch_px).floor().toInt32()
+    tile_row = coords.select('y').divide(grid.patch_px).floor().toInt32()
+    return tile_row.multiply(grid.npx).add(tile_col).rename('tile')
+
+
+def _aoi_blocks(region, grid, block_tiles=None):
+    """[(i, bi, bj)] of the download blocks that intersect the district AOI."""
+    B = block_tiles or SITS_BLOCK_PATCHES
+    all_blocks = [(bi, bj) for bi in range(0, grid.npy, B) for bj in range(0, grid.npx, B)]
+    feats = [ee.Feature(grid_rectangle(grid, grid.rect(*grid.block(bi, bj, B))), {'i': i})
+             for i, (bi, bj) in enumerate(all_blocks)]
+    inside = set(ee.FeatureCollection(feats).filterBounds(region)
+                 .aggregate_array('i').getInfo())
+    return [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks) if i in inside], len(all_blocks)
 
 
 def block_stats(aux, s1_threshold_db, spec=SPEC) -> list:
@@ -1238,19 +1250,14 @@ def _tile_region(images, aux, region, grid, hdf, done_blocks, blocks_ckpt,
             stored_channels = len(SITS_BANDS)
         bands = (list(SITS_LEGACY_BANDS) if stored_channels == len(SITS_LEGACY_BANDS)
                  else list(SITS_BANDS))
-    all_blocks = [(bi, bj) for bi in range(0, grid.npy, B) for bj in range(0, grid.npx, B)]
-
     # Only download blocks intersecting the district AOI (skip bbox corners outside it).
-    feats = [ee.Feature(grid_rectangle(grid, grid.rect(*grid.block(bi, bj, B))), {'i': i})
-             for i, (bi, bj) in enumerate(all_blocks)]
-    inside = set(ee.FeatureCollection(feats).filterBounds(region)
-                 .aggregate_array('i').getInfo())
-    todo = [(i, bi, bj) for i, (bi, bj) in enumerate(all_blocks)
-            if i in inside and i not in done_blocks]
+    inside_blocks, n_blocks = _aoi_blocks(region, grid, B)
+    inside = {i for i, _, _ in inside_blocks}
+    todo = [(i, bi, bj) for i, bi, bj in inside_blocks if i not in done_blocks]
     block_workers = (_sits_block_workers() if block_workers is None else
                      max(1, min(SITS_BLOCK_WORKERS_MAX, int(block_workers))))
     print(f"    tiling: {grid.npx}x{grid.npy} tiles on {grid.crs} (@{grid.pixel_m}m), "
-          f"{len(inside)}/{len(all_blocks)} blocks in district AOI, {len(todo)} to download")
+          f"{len(inside)}/{n_blocks} blocks in district AOI, {len(todo)} to download")
     print(f"    download concurrency: {block_workers} blocks, "
           f"adaptive {_sits_request_floor()}-{_sits_request_limit()} in-flight EE requests")
     bar = tqdm(todo, desc='    downloading', unit='blk')
@@ -1632,6 +1639,157 @@ def prepare_sits_patch(row, spec=SPEC):
             'complete': complete, 'kept_tiles': int(n)}
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# TRACK B SCREEN — Track B's decisions per district, nothing downloaded
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _screen_layers(images, s2_all, region, start_str, spec=SPEC):
+    """Per-pixel layers the screen reduces, defined as Track B stores them.
+
+    valid_i   the 'valid' band _download_block writes per timestep (mask min
+              over the four optical bands, cast to an integer as downloaded)
+    usable    area of eligible & inside-AOI & valid in every timestep & NDWI
+              observed pre and post: run_sits_inference.usable_pixels on the
+              mask bits and ndwi_ref that measurement_aux_image would provide
+    eligible  area of eligible & inside-AOI pixels (Track A's eligible area)
+    """
+    valid = [im.mask().reduce(ee.Reducer.min()).toByte().rename(f'valid_{i}')
+             for i, im in enumerate(images)]
+    valid_all = valid[0]
+    for band in valid[1:]:
+        valid_all = valid_all.And(band)
+    eligible = (measurement_mask(spec).unmask(0)
+                .And(ee.Image.constant(1).clip(region).unmask(0)))
+    pre_ndwi, post_ndwi = ndwi_composites(pre_reference_col(s2_all, start_str, spec),
+                                          s2_all.filterDate(*post_window(start_str, spec)), spec)
+    observed = pre_ndwi.mask().gt(0).And(post_ndwi.mask().gt(0))
+    area = ee.Image.pixelArea()
+    usable = eligible.And(valid_all).And(observed).multiply(area).rename('usable')
+    return valid, usable, eligible.multiply(area).rename('eligible')
+
+
+def _screen_getinfo(value, attempts=3):
+    """getInfo under the Track B request gate, retried like block downloads."""
+    for attempt in range(attempts):
+        try:
+            with _SITS_REQUEST_GATE:
+                info = value.getInfo()
+            _SITS_REQUEST_GATE.succeeded()
+            return info or {}
+        except Exception as exc:
+            message = str(exc).lower()
+            severe = any(marker in message for marker in
+                         ('429', 'too many requests', 'concurrency limit', 'restricted mode'))
+            _SITS_REQUEST_GATE.throttle(severe=severe)
+            if attempt == attempts - 1:
+                raise
+            time.sleep(2 ** attempt)
+
+
+def _screen_block_stats(valid, usable, eligible, grid, window, spec=SPEC) -> dict:
+    """One block's screen reductions in a single request (sits_screen.summarize_blocks).
+
+    Same grid, geometry and tile ids as _screen_block, so the retained tiles
+    are the ones Track B would keep from this block.
+    """
+    tile_id = _tile_id_image(grid)
+    common = dict(geometry=grid_rectangle(grid, grid.rect(*window)), crs=grid.crs,
+                  crsTransform=grid.transform(), maxPixels=spec.max_pixels,
+                  tileScale=spec.tile_scale, bestEffort=False)
+    reductions = {str(i): band.addBands(tile_id).reduceRegion(
+                      reducer=ee.Reducer.mean().group(1, 'tile'), **common)
+                  for i, band in enumerate(valid)}
+    reductions['usable'] = usable.addBands(tile_id).reduceRegion(
+        reducer=ee.Reducer.sum().group(1, 'tile'), **common)
+    reductions['eligible'] = eligible.reduceRegion(reducer=ee.Reducer.sum(), **common)
+    return _screen_getinfo(ee.Dictionary(reductions))
+
+
+def screen_sits_patch(row, spec=SPEC) -> dict:
+    """Track B's decisions for one district without downloading any pixel.
+
+    B1-B3 are prepare_sits_patch's own checks, in its order and with its
+    functions. Past them, the retained-tile rule and the usable-pixel area are
+    reduced server-side block by block; sits_screen.screen_decision turns them
+    into the route the merge would take. Returns one sits_screen row.
+    """
+    start_str = row['start_date']
+    out = {c: row.get(c) for c in sits_screen.IDENTITY_COLUMNS}
+    out.update(spec_version=spec_version(spec), screen_version=sits_screen.SCREEN_VERSION,
+               tile_selection_rule=TILE_SELECTION_RULE,
+               usable_min_frac=spec.sits_usable_min_frac)
+    aoi = resolve_aoi(row, spec)
+    region = aoi['geometry']
+    grid = measurement_grid(region, spec)
+    out.update(geometry_id=aoi.get('geometry_id'), grid_crs=grid.crs)
+    s2_all = s2_collection(region, spec)
+    s2 = s2_all.select(SITS_VALID_BANDS)
+    event_dt = datetime.strptime(start_str, '%Y-%m-%d')
+
+    post_all = s2_all.filterDate(*post_window(start_str, spec))
+    counts = ee.Dictionary({'post': post_all.size(),
+                            'pre': pre_reference_col(s2, start_str, spec).size()}).getInfo()
+    post, pre = int(counts.get('post') or 0), int(counts.get('pre') or 0)
+    out.update(post_images=post, pre_images=pre)
+    baseline = _pick_baseline(s2, region, event_dt, grid, spec) if post and pre else None
+    if baseline:
+        out['baseline_months'] = '|'.join(b[0] for b in baseline)
+
+    totals = {}
+    if baseline:
+        images = [b[1] for b in baseline] + [t5_composite(post_all, spec)]
+        images = [im.clip(region) for im in images]   # as prepare_sits_patch
+        valid, usable, eligible = _screen_layers(images, s2_all, region, start_str, spec)
+        blocks, _ = _aoi_blocks(region, grid)
+        windows = [grid.block(bi, bj, SITS_BLOCK_PATCHES) for _, bi, bj in blocks]
+        with ThreadPoolExecutor(max_workers=_sits_block_workers()) as pool:
+            stats = list(pool.map(
+                lambda window: _screen_block_stats(valid, usable, eligible, grid, window, spec),
+                windows))
+        totals = sits_screen.summarize_blocks(stats, len(images), spec.sits_keep_valid)
+        out['blocks'] = len(blocks)
+    result, reason, frac = sits_screen.screen_decision(
+        post, pre, baseline is not None, totals.get('kept_tiles'), totals.get('usable_km2'),
+        totals.get('eligible_km2'), spec)
+    out.update(totals, screen_result=result, screen_reason=reason, usable_frac=frac)
+    return out
+
+
+def run_track_b_screen(events, rescreen=False, spec=SPEC, path=None):
+    """Screen every district of ``events``; one upserted row each, resumable.
+
+    A district already screened under this spec and screen version, with the
+    same registry identity, is skipped unless ``rescreen``; error rows are
+    always retried. No Track B artifact (H5, index, checkpoint) is touched.
+    """
+    existing = {} if rescreen else sits_screen.load_screen(path)
+    todo = [row for _, row in events.iterrows()
+            if rescreen or analysis_key(row) not in existing
+            or str(existing[analysis_key(row)].get('screen_result')) == 'error'
+            or not _cache_identity_matches(existing[analysis_key(row)], row)]
+    print(f"Screen: {len(events) - len(todo)} already screened | {len(todo)} to screen")
+    for n, row in enumerate(todo, 1):
+        key = analysis_key(row)
+        try:
+            result = screen_sits_patch(row, spec)
+        except Exception as exc:
+            print(f"  ERROR {key}: {exc}")
+            result = {**{c: row.get(c) for c in sits_screen.IDENTITY_COLUMNS},
+                      'screen_result': 'error', 'screen_reason': str(exc)[:200],
+                      'spec_version': spec_version(spec),
+                      'screen_version': sits_screen.SCREEN_VERSION}
+        sits_screen.upsert_screen([result], path)
+        frac = result.get('usable_frac')
+        print(f"  [{n}/{len(todo)}] {key}: {result['screen_result']} ({result['screen_reason']})"
+              + (f" usable {frac:.0%}" if isinstance(frac, float) else ''))
+    screened = sits_screen.load_screen(path)
+    in_run = {analysis_key(row) for _, row in events.iterrows()}
+    table = sits_screen.summary({k: v for k, v in screened.items() if k in in_run})
+    print("\nScreen summary (Track B download is worth it only for sits_expected):")
+    print(table.to_string() if len(table) else '  (nothing screened)')
+    return screened
+
+
 def _track_b_entry(row, h5_path, status, reason=None, kept_tiles=None):
     return {'event_district_id': row.get('event_district_id'),
             'event_id': row['event_id'], 'source_record_id': row.get('source_record_id'),
@@ -1707,9 +1865,19 @@ if __name__ == '__main__':
     parser.add_argument('--backend', choices=['gee', 'cdse-local'],
                         default=os.environ.get('SITS_BACKEND', 'gee'),
                         help='Track B data backend (default: SITS_BACKEND or gee)')
+    parser.add_argument('--screen-only', action='store_true',
+                        help='Track B: record per district whether a download would give a usable '
+                             'SITS value (B1-B3, retained tiles, usable share) in '
+                             f'{sits_screen.SCREEN_CSV}; downloads nothing')
+    parser.add_argument('--rescreen', action='store_true',
+                        help='with --screen-only: screen districts already screened again')
     args = parser.parse_args()
     if args.variant and args.track != 'A':
         parser.error('--variant runs Track A only; pass --track A')
+    if args.screen_only and args.track == 'A':
+        parser.error('--screen-only screens Track B; pass --track B or both')
+    if args.screen_only and args.backend != 'gee':
+        parser.error('--screen-only evaluates Track B on Earth Engine; use --backend gee')
     run_spec = variant_spec(args.variant) if args.variant else SPEC
     run_version = spec_version(run_spec)
 
@@ -1815,7 +1983,15 @@ if __name__ == '__main__':
                     'baseline_status']].to_string(index=False))
 
     # ── Track B ───────────────────────────────────────────────────────────────
-    if args.track in ('B', 'both'):
+    if args.track in ('B', 'both') and args.screen_only:
+        print("\n" + "─" * 65)
+        print("TRACK B SCREEN — decisions only, no download")
+        print(f"  B1-B3 as Track B; retained tiles (every timestep >= {SPEC.sits_keep_valid:.0%} valid); "
+              f"usable share >= {SPEC.sits_usable_min_frac:.0%} of eligible")
+        print(f"  Table: {sits_screen.SCREEN_CSV}")
+        print("─" * 65)
+        run_track_b_screen(events, rescreen=args.rescreen)
+    elif args.track in ('B', 'both'):
         print("\n" + "─" * 65)
         print("TRACK B — SITS-EXTREME-VAE PATCH PREPARATION")
         print(f"  Bands: {SITS_BANDS}")
