@@ -25,10 +25,13 @@ SITS_MIN_INFLIGHT_REQUESTS="${SITS_MIN_INFLIGHT_REQUESTS:-4}"
 SKIP_COVARIATES="${SKIP_COVARIATES:-0}"
 SKIP_ANALYSIS="${SKIP_ANALYSIS:-0}"
 DRY_RUN="${DRY_RUN:-0}"
-# Track A feeds the default S1-first, S2-fallback routing. sits_primary needs
-# Track B for every district (SATELLITE_TRACK=both) and compare_tracks.
-SATELLITE_TRACK="${SATELLITE_TRACK:-A}"
-SATELLITE_ROUTING="${SATELLITE_ROUTING:-s1_then_s2}"
+# Track B is attempted for every district and decides per district whether
+# SITS is possible (it skips a district without imagery or a clear baseline
+# before downloading). sits_then_track_a then uses SITS where Track B measured
+# and Track A (S1, then S2 NDWI) everywhere else -- no district is left out
+# because others lack imagery. sits_primary also needs compare_tracks.
+SATELLITE_TRACK="${SATELLITE_TRACK:-both}"
+SATELLITE_ROUTING="${SATELLITE_ROUTING:-sits_then_track_a}"
 SITS_BACKEND="${SITS_BACKEND:-gee}"
 if [[ "${1:-}" == "--dry-run" ]]; then DRY_RUN=1; shift; fi
 if [[ $# -ne 0 ]]; then echo 'Usage: run_pipeline.sh [--dry-run]' >&2; exit 2; fi
@@ -68,9 +71,42 @@ run() {
   if [[ "$DRY_RUN" != 1 ]]; then "$PYTHON" "$@"; fi
 }
 if [[ "$SETUP_DEPS" == 1 ]]; then run -m pip install -r requirements-lock.txt; fi
+case "$SATELLITE_TRACK" in A|B|both) ;; *) echo "SATELLITE_TRACK=$SATELLITE_TRACK: expected A, B or both" >&2; exit 2;; esac
+case "$SATELLITE_ROUTING" in sits_then_track_a|s1_then_s2|sits_primary) ;; *) echo "SATELLITE_ROUTING=$SATELLITE_ROUTING: expected sits_then_track_a, s1_then_s2 or sits_primary" >&2; exit 2;; esac
+sits_measurements="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from cvnd_layout import data_path; print(data_path('district_sits_measurements'))")"
+# Contradictory settings are refused before anything runs: a sits_primary run
+# that cannot obtain any SITS measurement would silently produce no S2 rows.
+if [[ "$SATELLITE_ROUTING" == "sits_primary" ]]; then
+  if [[ "$SKIP_GEE" != 1 && "$SATELLITE_TRACK" == "A" ]]; then
+    echo 'SATELLITE_ROUTING=sits_primary needs Track B, but SATELLITE_TRACK=A never runs it.' >&2
+    echo 'Use SATELLITE_TRACK=both, or the default SATELLITE_ROUTING=sits_then_track_a (SITS where measured, Track A elsewhere).' >&2
+    exit 2
+  fi
+  if [[ "$SKIP_GEE" == 1 && ! -s "$sits_measurements" ]]; then
+    echo "SATELLITE_ROUTING=sits_primary with SKIP_GEE=1 needs cached Track B measurements, but $sits_measurements is missing or empty." >&2
+    echo 'Use SKIP_GEE=0 SATELLITE_TRACK=both to measure them, or the default SATELLITE_ROUTING=sits_then_track_a (SITS where measured, Track A elsewhere).' >&2
+    exit 2
+  fi
+fi
+if [[ "$SATELLITE_ROUTING" == "sits_then_track_a" ]]; then
+  if [[ "$SKIP_GEE" == 1 ]]; then
+    s2_status="SITS where cached Track B measured ($sits_measurements); Track A (S1, then S2 NDWI) elsewhere"
+  elif [[ "$SATELLITE_TRACK" == "A" ]]; then
+    s2_status='SITS from existing Track B measurements only (SATELLITE_TRACK=A runs no Track B); Track A elsewhere'
+  else
+    s2_status="SITS for every district Track B can measure now (SATELLITE_TRACK=$SATELLITE_TRACK SITS_BACKEND=$SITS_BACKEND); Track A elsewhere"
+  fi
+elif [[ "$SATELLITE_ROUTING" == "s1_then_s2" ]]; then
+  s2_status='S2 NDWI fallback only (s1_then_s2: Sentinel-1 first; Track A S2 NDWI where S1 has no observation; no SITS)'
+elif [[ "$SKIP_GEE" == 1 ]]; then
+  s2_status="SITS from cache (sits_primary: reusing $sits_measurements; no new Track B measurement)"
+else
+  s2_status="SITS measured now (sits_primary: SATELLITE_TRACK=$SATELLITE_TRACK SITS_BACKEND=$SITS_BACKEND; S1_TO_SITS where SITS cannot measure)"
+fi
 echo 'CVND PRIMARY: event × district; legacy state caches are incompatible.'
 export SITS_BLOCK_WORKERS SITS_MAX_INFLIGHT_REQUESTS SITS_MIN_INFLIGHT_REQUESTS SITS_BACKEND
 echo "SKIP_GEE=$SKIP_GEE ARTICLE_PIPELINE_MODE=$ARTICLE_PIPELINE_MODE SKIP_COVARIATES=$SKIP_COVARIATES SKIP_ANALYSIS=$SKIP_ANALYSIS DRY_RUN=$DRY_RUN SATELLITE_TRACK=$SATELLITE_TRACK SATELLITE_ROUTING=$SATELLITE_ROUTING SITS_BACKEND=$SITS_BACKEND SITS_BLOCK_WORKERS=$SITS_BLOCK_WORKERS SITS_MAX_INFLIGHT_REQUESTS=$SITS_MAX_INFLIGHT_REQUESTS SITS_MIN_INFLIGHT_REQUESTS=$SITS_MIN_INFLIGHT_REQUESTS"
+echo "S2/SITS: $s2_status"
 run src/build_emdat_events.py
 if [[ "$SKIP_COVARIATES" != 1 ]]; then run src/build_district_covariates.py; fi
 if [[ "$SKIP_GEE" != 1 ]]; then
@@ -133,6 +169,8 @@ fi
 # sits_primary: SITS (Track B) first; a district whose Track B is not finished
 # stays missing (sits_pending), never S1, and compare_tracks.py decides the
 # S1 -> SITS-NDWI converter for districts SITS cannot measure.
+# The merge only reads flood_extent.csv and district_sits_measurements.csv; to
+# compare routings later, rerun it alone with --routing X --output other.csv.
 if [[ "$SATELLITE_ROUTING" == "sits_primary" ]]; then
   run src/compare_tracks.py
 fi

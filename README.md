@@ -38,6 +38,42 @@ SKIP_GEE=1 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
 
 `force`는 기사 파이프라인을 처음부터 재실행하고 `skip`은 기사 join·분석을 수행하지 않는다. `RUN_ARTICLE_SUPPLEMENT=1`만 targeted BigQuery supplement를 허용한다. 외부 GEE·BigQuery·OpenAI 호출은 실제 실행 옵션에서만 발생한다. `SETUP_DEPS=1`은 재현 환경인 `requirements-lock.txt`를 설치한다.
 
+## 위성 트랙 분리 저장과 재병합
+
+Track A, Track B, 병합은 각자 자기 테이블에만 쓰고, 어떤 단계도 상류 산출물을 다시 쓰지 않는다.
+
+| 단계 | 쓰는 파일 | 읽는 것 |
+|---|---|---|
+| Track A (`satellite.py --track A`) | `data/cache/district/flood_extent.csv` | Earth Engine |
+| Track B 패치 (`satellite.py --track B`) | `data/cache/district/sits_patches/*.h5`, `sits_patches_index.csv` | Earth Engine / CDSE |
+| Track B 측정 (`run_sits_inference.py`) | `data/results/district_sits_measurements.csv` (구역당 1행, upsert), `data/cache/district/sits_scores/*.npz` (타일 상세) | H5, 체크포인트 |
+| 병합 (`merge_results.py`) | `--output`만 (기본 `data/intermediate/district_flood_combined.csv`) | 위 테이블, registry, AOI, converter |
+| 면적표 (`build_flood_area_table.py`) | `--output`만 | 병합 출력 |
+
+병합은 Earth Engine·모델·NPZ 없이 테이블만 읽고 registry의 모든 행을 쓴다. 실행되지 않은 단계는 행 삭제가 아니라 `track_a_status`(`measured`/`error`/`not_run`), `track_b_patch_status`(`ok`/`incomplete`/`error`/`not_run`), `sits_measure_status`(`measured`/`not_run`)로 기록한다. 측정 행은 현재 디스크의 H5와 `patches_sha256`이 다르거나, RGB 전용 H5인데 `tile_selection_rule`이 현행 규칙과 다르면 쓰지 않는다. H5가 삭제된 경우에는 테이블이 측정 기록으로 남는다. 같은 측정으로 라우팅을 비교하려면 출력 파일을 나눠 병합만 다시 돌린다.
+
+```bash
+venv/bin/python src/merge_results.py --routing s1_then_s2   --output data/intermediate/district_flood_combined.s1_then_s2.csv
+venv/bin/python src/merge_results.py --routing sits_primary --output data/intermediate/district_flood_combined.sits.csv
+```
+
+`--recompute-from-npz`는 측정 테이블 대신 NPZ에서 Track B 값을 다시 계산한다(측정 테이블은 쓰지 않는다). `build_flood_area_table.py`는 병합 입력이 0행이면 실패하고, 기존 출력의 측정값을 NA/NONE으로 강등하는 덮어쓰기는 `--allow-demotion` 없이는 거부한다.
+
+`SATELLITE_ROUTING=sits_primary`의 모순 조합은 실행 전에 막는다: `SKIP_GEE=0`인데 `SATELLITE_TRACK=A`인 경우, `SKIP_GEE=1`인데 `district_sits_measurements.csv`가 없거나 비어 있는 경우. 시작 배너의 `S2/SITS:` 한 줄이 이번 실행의 S2 사용 방식을 표시한다.
+
+**SITS 체크포인트.** 파이프라인은 체크포인트를 내려받지 않고 SHA-256으로 검증한다. [hfangcat/SITS-ExtremeEvents](https://github.com/hfangcat/SITS-ExtremeEvents) (commit `637423d6370a31701612fc258782615c0c82e4e9`)의 `checkpoint_vae_contrastive_42.pth`, `_43.pth`, `_44.pth`를 받아 아래 순서로 찾는 위치 중 하나에 둔다.
+
+1. `--checkpoint PATH` (`.pth` 파일 또는 그 디렉터리)
+2. 환경변수 또는 `.env`의 `CVND_SITS_CHECKPOINT=PATH` — 클론한 사용자의 기본 방법
+3. 저장소 안의 `SITS-ExtremeEvents-main/checkpoints/ravaen/`
+4. 저장소 옆의 `SITS-ExtremeEvents-main/checkpoints/ravaen/`
+
+체크포인트는 다른 무엇보다 먼저 확인하므로, 추론할 패치가 없어도 체크포인트가 없으면 시도한 경로를 모두 출력하고 실패한다. `--events`를 줬는데 완성된 H5가 하나도 없으면 nonzero로 끝나며 구역별 사유를 출력한다.
+
+```bash
+CVND_SITS_CHECKPOINT=/path/to/checkpoints/ravaen venv/bin/python src/run_sits_inference.py
+```
+
 ## canonical 산출물
 
 ```text

@@ -1,9 +1,17 @@
 """Run SITS-Extreme-VAE inference locally on completed CVND HDF5 patches.
 
 The HDF5 inputs are never deleted. A file with a sibling .blocks.json is
-still being downloaded and is skipped. Each completed input produces one
-`data/cache/district/sits_scores/<cache_stem(event_district_id)>.npz` file
-consumed by `merge_results.py`.
+still being downloaded and is skipped. Each completed input produces two
+artifacts:
+  data/cache/district/sits_scores/<cache_stem(event_district_id)>.npz
+      per-tile detail (score and areas per 64x64 tile), for compare_tracks.py
+      and for re-deriving the district numbers under another gate
+  data/results/district_sits_measurements.csv
+      one row of district-level measured values (sits_measure.py), upserted,
+      which is what merge_results.py reads
+
+The measurement is a table row first: losing the NPZ must not lose hours of
+download and inference, and a re-merge must not depend on the archives.
 
 Scores use the encoder mean (no sampling), so batch size, device and
 resumption change them only by floating-point rounding. NDWI areas are counted only on usable pixels
@@ -42,8 +50,17 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from dataclasses import dataclass  # noqa: E402
 
+import sits_measure  # noqa: E402
 from cvnd_layout import ROOT, data_path  # noqa: E402
-from district_keys import key_from_stem  # noqa: E402
+
+try:    # CVND_SITS_CHECKPOINT lives in .env like the other machine-local settings
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional dependency
+    load_dotenv = None
+if load_dotenv is not None:
+    load_dotenv(ROOT / ".env")   # never overrides a variable already exported
+
+from district_keys import cache_stem, key_from_stem  # noqa: E402
 from flood_spec import (H5_LAYOUT_VERSION, SPEC, SPEC_VERSION,  # noqa: E402
                         ndwi_new_water, s1_new_water)
 
@@ -59,13 +76,15 @@ class StaleSpecError(ValueError):
 PATCH_DIR = data_path("district_sits_patches")
 SCORE_DIR = data_path("district_sits_scores")
 INFERENCE_LOCK = SCORE_DIR / ".inference.lock"
-CHECKPOINT = (
-    ROOT
-    / "SITS-ExtremeEvents-main"
-    / "checkpoints"
-    / "ravaen"
-    / "checkpoint_vae_contrastive_42.pth"
-)
+MEASUREMENT_CSV = Path(sits_measure.MEASUREMENT_CSV)
+
+# Where a clone looks for the checkpoint, in order. Nothing here is specific to
+# one machine: an explicit --checkpoint, then the environment variable a clone
+# is expected to set, then the documented convention inside and beside the
+# repository. The file itself is never downloaded by the pipeline.
+CHECKPOINT_ENV = "CVND_SITS_CHECKPOINT"
+CHECKPOINT_SUBDIR = Path("SITS-ExtremeEvents-main") / "checkpoints" / "ravaen"
+UPSTREAM_URL = "https://github.com/hfangcat/SITS-ExtremeEvents"
 
 # Official SITS-Extreme-VAE RaVAEn checkpoints stored in the local upstream tree.
 CHECKPOINT_SHA256 = {
@@ -137,6 +156,58 @@ def with_inference_lock(function):
     return locked
 
 
+def checkpoint_candidates(explicit: Path | str | None = None,
+                          environment: str | None = None) -> list[Path]:
+    """Every path a checkpoint is looked for, in order, for this clone.
+
+    A directory (given by --checkpoint, by ``CVND_SITS_CHECKPOINT`` or by
+    convention) contributes the verified file names it may contain.
+    """
+    roots: list[Path] = []
+    if explicit:
+        roots.append(Path(explicit))
+    environment = os.environ.get(CHECKPOINT_ENV) if environment is None else environment
+    if environment:
+        roots.append(Path(environment))
+    roots.append(ROOT / CHECKPOINT_SUBDIR)
+    roots.append(ROOT.parent / CHECKPOINT_SUBDIR)
+
+    candidates: list[Path] = []
+    for root in roots:
+        # A path that names a file is tried as given, even when it does not
+        # exist, so the error message repeats what the caller actually asked for.
+        entries = ([root / name for name in CHECKPOINT_SHA256]
+                   if root.is_dir() or not root.suffix else [root])
+        for entry in entries:
+            if entry not in candidates:
+                candidates.append(entry)
+    return candidates
+
+
+def resolve_checkpoint(explicit: Path | str | None = None,
+                       environment: str | None = None) -> Path:
+    """First existing checkpoint among ``checkpoint_candidates``.
+
+    Raises with every path tried, so a clone can see what to set instead of
+    guessing which machine's layout the code assumes.
+    """
+    candidates = checkpoint_candidates(explicit, environment)
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    tried = "\n  ".join(str(candidate) for candidate in candidates)
+    raise FileNotFoundError(
+        "No SITS-Extreme-VAE checkpoint found. Tried:\n  "
+        f"{tried}\n"
+        f"Expected one of: {', '.join(sorted(CHECKPOINT_SHA256))}\n"
+        f"Obtain them from {UPSTREAM_URL} (upstream commit {UPSTREAM_COMMIT}), "
+        f"then either put the file under {CHECKPOINT_SUBDIR.as_posix()}/ or point "
+        f"{CHECKPOINT_ENV} at the file or its directory, e.g. "
+        f"{CHECKPOINT_ENV}=/path/to/checkpoints/ravaen. "
+        "--checkpoint overrides both."
+    )
+
+
 def ensure_checkpoint(
     path: Path, *, offline: bool = False, expected_sha256: str | None = None
 ) -> Path:
@@ -147,9 +218,9 @@ def ensure_checkpoint(
     """
     if not path.exists():
         raise FileNotFoundError(
-            "Local SITS checkpoint not found: "
-            f"{path}. Put it under SITS-ExtremeEvents-main/checkpoints/ravaen/ "
-            "or pass --checkpoint."
+            f"Local SITS checkpoint not found: {path}. Put it under "
+            f"{CHECKPOINT_SUBDIR.as_posix()}/, set {CHECKPOINT_ENV}, or pass "
+            f"--checkpoint. Source: {UPSTREAM_URL} (commit {UPSTREAM_COMMIT})."
         )
 
     expected = expected_sha256 or CHECKPOINT_SHA256.get(path.name)
@@ -369,7 +440,13 @@ def infer_h5(
     batch_size: int,
     checkpoint_hash: str,
     patches_hash: str | None = None,
+    measurements_path: Path | str | None = None,
 ) -> int:
+    """Score one district's patches; write the NPZ and, when asked, its table row.
+
+    ``measurements_path`` is explicit so only the pipeline writes the shared
+    measurement table; callers that just want scores (tests, audits) do not.
+    """
     score_parts: list[np.ndarray] = []
     count_parts: list[tuple[np.ndarray, ...]] = []
     paired_parts: list[dict] = []
@@ -440,6 +517,10 @@ def infer_h5(
         district = _attr_text(attrs, "district")
         start_date = _attr_text(attrs, "start_date")
         geometry_id = _attr_text(attrs, "geometry_id")
+        # H5 provenance merge_results needs to reject a stale tile pre-screen
+        # without reopening the H5; stored in the measurement row only.
+        h5_provenance = {"bands": _attr_text(attrs, "bands").replace(" ", ""),
+                         "tile_selection_rule": _attr_text(attrs, "tile_selection_rule")}
 
     scores = (
         np.concatenate(score_parts)
@@ -459,54 +540,67 @@ def infer_h5(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if patches_hash is None:
         patches_hash = sha256_file(input_path)
+    payload = dict(
+        scores=scores,
+        ndwi_pre=ndwi_pre,
+        ndwi_during=ndwi_during,
+        ndwi_flood=ndwi_flood,
+        usable_px=usable_px,
+        ndwi_pre_km2=_px_to_km2(ndwi_pre, pixel_area_m2),
+        ndwi_during_km2=_px_to_km2(ndwi_during, pixel_area_m2),
+        ndwi_flood_km2=_px_to_km2(ndwi_flood, pixel_area_m2),
+        tile_area_km2=_px_to_km2(
+            np.full(total, SPEC.sits_patch_pixels), pixel_area_m2
+        ),
+        usable_km2=_px_to_km2(usable_px, pixel_area_m2),
+        **paired,
+        s1_flood_km2=_px_to_km2(paired["s1_flood"], pixel_area_m2),
+        s1_flood_tile_km2=_px_to_km2(paired["s1_flood_tile"], pixel_area_m2),
+        s1_threshold_db=np.array(
+            np.nan if layout.s1_threshold_db is None else layout.s1_threshold_db),
+        block_id=block_id,
+        spec_version=np.array(SPEC_VERSION),
+        layout_version=np.array(H5_LAYOUT_VERSION),
+        latent=np.array("mu"),
+        coords=coords,
+        event_id=np.array(event_id),
+        event_district_id=np.array(event_district_id),
+        source_record_id=np.array(source_record_id),
+        state=np.array(state),
+        district=np.array(district),
+        start_date=np.array(start_date),
+        geometry_id=np.array(geometry_id),
+        model=np.array("SITS-Extreme-VAE"),
+        model_id=np.array("SITS-Extreme-VAE-RaVAEn-seed42"),
+        checkpoint_sha256=np.array(checkpoint_hash),
+        weights_sha256=np.array(checkpoint_hash),
+        patches_sha256=np.array(patches_hash),
+        upstream_commit=np.array(UPSTREAM_COMMIT),
+    )
     temporary = output_path.with_suffix(output_path.suffix + ".tmp")
     with temporary.open("wb") as handle:
-        np.savez_compressed(
-            handle,
-            scores=scores,
-            ndwi_pre=ndwi_pre,
-            ndwi_during=ndwi_during,
-            ndwi_flood=ndwi_flood,
-            usable_px=usable_px,
-            ndwi_pre_km2=_px_to_km2(ndwi_pre, pixel_area_m2),
-            ndwi_during_km2=_px_to_km2(ndwi_during, pixel_area_m2),
-            ndwi_flood_km2=_px_to_km2(ndwi_flood, pixel_area_m2),
-            tile_area_km2=_px_to_km2(
-                np.full(total, SPEC.sits_patch_pixels), pixel_area_m2
-            ),
-            usable_km2=_px_to_km2(usable_px, pixel_area_m2),
-            **paired,
-            s1_flood_km2=_px_to_km2(paired["s1_flood"], pixel_area_m2),
-            s1_flood_tile_km2=_px_to_km2(paired["s1_flood_tile"], pixel_area_m2),
-            s1_threshold_db=np.array(
-                np.nan if layout.s1_threshold_db is None else layout.s1_threshold_db),
-            block_id=block_id,
-            spec_version=np.array(SPEC_VERSION),
-            layout_version=np.array(H5_LAYOUT_VERSION),
-            latent=np.array("mu"),
-            coords=coords,
-            event_id=np.array(event_id),
-            event_district_id=np.array(event_district_id),
-            source_record_id=np.array(source_record_id),
-            state=np.array(state),
-            district=np.array(district),
-            start_date=np.array(start_date),
-            geometry_id=np.array(geometry_id),
-            model=np.array("SITS-Extreme-VAE"),
-            model_id=np.array("SITS-Extreme-VAE-RaVAEn-seed42"),
-            checkpoint_sha256=np.array(checkpoint_hash),
-            weights_sha256=np.array(checkpoint_hash),
-            patches_sha256=np.array(patches_hash),
-            upstream_commit=np.array(UPSTREAM_COMMIT),
-        )
+        np.savez_compressed(handle, **payload)
     temporary.replace(output_path)
+    if measurements_path is not None:
+        # The same aggregation the merge would have done, stored once so the
+        # merge never has to open this archive again.
+        row = sits_measure.measurement_row(payload, provenance=h5_provenance)
+        sits_measure.upsert_measurements([row], measurements_path)
+        print(f"    measurement -> {measurements_path} "
+              f"({row['sits_method'] or 'no usable tiles'}, {row['n_tiles']} tiles)")
     return len(scores)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--events", nargs="*", help="Only infer selected event IDs")
-    parser.add_argument("--checkpoint", type=Path, default=CHECKPOINT)
+    parser.add_argument(
+        "--checkpoint",
+        type=Path,
+        default=None,
+        help=f"Checkpoint file or directory; else ${CHECKPOINT_ENV}, else "
+             f"{CHECKPOINT_SUBDIR.as_posix()}/ inside or beside the repository",
+    )
     parser.add_argument(
         "--expected-sha256",
         help="Verify a checkpoint whose file name is not in the built-in table",
@@ -524,18 +618,53 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def missing_input_reasons(event_ids, patch_dir: Path | None = None,
+                          score_dir: Path | None = None) -> dict[str, str]:
+    """Why each requested district has no completed H5 to infer."""
+    patch_dir = Path(patch_dir or PATCH_DIR)
+    score_dir = Path(score_dir or SCORE_DIR)
+    reasons = {}
+    for key in sorted(event_ids):
+        h5_path = patch_dir / f"{cache_stem(key)}.h5"
+        if Path(str(h5_path) + ".blocks.json").exists():
+            reasons[key] = f"partial download, resume satellite.py --track B ({h5_path.name}.blocks.json)"
+        elif not h5_path.exists():
+            reasons[key] = f"no patch file {h5_path.name}; run satellite.py --track B for it"
+        elif (score_dir / f"{h5_path.stem}.npz").exists():
+            reasons[key] = "already scored; pass --overwrite to redo it"
+        else:
+            reasons[key] = "patch file found but not selected; check the spec it was prepared under"
+    return reasons
+
+
 @with_inference_lock
 def main() -> int:
     args = parse_args()
+    # Resolved and verified before any early return: a run that finds nothing to
+    # do must still fail loudly when the checkpoint this machine would use is
+    # missing, instead of exiting 0 and looking like a completed Track B.
+    try:
+        checkpoint = ensure_checkpoint(
+            resolve_checkpoint(args.checkpoint),
+            offline=args.offline,
+            expected_sha256=args.expected_sha256,
+        )
+    except (FileNotFoundError, RuntimeError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    print(f"SITS checkpoint: {checkpoint}")
+    checkpoint_hash = sha256_file(checkpoint)
+
     event_ids = set(args.events) if args.events else None
     inputs = complete_h5_files(PATCH_DIR, event_ids)
+    if event_ids and not inputs:
+        print(f"No completed H5 input for any of the {len(event_ids)} requested district(s):")
+        for key, reason in missing_input_reasons(event_ids).items():
+            print(f"  {key}: {reason}")
+        return 2
     if not inputs:
         print("No completed H5 files are available for local inference.")
         return 0
-    checkpoint = ensure_checkpoint(
-        args.checkpoint, offline=args.offline, expected_sha256=args.expected_sha256
-    )
-    checkpoint_hash = sha256_file(checkpoint)
     pending = [
         path
         for path in inputs
@@ -576,6 +705,7 @@ def main() -> int:
                 args.batch_size,
                 checkpoint_hash,
                 patches_hash=sha256_file(input_path),
+                measurements_path=MEASUREMENT_CSV,
             )
         except StaleSpecError as exc:
             print(f"STALE SPEC {input_path.name}: {exc}")

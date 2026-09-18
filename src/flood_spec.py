@@ -211,9 +211,12 @@ def variant_spec(name: str) -> MeasurementSpec:
 #
 # Routing modes.  s1_then_s2 uses Sentinel-1 whenever it produced an observed
 # value (including zero) and falls back to S2 NDWI only when S1 is missing.
-# Track B/SITS remains an explicit opt-in research route.
-ROUTING_MODES = ('s1_then_s2', 'sits_primary')
-DEFAULT_ROUTING = 's1_then_s2'
+# sits_then_track_a (default) uses SITS for every district Track B could
+# measure and s1_then_s2 for the rest: Track B decides per district, nothing
+# is withheld from the whole study because many districts lack imagery.
+# sits_primary is the converter-based SITS design (S1_TO_SITS, else missing).
+ROUTING_MODES = ('s1_then_s2', 'sits_primary', 'sits_then_track_a')
+DEFAULT_ROUTING = 'sits_then_track_a'
 SATELLITE_SOURCES = ('SITS_NDWI', 'SITS_NDWI_RESTORED', 'S1_TO_SITS', 'S1', 'NDWI', 'NONE')
 MEASURED_SOURCES = SATELLITE_SOURCES[:-1]
 SITS_SOURCES = ('SITS_NDWI', 'SITS_NDWI_RESTORED')
@@ -223,6 +226,9 @@ ROUTE_REASONS = (
     'sits_unavailable_converted', 'sits_unavailable_excluded',
     'sits_pending', 'converter_missing', 's1_primary', 's2_fallback',
     'no_s1_or_s2', 'no_s1', 'aoi_failed',
+    # sits_then_track_a: why SITS did not measure a Track A row (the sensor
+    # that did is in satellite_source: S1 or NDWI).
+    'track_a_sits_pending', 'track_a_sits_unavailable', 'track_a_sits_footprint_small',
 )
 SITS_STATUSES = ('ok', 'unavailable', 'pending')
 CONVERTER_DECISIONS = ('identity', 'linear', 'stratified', 'excluded', 'insufficient')
@@ -261,7 +267,11 @@ TRACK_A_COLUMNS = (
 )
 COMBINED_COLUMNS = IDENTITY_COLUMNS + AOI_COLUMNS[:-1] + (
     'combined_km2', 'satellite_source', 'route_reason', 'routing_mode', 'optical_footprint',
-    'sits_status', 'sits_reason', 'converter_decision',
+    'sits_status', 'sits_reason',
+    # Which stage produced (or did not produce) this row's inputs. The merge
+    # writes every registry row; an absent stage is a status, never a lost row.
+    'track_a_status', 'track_b_patch_status', 'sits_measure_status',
+    'converter_decision',
     's1_flood_km2', 'ndwi_flood_km2', 'sits_ndwi_full_km2', 'sits_ndwi_gated_km2',
     'sits_detect_km2', 'sits_footprint_km2', 'sits_usable_km2', 'sits_usable_frac',
     'sits_s1_usable_km2', 'sits_threshold', 'sits_method',

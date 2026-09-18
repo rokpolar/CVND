@@ -5,6 +5,13 @@ reshapes that result into one row per registry event-district and keeps
 unobserved flood area as NA. It never turns a failed observation into zero and
 never broadcasts an event-only state result to district rows. ``flood_ratio`` is
 computed here, once, from the authoritative AOI area.
+
+Read-only on its inputs. It refuses two writes that would silently destroy an
+existing baseline:
+  * an input merge with no rows — that is an upstream failure, not "no flood
+    measured", and would otherwise become a table of NONE rows;
+  * replacing a measured cell (flood_area_km2 / a measured satellite_source) of
+    the existing output with NA/NONE, unless --allow-demotion is given.
 """
 
 from __future__ import annotations
@@ -167,12 +174,29 @@ def build_flood_area_table(combined: pd.DataFrame, registry: pd.DataFrame,
     return result[list(FLOOD_AREA_COLUMNS)]
 
 
+def demoted_keys(previous: pd.DataFrame, result: pd.DataFrame) -> list[str]:
+    """Keys whose measured area in ``previous`` would become NA/NONE (or vanish)."""
+    def measured_keys(frame):
+        if frame.empty or not {"flood_area_km2", "satellite_source"} <= set(frame.columns):
+            return set()
+        measured = (pd.to_numeric(frame["flood_area_km2"], errors="coerce").notna()
+                    & frame["satellite_source"].isin(MEASURED_SOURCES))
+        return {analysis_key(row) for _, row in frame.loc[measured].iterrows()}
+
+    return sorted(measured_keys(previous) - measured_keys(result))
+
+
 def main(input_path: str | None = None, registry_path: str | None = None,
-         output_path: str | None = None) -> pd.DataFrame:
+         output_path: str | None = None, allow_demotion: bool = False) -> pd.DataFrame:
     combined_path = Path(input_path) if input_path else data_path('district_flood_combined')
     if not combined_path.exists():
         raise FileNotFoundError(f'Missing district flood merge: {combined_path}. Run district satellite analysis and merge_results.py; legacy state caches are incompatible.')
     combined = pd.read_csv(combined_path, dtype=TEXT_DTYPES)
+    if combined.empty:
+        # An empty merge means the merge (or what fed it) failed. Written through,
+        # it becomes one NONE row per registry district and replaces a baseline.
+        raise ValueError(f'{combined_path} has no rows: the upstream merge failed; '
+                         f'refusing to build an all-missing area table from it')
     registry = pd.read_csv(registry_path or data_path("event_districts"), dtype=TEXT_DTYPES)
     try:
         aoi = pd.read_csv(data_path("district_aoi"), dtype=TEXT_DTYPES)
@@ -182,6 +206,13 @@ def main(input_path: str | None = None, registry_path: str | None = None,
         aoi = pd.DataFrame(columns=["event_district_id", "aoi_area_km2", "aoi_match_status"])
     result = build_flood_area_table(combined, registry, aoi)
     output = Path(output_path) if output_path else data_path("district_flood_area")
+    if output.exists() and not allow_demotion:
+        demoted = demoted_keys(pd.read_csv(output, dtype=TEXT_DTYPES), result)
+        if demoted:
+            raise ValueError(
+                f'{len(demoted)} measured district area(s) in {output} would become NA/NONE '
+                f'(e.g. {demoted[:5]}). Check the merge input; write to another --output, '
+                f'or pass --allow-demotion if losing these measurements is intended.')
     output.parent.mkdir(parents=True, exist_ok=True)
     result.to_csv(output, index=False)
     print(f"Saved -> {output} ({len(result)} rows)")
@@ -194,9 +225,11 @@ if __name__ == "__main__":
     parser.add_argument("--input")
     parser.add_argument("--registry")
     parser.add_argument("--output")
+    parser.add_argument("--allow-demotion", action="store_true",
+                        help="allow measured areas in the existing output to become NA/NONE")
     args = parser.parse_args()
     try:
-        main(args.input, args.registry, args.output)
+        main(args.input, args.registry, args.output, args.allow_demotion)
     except (OSError, ValueError, KeyError) as exc:
         print(f'error: {exc}', file=sys.stderr)
         raise SystemExit(1)

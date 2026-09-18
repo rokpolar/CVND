@@ -1,0 +1,36 @@
+event_district_id,event_id,state,district,start_date,usable_frac,grid_blocks,eligible_km2
+E202::haridwar,E202,Uttarakhand,Haridwar,2025-09-15,0.882,48.0,2128.761
+E101::coimbatore,E101,Tamil Nadu,Coimbatore,2019-11-29,0.868,130.0,5651.975
+E082::sheohar,E082,Bihar,Sheohar,2019-07-14,0.852,12.0,575.564
+E120::ganjam,E120,Odisha,Ganjam,2020-10-01,0.833,165.0,5776.197
+E202::bageshwar,E202,Uttarakhand,Bageshwar,2025-09-15,0.767,49.0,37.869
+E082::kishanganj,E082,Bihar,Kishanganj,2019-07-14,0.744,49.0,1923.715
+E202::pauri%20garhwal,E202,Uttarakhand,Pauri Garhwal,2025-09-15,0.736,100.0,394.787
+E175::solan,E175,Himachal Pradesh,Solan,2023-06-26,0.728,49.0,342.523
+E148::cachar,E148,Assam,Cachar,2022-05-17,0.695,81.0,1827.769
+E202::champawat,E202,Uttarakhand,Champawat,2025-09-15,0.69,36.0,50.671
+E120::gajapati,E120,Odisha,Gajapati,2020-10-01,0.679,70.0,1042.176
+E183::mainpuri,E183,Uttar Pradesh,Mainpuri,2024-07-09,0.668,48.0,2742.835
+E097::koppal,E097,Karnataka,Koppal,2019-10-19,0.626,110.0,5250.279
+E082::araria,E082,Bihar,Araria,2019-07-14,0.604,49.0,2819.481
+E101::cuddalore,E101,Tamil Nadu,Cuddalore,2019-11-29,0.602,88.0,3769.434
+E120::rayagada,E120,Odisha,Rayagada,2020-10-01,0.586,144.0,2635.051
+E175::mandi,E175,Himachal Pradesh,Mandi,2023-06-26,0.584,80.0,203.916
+E082::supaul,E082,Bihar,Supaul,2019-07-14,0.576,49.0,2378.11
+E175::hamirpur,E175,Himachal Pradesh,Hamirpur,2023-06-26,0.568,24.0,322.009
+E081::nalbari,E081,Assam,Nalbari,2019-07-14,0.567,40.0,2186.931
+E120::kandhamal,E120,Odisha,Kandhamal,2020-10-01,0.556,156.0,2217.338
+E082::madhubani,E082,Bihar,Madhubani,2019-07-14,0.545,70.0,3431.915
+E103::lakhimpur,E103,Assam,Lakhimpur,2020-05-24,0.544,72.0,2724.618
+E136::raigarh,E136,Maharashtra,Raigarh,2021-06-01,0.52,126.0,3043.059
+E202::pithoragarh,E202,Uttarakhand,Pithoragarh,2025-09-15,0.502,168.0,99.318
+E183::chandauli,E183,Uttar Pradesh,Chandauli,2024-07-09,0.498,54.0,2315.674
+E082::muzaffarpur,E082,Bihar,Muzaffarpur,2019-07-14,0.491,54.0,3179.601
+E146::nellore,E146,Andhra Pradesh,Nellore,2021-11-18,0.485,266.0,11642.811
+E120::malkangiri,E120,Odisha,Malkangiri,2020-10-01,0.483,121.0,3389.243
+E183::hathras,E183,Uttar Pradesh,Hathras,2024-07-09,0.462,42.0,1580.101
+E183::sultanpur,E183,Uttar Pradesh,Sultanpur,2024-07-09,0.452,96.0,4407.248
+E136::pune,E136,Maharashtra,Pune,2021-06-01,0.432,323.0,10953.587
+E081::darrang,E081,Assam,Darrang,2019-07-14,0.43,56.0,3280.833
+E082::katihar,E082,Bihar,Katihar,2019-07-14,0.421,72.0,2961.571
+E183::pratapgarh,E183,Uttar Pradesh,Pratapgarh,2024-07-09,0.404,77.0,3695.744

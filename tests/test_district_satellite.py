@@ -899,9 +899,14 @@ class DistrictSatelliteTests(unittest.TestCase):
                            "event_district_id": "E1__a", "aoi_match_status": "matched",
                            "aoi_area_km2": 50.0, "state": "Assam", "district": "A",
                            "spec_version": SPEC_VERSION}]).to_csv(track, index=False)
+            pd.DataFrame([{"event_district_id": "E1__a", "event_id": "E1", "state": "Assam",
+                           "district": "A", "aoi_match_status": "pending"}]).to_csv(root / "registry.csv", index=False)
             with (patch.object(merge_results, "SCORES_DIR", str(scores)),
                   patch.object(merge_results, "PATCH_DIR", str(root)),
                   patch.object(merge_results, "SITS_INDEX_CSV", str(root / "index.csv")),
+                  patch.object(merge_results, "REGISTRY_CSV", str(root / "registry.csv")),
+                  patch.object(merge_results, "AOI_CSV", str(root / "aoi.csv")),
+                  patch.object(merge_results, "MEASUREMENTS_CSV", str(root / "measurements.csv")),
                   patch.object(s1_converter, "CONVERTER_JSON", str(root / "conv.json")),
                   patch.object(merge_results, "TRACK_A_CSV", str(track)),
                   patch.object(merge_results, "OUT_CSV", str(output))):
@@ -909,9 +914,11 @@ class DistrictSatelliteTests(unittest.TestCase):
             result = pd.read_csv(output)
             self.assertNotIn("E1", set(result["event_district_id"].dropna()))
             self.assertEqual(result.loc[0, "event_district_id"], "E1__a")
-            # Default sequential routing: the district's own Track A S1, never the parent cache.
+            # Default routing, no Track B for the district: its own Track A S1,
+            # never the parent cache.
             self.assertEqual(result.loc[0, "combined_km2"], 25.0)
-            self.assertEqual(result.loc[0, "route_reason"], "s1_primary")
+            self.assertEqual(result.loc[0, "satellite_source"], "S1")
+            self.assertEqual(result.loc[0, "route_reason"], "track_a_sits_pending")
             self.assertEqual(result.loc[0, "sits_status"], "pending")
             self.assertEqual(result.loc[0, "legacy_combined_km2"], 25.0)
             self.assertEqual(result.loc[0, "legacy_route_reason"], "no_optical_s1")

@@ -87,6 +87,9 @@ DATA_FILES.update({
     "routing_comparison": "results/primary_30d/routing_comparison.json",
     "district_sits_feasibility": "results/sits_feasibility.csv",
     "district_sits_feasibility_summary": "results/sits_feasibility_summary.json",
+    # Track B measurements as a table: written once by run_sits_inference.py,
+    # read (never written) by merge_results.py, so a re-merge needs no NPZ.
+    "district_sits_measurements": "results/district_sits_measurements.csv",
     "district_flood_combined": "intermediate/district_flood_combined.csv",
     "district_flood_area": "intermediate/district_flood_area.csv",
     "district_gdelt_sql": "intermediate/district_gdelt.sql",
