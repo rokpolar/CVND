@@ -41,7 +41,7 @@ def ensure_gee() -> None:
     initialize_gee()
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# satellite.py — CVND Flood Detection Pipeline (optional; SKIP_GEE=1 by default)
+# satellite.py — CVND Flood Detection Pipeline (run by default; SKIP_GEE=1 reuses caches)
 # ───────────────────────────────────────────────────────────────────────────────
 # Every area is measured under flood_spec.SPEC on one pixel grid per district
 # (the UTM zone of the AOI centroid, 10 m pixels snapped to the 640 m tile

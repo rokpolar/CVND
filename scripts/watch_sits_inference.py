@@ -7,8 +7,12 @@ inference command; the command itself ignores those partial H5 files and
 reuses score files whose input/model hashes are unchanged.  Consequently a
 newly completed H5 can be scored without touching the downloader.
 
-The watcher exits after the satellite process has stopped and no partial H5
-remains.  A final scan is always performed before exit.
+The watcher exits after the satellite process has stopped, following one final
+scan.  H5 files still partial at that point (blocks that failed and are retried
+on the next satellite.py run) are listed as a warning, not a failure: the
+pipeline (run_pipeline.sh) reruns the download for them and refuses to merge
+while any remains unfinished.  Only a failed inference run makes the exit
+status non-zero.
 """
 
 from __future__ import annotations
@@ -40,8 +44,12 @@ def pid_alive(pid: int) -> bool:
     return True
 
 
+def partial_h5_paths() -> list[Path]:
+    return sorted(PATCH_DIR.glob("*.h5.blocks.json")) if PATCH_DIR.exists() else []
+
+
 def partial_h5_count() -> int:
-    return len(list(PATCH_DIR.glob("*.h5.blocks.json"))) if PATCH_DIR.exists() else 0
+    return len(partial_h5_paths())
 
 
 def complete_h5_signatures() -> dict[Path, tuple[int, int]]:
@@ -124,9 +132,9 @@ def main() -> int:
         satellite_running = pid_alive(args.satellite_pid)
         if not satellite_running:
             # The last H5 may have become complete during the scan above.
-            # One deterministic final snapshot closes that race. If partial
-            # H5s remain after the downloader died, do not spin forever: the
-            # caller must restart satellite.py to resume those blocks.
+            # One deterministic final snapshot closes that race. Partial H5s
+            # left by the downloader are reported; run_pipeline.sh reruns
+            # satellite.py --track B to resume their blocks.
             final_complete = complete_h5_signatures()
             final_pending = [path for path, signature in final_complete.items()
                              if processed.get(path) != signature]
@@ -137,15 +145,19 @@ def main() -> int:
                     processed.update(
                         {path: final_complete[path] for path in final_pending}
                     )
-            partial = partial_h5_count()
+            partial = partial_h5_paths()
             if partial:
+                keys = sorted(key_from_stem(Path(path.name[:-len(".blocks.json")]).stem)
+                              for path in partial)
                 print(
-                    f"satellite PID {args.satellite_pid} stopped with "
-                    f"{partial} partial H5 file(s); download must be resumed",
+                    f"WARNING: satellite PID {args.satellite_pid} stopped with "
+                    f"{len(partial)} partial H5 file(s); the next download "
+                    f"round (satellite.py --track B) resumes them:",
                     file=sys.stderr,
                     flush=True,
                 )
-                return 2
+                for key in keys:
+                    print(f"  {key}", file=sys.stderr, flush=True)
             return 1 if had_failure else 0
 
         time.sleep(max(1, args.interval))

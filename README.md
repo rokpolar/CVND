@@ -23,8 +23,8 @@ venv/bin/python -m unittest discover -s tests
 venv/bin/python -m compileall -q src tests scripts
 bash -n scripts/run_pipeline.sh
 
-# 인증된 실제 실행: S1 전체 -> S1 결측에만 S2 -> 기사 auto resume
-SETUP_DEPS=1 SKIP_GEE=0 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
+# 인증된 실제 실행(기본 SKIP_GEE=0): Track A(S1 -> S1 결측에만 S2) + Track B(SITS) -> 기사 auto resume
+SETUP_DEPS=1 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
 
 # 위성 캐시 재사용, 기사 상태를 manifest/hash로 자동 판정
 SKIP_GEE=1 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh

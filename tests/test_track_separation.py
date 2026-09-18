@@ -229,7 +229,8 @@ class PipelineGuardTests(unittest.TestCase):
         self.assertNotIn("needs Track B", done.stderr)
         self.assertNotIn("needs cached Track B", done.stderr)
         self.assertIn("SATELLITE_TRACK=both SATELLITE_ROUTING=sits_then_track_a", done.stdout)
-        self.assertIn("S2/SITS: SITS where cached Track B measured", done.stdout)
+        self.assertIn("SKIP_GEE=0", done.stdout)
+        self.assertIn("S2/SITS: SITS for every district Track B can measure now", done.stdout)
         self.assertIn("src/merge_results.py --routing sits_then_track_a", done.stdout)
 
     def test_banner_states_s2(self):
