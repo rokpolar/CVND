@@ -423,6 +423,8 @@ def main(argv=None):
             sha = None
         summary.update(input_path=str(args.input.resolve()), input_sha256=hashlib.sha256(payload).hexdigest(), git_sha=sha,
                        library_versions={name: importlib.metadata.version(name) for name in ['numpy', 'pandas', 'scipy', 'statsmodels', 'scikit-learn', 'matplotlib']})
+        from run_provenance import source_record
+        summary['source_provenance'] = source_record()
         write_outputs(scores, diagnostics, summary, args.results_dir, args.output_dir)
     except Exception as exc:
         for directory, name in artifacts:

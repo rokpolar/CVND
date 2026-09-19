@@ -29,16 +29,16 @@ FORMULAS = {
 SENSITIVITY_FORMULAS = {
     'model_2_source_fe': FORMULAS['model_2'] + ' + C(satellite_source)',
 }
-SOURCE_NOTE = ('Flood area is Sentinel-1 new water over the eligible AOI for every district under the interim routing '
-               '(satellite_source S1), or, under sits_primary routing, SITS-NDWI on the retained clear tiles with Sentinel-1 '
+SOURCE_NOTE = ('Default flood area is Sentinel-1 new water over the eligible AOI, with Track A S2 NDWI only where S1 is missing. '
+               'Observed S1 zero is retained. Historical inputs retain their recorded sources. Under opt-in sits_primary routing, SITS-NDWI is used on retained clear tiles with Sentinel-1 '
                'converted to the SITS-NDWI scale (S1_TO_SITS) where SITS cannot measure the district; the satellite-source '
                'fixed effect, by-source and SITS-only subsamples are sensitivity analyses, not a correction.')
 # Exclusions that belong to the satellite stage: a routing definition with its
 # own area can make these rows analyzable.
 SATELLITE_EXCLUSIONS = {'satellite_missing_or_invalid', 'satellite_source_invalid', 'aoi_area_invalid'}
 ROUTING_NOTE = ('(a) legacy: pre-refactor routing (S1 whenever SITS was not run, a 60% cloud cut); (b) primary: the '
-                'current routing (interim S1 for every district, or SITS primary with S1_TO_SITS); (c) the primary sample '
-                'restricted to SITS sources (empty under the interim routing); (d) a Track A spec variant '
+                'routing recorded in the supplied input, not a newly executed satellite measurement; (c) the primary sample '
+                'restricted to SITS sources (possibly empty); (d) a Track A spec variant '
                 'applied as the relative change of the routed sensor (NDWI for SITS rows, S1 for S1_TO_SITS rows): '
                 'area_b x (variant + o) / (primary + o), a first-order approximation because Track B is not rerun '
                 'under variants. Robust when |coef_a - coef_b| < half the width of the 95% CI of (b).')
@@ -506,6 +506,10 @@ def main(argv=None):
     else:
         pd.DataFrame(columns=['urban_population_share', 'predicted_article_count', 'ci_low', 'ci_high', 'flood_area_km2_fixed']).to_csv(pred_path, index=False)
     out('coverage_summary').parent.mkdir(parents=True, exist_ok=True)
+    from run_provenance import sha256, source_record
+    summary.update(input_sha256=sha256(args.input),
+                   model_results_sha256=sha256(data('coverage_model_results')),
+                   source_provenance=source_record())
     # Convert pandas NaN to JSON null for portable, strict JSON outputs.
     clean_summary = json.loads(pd.Series(summary).to_json())
     out('coverage_summary').write_text(json.dumps(clean_summary, indent=2, allow_nan=False) + '\n')
