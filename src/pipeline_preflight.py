@@ -95,6 +95,15 @@ def inspect_artifacts():
     rows.extend(_inspect_json(key, fields) for key, fields in JSON_ARTIFACTS.items())
     rows.extend(_inspect_track_b(registry))
     rows.extend(_inspect_article_qa(registry))
+    from registry_audit import registry_drift
+    try:
+        drift = registry_drift()
+        rows.append({'artifact': 'registry_derivation', 'path': str(registry_path),
+                     'status': 'present' if drift['status'] == 'current' else 'stale_registry',
+                     'details': drift})
+    except (OSError, ValueError, KeyError) as exc:
+        rows.append({'artifact': 'registry_derivation', 'path': str(registry_path),
+                     'status': 'invalid', 'details': str(exc)})
     return rows
 
 
@@ -134,14 +143,17 @@ def _inspect_track_b(registry):
 
 def _inspect_article_qa(registry):
     from types import SimpleNamespace
-    from article_qa import article_pipeline_state
+    from article_qa import article_pipeline_state, MODEL
+    import os
     from cvnd_config import PRIMARY_NEWS_WINDOW_DAYS, SENSITIVITY_NEWS_WINDOW_DAYS
 
     work = data_path('event_districts').parent / 'article_qa'
     reuse_state = 'none'
     if registry is not None:
         args = SimpleNamespace(registry=data_path('event_districts'),
-                               source=data_path('gdelt_articles'), work=work)
+                               source=data_path('district_gdelt_articles'), work=work,
+                               database=data_path('district_article_database'),
+                               model=os.getenv('LLM_QA_MODEL', MODEL))
         reuse_state = article_pipeline_state(args)
     rows = []
     for days, label in ((PRIMARY_NEWS_WINDOW_DAYS, 'primary'),

@@ -272,7 +272,7 @@ def prepare(args):
     gaps = [{"event_district_id": key, "reason": "no_usable_local_district_candidate"}
             for key in sorted(profiles) if profiles[key]["primary_eligible"] and not local_usable[key]]
     manifest = {
-        "schema_version": 1, "registry_sha256": registry_hash,
+        "schema_version": 2, "registry_sha256": registry_hash,
         "coverage_scope": SCOPE,
         "primary_window_days": PRIMARY_NEWS_WINDOW_DAYS,
         "sensitivity_window_days": SENSITIVITY_NEWS_WINDOW_DAYS,
@@ -281,6 +281,8 @@ def prepare(args):
         "source_sha256": file_hash(args.source), "model": args.model,
         "supplement_sha256": supplement.get("payload_sha256"),
         "prompt_version": PROMPT_VERSION,
+        "collection_manifest_sha256": collection_signature(args),
+        "body_stores_sha256": body_signatures(args),
     }
     args.work.mkdir(parents=True, exist_ok=True)
     write_rows(args.work / "requests.jsonl", requests)
@@ -303,6 +305,12 @@ def checked(args):
     manifest = read(args.work / "manifest.json")
     if not manifest:
         raise ValueError("Run prepare first")
+    if manifest.get('schema_version') != 2:
+        raise ValueError('Stale QA manifest schema; run prepare')
+    if manifest.get('body_stores_sha256') != body_signatures(args):
+        raise ValueError('Article bodies changed; run prepare')
+    if manifest.get('collection_manifest_sha256') != collection_signature(args):
+        raise ValueError('Collection manifest changed; run prepare')
     if (manifest.get("primary_window_days") != PRIMARY_NEWS_WINDOW_DAYS or
             manifest.get("sensitivity_window_days") != SENSITIVITY_NEWS_WINDOW_DAYS):
         raise ValueError("Stale QA news-window contract; run prepare")
@@ -312,6 +320,11 @@ def checked(args):
         raise ValueError("Stale QA registry; regenerate candidates")
     if file_hash(args.source) != manifest["source_sha256"]:
         raise ValueError("Stale source corpus; run prepare")
+    supplement = read(args.work / 'supplement.json', {})
+    if supplement.get('payload_sha256') != manifest.get('supplement_sha256'):
+        raise ValueError('Supplement changed; run prepare')
+    if manifest.get('supplement_sha256') and file_hash(args.work / 'supplement.articles.jsonl.gz') != manifest['supplement_sha256']:
+        raise ValueError('Supplement payload hash mismatch')
     requests = list(_open_jsonl(args.work / "requests.jsonl"))
     pending = list(_open_jsonl(args.work / "pending.jsonl"))
     if digest(requests) != manifest["request_sha256"] or digest(pending) != manifest["pending_sha256"]:
@@ -325,6 +338,10 @@ def validate_count_artifacts(args):
     count_manifest = read(args.work / "counts.manifest.json")
     if not count_manifest:
         raise ValueError("counts.manifest.json missing")
+    if count_manifest.get('qa_manifest_sha256') != digest(manifest):
+        raise ValueError('Counts were produced from another QA manifest')
+    if count_manifest.get('supplement_manifest_sha256') != digest(read(args.work / 'supplement.json', {})):
+        raise ValueError('Supplement collection status changed; regenerate counts')
     results = read(args.work / "results.json", {})
     if count_manifest.get("results_sha256") != digest(results):
         raise ValueError("QA results hash mismatch")
@@ -334,6 +351,8 @@ def validate_count_artifacts(args):
         path = args.work / f"counts_{days}d.csv"
         if not path.exists():
             raise ValueError(f"{path.name} missing")
+        if count_manifest.get('count_files_sha256', {}).get(path.name) != file_hash(path):
+            raise ValueError(f'{path.name} hash mismatch')
         frame = pd.read_csv(path, dtype=str, keep_default_na=False)
         required = {"event_district_id", "final_article_count", "collection_status",
                     "article_count_is_lower_bound", "window_days"}
@@ -348,6 +367,8 @@ def validate_count_artifacts(args):
             raise ValueError(f"{path.name} has an invalid collection_status")
         observed = statuses.isin({"complete", "partial"})
         counts = pd.to_numeric(frame.final_article_count, errors="coerce")
+        if frame.loc[~observed, 'final_article_count'].ne('').any():
+            raise ValueError(f'{path.name} incomplete rows must have missing counts')
         if (counts[observed].isna().any() or (counts[observed] < 0).any()
                 or (counts[observed] % 1 != 0).any()):
             raise ValueError(f"{path.name} has invalid observed counts")
@@ -369,6 +390,42 @@ def article_pipeline_state(args) -> str:
         return "heuristic_complete"
     except (OSError, ValueError, KeyError):
         return "none"
+
+
+def collection_path(args):
+    explicit = getattr(args, 'collection_manifest', None)
+    if explicit:
+        return Path(explicit)
+    if args.source.resolve() == data_path('district_gdelt_articles').resolve():
+        return data_path('district_gdelt_manifest')
+    return None
+
+
+def collection_signature(args):
+    path = collection_path(args)
+    return file_hash(path) if path and path.exists() else None
+
+
+def body_signatures(args):
+    paths = [args.work / 'bodies.sqlite']
+    database = getattr(args, 'database', None)
+    if database:
+        paths.append(Path(database))
+    return {str(p): file_hash(p) if p.exists() else None
+            for base in paths for p in (base, Path(str(base) + '-wal'))}
+
+
+def collected_keys(args, registry):
+    path = collection_path(args)
+    if path is None:
+        return None  # explicitly supported legacy local-corpus workflow
+    payload = read(path, {})
+    if (payload.get('registry_sha256') != registry_fingerprint(registry)
+            or payload.get('window_days') != PRIMARY_NEWS_WINDOW_DAYS
+            or payload.get('article_payload_sha256') != file_hash(args.source)):
+        raise ValueError('Missing or stale district collection manifest')
+    return {r['event_district_id'] for r in payload.get('entries', [])
+            if r.get('collection_status') == 'complete'}
 
 
 def supplement_query(registry, gap_ids):
@@ -779,6 +836,12 @@ def counts(args):
     registry = load_registry(args.registry)
     profiles = profiles_for(registry)
     pair_rows = []
+    collection_keys = collected_keys(args, registry)
+    gap_keys = {g['event_district_id'] for g in manifest['gaps']}
+    supplement_keys = ({g['event_district_id'] for g in supplement_state.get('gaps', [])}
+                       if supplement_state.get('status') == 'complete'
+                       and supplement_state.get('registry_sha256') == manifest['registry_sha256']
+                       else set())
     for request in requests + pending:
         result = results.get(request["custom_id"])
         decisions = {d["event_district_id"]: d for d in validate_response(request, {"decisions": result["decisions"]})} if result else {}
@@ -815,7 +878,9 @@ def counts(args):
             rows = grouped[key]
             unresolved = sum(r["verdict"] not in {"relevant", "not_relevant"} for r in rows)
             classified = sum(r["verdict"] in {"relevant", "not_relevant"} for r in rows)
-            eligible = supplement_ok and p["primary_eligible"]
+            collected = (key in collection_keys if collection_keys is not None
+                         else key not in gap_keys) or key in supplement_keys
+            eligible = collected and p["primary_eligible"]
             complete = eligible and not unresolved
             partial = eligible and unresolved > 0 and classified > 0
             observed = complete or partial
@@ -829,7 +894,7 @@ def counts(args):
                            "final_article_count": sum(r["verdict"] == "relevant" for r in rows) if observed else float("nan"),
                            "count_source": "llm_qa_observed_lower_bound" if partial else "llm_qa",
                            "collection_status": collection_status,
-                           "query_collection_status": "complete" if supplement_ok else "incomplete",
+                           "query_collection_status": "complete" if collected else "incomplete",
                            "missing_text_count": sum(r["verdict"] in {"missing_text", "transient_failure", "permanent_failure"} for r in rows),
                            "classified_article_count": classified,
                            "unresolved_article_count": unresolved,
@@ -838,6 +903,11 @@ def counts(args):
         frame = pd.DataFrame(output)
         _atomic_write(args.work / f"counts_{days}d.csv", frame.to_csv(index=False))
     save(args.work / "counts.manifest.json", {**manifest, "supplement_complete": supplement_ok,
+                                             "supplement_manifest_sha256": digest(supplement_state),
+                                             "qa_manifest_sha256": digest(manifest),
+                                             "count_files_sha256": {
+                                                 f'counts_{days}d.csv': file_hash(args.work / f'counts_{days}d.csv')
+                                                 for days in (PRIMARY_NEWS_WINDOW_DAYS, SENSITIVITY_NEWS_WINDOW_DAYS)},
                                              "results_sha256": digest(results)})
 
 
@@ -894,8 +964,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["prepare", "retry-text", "supplement", "download-new", "submit", "status", "collect", "counts", "run-batches", "state"])
     parser.add_argument("--registry", type=Path, default=data_path("event_districts"))
-    parser.add_argument("--source", type=Path, default=data_path("gdelt_articles"))
-    parser.add_argument("--database", type=Path, default=data_path("gdelt_article_database"))
+    parser.add_argument("--source", type=Path, default=data_path("district_gdelt_articles"))
+    parser.add_argument("--database", type=Path, default=data_path("district_article_database"))
+    parser.add_argument('--collection-manifest', type=Path)
     parser.add_argument("--work", type=Path, default=DEFAULT_WORK)
     parser.add_argument("--model", default=MODEL)
     parser.add_argument("--billing-project", default=None)
