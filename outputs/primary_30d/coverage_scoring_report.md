@@ -2,7 +2,7 @@
 
 News window: 30 days.
 
-Status: available. Input rows: 1553; eligible: 1191; source events: 63; scored: 1191.
+Status: available. Input rows: 1548; eligible: 1191; source events: 63; scored: 1191.
 
 Formula: `article_count ~ log_flood_area + log_population + year_c`. Estimated NB2 alpha; source-group five-fold OOF only.
 
@@ -26,8 +26,8 @@ Labels identify exploratory relative coverage candidates under the fitted observ
     "log_population": "log(total_population / 1000000)",
     "year_c": "start_date.year - 2020"
   },
-  "input_sha256": "3ff0313a2b8823528553124310c16b5ef272cd92f8a219087c088a626a2d8cc8",
-  "git_sha": "d8150c5c6302b85c4e0741435aec6eefece10aa5",
+  "input_sha256": "9550241749512143d1302386f9aa8e1f1b3a915e7e5ee6e06eaa70429b15900f",
+  "git_sha": "7865bb7f091f29c48439f224877d32c65ce6ab5f",
   "library_versions": {
     "numpy": "2.5.2",
     "pandas": "3.0.5",
@@ -827,7 +827,7 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
   ],
   "scoring_reason_counts": {
     "oof_prediction_available": 1191,
-    "excluded_by_input_contract": 362
+    "excluded_by_input_contract": 357
   }
 }
 ```
