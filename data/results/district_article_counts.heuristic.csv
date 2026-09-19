@@ -301,7 +301,6 @@ E053::araria,E053,2017-0342-IND,Bihar,Araria,2017-08-11,1,1,,heuristic,incomplet
 E053::darbhanga,E053,2017-0342-IND,Bihar,Darbhanga,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
 E053::east%20champaran,E053,2017-0342-IND,Bihar,East Champaran,2017-08-11,3,3,,heuristic,incomplete,incomplete,0,0
 E053::gopalganj,E053,2017-0342-IND,Bihar,Gopalganj,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
-E053::jogbani,E053,2017-0342-IND,Bihar,Jogbani,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
 E053::katihar,E053,2017-0342-IND,Bihar,Katihar,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
 E053::khagaria,E053,2017-0342-IND,Bihar,Khagaria,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
 E053::kishanganj,E053,2017-0342-IND,Bihar,Kishanganj,2017-08-11,0,0,,heuristic,incomplete,incomplete,0,0
@@ -481,7 +480,6 @@ E070::kullu,E070,2018-0295-IND,Himachal Pradesh,Kullu,2018-08-07,0,0,,heuristic,
 E070::mandi,E070,2018-0295-IND,Himachal Pradesh,Mandi,2018-08-07,0,0,,heuristic,incomplete,incomplete,0,0
 E070::shimla,E070,2018-0295-IND,Himachal Pradesh,Shimla,2018-08-07,2,2,,heuristic,incomplete,incomplete,0,0
 E071::alappuzha,E071,2018-0295-IND,Kerala,Alappuzha,2018-08-07,4,4,,heuristic,incomplete,incomplete,0,0
-E071::chengannur,E071,2018-0295-IND,Kerala,Chengannur,2018-08-07,9,9,,heuristic,incomplete,incomplete,0,0
 E071::ernakulam,E071,2018-0295-IND,Kerala,Ernakulam,2018-08-07,14,14,,heuristic,incomplete,incomplete,0,0
 E071::idukki,E071,2018-0295-IND,Kerala,Idukki,2018-08-07,69,64,,heuristic,incomplete,incomplete,0,0
 E071::kannur,E071,2018-0295-IND,Kerala,Kannur,2018-08-07,3,3,,heuristic,incomplete,incomplete,0,0
@@ -1531,7 +1529,6 @@ E189::north%20garo%20hills,E189,2024-0719-IND,Meghalaya,North Garo Hills,2024-10
 E189::south%20garo%20hills,E189,2024-0719-IND,Meghalaya,South Garo Hills,2024-10-04,3,3,,heuristic,incomplete,incomplete,0,0
 E189::south%20west%20garo%20hills,E189,2024-0719-IND,Meghalaya,South West Garo Hills,2024-10-04,0,0,,heuristic,incomplete,incomplete,0,0
 E189::west%20garo%20hills,E189,2024-0719-IND,Meghalaya,West Garo Hills,2024-10-04,1,1,,heuristic,incomplete,incomplete,0,0
-E190::itanagar%20capital%20region,E190,2025-0402-IND,Arunachal Pradesh,Itanagar Capital Region,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
 E190::lohit,E190,2025-0402-IND,Arunachal Pradesh,Lohit,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
 E190::lower%20dibang%20valley,E190,2025-0402-IND,Arunachal Pradesh,Lower Dibang Valley,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
 E190::lower%20subansiri,E190,2025-0402-IND,Arunachal Pradesh,Lower Subansiri,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
@@ -1567,8 +1564,6 @@ E193::west%20jaintia%20hills,E193,2025-0402-IND,Meghalaya,West Jaintia Hills,202
 E193::west%20khasi%20hills,E193,2025-0402-IND,Meghalaya,West Khasi Hills,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
 E194::aizawl,E194,2025-0402-IND,Mizoram,Aizawl,2025-05-31,1,0,,heuristic,incomplete,incomplete,0,0
 E194::kolasib,E194,2025-0402-IND,Mizoram,Kolasib,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
-E195::chumoukedima,E195,2025-0402-IND,Nagaland,Chumoukedima,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
-E195::shamator,E195,2025-0402-IND,Nagaland,Shamator,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
 E195::tuensang,E195,2025-0402-IND,Nagaland,Tuensang,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
 E196::mangan,E196,2025-0402-IND,Sikkim,Mangan,2025-05-31,0,0,,heuristic,incomplete,incomplete,0,0
 E197::gomati,E197,2025-0402-IND,Tripura,Gomati,2025-05-31,1,1,,heuristic,incomplete,incomplete,0,0
