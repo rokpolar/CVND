@@ -222,16 +222,16 @@ class PipelineGuardTests(unittest.TestCase):
         self.assertEqual(done.returncode, 2)
         self.assertIn("SKIP_GEE=1", done.stderr)
 
-    def test_defaults_try_track_b_without_blocking(self):
-        # Defaults: Track B attempted for every district, SITS where measured,
-        # Track A elsewhere -- never a refusal because Track B has no results.
+    def test_defaults_only_run_track_a_s1_then_s2(self):
         done = self.run_script()
         self.assertNotIn("needs Track B", done.stderr)
         self.assertNotIn("needs cached Track B", done.stderr)
-        self.assertIn("SATELLITE_TRACK=both SATELLITE_ROUTING=sits_then_track_a", done.stdout)
+        self.assertIn("SATELLITE_TRACK=A SATELLITE_ROUTING=s1_then_s2", done.stdout)
         self.assertIn("SKIP_GEE=0", done.stdout)
-        self.assertIn("S2/SITS: SITS for every district Track B can measure now", done.stdout)
-        self.assertIn("src/merge_results.py --routing sits_then_track_a", done.stdout)
+        self.assertIn("S2/SITS: S2 NDWI fallback only", done.stdout)
+        self.assertIn("src/merge_results.py --routing s1_then_s2", done.stdout)
+        self.assertNotIn('src/satellite.py --track B', done.stdout)
+        self.assertLess(done.stdout.index('--sensor s1'), done.stdout.index('--sensor s2'))
 
     def test_banner_states_s2(self):
         done = self.run_script(SKIP_GEE="1", SATELLITE_TRACK="A", SATELLITE_ROUTING="s1_then_s2")

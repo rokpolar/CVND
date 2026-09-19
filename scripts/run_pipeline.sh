@@ -9,7 +9,7 @@ if [[ -f "$ROOT/.env" ]]; then
   set +a
 fi
 SETUP_DEPS="${SETUP_DEPS:-0}"
-# Satellite stages (AOI, Track A, Track B) run by default; SKIP_GEE=1 reuses
+# Satellite stages (AOI, Track A) run by default; SKIP_GEE=1 reuses
 # the cached satellite tables instead.
 SKIP_GEE="${SKIP_GEE:-0}"
 ARTICLE_PIPELINE_MODE="${ARTICLE_PIPELINE_MODE:-auto}"
@@ -31,13 +31,10 @@ SITS_MIN_INFLIGHT_REQUESTS="${SITS_MIN_INFLIGHT_REQUESTS:-4}"
 SKIP_COVARIATES="${SKIP_COVARIATES:-0}"
 SKIP_ANALYSIS="${SKIP_ANALYSIS:-0}"
 DRY_RUN="${DRY_RUN:-0}"
-# Track B is attempted for every district and decides per district whether
-# SITS is possible (it skips a district without imagery or a clear baseline
-# before downloading). sits_then_track_a then uses SITS where Track B measured
-# and Track A (S1, then S2 NDWI) everywhere else -- no district is left out
-# because others lack imagery. sits_primary also needs compare_tracks.
-SATELLITE_TRACK="${SATELLITE_TRACK:-both}"
-SATELLITE_ROUTING="${SATELLITE_ROUTING:-sits_then_track_a}"
+# Default: S1 for all valid AOIs, then S2 only where S1 is missing.
+# Track B/SITS requires explicit SATELLITE_TRACK=B or both and SITS routing.
+SATELLITE_TRACK="${SATELLITE_TRACK:-A}"
+SATELLITE_ROUTING="${SATELLITE_ROUTING:-s1_then_s2}"
 SITS_BACKEND="${SITS_BACKEND:-gee}"
 if [[ "${1:-}" == "--dry-run" ]]; then DRY_RUN=1; shift; fi
 if [[ $# -ne 0 ]]; then echo 'Usage: run_pipeline.sh [--dry-run]' >&2; exit 2; fi
@@ -131,12 +128,12 @@ sits_measurements="$("$PYTHON" -c "import sys; sys.path.insert(0, 'src'); from c
 if [[ "$SATELLITE_ROUTING" == "sits_primary" ]]; then
   if [[ "$SKIP_GEE" != 1 && "$SATELLITE_TRACK" == "A" ]]; then
     echo 'SATELLITE_ROUTING=sits_primary needs Track B, but SATELLITE_TRACK=A never runs it.' >&2
-    echo 'Use SATELLITE_TRACK=both, or the default SATELLITE_ROUTING=sits_then_track_a (SITS where measured, Track A elsewhere).' >&2
+    echo 'Use SATELLITE_TRACK=both, or the default SATELLITE_ROUTING=s1_then_s2 (S1 then S2 fallback).' >&2
     exit 2
   fi
   if [[ "$SKIP_GEE" == 1 && ! -s "$sits_measurements" ]]; then
     echo "SATELLITE_ROUTING=sits_primary with SKIP_GEE=1 needs cached Track B measurements, but $sits_measurements is missing or empty." >&2
-    echo 'Use SKIP_GEE=0 SATELLITE_TRACK=both to measure them, or the default SATELLITE_ROUTING=sits_then_track_a (SITS where measured, Track A elsewhere).' >&2
+    echo 'Use SKIP_GEE=0 SATELLITE_TRACK=both to measure them, or the default SATELLITE_ROUTING=s1_then_s2 (S1 then S2 fallback).' >&2
     exit 2
   fi
 fi
@@ -245,6 +242,7 @@ if [[ "$ARTICLE_STATE" == heuristic_complete ]]; then
     run src/article_qa.py retry-text "${qa_args[@]}"
     run src/article_qa.py prepare "${qa_args[@]}"
     run src/article_qa.py supplement "${qa_args[@]}" --execute --maximum-tib "$GDELT_SUPPLEMENT_MAX_TIB"
+    run src/article_qa.py prepare "${qa_args[@]}"
     run src/article_qa.py download-new "${qa_args[@]}"
     run src/article_qa.py prepare "${qa_args[@]}"
   fi

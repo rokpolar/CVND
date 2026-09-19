@@ -147,7 +147,7 @@ def with_inference_lock(function):
         SCORE_DIR.mkdir(parents=True, exist_ok=True)
         if fcntl is None:
             return function(*args, **kwargs)
-        with INFERENCE_LOCK.open("w", encoding="utf-8") as handle:
+        with (SCORE_DIR / '.inference.lock').open("w", encoding="utf-8") as handle:
             fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
             try:
                 return function(*args, **kwargs)
@@ -672,6 +672,17 @@ def main() -> int:
         or not score_cache_is_current(
             path, SCORE_DIR / f"{path.stem}.npz", checkpoint_hash)
     ]
+    # A valid NPZ can survive a crash before the measurement-table upsert.
+    # Rebuild its row independently of expensive neural-network inference.
+    for path in inputs:
+        if path not in pending:
+            import sits_measure
+            with h5py.File(path, 'r') as hdf:
+                provenance = {name: _attr_text(hdf['meta'].attrs, name)
+                              for name in ('bands', 'tile_selection_rule')}
+            with np.load(SCORE_DIR / f'{path.stem}.npz', allow_pickle=False) as archive:
+                row = sits_measure.measurement_row(archive, provenance=provenance)
+            sits_measure.upsert_measurements([row], MEASUREMENT_CSV)
     if not pending:
         print(
             "No completed H5 files need local inference. "

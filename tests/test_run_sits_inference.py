@@ -261,6 +261,30 @@ if HAS_TORCH:
 
 @unittest.skipUnless(HAS_TORCH, "optional SITS model tests require torch")
 class LocalSitsInferenceTests(unittest.TestCase):
+    def test_cached_npz_restores_missing_or_stale_csv_without_model_loading(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = root / 'E001.h5'
+            write_h5(path)
+            checkpoint = root / 'w.pth'
+            checkpoint.write_bytes(b'test weights')
+            digest = inference.sha256_file(checkpoint)
+            table = root / 'measurements.csv'
+            inference.infer_h5(path, root / 'E001.npz', TinyModel(), torch.device('cpu'),
+                batch_size=1, checkpoint_hash=digest, patches_hash=inference.sha256_file(path))
+            argv = ['run_sits_inference.py', '--offline', '--checkpoint', str(checkpoint),
+                    '--expected-sha256', digest]
+            with patch.object(inference, 'PATCH_DIR', root), patch.object(inference, 'SCORE_DIR', root), \
+                 patch.object(inference, 'MEASUREMENT_CSV', table), patch.object(sys, 'argv', argv), \
+                 patch.object(inference, 'build_local_model', side_effect=AssertionError('model loaded')):
+                self.assertEqual(inference.main(), 0)
+                frame = pd.read_csv(table)
+                self.assertEqual(frame.iloc[0].checkpoint_sha256, digest)
+                frame['checkpoint_sha256'] = 'stale'
+                frame.to_csv(table, index=False)
+                self.assertEqual(inference.main(), 0)
+                self.assertEqual(pd.read_csv(table).iloc[0].checkpoint_sha256, digest)
+
     def test_latent_uses_mu_not_reparameterized(self):
         model = TinyModel()
         image = torch.rand(2, 3, 4, 4)

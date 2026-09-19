@@ -22,8 +22,10 @@ absent. --recompute-from-npz re-derives the Track B values from the score
 archives instead of reading the measurement table, for trying another gate
 without re-running inference; it still writes nothing upstream.
 
-SITS (Track B) is the primary measurement. It must run for every district and
-its status decides the route (route_area):
+Default routing is s1_then_s2: finite observed S1 (including zero), then S2
+NDWI only for missing S1. Track B does not participate in the default route.
+The following rules apply only to opt-in sits_primary routing, where SITS
+status decides the route (route_area):
   pending      Track B not run, incomplete (.blocks.json left) or not inferred
                -> NA (sits_pending). Never a silent S1 fallback: which sensor
                measures a district must not depend on how far the computation got.

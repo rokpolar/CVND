@@ -58,7 +58,7 @@ def ensure_gee() -> None:
 #   (--variant NAME runs a flood_spec.SPEC_VARIANTS sensitivity spec into
 #   data/cache/district/variants/)
 #
-# Track B — SITS-Extreme-VAE data preparation, required for every district
+# Track B — opt-in SITS-Extreme-VAE data preparation
 #   Output: data/cache/district/sits_patches/<cache_stem(event_district_id)>.h5
 #   Next:   src/run_sits_inference.py → sits_scores/*.npz → compare_tracks.py
 #           → merge_results.py → build_flood_area_table.py
@@ -579,8 +579,15 @@ def track_a_measure(region, start, grid, spec=SPEC, sensor='both') -> dict:
         s1_orbit=('BOTH' if len(passes) > 1 else passes[0]) if passes else None,
         first_post_date_s2=_date_from_ms(info.get('s2_first')),
         first_post_date_s1=_date_from_ms(info.get('s1_first')),
-        grid_crs=grid.crs, cloud_pct=100.0,
+        grid_crs=grid.crs, cloud_pct=100.0 if sensor in {'s2', 'both'} else None,
     )
+    # Unqueried is distinct from queried with zero images. Persist explicit
+    # attempts so legacy sensor-only rows with fabricated zero counts are retried.
+    result['s1_attempted'] = sensor in {'s1', 'both'}
+    result['s2_attempted'] = sensor in {'s2', 'both'}
+    for other in ({'s1', 's2'} - ({sensor} if sensor != 'both' else {'s1', 's2'})):
+        result[f'{other}_pre_images'] = None
+        result[f'{other}_post_images'] = None
 
     lc = landcover(spec)
     builtup = lc.eq(spec.worldcover_builtup).And(eligible)
@@ -1824,19 +1831,36 @@ def _observed(value) -> bool:
     return value is not None and not pd.isna(value)
 
 
+def _area_observed(value) -> bool:
+    try:
+        return value is not None and bool(np.isfinite(float(value))) and float(value) >= 0
+    except (TypeError, ValueError):
+        return False
+
+
 def _sensor_attempted(entry: dict, sensor: str) -> bool:
-    prefixes = ('s1_pre_images', 's1_post_images') if sensor == 's1' else (
-        's2_pre_images', 's2_post_images')
-    return all(_observed(entry.get(column)) for column in prefixes)
+    marker = entry.get(f'{sensor}_attempted')
+    if marker is not None and not pd.isna(marker):
+        return str(marker).lower() in {'true', '1'}
+    # Only measured area proves a legacy sensor was actually run.
+    return _area_observed(entry.get(f'area_{sensor}_km2'))
+
+
+def _s2_fallback_keys(completed):
+    return {key for key, entry in completed.items()
+            if str(entry.get('aoi_match_status', '')).strip().lower() == 'matched'
+            and not _area_observed(entry.get('area_s1_km2'))}
 
 
 def _merge_track_a_entry(previous: dict | None, fresh: dict) -> dict:
     """Merge a sensor-only Track-A attempt without erasing the other sensor."""
     merged = dict(previous or {})
     for key, value in fresh.items():
+        if key.endswith('_attempted') and not value:
+            continue
         if _observed(value) or key not in merged:
             merged[key] = value
-    if _observed(merged.get('area_s1_km2')) or _observed(merged.get('area_s2_km2')):
+    if _area_observed(merged.get('area_s1_km2')) or _area_observed(merged.get('area_s2_km2')):
         merged['baseline_status'] = 'OK'
         merged['error_kind'] = None
     elif str(fresh.get('baseline_status', '')).startswith('ERROR'):
@@ -1850,10 +1874,10 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--track', choices=['A', 'B', 'both'],
-                        default='both',
-                        help='Which track to run (default: both; Track B is required for every district)')
-    parser.add_argument('--sensor', choices=['s1', 's2', 'both'], default='both',
-                        help='Track A sensor subset. Pipeline order is s1 first, then s2 fallback.')
+                        default='A',
+                        help='Which track to run (default: A; Track B requires explicit opt-in)')
+    parser.add_argument('--sensor', choices=['s1', 's2', 'both'], default='s1',
+                        help='Track A subset (default: s1). Run s1 first, then --sensor s2 for fallback.')
     parser.add_argument('--events', nargs='*', default=None,
                         help='Only run these event_district_ids or event_ids. Default: all')
     parser.add_argument('--reverse', action='store_true',
@@ -1938,9 +1962,7 @@ if __name__ == '__main__':
                 print(f"Seeded {len(completed_a)} events from existing {extent_csv}")
 
         if args.sensor == 's2':
-            fallback = {key for key, entry in completed_a.items()
-                        if str(entry.get('aoi_match_status', '')).strip().lower() == 'matched'
-                        and not _observed(entry.get('area_s1_km2'))}
+            fallback = _s2_fallback_keys(completed_a)
             before = len(events)
             events = events[events['_analysis_key'].isin(fallback)]
             print(f"S2 fallback cohort: {len(events)}/{before} rows with matched AOI and missing S1")
