@@ -7,6 +7,7 @@
 - Sensitivity response: the nested `[onset,onset+14d)` count.
 - Exposure: satellite flood extent observed in `[onset,onset+14d)`.
 - Default routing: `s1_then_s2`; S1 for all valid AOIs, S2 only where S1 is missing.
+- Default track: A. Track B/SITS requires explicit opt-in, including the supervised launcher.
 - Main model: NB2 `article_count ~ log1p(flood_area_km2) + urban_population_share`.
 
 ## Authoritative paths
@@ -30,5 +31,9 @@ The standard sequence is registry → covariates/AOI → S1 → S2 fallback → 
 ## Reproducibility
 
 `outputs/primary_30d/analysis_manifest.json` records both input hashes and row counts, Git HEAD/dirty state, source diff hash, and lock-file hash. The package must be regenerated from the current canonical joined inputs after code or dependency changes.
+
+Offline refits preserve the existing 1,553-row joined snapshots (1,191 primary / 1,069 sensitivity eligible). Their recorded satellite routing is historical `interim_s1_only`, not evidence of a fresh S1/S2 run. Current registry derivation yields 1,555 rows: `E189::south%20garo%20hills` and `E189::west%20garo%20hills` are additional reviewed recoveries in `data/review/reviewed_district_recoveries.json`. They have not been newly measured/QA-reviewed during offline validation. Preflight reports this drift and package manifests record both registry fingerprints. Do not fill these districts with zero or silently relabel the frozen inputs as current end-to-end results. The authenticated pipeline rebuilds the registry before collection.
+
+Analysis and scoring summaries bind their input hash to the current source-tree hash. Packaging rejects stale summaries/model tables. `source.patch` includes staged changes; `source_snapshot.zip` also preserves untracked implementation files.
 
 Use `bash scripts/run_pipeline.sh --dry-run`, `python -m unittest discover -s tests`, `python -m compileall -q src tests scripts`, `bash -n scripts/run_pipeline.sh`, and `git diff --check` before publication.

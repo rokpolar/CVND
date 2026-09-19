@@ -24,6 +24,17 @@ bash scripts/run_pipeline.sh --dry-run
 
 The final validation record must also verify primary/sensitivity input hashes, row counts and window values, and regenerate `outputs/primary_30d/analysis_manifest.json`, `key_results.csv`, and `final_results_figure.png` from the canonical joined inputs. External GEE, BigQuery and OpenAI operations remain mocked in automated tests.
 
+## 2026-09-19 offline repair scope
+
+- Validation: 337 offline tests passed with no skips; `compileall`, shell syntax, `git diff --check`, dry-run, dependency checks, and input/source/lock/archive hash checks passed. Dry-run still reports unavailable live caches and registry drift; it is not an end-to-end collection test.
+- Default and supervised launchers use Track A / `s1_then_s2`; Track B remains explicit opt-in. Sensor attempts are checkpointed independently; unqueried sensors have missing image counts, and legacy zero-image counters do not prove an attempt. Finite S1 zero skips S2; invalid AOIs do not enter fallback.
+- QA reuse verifies candidate source/body/collection hashes, both count-file hashes, the parent QA manifest, result hash, and supplement ledger. Collection completeness is district-specific; completed empty queries are observed zero, while missing queries remain missing. Preflight uses the district source, district body DB and configured model.
+- Cached SITS NPZ files repair absent/stale measurement CSV rows without loading the model. Inference locks follow the selected score directory.
+- The lock now includes Torch, boto3 and their resolved transitive dependencies; installation and `pip check` are included in validation. Torch-dependent offline tests are no longer skipped in this environment.
+- Packages reject stale analysis/scoring provenance. Staged and untracked source changes are fingerprinted; a deterministic source ZIP preserves their bytes.
+- Existing joined inputs remain historical snapshots: 1,553 rows, with 1,191/1,069 eligible. The current registry builder yields 1,555 rows, adding two reviewed E189 Garo Hills districts. The read-only registry audit reports this difference in preflight and the package manifest. No observations for those additions are invented; authenticated collection is outside this offline repair.
+- Refit results retain historical `interim_s1_only` routing labels. A successful offline refit is not a claim that the new satellite/news pipeline ran against external services.
+
 ## 2026-09-17 validation
 
 - Full suite: 288 passed, 4 skipped.
