@@ -86,12 +86,30 @@ class TrackAMeasurementSpecTests(unittest.TestCase):
             row = run_track_a(fake, sensor="s1")
         self.assertEqual(row["area_s1_km2"], 12.0)
         self.assertIsNone(row["area_s2_km2"])
+        self.assertIsNone(row['s2_pre_images'])
+        self.assertFalse(satellite._sensor_attempted(row, 's2'))
+        self.assertTrue(satellite._sensor_attempted(row, 's1'))
 
         fake = FakeEE(reduce=reduce_handler())
         with patch.object(satellite, "s1_collection", side_effect=AssertionError("S1 called")):
             row = run_track_a(fake, sensor="s2")
         self.assertEqual(row["area_s2_km2"], 4.0)
         self.assertIsNone(row["area_s1_km2"])
+        self.assertIsNone(row['s1_pre_images'])
+        self.assertFalse(satellite._sensor_attempted(row, 's1'))
+
+    def test_legacy_unqueried_zero_counts_are_not_attempts(self):
+        self.assertFalse(satellite._sensor_attempted({'s2_pre_images': 0, 's2_post_images': 0}, 's2'))
+        self.assertTrue(satellite._sensor_attempted({'s2_attempted': True, 'area_s2_km2': None}, 's2'))
+        self.assertTrue(satellite._sensor_attempted({'area_s1_km2': 0}, 's1'))
+
+    def test_s2_cohort_excludes_success_zero_and_invalid_aoi(self):
+        cases = {'positive': ('matched', 1), 'zero': ('matched', 0),
+                 'missing': ('matched', None), 'nan': ('matched', float('nan')),
+                 'infinite': ('matched', float('inf')), 'aoi_failed': ('missing', None)}
+        rows = {key: {'aoi_match_status': status, 'area_s1_km2': area}
+                for key, (status, area) in cases.items()}
+        self.assertEqual(satellite._s2_fallback_keys(rows), {'missing', 'nan', 'infinite'})
 
     def test_sensor_entries_merge_without_losing_observed_zero(self):
         s1 = {**ROW, "aoi_match_status": "matched", "area_s1_km2": 0.0,
@@ -918,7 +936,7 @@ class DistrictSatelliteTests(unittest.TestCase):
             # never the parent cache.
             self.assertEqual(result.loc[0, "combined_km2"], 25.0)
             self.assertEqual(result.loc[0, "satellite_source"], "S1")
-            self.assertEqual(result.loc[0, "route_reason"], "track_a_sits_pending")
+            self.assertEqual(result.loc[0, "route_reason"], "s1_primary")
             self.assertEqual(result.loc[0, "sits_status"], "pending")
             self.assertEqual(result.loc[0, "legacy_combined_km2"], 25.0)
             self.assertEqual(result.loc[0, "legacy_route_reason"], "no_optical_s1")

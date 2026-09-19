@@ -203,20 +203,20 @@ def variant_spec(name: str) -> MeasurementSpec:
     return replace(SPEC, **SPEC_VARIANTS[name])
 
 
-# Closed vocabularies. SITS is the primary measurement: SITS_NDWI is NDWI new
+# Closed vocabularies. In opt-in SITS routing, SITS_NDWI is NDWI new
 # water on the retained clear SITS tiles; S1_TO_SITS is Sentinel-1 new water
 # over the eligible AOI converted to the SITS-NDWI scale for districts SITS
 # cannot measure. A district whose Track B has not finished is missing, never
 # silently measured by another sensor.
 #
-# Routing modes.  s1_then_s2 uses Sentinel-1 whenever it produced an observed
+# Routing modes. Default s1_then_s2 uses Sentinel-1 whenever it produced an observed
 # value (including zero) and falls back to S2 NDWI only when S1 is missing.
-# sits_then_track_a (default) uses SITS for every district Track B could
+# Opt-in sits_then_track_a uses SITS for every district Track B could
 # measure and s1_then_s2 for the rest: Track B decides per district, nothing
 # is withheld from the whole study because many districts lack imagery.
 # sits_primary is the converter-based SITS design (S1_TO_SITS, else missing).
 ROUTING_MODES = ('s1_then_s2', 'sits_primary', 'sits_then_track_a')
-DEFAULT_ROUTING = 'sits_then_track_a'
+DEFAULT_ROUTING = 's1_then_s2'
 SATELLITE_SOURCES = ('SITS_NDWI', 'SITS_NDWI_RESTORED', 'S1_TO_SITS', 'S1', 'NDWI', 'NONE')
 MEASURED_SOURCES = SATELLITE_SOURCES[:-1]
 SITS_SOURCES = ('SITS_NDWI', 'SITS_NDWI_RESTORED')
@@ -252,6 +252,7 @@ AOI_COLUMNS = ('aoi_level', 'aoi_source', 'aoi_match_status', 'geometry_id', 'ao
 # come back as "17598.0" and stop matching H5/NPZ provenance.
 TEXT_DTYPES = {column: str for column in IDENTITY_COLUMNS + ('geometry_id', 'spec_version')}
 TRACK_A_COLUMNS = (
+    's1_attempted', 's2_attempted',
     'area_s1_km2', 'area_s2_km2', 'ndwi_pre_water_km2', 'ndwi_during_water_km2',
     's1_pre_images', 's1_post_images', 's2_pre_images', 's2_post_images',
     'cloud_pct', 'otsu_threshold_db', 'otsu_fallback_used', 'otsu_separability',
