@@ -8,7 +8,7 @@ the prespecified 14-day post-onset measurement.
   1198 eligible)
 - Sensitivity input: `data/results/sensitivity_14d/district_flood_articles.csv` (`7262ac312d7e41f183e08ea3cf250c8ba74925bbfb3a78fce44f71a3da0a1c48`,
   1548 rows, 1074 eligible)
-- Execution Git HEAD: `1c165dd92ffd843ccdf56f6bd17568cb31c3c495`
+- Execution Git HEAD: `4f7a28e5b41b390fc2aabe77db46b713a4cbe2c4`
 - Dirty worktree recorded: `true`
 - Exact source inventory (including untracked files), source diff hash and dependency-lock hash are in `analysis_manifest.json`.
 - This is an offline refit of the supplied joined inputs, not a new satellite/news collection.

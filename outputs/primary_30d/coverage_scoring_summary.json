@@ -853,7 +853,7 @@
   },
   "input_path": "/Users/rokpolar/Documents/CU_CDI/CVND/data/results/primary_30d/district_flood_articles.csv",
   "input_sha256": "59f3ede8c5fee2b7e9bab068a8a0729a01f4765538804ccd614238af56c963e5",
-  "git_sha": "1c165dd92ffd843ccdf56f6bd17568cb31c3c495",
+  "git_sha": "4f7a28e5b41b390fc2aabe77db46b713a4cbe2c4",
   "library_versions": {
     "numpy": "2.5.2",
     "pandas": "3.0.5",
@@ -863,10 +863,10 @@
     "matplotlib": "3.11.1"
   },
   "source_provenance": {
-    "git_head": "1c165dd92ffd843ccdf56f6bd17568cb31c3c495",
+    "git_head": "4f7a28e5b41b390fc2aabe77db46b713a4cbe2c4",
     "git_dirty": true,
     "source_files_sha256": {
-      "PROJECT_CONTEXT.md": "16495018705986cbd6aa0011754b41e0305caf4a5207e7c27c88c19a05427bd3",
+      "PROJECT_CONTEXT.md": "4d2b1fb152e3ac32ca663fe72890b938f0dca6e3005994199e12d4c9db0cf70a",
       "README.md": "7d463ff7a9513f0ae4fcc6494e8da07e5d3937a89ed37a4ac598ba33c4c98c59",
       "docs/article_qa.md": "d848a52c95de27339c1e44e3da9d0b68cde553b34f9daf6d7a88c1984d3fe737",
       "docs/census_recovery.md": "01c87194c9f3872a332d8c72bf77488424863056a549b72f539dab5cfff9c052",
@@ -888,7 +888,7 @@
       "scripts/prepare_boundary_recovery.py": "9e1df51d8251f896d3dad07fae3b4569dad833a3369901387ed46f238b96725e",
       "scripts/recover_aoi_matching.py": "7a7e3409be3881c7f08fee9cfef35380b0e4b5a777d456bc793369512bf34fe7",
       "scripts/run_boundary_recovery.py": "b76bbd04c7512a7d9a13a11f7d7dc237d95158c18d44ef4926fb91e7b9d9dcda",
-      "scripts/run_pipeline.sh": "02cdc24c1e3b2c7b0a5ef62b8ec37d7318ecda2bd909f93fa857b0fee14beb88",
+      "scripts/run_pipeline.sh": "cd7dcd3e8abbfbb8911763a2e54e4a6c8aa253e9127ff22fcb91e186677db0cf",
       "scripts/start_supervised_pipeline.sh": "88558caaea08e6ba91b0648b3de496571afc9de43bb79fb813b2a2e530000316",
       "scripts/track_b_pending.py": "74a62c2e19442669bf541d7a7f29333d121e20d513574a9d0ecca3f361ed586d",
       "scripts/verify_aoi_recovery.py": "da72d113bda1aa2c00f46b0fb5b0eb85d45d2cfc646811d7e514e8912af1d56a",
@@ -972,9 +972,9 @@
       "tests/test_sits_feasibility.py": "ff1db206aec62fca1a8bd28c7bb6631ca835e05140d772a02d35946e6a32521a",
       "tests/test_sits_screen.py": "d44b609dae08ff0a781fe55c960831d4b7e7dcae5a4b2074c761580d6cba75e3",
       "tests/test_split_reduction.py": "59c7ef91656197a484c0f86054c8658e9dc4e24ebe49f6ff363907083638459d",
-      "tests/test_track_separation.py": "e2052ba96a45322fb0b2371a6a66ae8639bc43d6804f93274900029670f891c3"
+      "tests/test_track_separation.py": "db343fc706b99df2c29663ad0d2ee3a8a96edd76c3b36fce7c456345e71da74c"
     },
-    "source_tree_sha256": "d53e711136a2357b78cc9822f47f4d312868f3c9d3a964e2e8dc585e0328b120",
-    "source_diff_sha256": "81abce18f60380f7fe96ad7c1f009ed395a5a6f4120895ab90e0421e3e20607c"
+    "source_tree_sha256": "8c2c9998997fc544544e35870c64591d72c626e6ba3f603ac191a95e9749b98f",
+    "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   }
 }
