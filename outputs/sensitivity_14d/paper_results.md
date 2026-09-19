@@ -2,7 +2,7 @@
 
 News window: 14 days.
 N = 1069 district-event observations; 400 districts; 153 parent events; 63 source floods.
-Excluded: 484 of 1553 registry rows.
+Excluded: 479 of 1548 registry rows.
 Spearman rho = 0.1567326285; p = 2.6e-07.
 
 Primary model: log E[article_count] = intercept + beta_flood log(1 + flood_area_km2) + beta_urban urban_population_share. NB2 variance = mu + alpha * mu²; alpha is estimated.
@@ -175,9 +175,9 @@ Flood IRR is per one-unit increase in log(1 + km²); the urbanization IRR is per
       "max": 5894.8599
     },
     "article_count": {
-      "count": 1208.0,
-      "mean": 30.6945364238,
-      "std": 80.4600704459,
+      "count": 1204.0,
+      "mean": 30.3712624585,
+      "std": 79.5526929819,
       "min": 0.0,
       "25%": 0.0,
       "50%": 4.0,
@@ -196,65 +196,63 @@ Flood IRR is per one-unit increase in log(1 + km²); the urbanization IRR is per
     }
   },
   "missing_counts": {
-    "flood_area_km2": 83,
-    "article_count": 345,
-    "urban_population_share": 124
+    "flood_area_km2": 78,
+    "article_count": 344,
+    "urban_population_share": 119
   },
   "exclusion_counts": {
-    "article_collection_incomplete": 345,
-    "article_count_missing_or_invalid": 345,
-    "census_unmatched": 124,
-    "census_invalid": 124,
-    "census_population_inconsistent": 124,
-    "satellite_missing_or_invalid": 83,
-    "district_aoi_unmatched": 5,
-    "aoi_area_invalid": 5
+    "article_collection_incomplete": 344,
+    "article_count_missing_or_invalid": 344,
+    "census_unmatched": 119,
+    "census_invalid": 119,
+    "census_population_inconsistent": 119,
+    "satellite_missing_or_invalid": 78
   },
   "stage_qc": {
     "district_extraction": {
-      "success": 1553,
-      "total": 1553,
+      "success": 1548,
+      "total": 1548,
       "rate": 1.0
     },
     "district_aoi_match": {
       "success": 1548,
-      "total": 1553,
-      "rate": 0.996780425
+      "total": 1548,
+      "rate": 1.0
     },
     "census_match": {
       "success": 1429,
-      "total": 1553,
-      "rate": 0.9201545396
+      "total": 1548,
+      "rate": 0.923126615
     },
     "satellite_observation": {
       "success": 1470,
-      "total": 1553,
-      "rate": 0.9465550547
+      "total": 1548,
+      "rate": 0.9496124031
     },
     "gdelt_collection": {
-      "success": 1553,
-      "total": 1553,
+      "success": 1548,
+      "total": 1548,
       "rate": 1.0
     },
     "article_observation": {
-      "success": 1208,
-      "total": 1553,
-      "rate": 0.7778493239
+      "success": 1204,
+      "total": 1548,
+      "rate": 0.7777777778
     },
     "article_complete": {
       "success": 23,
-      "total": 1553,
-      "rate": 0.0148100451
+      "total": 1548,
+      "rate": 0.0148578811
     },
     "article_partial_lower_bound": {
-      "success": 1185,
-      "total": 1553,
-      "rate": 0.7630392788
+      "success": 1181,
+      "total": 1548,
+      "rate": 0.7629198966
     },
     "final_analyzable": {
       "success": 1069,
-      "total": 1553,
-      "rate": 0.6883451384
+      "total": 1548,
+      "rate": 0.6905684755
     },
     "satellite_source_counts": {
       "S1": 1069
@@ -277,7 +275,7 @@ urbanization_group  rows  excluded  exclusion_rate
               high   387        67        0.173127
                low   660       175        0.265152
             medium   382       118        0.308901
-           unknown   124       124        1.000000
+           unknown   119       119        1.000000
 ```
 
 ## Conclusion candidate
@@ -294,7 +292,7 @@ These results describe associations at similar observed flood extent; they do no
 - District rows within a source flood and repeated districts may be dependent; state clustering is only a partial correction.
 - 244 registry onset dates are month-imputed; their 14-day news windows have timing uncertainty.
 - Article counts use the local state corpus plus targeted BigQuery supplementation of districts without usable local candidates. This is conditional corpus coverage, not exhaustive district recollection; districts with some local coverage may still have missed articles.
-- 1185 article counts are observed LLM-QA lower bounds: validated relevant decisions are counted, while unavailable-body, uncertain and unsubmitted candidates remain unresolved and are not imputed as zero.
+- 1181 article counts are observed LLM-QA lower bounds: validated relevant decisions are counted, while unavailable-body, uncertain and unsubmitted candidates remain unresolved and are not imputed as zero.
 - Default flood area is Sentinel-1 new water over the eligible AOI, with Track A S2 NDWI only where S1 is missing. Observed S1 zero is retained. Historical inputs retain their recorded sources. Under opt-in sits_primary routing, SITS-NDWI is used on retained clear tiles with Sentinel-1 converted to the SITS-NDWI scale (S1_TO_SITS) where SITS cannot measure the district; the satellite-source fixed effect, by-source and SITS-only subsamples are sensitivity analyses, not a correction.
 - Source fixed-effects NB2 is secondary and susceptible to incidental-parameter bias; ordinary SE are reported.
 - district-based urbanization tercile cutpoints: [0.1369414084546159, 0.2557930624760398]; unknown Census matches cannot be assigned an urbanization level

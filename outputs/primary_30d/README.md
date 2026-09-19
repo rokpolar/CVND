@@ -4,11 +4,11 @@ The primary outcome counts district-explicit flood articles in `[onset, onset + 
 The sensitivity outcome uses the nested 14-day window. Satellite flood exposure remains
 the prespecified 14-day post-onset measurement.
 
-- Primary input: `data/results/primary_30d/district_flood_articles.csv` (`3ff0313a2b8823528553124310c16b5ef272cd92f8a219087c088a626a2d8cc8`, 1553 rows,
+- Primary input: `data/results/primary_30d/district_flood_articles.csv` (`9550241749512143d1302386f9aa8e1f1b3a915e7e5ee6e06eaa70429b15900f`, 1548 rows,
   1191 eligible)
-- Sensitivity input: `data/results/sensitivity_14d/district_flood_articles.csv` (`79281623bc814617ac6906f6c0c44168872f9bc45cc60212ada92810067d35bd`,
-  1553 rows, 1069 eligible)
-- Execution Git HEAD: `d8150c5c6302b85c4e0741435aec6eefece10aa5`
+- Sensitivity input: `data/results/sensitivity_14d/district_flood_articles.csv` (`75e245ed1bed5983be4398ca9bcf06caee52cfc2b7a0848b2513de7cec1d33ca`,
+  1548 rows, 1069 eligible)
+- Execution Git HEAD: `7865bb7f091f29c48439f224877d32c65ce6ab5f`
 - Dirty worktree recorded: `true`
 - Exact source inventory (including untracked files), source diff hash and dependency-lock hash are in `analysis_manifest.json`.
 - This is an offline refit of the supplied joined inputs, not a new satellite/news collection.

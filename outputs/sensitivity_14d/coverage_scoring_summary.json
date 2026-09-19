@@ -25,14 +25,14 @@
   },
   "variance": "mu + alpha * mu^2; alpha estimated by maximum likelihood",
   "window_days": 14,
-  "n_total": 1553,
+  "n_total": 1548,
   "n_eligible": 1069,
   "n_sources": 63,
   "satellite_source_counts": {
     "S1": 1069
   },
   "n_input_sources": 69,
-  "n_excluded": 484,
+  "n_excluded": 479,
   "folds": [
     {
       "fold_id": 0,
@@ -568,19 +568,17 @@
     "Operational sample gates do not guarantee power. Marginal count variance exceeding its mean does not establish conditional overdispersion."
   ],
   "exclusion_counts": {
-    "article_collection_incomplete": 345,
-    "article_count_missing_or_invalid": 345,
-    "census_unmatched": 124,
-    "census_invalid": 124,
-    "census_population_inconsistent": 124,
-    "satellite_missing_or_invalid": 83,
-    "district_aoi_unmatched": 5,
-    "aoi_area_invalid": 5
+    "article_collection_incomplete": 344,
+    "article_count_missing_or_invalid": 344,
+    "census_unmatched": 119,
+    "census_invalid": 119,
+    "census_population_inconsistent": 119,
+    "satellite_missing_or_invalid": 78
   },
   "missing_counts": {
-    "article_count": 345,
-    "flood_area_km2": 83,
-    "total_population": 124
+    "article_count": 344,
+    "flood_area_km2": 78,
+    "total_population": 119
   },
   "extrapolation_definition": "Any main-model predictor outside the training marginal min/max; this is not a joint-support test.",
   "interval": "Central 90% plug-in count prediction interval: ppf(0.05), ppf(0.95)",
@@ -592,11 +590,11 @@
   "status": "available",
   "scoring_reason_counts": {
     "oof_prediction_available": 1069,
-    "excluded_by_input_contract": 484
+    "excluded_by_input_contract": 479
   },
   "coverage_class_counts": {
     "within_expected_range": 1003,
-    "not_scored": 484,
+    "not_scored": 479,
     "relative_over_candidate": 66
   },
   "diagnostics_available": {
@@ -853,8 +851,8 @@
     ]
   },
   "input_path": "/Users/rokpolar/Documents/CU_CDI/CVND/data/results/sensitivity_14d/district_flood_articles.csv",
-  "input_sha256": "79281623bc814617ac6906f6c0c44168872f9bc45cc60212ada92810067d35bd",
-  "git_sha": "d8150c5c6302b85c4e0741435aec6eefece10aa5",
+  "input_sha256": "75e245ed1bed5983be4398ca9bcf06caee52cfc2b7a0848b2513de7cec1d33ca",
+  "git_sha": "7865bb7f091f29c48439f224877d32c65ce6ab5f",
   "library_versions": {
     "numpy": "2.5.2",
     "pandas": "3.0.5",
@@ -864,19 +862,19 @@
     "matplotlib": "3.11.1"
   },
   "source_provenance": {
-    "git_head": "d8150c5c6302b85c4e0741435aec6eefece10aa5",
+    "git_head": "7865bb7f091f29c48439f224877d32c65ce6ab5f",
     "git_dirty": true,
     "source_files_sha256": {
       "PROJECT_CONTEXT.md": "6617b1d170338cbb82969b779732b2bbabd00707867b597828093cfe39ccd79e",
-      "README.md": "22b1fbfed9c36511c7c3c5991f5b58ecabc0468f9ef7846fc5a6b0802360c7ca",
-      "docs/article_qa.md": "e071282b07b8e1d98bd87fbd8a8c3b5c4e73ab4a5570a475e6f3126de162ff5f",
+      "README.md": "a11d99295014b765e648c390831ab57c07695e0ebcb00c43ba920f12ec65f8e5",
+      "docs/article_qa.md": "4e7b2921406f13e6c991511f134e5922374cc229fb7f335f4acfb36ab4c31ba3",
       "docs/census_recovery.md": "01c87194c9f3872a332d8c72bf77488424863056a549b72f539dab5cfff9c052",
       "docs/copernicus_local_backend.md": "091c94f280a06ba47d93c7f2e69533ebbfc873893f8764f34b5c9479042fd833",
       "docs/coverage_scoring_methodology.md": "a0d2b277f1e5c85d8190c1f5f520f8055ad9b84bab166ee26d3899a61f3087bf",
       "docs/district_methodology.md": "39518143811e3ac90d08201cdf8d5cd448a0dfe796c69cb936949d8e62e6f509",
       "docs/district_recovery.md": "52f196e188e1fe9a088914a5c0febc04060a2f77307376380e3c8f1c88329571",
       "docs/implementation_validation.md": "ccca90e4c182208ed815dcd9c37c707667714025f29e96559df9a4e258da7b81",
-      "docs/use_cases.md": "5ca64d76dc9bab6e3176c86d63aeb619ed1fa517200b3eec059dba210f829b1c",
+      "docs/use_cases.md": "c3d97eae48d30dccc40b939cb94627da01e334d20a6eca62f8814a9e50606a90",
       "requirements-lock.txt": "e551abac63ef8150d67334d62249076d858422d6c70b5e1ce0f8dfc2658f02e6",
       "requirements.txt": "930ede410dc48c3bf54fda36614657d5c40d0e1554b2b8274ba4f9a96b61f339",
       "scripts/audit_reference_overlap.py": "44da327fa7b2b88021c9511b6cab7f45d54992948743f7bd56300a51f2eb5158",
@@ -888,7 +886,7 @@
       "scripts/prepare_boundary_recovery.py": "9e1df51d8251f896d3dad07fae3b4569dad833a3369901387ed46f238b96725e",
       "scripts/recover_aoi_matching.py": "7a7e3409be3881c7f08fee9cfef35380b0e4b5a777d456bc793369512bf34fe7",
       "scripts/run_boundary_recovery.py": "b76bbd04c7512a7d9a13a11f7d7dc237d95158c18d44ef4926fb91e7b9d9dcda",
-      "scripts/run_pipeline.sh": "56e60fe732b2c88a54a4a80a5984fd24d4d1c08ad4374e1dba9bbb3e6a03c978",
+      "scripts/run_pipeline.sh": "46cbf2144c465bc54bc36ac3449937a58267861ba77b0c2f24f6c8eea261d0f7",
       "scripts/start_supervised_pipeline.sh": "948b5eba4e124874e6ed9ce35a0056349b6e95675c37ce7ac80fbdf8ca89f260",
       "scripts/track_b_pending.py": "74a62c2e19442669bf541d7a7f29333d121e20d513574a9d0ecca3f361ed586d",
       "scripts/verify_aoi_recovery.py": "da72d113bda1aa2c00f46b0fb5b0eb85d45d2cfc646811d7e514e8912af1d56a",
@@ -901,7 +899,7 @@
       "src/archive/test_gee.py": "e44f63ca10eb2ba65b232c719e2f620b03803449f42455bec5d8f93a1c761eef",
       "src/article_extractor.py": "fc0482f671256e9d00b6e03e12a754e2f70c67c0dea5c46b62dfd71307789a6b",
       "src/article_fetcher.py": "2cfa16aaf401eb4826c420685e96ec5b87a5e8b3bee7fbc2099b32d4d514708c",
-      "src/article_qa.py": "3b106b3468948271b20152c98ffafce9da0373f091e61c84f07b5c7719e92886",
+      "src/article_qa.py": "9bb1b3813db22ffaa4c5367048fb135e8efb0e10a73abb969722c48339f979f7",
       "src/boundary_recovery.py": "85ef759a32c427819bc88ddebf1dd6e37cdb3c27a3487e94617f20ddf9e1fa8b",
       "src/build_district_covariates.py": "a2aaa5efc7d1794f8fc8c41ca2dd6865b12c5768c1c9081f5b7b45357e83e0d1",
       "src/build_emdat_events.py": "f1063653b17656961d8b0a1aed58ba17d955c19696ca9dad8a19579638b22111",
@@ -946,7 +944,7 @@
       "src/sits_screen.py": "0aa973651b5b7751bc92afb25d767d97ae3a202aab31883ea447a94b8ebe4604",
       "tests/fake_ee.py": "512cd0d7e97d44ab204ac3e4182f0cbca8a8b61626cdb872cfe27f51131f3b62",
       "tests/test_aoi_spacing.py": "5dc6eb0a427945204df7a687613539ec998536c44e63d5cbea7fc922642d5741",
-      "tests/test_article_qa.py": "52c4fc6a59c603a4c085246819b3c4719976aca3007f25c1a4757004183f179b",
+      "tests/test_article_qa.py": "c7a155dc4d7bbdef2f131bc5f6aa971cfab163d4998596a502dfa20af4a090c1",
       "tests/test_boundary_recovery.py": "00f621113b3772719fe8782f4385e3bcba4b91e0fc1307b33d6cf8abcca9b5cc",
       "tests/test_build_emdat_events.py": "e0e66c628c8e0e45a2764c6f72fda2994de9e031c95fa727c35abddc2b2a7334",
       "tests/test_census_recovery.py": "6f2089bc7353e0490a875c24806d6831d06160037c5ce589fac82c6dfc84b79a",
@@ -974,7 +972,7 @@
       "tests/test_split_reduction.py": "59c7ef91656197a484c0f86054c8658e9dc4e24ebe49f6ff363907083638459d",
       "tests/test_track_separation.py": "1c640248f73de3d58cca73caaf6294228d990a8c6107967ad6349fcde369d6c9"
     },
-    "source_tree_sha256": "a435228eac5196215aac68d7a52df05e9d0deaccbd9c2d8cf689bc8428144cbb",
+    "source_tree_sha256": "23d21ec60deeb3716d3b83e8853dd6523564abe9ffb898375afb336ce783b33f",
     "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   }
 }
