@@ -6,11 +6,11 @@
 
 ## UC-02 위성 침수 관측
 
-`SKIP_GEE=0`이면 AOI를 확인한 뒤 모든 키에 S1을 실행하고 S1 면적 결측 키에만 S2를 실행한다. 관측 0은 성공이며 AOI 실패는 fallback하지 않는다. `src/merge_results.py --routing s1_then_s2`가 S1 → S2 → missing 순서로 단일 면적을 선택한다. Track B/SITS는 opt-in이다.
+`SKIP_GEE=0`이면 AOI를 확인한 뒤 모든 키에 S1을 실행하고 S1 면적 결측 키에만 S2를 실행한다. 관측 0은 성공이며 AOI 실패는 fallback하지 않는다. `src/merge_results.py --routing s1_then_s2`가 S1 → S2 → missing 순서로 단일 면적을 선택한다. 전체 파이프라인은 Track B/SITS를 사용하지 않는다.
 
 ## UC-03 기사 heuristic → LLM-QA
 
-`src/district_articles.py`가 30일까지 후보를 수집하고 본문 heuristic을 계산한다. `src/article_qa.py`는 그 후보만 LLM-QA하고 30일/14일 count를 동시에 만든다. `ARTICLE_PIPELINE_MODE=auto`는 provenance가 유효한 완료 단계를 자동으로 생략하며, 검증 가능한 구형 유료 QA snapshot은 오프라인 승격 후 재사용한다.
+기존 30일/14일 LLM-QA count를 lower-bound 자료로 동결한다. 기본 `ARTICLE_PIPELINE_MODE=frozen`은 provenance가 `llm_complete`일 때만 재사용하고 수집·본문·heuristic·LLM 단계를 실행하지 않는다.
 
 ## UC-04 join과 분석
 
@@ -20,7 +20,7 @@
 
 ```bash
 bash scripts/run_pipeline.sh --dry-run
-SKIP_GEE=0 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
+SKIP_GEE=0 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 ```
 
 실제 GEE·BigQuery·OpenAI 작업은 인증된 명시적 실행에서만 수행한다. 기본 dry-run은 외부 호출이나 산출물 교체 없이 계약을 검사한다.

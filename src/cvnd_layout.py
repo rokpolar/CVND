@@ -68,6 +68,7 @@ DATA_FILES.update({
     "census_district_metadata": "raw/census_2011_district_urban_rural.meta.json",
     "district_crosswalk": "raw/district_name_crosswalk.csv",
     "district_recovery_mapping": "raw/district_recovery_mapping.csv",
+    "district_registry_exclusions": "raw/district_registry_exclusions.csv",
     "event_districts": "intermediate/event_districts.csv",
     "event_districts_news_sensitivity": "intermediate/event_districts.news_sensitivity.csv",
     "event_registry_exclusions": "intermediate/event_registry_exclusions.csv",

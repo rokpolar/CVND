@@ -27,7 +27,7 @@ The final validation record must also verify primary/sensitivity input hashes, r
 ## 2026-09-19 offline repair scope
 
 - Validation: 337 offline tests passed with no skips; `compileall`, shell syntax, `git diff --check`, dry-run, dependency checks, and input/source/lock/archive hash checks passed. Dry-run still reports unavailable live caches and registry drift; it is not an end-to-end collection test.
-- Default and supervised launchers use Track A / `s1_then_s2`; Track B remains explicit opt-in. Sensor attempts are checkpointed independently; unqueried sensors have missing image counts, and legacy zero-image counters do not prove an attempt. Finite S1 zero skips S2; invalid AOIs do not enter fallback.
+- Default and supervised launchers enforce Track A / `s1_then_s2` and reject Track B routing. Sensor attempts are checkpointed independently; unqueried sensors have missing image counts, and legacy zero-image counters do not prove an attempt. Finite S1 zero skips S2; invalid AOIs do not enter fallback.
 - QA reuse verifies candidate source/body/collection hashes, both count-file hashes, the parent QA manifest, result hash, and supplement ledger. Collection completeness is district-specific; completed empty queries are observed zero, while missing queries remain missing. Preflight uses the district source, district body DB and configured model.
 - Cached SITS NPZ files repair absent/stale measurement CSV rows without loading the model. Inference locks follow the selected score directory.
 - The lock now includes Torch, boto3 and their resolved transitive dependencies; installation and `pip check` are included in validation. Torch-dependent offline tests are no longer skipped in this environment.

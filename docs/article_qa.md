@@ -2,9 +2,9 @@
 
 뉴스 결과의 primary window는 `[onset, onset+30 days)`이고 sensitivity는 그 안의 14일이다. 위성 post window는 별도로 14일을 유지한다. 후보는 30일까지 한 번 수집하고 heuristic을 통과한 후보만 LLM-QA에 전달한다.
 
-## 자동 재개 계약
+## 동결 계약
 
-기본값은 `ARTICLE_PIPELINE_MODE=auto`다. `src/article_qa.py state`는 파일 존재가 아니라 다음 provenance를 검사한다.
+기본값은 `ARTICLE_PIPELINE_MODE=frozen`이다. 현재 30d/14d 결과를 lower-bound 관측으로 확정하고 더 이상 기사·본문·heuristic·LLM 산출물을 바꾸지 않는다. `src/article_qa.py state`가 다음 provenance를 검사해 `llm_complete`를 반환할 때만 join과 분석을 계속한다.
 
 - 현재 event×district registry와 source corpus hash
 - prompt와 model
@@ -12,7 +12,7 @@
 - district collection manifest와 두 count CSV 각각의 hash, count manifest와 QA manifest의 연결
 - `counts_30d.csv`, `counts_14d.csv`, `counts.manifest.json`의 키·window·상태 계약
 
-auto 실행은 state 판정 전에 `adopt-existing`을 호출한다. 이미 비용을 지불한 schema-1 QA는 기존 request에 속한 응답의 구조와 근거, 두 count의 키·상태를 오프라인 검증하고 감사 메타데이터와 현재 hash로 봉인한다. 이후 registry에 행만 추가되면 기존 값은 유지하고 새 행을 `incomplete`로 추가하지만, source·본문·prompt/model·응답·count 변경은 재사용하지 않는다. `ARTICLE_ADOPT_EXISTING_QA=0`으로 이 승격을 비활성화할 수 있다.
+`frozen`은 `adopt-existing`을 호출하지 않고 어떤 산출물도 쓰지 않는다. provenance가 stale/누락이면 즉시 실패한다. 수집 연구를 다시 할 때만 `auto`/`force`를 명시적으로 선택한다.
 
 반환 상태는 다음과 같다.
 
@@ -51,7 +51,7 @@ venv/bin/python src/article_qa.py prepare
 ## 파이프라인
 
 ```bash
-ARTICLE_PIPELINE_MODE=auto RUN_ARTICLE_SUPPLEMENT=0 bash scripts/run_pipeline.sh
+ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 bash scripts/run_pipeline.sh --dry-run
 ```
 

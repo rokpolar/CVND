@@ -208,34 +208,41 @@ class PipelineGuardTests(unittest.TestCase):
         return subprocess.run([shutil.which("bash"), str(ROOT / "scripts" / "run_pipeline.sh"), "--dry-run"],
                               capture_output=True, text=True, env=environment, cwd=ROOT, timeout=120)
 
-    def test_sits_primary_with_track_a_only_is_refused(self):
+    def test_non_production_routing_is_refused(self):
         done = self.run_script(SKIP_GEE="0", SATELLITE_TRACK="A", SATELLITE_ROUTING="sits_primary")
         self.assertEqual(done.returncode, 2)
-        self.assertIn("SATELLITE_TRACK=A", done.stderr)
+        self.assertIn("requires s1_then_s2", done.stderr)
         self.assertNotIn(">>>", done.stdout)
 
-    def test_sits_primary_cache_rerun_without_measurements_is_refused(self):
-        if sits_measure.MEASUREMENT_CSV and Path(sits_measure.MEASUREMENT_CSV).exists() \
-                and Path(sits_measure.MEASUREMENT_CSV).stat().st_size:
-            self.skipTest("a real measurement table exists; SKIP_GEE=1 is legitimate here")
+    def test_track_b_is_refused_by_production_pipeline(self):
         done = self.run_script(SKIP_GEE="1", SATELLITE_TRACK="both", SATELLITE_ROUTING="sits_primary")
         self.assertEqual(done.returncode, 2)
-        self.assertIn("SKIP_GEE=1", done.stderr)
+        self.assertIn("Track A only", done.stderr)
 
     def test_defaults_only_run_track_a_s1_then_s2(self):
         done = self.run_script()
         self.assertNotIn("needs Track B", done.stderr)
         self.assertNotIn("needs cached Track B", done.stderr)
         self.assertIn("SATELLITE_TRACK=A SATELLITE_ROUTING=s1_then_s2", done.stdout)
+        self.assertIn("ARTICLE_PIPELINE_MODE=frozen", done.stdout)
         self.assertIn("SKIP_GEE=0", done.stdout)
-        self.assertIn("S2/SITS: S2 NDWI fallback only", done.stdout)
+        self.assertIn("S2/SITS: Track A only", done.stdout)
         self.assertIn("src/merge_results.py --routing s1_then_s2", done.stdout)
         self.assertNotIn('src/satellite.py --track B', done.stdout)
         self.assertLess(done.stdout.index('--sensor s1'), done.stdout.index('--sensor s2'))
 
+    def test_frozen_mode_refuses_stale_qa_without_article_writes(self):
+        done = self.run_script(SKIP_GEE="1", ARTICLE_PIPELINE_MODE="frozen",
+                               LLM_QA_MODEL="deliberately-stale-model")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("requires validated llm_complete", done.stderr)
+        self.assertNotIn("district_articles.py --execute", done.stdout)
+        self.assertNotIn("article_qa.py adopt-existing", done.stdout)
+        self.assertNotIn("article_qa.py run-batches", done.stdout)
+
     def test_banner_states_s2(self):
         done = self.run_script(SKIP_GEE="1", SATELLITE_TRACK="A", SATELLITE_ROUTING="s1_then_s2")
-        self.assertIn("S2/SITS: S2 NDWI fallback only", done.stdout)
+        self.assertIn("S2/SITS: Track A only", done.stdout)
 
 
 if __name__ == "__main__":

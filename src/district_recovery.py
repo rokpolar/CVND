@@ -153,3 +153,33 @@ def recover_from_files(registry, path, *, include_circularity_risk=False):
     aliases = (pd.read_csv(aliases_path, dtype=str, keep_default_na=False).to_dict('records')
                if aliases_path.exists() else [])
     return apply_recovery(registry, evidence, aliases)
+
+
+def apply_registry_exclusions(registry, path):
+    """Apply an explicit, audited event-district exclusion list.
+
+    The list is intentionally separate from recovery evidence: recovery records
+    remain available for audit, while the production cohort can reproduce a
+    reviewed exclusion exactly. Every configured key must exist so stale or
+    misspelled exclusions fail loudly instead of silently changing the cohort.
+    """
+    if not path.exists():
+        return registry.copy(), registry.iloc[0:0].copy()
+    exclusions = pd.read_csv(path, dtype=str, keep_default_na=False)
+    required = {'event_district_id', 'exclusion_reason'}
+    missing = required - set(exclusions)
+    if missing:
+        raise ValueError(f'District exclusion list missing columns: {sorted(missing)}')
+    if exclusions.event_district_id.eq('').any() or exclusions.event_district_id.duplicated().any():
+        raise ValueError('District exclusion keys must be non-empty and unique')
+    if exclusions.exclusion_reason.str.strip().eq('').any():
+        raise ValueError('District exclusion reason must be non-empty')
+    configured = set(exclusions.event_district_id)
+    available = set(registry.event_district_id)
+    unknown = sorted(configured - available)
+    if unknown:
+        raise ValueError(f'District exclusion keys not produced by derivation: {unknown}')
+    removed = registry[registry.event_district_id.isin(configured)].copy()
+    removed = removed.merge(exclusions, on='event_district_id', how='left', validate='one_to_one')
+    retained = registry[~registry.event_district_id.isin(configured)].copy().reset_index(drop=True)
+    return retained, removed.reset_index(drop=True)

@@ -3,7 +3,8 @@ import unittest
 from pathlib import Path
 import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from district_recovery import apply_recovery, independent_recovery_evidence
+from district_recovery import (apply_recovery, apply_registry_exclusions,
+                               independent_recovery_evidence)
 
 
 class RecoveryTests(unittest.TestCase):
@@ -48,3 +49,18 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(sensitivity.district.tolist(), ['Dhemaji', 'Jorhat', 'Kamrup'])
         self.assertNotIn('district_resolution_confidence', sensitivity)
         self.assertEqual(primary.iloc[0].district_resolution_circularity_risk, 'none')
+
+    def test_explicit_district_exclusion_is_strict_and_auditable(self):
+        recovered = apply_recovery(self.base, pd.DataFrame([self.record]))
+        import tempfile
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'exclusions.csv'
+            pd.DataFrame([{'event_district_id': 'E001::dhemaji',
+                           'exclusion_reason': 'reviewed_out_of_scope'}]).to_csv(path, index=False)
+            retained, removed = apply_registry_exclusions(recovered, path)
+            self.assertTrue(retained.empty)
+            self.assertEqual(removed.exclusion_reason.tolist(), ['reviewed_out_of_scope'])
+            pd.DataFrame([{'event_district_id': 'E999::missing',
+                           'exclusion_reason': 'bad_key'}]).to_csv(path, index=False)
+            with self.assertRaisesRegex(ValueError, 'not produced'):
+                apply_registry_exclusions(recovered, path)
