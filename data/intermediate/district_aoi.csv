@@ -278,7 +278,6 @@ E053,2017-0342-IND,2017-08-11,Bihar,Araria,district,FAO/GAUL/2015/level2,matched
 E053,2017-0342-IND,2017-08-11,Bihar,Darbhanga,district,FAO/GAUL/2015/level2,matched,17598.0,2293.727225126986,fs1-3016a20fd3ad,,,,,,,,,E053::darbhanga
 E053,2017-0342-IND,2017-08-11,Bihar,East Champaran,district,geoBoundaries/gbOpen/IND/ADM2/2021@8bef6929fd65432e7dc775e7c44473e84efff064ebddbfd6b834e6291546db40,matched,76128533B49017555803526,4209.432168721379,fs1-3016a20fd3ad,,2021.0,census_label_alias,Purba Champaran,False,https://censusindia.gov.in/nada/index.php/catalog/42557,"District identity matched; 2021 reference geometry, NOT event-year boundary equivalence. No parent substitution.",,E053::east%20champaran
 E053,2017-0342-IND,2017-08-11,Bihar,Gopalganj,district,FAO/GAUL/2015/level2,matched,17604.0,2044.660708589624,fs1-3016a20fd3ad,,,,,,,,,E053::gopalganj
-E053,2017-0342-IND,2017-08-11,Bihar,Jogbani,district,,failed,,,fs1-3016a20fd3ad,district AOI match failed for Bihar/Jogbani: 0 exact candidates,,,,,,,,E053::jogbani
 E053,2017-0342-IND,2017-08-11,Bihar,Katihar,district,FAO/GAUL/2015/level2,matched,17608.0,3068.3721590224136,fs1-3016a20fd3ad,,,,,,,,,E053::katihar
 E053,2017-0342-IND,2017-08-11,Bihar,Khagaria,district,FAO/GAUL/2015/level2,matched,17609.0,1494.410012910706,fs1-3016a20fd3ad,,,,,,,,,E053::khagaria
 E053,2017-0342-IND,2017-08-11,Bihar,Kishanganj,district,FAO/GAUL/2015/level2,matched,70100.0,1932.7539351616576,fs1-3016a20fd3ad,,,,,,,,,E053::kishanganj
@@ -438,7 +437,6 @@ E070,2018-0295-IND,2018-08-07,Himachal Pradesh,Kullu,district,FAO/GAUL/2015/leve
 E070,2018-0295-IND,2018-08-07,Himachal Pradesh,Mandi,district,FAO/GAUL/2015/level2,matched,17673.0,3951.2717684747336,fs1-3016a20fd3ad,,,,,,,,,E070::mandi
 E070,2018-0295-IND,2018-08-07,Himachal Pradesh,Shimla,district,FAO/GAUL/2015/level2,matched,17674.0,5136.6062379686,fs1-3016a20fd3ad,,,,,,,,,E070::shimla
 E071,2018-0295-IND,2018-08-07,Kerala,Alappuzha,district,FAO/GAUL/2015/level2,matched,70298.0,1316.6907112011845,fs1-3016a20fd3ad,,,,,,,,,E071::alappuzha
-E071,2018-0295-IND,2018-08-07,Kerala,Chengannur,district,,failed,,,fs1-3016a20fd3ad,district AOI match failed for Kerala/Chengannur: 0 exact candidates,,,,,,,,E071::chengannur
 E071,2018-0295-IND,2018-08-07,Kerala,Ernakulam,district,FAO/GAUL/2015/level2,matched,17699.0,2305.474714394872,fs1-3016a20fd3ad,,,,,,,,,E071::ernakulam
 E071,2018-0295-IND,2018-08-07,Kerala,Idukki,district,FAO/GAUL/2015/level2,matched,17700.0,5010.411036324633,fs1-3016a20fd3ad,,,,,,,,,E071::idukki
 E071,2018-0295-IND,2018-08-07,Kerala,Kannur,district,FAO/GAUL/2015/level2,matched,17698.0,2812.193678917521,fs1-3016a20fd3ad,,,,,,,,,E071::kannur
@@ -1454,7 +1452,6 @@ E188,2024-0647-IND,2024-08-26,Tripura,Sepahijala,district,geoBoundaries/gbOpen/I
 E188,2024-0647-IND,2024-08-26,Tripura,South Tripura,district,FAO/GAUL/2015/level2,matched,17886.0,3224.504208632636,fs1-3016a20fd3ad,,,,,,,,,E188::south%20tripura
 E188,2024-0647-IND,2024-08-26,Tripura,Unakoti,district,geoBoundaries/gbOpen/IND/ADM2/2021@8bef6929fd65432e7dc775e7c44473e84efff064ebddbfd6b834e6291546db40,matched,76128533B4720703924950,657.9288906584868,fs1-3016a20fd3ad,,2021.0,reviewed_alias,Unokoti,False,https://www.geoboundaries.org/api/current/gbOpen/IND/ADM2/,"District identity matched; 2021 reference geometry, NOT event-year boundary equivalence. No parent substitution.",,E188::unakoti
 E188,2024-0647-IND,2024-08-26,Tripura,West Tripura,district,FAO/GAUL/2015/level2,matched,17887.0,3039.951701839773,fs1-3016a20fd3ad,,,,,,,,,E188::west%20tripura
-E190,2025-0402-IND,2025-05-31,Arunachal Pradesh,Itanagar Capital Region,district,,failed,,,fs1-3016a20fd3ad,district AOI match failed for Arunachal Pradesh/Itanagar Capital Region: 0 exact candidates,,,,,,,,E190::itanagar%20capital%20region
 E190,2025-0402-IND,2025-05-31,Arunachal Pradesh,Lohit,district,FAO/GAUL/2015/level2,matched,17572.0,5476.171129046326,fs1-3016a20fd3ad,,,,,,,,,E190::lohit
 E190,2025-0402-IND,2025-05-31,Arunachal Pradesh,Lower Dibang Valley,district,FAO/GAUL/2015/level2,matched,70084.0,1481.008750945566,fs1-3016a20fd3ad,,,,,,,,,E190::lower%20dibang%20valley
 E190,2025-0402-IND,2025-05-31,Arunachal Pradesh,Lower Subansiri,district,FAO/GAUL/2015/level2,matched,17573.0,19.786424622092788,fs1-3016a20fd3ad,,,,,,,,,E190::lower%20subansiri
@@ -1490,8 +1487,6 @@ E193,2025-0402-IND,2025-05-31,Meghalaya,West Jaintia Hills,district,geoBoundarie
 E193,2025-0402-IND,2025-05-31,Meghalaya,West Khasi Hills,district,FAO/GAUL/2015/level2,matched,17797.0,5255.633999719938,fs1-3016a20fd3ad,,,,,,,,,E193::west%20khasi%20hills
 E194,2025-0402-IND,2025-05-31,Mizoram,Aizawl,district,FAO/GAUL/2015/level2,matched,17798.0,3461.099662744716,fs1-3016a20fd3ad,,,,,,,,,E194::aizawl
 E194,2025-0402-IND,2025-05-31,Mizoram,Kolasib,district,FAO/GAUL/2015/level2,matched,70200.0,1351.916645556901,fs1-3016a20fd3ad,,,,,,,,,E194::kolasib
-E195,2025-0402-IND,2025-05-31,Nagaland,Chumoukedima,district,,failed,,,fs1-3016a20fd3ad,district AOI match failed for Nagaland/Chumoukedima: 0 exact candidates,,,,,,,,E195::chumoukedima
-E195,2025-0402-IND,2025-05-31,Nagaland,Shamator,district,,failed,,,fs1-3016a20fd3ad,district AOI match failed for Nagaland/Shamator: 0 exact candidates,,,,,,,,E195::shamator
 E195,2025-0402-IND,2025-05-31,Nagaland,Tuensang,district,FAO/GAUL/2015/level2,matched,17805.0,3789.750062415454,fs1-3016a20fd3ad,,,,,,,,,E195::tuensang
 E196,2025-0402-IND,2025-05-31,Sikkim,Mangan,district,geoBoundaries/gbOpen/IND/ADM2/2021@8bef6929fd65432e7dc775e7c44473e84efff064ebddbfd6b834e6291546db40,matched,76128533B65820903826030,4277.456189629023,fs1-3016a20fd3ad,,2021.0,reviewed_alias,North District,False,https://sikkim.nic.in/district-centres/,"District identity matched; 2021 reference geometry, NOT event-year boundary equivalence. No parent substitution.",,E196::mangan
 E197,2025-0402-IND,2025-05-31,Tripura,Gomati,district,geoBoundaries/gbOpen/IND/ADM2/2021@8bef6929fd65432e7dc775e7c44473e84efff064ebddbfd6b834e6291546db40,matched,76128533B94126463611805,1617.9532415825593,fs1-3016a20fd3ad,,2021.0,exact_or_spacing,Gomati,False,https://www.geoboundaries.org/api/current/gbOpen/IND/ADM2/,"District identity matched; 2021 reference geometry, NOT event-year boundary equivalence. No parent substitution.",,E197::gomati

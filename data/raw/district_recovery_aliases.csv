@@ -39,3 +39,5 @@ Kanniyakumari and Tenkasi,Kanyakumari | Tenkasi,split_compound,Split compound so
 Varanasi and Siddharthnagar,Varanasi | Siddharthnagar,split_compound,Split compound source string before event_district_id generation.
 and Udham Singh Nagar,Udham Singh Nagar,split_compound,Split compound source string before event_district_id generation.
 Achankovil,,drop_non_district,"Achankovil is a river/locality name, not a district."
+Jogbani,,drop_non_district,"Jogbani is a municipality within Araria district, not a district observation."
+Chengannur,,drop_non_district,"Chengannur is a municipality/taluk within Alappuzha district, not a district observation."

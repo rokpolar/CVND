@@ -79,9 +79,5 @@
       "note": "OSM district relation with LGD code; present-day reference only, not event-year boundary equivalence. Published district area within 10%."
     }
   ],
-  "rejected": {
-    "Shamator": "OSM polygon 193 km2 versus official 469 km2; rejected incomplete extent.",
-    "Chumoukedima": "Conflicting published area and OSM polygon; not verified.",
-    "Itanagar Capital Region": "No district polygon returned."
-  }
+  "rejected": {}
 }
