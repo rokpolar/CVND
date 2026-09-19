@@ -27,7 +27,7 @@ Labels identify exploratory relative coverage candidates under the fitted observ
     "year_c": "start_date.year - 2020"
   },
   "input_sha256": "79281623bc814617ac6906f6c0c44168872f9bc45cc60212ada92810067d35bd",
-  "git_sha": "c0c390f5a434911723e89d119dadebf1c05b4083",
+  "git_sha": "d8150c5c6302b85c4e0741435aec6eefece10aa5",
   "library_versions": {
     "numpy": "2.5.2",
     "pandas": "3.0.5",
