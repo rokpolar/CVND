@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 from collections import defaultdict
 import difflib
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 import math
@@ -307,7 +307,7 @@ def checked(args):
         raise ValueError("Run prepare first")
     if manifest.get('schema_version') != 2:
         raise ValueError('Stale QA manifest schema; run prepare')
-    if manifest.get('body_stores_sha256') != body_signatures(args):
+    if canonical_body_signatures(manifest.get('body_stores_sha256', {})) != body_signatures(args):
         raise ValueError('Article bodies changed; run prepare')
     if manifest.get('collection_manifest_sha256') != collection_signature(args):
         raise ValueError('Collection manifest changed; run prepare')
@@ -378,6 +378,201 @@ def validate_count_artifacts(args):
     return manifest
 
 
+def _validate_adoptable_count(path, days, current_ids):
+    """Validate an old count table and require it to be a registry subset."""
+    if not path.exists():
+        raise ValueError(f"{path.name} missing")
+    frame = pd.read_csv(path, dtype=str, keep_default_na=False)
+    required = {
+        "event_district_id", "event_id", "source_record_id", "state", "district",
+        "start_date", "final_article_count", "collection_status",
+        "article_count_is_lower_bound", "window_days",
+    }
+    if not required <= set(frame):
+        raise ValueError(f"{path.name} missing columns {sorted(required - set(frame))}")
+    if frame.event_district_id.duplicated().any():
+        raise ValueError(f"{path.name} has duplicate event_district_id values")
+    old_ids = set(frame.event_district_id)
+    if not old_ids <= current_ids:
+        raise ValueError(f"{path.name} contains rows absent from the current registry")
+    if set(frame.window_days) != {str(days)}:
+        raise ValueError(f"{path.name} has the wrong window_days")
+    statuses = frame.collection_status.str.strip().str.lower()
+    if not statuses.isin({"complete", "partial", "incomplete"}).all():
+        raise ValueError(f"{path.name} has an invalid collection_status")
+    observed = statuses.isin({"complete", "partial"})
+    values = pd.to_numeric(frame.final_article_count, errors="coerce")
+    if frame.loc[~observed, "final_article_count"].ne("").any():
+        raise ValueError(f"{path.name} incomplete rows must have missing counts")
+    if (values[observed].isna().any() or (values[observed] < 0).any()
+            or (values[observed] % 1 != 0).any()):
+        raise ValueError(f"{path.name} has invalid observed counts")
+    lower = frame.article_count_is_lower_bound.str.strip().str.lower().isin({"true", "1"})
+    if not lower[statuses.eq("partial")].all():
+        raise ValueError(f"{path.name} partial rows must be lower bounds")
+    return frame
+
+
+def _incomplete_registry_rows(registry, columns, days, missing_ids):
+    defaults = {
+        "candidate_article_count": 0, "heuristic_pass_count": 0,
+        "final_article_count": "", "count_source": "not_observed",
+        "collection_status": "incomplete", "query_collection_status": "incomplete",
+        "missing_text_count": 0, "classified_article_count": 0,
+        "unresolved_article_count": 0, "article_count_is_lower_bound": False,
+        "uncertain_count": 0, "coverage_scope": SCOPE, "window_days": days,
+    }
+    identity = {row["event_district_id"]: row for row in registry.to_dict("records")}
+    return pd.DataFrame([
+        {column: identity[key].get(column, defaults.get(column, "")) for column in columns}
+        for key in sorted(missing_ids)
+    ], columns=columns)
+
+
+def adopt_existing(args):
+    """Seal an existing paid QA snapshot under the current reuse contract.
+
+    This is deliberately offline. Schema-1 artifacts receive a one-time,
+    audited migration. A migrated snapshot may subsequently follow a registry
+    addition by preserving old observations and adding incomplete rows; source,
+    body, request, result, and count mutations still invalidate reuse.
+    """
+    try:
+        validate_count_artifacts(args)
+        print("Existing QA counts are already reusable")
+        return True
+    except (OSError, ValueError, KeyError):
+        pass
+
+    manifest_path = args.work / "manifest.json"
+    count_manifest_path = args.work / "counts.manifest.json"
+    manifest = read(manifest_path)
+    count_manifest = read(count_manifest_path)
+    if not manifest or not count_manifest:
+        print("Existing QA not adopted: manifest or count manifest is missing")
+        return False
+    legacy = manifest.get("schema_version") == 1
+    prior_adoption = manifest.get("legacy_adoption")
+    if not legacy and not prior_adoption:
+        print("Existing QA not adopted: stale artifacts were not previously approved for migration")
+        return False
+    try:
+        if manifest.get("model") != args.model or manifest.get("prompt_version") != PROMPT_VERSION:
+            raise ValueError("model or prompt contract changed")
+        requests = list(_open_jsonl(args.work / "requests.jsonl"))
+        pending = list(_open_jsonl(args.work / "pending.jsonl"))
+        if digest(requests) != manifest.get("request_sha256") or digest(pending) != manifest.get("pending_sha256"):
+            raise ValueError("request or pending payload hash mismatch")
+        request_lookup = {row.get("custom_id"): row for row in requests}
+        if None in request_lookup or len(request_lookup) != len(requests):
+            raise ValueError("request custom_id values are missing or duplicated")
+        results = read(args.work / "results.json", {})
+        extra = set(results) - set(request_lookup)
+        if extra:
+            raise ValueError(f"results contain {len(extra)} unknown request IDs")
+        for key, result in results.items():
+            if result.get("model", args.model) != args.model:
+                raise ValueError(f"result {key} uses another model")
+            if result.get("prompt_version", PROMPT_VERSION) != PROMPT_VERSION:
+                raise ValueError(f"result {key} uses another prompt")
+            validate_response(request_lookup[key], {
+                "decisions": [dict(decision) for decision in result["decisions"]]
+            })
+
+        registry = load_registry(args.registry)
+        current_ids = set(registry.event_district_id)
+        frames = {}
+        for days in (PRIMARY_NEWS_WINDOW_DAYS, SENSITIVITY_NEWS_WINDOW_DAYS):
+            path = args.work / f"counts_{days}d.csv"
+            frames[days] = _validate_adoptable_count(path, days, current_ids)
+
+        # After the one-time schema-1 migration, only registry additions are
+        # adoptable. Every expensive or evidence-bearing input must remain sealed.
+        if not legacy:
+            if file_hash(args.source) != manifest.get("source_sha256"):
+                raise ValueError("source corpus changed after adoption")
+            if body_signatures(args) != canonical_body_signatures(
+                    manifest.get("body_stores_sha256", {})):
+                raise ValueError("article bodies changed after adoption")
+            if collection_signature(args) != manifest.get("collection_manifest_sha256"):
+                raise ValueError("collection manifest changed after adoption")
+            if digest(results) != count_manifest.get("results_sha256"):
+                raise ValueError("QA results changed after adoption")
+            if digest(read(args.work / "supplement.json", {})) != count_manifest.get("supplement_manifest_sha256"):
+                raise ValueError("supplement state changed after adoption")
+            for days in frames:
+                path = args.work / f"counts_{days}d.csv"
+                if file_hash(path) != count_manifest.get("count_files_sha256", {}).get(path.name):
+                    raise ValueError(f"{path.name} changed after adoption")
+
+        old_ids = set().union(*(set(frame.event_district_id) for frame in frames.values()))
+        for frame in frames.values():
+            if set(frame.event_district_id) != old_ids:
+                raise ValueError("30d and 14d count tables have different keys")
+        missing_ids = current_ids - old_ids
+        for days, frame in frames.items():
+            if missing_ids:
+                additions = _incomplete_registry_rows(registry, list(frame.columns), days, missing_ids)
+                frame = pd.concat([frame, additions], ignore_index=True)
+                frame = frame.sort_values("event_district_id", kind="stable")
+            _atomic_write(args.work / f"counts_{days}d.csv", frame.to_csv(index=False))
+
+        now = datetime.now(timezone.utc).isoformat()
+        adoption = prior_adoption or {
+            "mode": "validated_existing_snapshot",
+            "adopted_at": now,
+            "previous_schema_version": manifest.get("schema_version"),
+            "previous_registry_sha256": manifest.get("registry_sha256"),
+            "previous_source_sha256": manifest.get("source_sha256"),
+            "previous_results_sha256": count_manifest.get("results_sha256"),
+        }
+        adoption.update({
+            "last_validated_at": now,
+            "validated_requests": len(requests),
+            "validated_results": len(results),
+            "unanswered_requests": len(requests) - len(results),
+            "added_registry_rows_as_incomplete": sorted(missing_ids),
+        })
+        supplement_state = read(args.work / "supplement.json", {})
+        new_manifest = {
+            **manifest,
+            "schema_version": 2,
+            "registry_sha256": registry_fingerprint(registry),
+            "coverage_scope": SCOPE,
+            "primary_window_days": PRIMARY_NEWS_WINDOW_DAYS,
+            "sensitivity_window_days": SENSITIVITY_NEWS_WINDOW_DAYS,
+            "source_sha256": file_hash(args.source),
+            "model": args.model,
+            "prompt_version": PROMPT_VERSION,
+            "collection_manifest_sha256": collection_signature(args),
+            "body_stores_sha256": body_signatures(args),
+            "supplement_sha256": supplement_state.get("payload_sha256"),
+            "legacy_adoption": adoption,
+        }
+        save(manifest_path, new_manifest)
+        save(count_manifest_path, {
+            **new_manifest,
+            "supplement_complete": count_manifest.get("supplement_complete", False),
+            "supplement_manifest_sha256": digest(supplement_state),
+            "qa_manifest_sha256": digest(new_manifest),
+            "count_files_sha256": {
+                f"counts_{days}d.csv": file_hash(args.work / f"counts_{days}d.csv")
+                for days in (PRIMARY_NEWS_WINDOW_DAYS, SENSITIVITY_NEWS_WINDOW_DAYS)
+            },
+            "results_sha256": digest(results),
+        })
+        validate_count_artifacts(args)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(f"Existing QA not adopted: {exc}")
+        return False
+    print(json.dumps({
+        "status": "adopted", "requests": len(requests), "results": len(results),
+        "unanswered": len(requests) - len(results),
+        "registry_rows_added_as_incomplete": len(missing_ids),
+    }, indent=2))
+    return True
+
+
 def article_pipeline_state(args) -> str:
     """Return the highest reusable local stage under the current fingerprints."""
     try:
@@ -411,8 +606,13 @@ def body_signatures(args):
     database = getattr(args, 'database', None)
     if database:
         paths.append(Path(database))
-    return {str(p): file_hash(p) if p.exists() else None
+    return {str(p.resolve()): file_hash(p) if p.exists() else None
             for base in paths for p in (base, Path(str(base) + '-wal'))}
+
+
+def canonical_body_signatures(signatures):
+    """Make manifest path spelling irrelevant without weakening file hashes."""
+    return {str(Path(path).resolve()): value for path, value in signatures.items()}
 
 
 def collected_keys(args, registry):
@@ -962,7 +1162,7 @@ def run_batches(args, client):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["prepare", "retry-text", "supplement", "download-new", "submit", "status", "collect", "counts", "run-batches", "state"])
+    parser.add_argument("action", choices=["prepare", "retry-text", "supplement", "download-new", "submit", "status", "collect", "counts", "run-batches", "state", "adopt-existing"])
     parser.add_argument("--registry", type=Path, default=data_path("event_districts"))
     parser.add_argument("--source", type=Path, default=data_path("district_gdelt_articles"))
     parser.add_argument("--database", type=Path, default=data_path("district_article_database"))
@@ -983,6 +1183,8 @@ def main(argv=None):
         raise RuntimeError("Another article QA command is running in this work directory")
     if args.action == "state":
         print(article_pipeline_state(args))
+    elif args.action == "adopt-existing":
+        adopt_existing(args)
     elif args.action == "prepare":
         prepare(args)
     elif args.action == "supplement":

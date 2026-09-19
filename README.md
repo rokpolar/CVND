@@ -36,6 +36,8 @@ SKIP_GEE=1 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
 2. 검증된 heuristic 산출물만 있으면 heuristic을 생략하고 LLM-QA부터 재개한다.
 3. 산출물이 없거나 stale이면 GDELT 수집·본문·heuristic부터 수행한 뒤 LLM-QA를 실행한다.
 
+이미 비용을 지불한 구형 QA snapshot은 auto 모드가 요청·응답·count를 오프라인 검증한 뒤 현재 manifest로 한 번 승격해 재사용한다. 이후 source, 본문, prompt/model, 응답 또는 count가 바뀌면 다시 무효화된다. 이 승격을 끄려면 `ARTICLE_ADOPT_EXISTING_QA=0`을 지정한다.
+
 `force`는 기사 파이프라인을 처음부터 재실행하고 `skip`은 기사 join·분석을 수행하지 않는다. `RUN_ARTICLE_SUPPLEMENT=1`만 targeted BigQuery supplement를 허용한다. 외부 GEE·BigQuery·OpenAI 호출은 실제 실행 옵션에서만 발생한다. `SETUP_DEPS=1`은 재현 환경인 `requirements-lock.txt`를 설치한다.
 
 ## 위성 트랙 분리 저장과 재병합

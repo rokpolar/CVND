@@ -12,6 +12,8 @@
 - district collection manifest와 두 count CSV 각각의 hash, count manifest와 QA manifest의 연결
 - `counts_30d.csv`, `counts_14d.csv`, `counts.manifest.json`의 키·window·상태 계약
 
+auto 실행은 state 판정 전에 `adopt-existing`을 호출한다. 이미 비용을 지불한 schema-1 QA는 기존 request에 속한 응답의 구조와 근거, 두 count의 키·상태를 오프라인 검증하고 감사 메타데이터와 현재 hash로 봉인한다. 이후 registry에 행만 추가되면 기존 값은 유지하고 새 행을 `incomplete`로 추가하지만, source·본문·prompt/model·응답·count 변경은 재사용하지 않는다. `ARTICLE_ADOPT_EXISTING_QA=0`으로 이 승격을 비활성화할 수 있다.
+
 반환 상태는 다음과 같다.
 
 - `llm_complete`: heuristic과 LLM-QA 모두 생략
@@ -28,6 +30,7 @@
 venv/bin/python src/article_qa.py prepare
 venv/bin/python src/article_qa.py run-batches --execute
 venv/bin/python src/article_qa.py counts
+venv/bin/python src/article_qa.py adopt-existing
 venv/bin/python src/article_qa.py state
 ```
 
