@@ -709,12 +709,16 @@ def main(argv: Iterable[str] | None = None) -> int:
         base, _info = load_official_workbook(args.base)
         full, registry = build_state_events(base)
         unresolved_registry = build_event_districts(base, registry)
-        from district_recovery import recover_from_files
+        from district_recovery import apply_registry_exclusions, recover_from_files
         event_districts = recover_from_files(
             unresolved_registry, data_path("district_recovery_mapping"))
         sensitivity = recover_from_files(
             unresolved_registry, data_path("district_recovery_mapping"),
             include_circularity_risk=True)
+        event_districts, district_exclusions = apply_registry_exclusions(
+            event_districts, data_path("district_registry_exclusions"))
+        sensitivity, sensitivity_district_exclusions = apply_registry_exclusions(
+            sensitivity, data_path("district_registry_exclusions"))
         retained_event_ids = set(event_districts["event_id"])
         sensitivity_event_ids = set(sensitivity["event_id"])
         exclusions = registry.loc[~registry["event_id"].isin(retained_event_ids)].copy()
@@ -728,6 +732,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         print(f"Retained event rows: {len(registry)}")
         print(f"Unique retained states/UTs: {registry['state'].nunique()}")
         print(f"Event × district rows: {len(event_districts)}")
+        print(f"Explicitly excluded event × district rows: {len(district_exclusions)}")
         print(
             "District rows with resolved names: "
             f"{int((event_districts['district'] != 'district_missing').sum())}"

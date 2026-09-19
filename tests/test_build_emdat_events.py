@@ -8,7 +8,7 @@ import pandas as pd
 SRC = Path(__file__).resolve().parents[1] / "src"
 sys.path.insert(0, str(SRC))
 
-from build_emdat_events import build_state_events, load_official_workbook  # noqa: E402
+from build_emdat_events import build_state_events, load_official_workbook, main  # noqa: E402
 from cvnd_layout import data_path  # noqa: E402
 
 
@@ -49,6 +49,9 @@ class BuildEmdatEventsTests(unittest.TestCase):
             self.full["source_record_id"] == "2020-0249-IND", "state"
         ].tolist()
         self.assertEqual(states, ["Jammu and Kashmir"])
+
+    def test_dry_run_reproduces_fixed_registry(self):
+        self.assertEqual(main(['--dry-run']), 0)
 
 
 if __name__ == "__main__":

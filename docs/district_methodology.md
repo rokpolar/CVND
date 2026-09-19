@@ -12,7 +12,7 @@
 - 기본 `s1_then_s2` routing은 모든 AOI에 S1을 먼저 실행하고 S1 면적이 결측인 키에만 S2 NDWI를 실행한다.
 - S1의 유한한 0은 성공이다. AOI 실패는 S2 fallback 대상이 아니다.
 - 선택 순서는 S1 관측 → S2 관측 → 결측이며 `satellite_source`와 `route_reason`을 기록한다.
-- Track B/SITS는 `SATELLITE_TRACK=both SATELLITE_ROUTING=sits_primary`로만 사용하는 별도 opt-in 경로다.
+- 전체 파이프라인은 Track A만 사용하고 Track B/SITS를 실행·라우팅하지 않는다.
 
 결측 flood measurement는 NA다. 관측된 0과 빈/실패 reduction을 구별한다.
 

@@ -5,12 +5,12 @@ CVND는 EM-DAT 홍수의 event×district 단위에서 위성 관측 침수 면�
 ## 관측 계약
 
 - 레지스트리: `data/intermediate/event_districts.csv`만 권위 있는 event×district 레지스트리로 사용한다. 모호한 지역은 결측/audit 행으로 보존하고 state 값을 district로 확장하지 않는다.
-- 위성: 모든 유효 AOI에서 Sentinel-1(S1)을 먼저 실행한다. S1 면적이 결측인 키에만 Sentinel-2 NDWI(S2)를 실행한다. 유한한 `0 km²`는 성공한 관측이며 fallback 대상이 아니다. AOI 실패도 S2로 재시도하지 않는다. 기본값은 `SATELLITE_TRACK=A`, `SATELLITE_ROUTING=s1_then_s2`다. Track B/SITS는 명시적으로 선택할 때만 실행한다.
-- 기사: 30일까지 GDELT 후보를 수집한 뒤 multilingual flood heuristic을 통과한 후보만 LLM-QA로 보낸다. 같은 판정으로 `counts_30d.csv`와 `counts_14d.csv`를 만든다.
+- 위성: 전체 파이프라인은 Track A만 사용한다. 모든 유효 AOI에 S1을 먼저 실행하고 S1 면적이 결측인 키에만 S2 NDWI를 실행한다. 유한한 `0 km²`는 성공이며 AOI 실패는 fallback하지 않는다. Track B/SITS 코드와 기존 산출물은 연구 참고용으로만 남고 전체 파이프라인에서는 사용하지 않는다.
+- 기사: 기존 LLM-QA 결과를 lower-bound 관측으로 동결한다. 기본 `ARTICLE_PIPELINE_MODE=frozen`은 30d/14d count와 provenance가 `llm_complete`일 때만 join·분석을 계속하며 수집·본문·heuristic·LLM을 수정하지 않는다.
 - 기사 상태: `complete`와 `partial`은 분석 가능한 관측이다. `partial`은 `article_count_is_lower_bound=True`를 유지한다. `incomplete`는 정상 결측이며 파이프라인 손상으로 간주하지 않는다.
 - 모델: NB2 Model 2는 `article_count ~ log1p(flood_area_km2) + urban_population_share`이다. Model 1은 urban share를 제외하고 Model 3은 year fixed effects를 추가한다.
 
-위성 측정식은 `src/flood_spec.py`의 `MeasurementSpec`과 `spec_version`으로 고정한다. post `[onset, onset+14d)`, pre `[onset-30d, onset)`, JRC permanent-water·slope·India mask, 10 m 면적 합산을 모든 sensor 경로에 적용한다. Track B/SITS는 구역마다 가능 여부를 판정해, 측정할 수 있는 구역에만 쓰인다.
+위성 측정식은 `src/flood_spec.py`의 `MeasurementSpec`과 `spec_version`으로 고정한다. post `[onset, onset+14d)`, pre `[onset-30d, onset)`, JRC permanent-water·slope·India mask, 10 m 면적 합산을 Track A의 S1/S2 경로에 동일하게 적용한다.
 
 ## 실행
 
@@ -23,14 +23,16 @@ venv/bin/python -m unittest discover -s tests
 venv/bin/python -m compileall -q src tests scripts
 bash -n scripts/run_pipeline.sh
 
-# 인증된 실제 실행(기본 SKIP_GEE=0): Track A(S1 -> S1 결측에만 S2) -> 기사 auto resume
-SETUP_DEPS=1 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
+# 인증된 실제 실행: Track A(S1 -> S1 결측에만 S2) -> 동결 기사 join/분석
+SETUP_DEPS=1 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 
-# 위성 캐시 재사용, 기사 상태를 manifest/hash로 자동 판정
-SKIP_GEE=1 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
+# 위성 캐시 재사용, 동결 기사 provenance 검증 후 재분석
+SKIP_GEE=1 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 ```
 
-`ARTICLE_PIPELINE_MODE=auto`의 상태 전이는 다음과 같다.
+과거 `s1_attempted`/`s2_attempted` 필드 도입 전에 완료된 Track A 체크포인트를 가져온 경우에만 `venv/bin/python scripts/migrate_track_a_attempt_markers.py`를 한 번 실행한다. 현재 registry·spec·체크포인 키가 완전히 일치할 때만 S1 전체와 S1 결측 fallback 집합의 S2 시도 표시를 복원한다.
+
+`frozen`은 기존 두 window count와 registry/source/request/result/prompt/model hash가 모두 유효해 `llm_complete`일 때만 통과한다. `adopt-existing`을 포함한 어떤 기사 쓰기 단계도 실행하지 않는다. 재수집이 필요한 별도 연구에서만 `auto`를 명시하며, 그 상태 전이는 다음과 같다.
 
 1. 두 window count와 manifest가 registry/source/request/result/prompt/model hash에 맞으면 heuristic과 LLM-QA를 모두 생략한다.
 2. 검증된 heuristic 산출물만 있으면 heuristic을 생략하고 LLM-QA부터 재개한다.
@@ -38,11 +40,11 @@ SKIP_GEE=1 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
 
 이미 비용을 지불한 구형 QA snapshot은 auto 모드가 요청·응답·count를 오프라인 검증한 뒤 현재 manifest로 한 번 승격해 재사용한다. 이후 source, 본문, prompt/model, 응답 또는 count가 바뀌면 다시 무효화된다. 이 승격을 끄려면 `ARTICLE_ADOPT_EXISTING_QA=0`을 지정한다.
 
-`force`는 기사 파이프라인을 처음부터 재실행하고 `skip`은 기사 join·분석을 수행하지 않는다. `RUN_ARTICLE_SUPPLEMENT=1`만 targeted BigQuery supplement를 허용한다. 외부 GEE·BigQuery·OpenAI 호출은 실제 실행 옵션에서만 발생한다. `SETUP_DEPS=1`은 재현 환경인 `requirements-lock.txt`를 설치한다.
+`force`는 기사 파이프라인을 처음부터 재실행하고 `skip`은 기사 join·분석을 수행하지 않는다. 이 두 모드와 `auto`는 비용이 들 수 있는 비기본 연구 모드다. `SETUP_DEPS=1`은 `requirements-lock.txt`를 설치한다.
 
 ## 위성 트랙 분리 저장과 재병합
 
-Track A, Track B, 병합은 각자 자기 테이블에만 쓰고, 어떤 단계도 상류 산출물을 다시 쓰지 않는다.
+전체 파이프라인은 Track A와 `s1_then_s2` 병합만 실행하며 다른 `SATELLITE_TRACK`/라우팅 값을 거부한다. 아래 Track B 도구는 사용하지 않는 연구 참고용으로만 보존된다.
 
 | 단계 | 쓰는 파일 | 읽는 것 |
 |---|---|---|
@@ -62,7 +64,7 @@ venv/bin/python src/merge_results.py --routing sits_primary --output data/interm
 
 `--recompute-from-npz`는 측정 테이블 대신 NPZ에서 Track B 값을 다시 계산한다(측정 테이블은 쓰지 않는다). `build_flood_area_table.py`는 병합 입력이 0행이면 실패하고, 기존 출력의 측정값을 NA/NONE으로 강등하는 덮어쓰기는 `--allow-demotion` 없이는 거부한다.
 
-`SATELLITE_ROUTING=sits_primary`의 모순 조합은 실행 전에 막는다: `SKIP_GEE=0`인데 `SATELLITE_TRACK=A`인 경우, `SKIP_GEE=1`인데 `district_sits_measurements.csv`가 없거나 비어 있는 경우. 시작 배너의 `S2/SITS:` 한 줄이 이번 실행의 S2 사용 방식을 표시한다.
+시작 배너의 `S2/SITS:` 한 줄은 Track A의 S1 우선·S2 결측 fallback 계약을 표시한다.
 
 **Track B 사전 판정 (다운로드 없음).** Track B는 다운로드 전에 이미 사후·사전 영상 유무(B1, B2)와 맑은 기준월(B3)을 검사하지만, 남는 타일의 사용 가능 픽셀이 측정 대상 면적의 40%(`sits_usable_min_frac`)를 넘는지는 다운로드 뒤에야 알았다. 이 비율을 못 넘은 구역은 병합에서 결국 Track A로 채워진다. `--screen-only`는 B1–B3를 Track B와 같은 함수로 실행하고, 남는 타일과 사용 가능 면적을 같은 격자에서 서버 계산만으로 구해 구역별로 `data/cache/district/sits_screen.csv`에 기록한다. H5·색인·체크포인트는 건드리지 않고, 중단 후 다시 실행하면 이어서 판정하며, 오류 행은 재시도한다.
 

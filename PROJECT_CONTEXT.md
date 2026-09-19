@@ -7,7 +7,7 @@
 - Sensitivity response: the nested `[onset,onset+14d)` count.
 - Exposure: satellite flood extent observed in `[onset,onset+14d)`.
 - Default routing: `s1_then_s2`; S1 for all valid AOIs, S2 only where S1 is missing.
-- Default track: A. Track B/SITS requires explicit opt-in, including the supervised launcher.
+- Production pipeline: Track A only (`s1_then_s2`). Track B/SITS is retained only as non-production research code.
 - Main model: NB2 `article_count ~ log1p(flood_area_km2) + urban_population_share`.
 
 ## Authoritative paths
@@ -24,9 +24,9 @@ Legacy `data/raw/events.csv`, flat analysis outputs, `sensitivity_30d/`, and `fi
 
 ## Pipeline state rules
 
-`ARTICLE_PIPELINE_MODE=auto` verifies registry/source/prompt/model/request/result hashes. Valid 30d+14d counts skip heuristic and LLM-QA; valid heuristic-only state resumes at LLM-QA; missing or stale state restarts heuristic preparation. `complete` and lower-bound `partial` are observations. `incomplete` is missing data.
+`ARTICLE_PIPELINE_MODE=frozen` is the default and verifies registry/source/prompt/model/request/result hashes. It proceeds only for validated `llm_complete` 30d+14d counts and never mutates article, body, heuristic, or LLM artifacts. `complete` and lower-bound `partial` are observations; `incomplete` is missing data.
 
-The standard sequence is registry → covariates/AOI → S1 → S2 fallback → merge → article auto resume → 30d primary join/analysis/scoring → 14d sensitivity join/analysis/scoring → primary package. Paid/authenticated calls are not part of automated tests.
+The standard sequence is registry → covariates/AOI → S1 → S2 fallback → merge → frozen article validation → 30d primary join/analysis/scoring → 14d sensitivity join/analysis/scoring → primary package. Paid/authenticated calls are not part of automated tests.
 
 ## Reproducibility
 

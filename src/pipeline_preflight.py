@@ -52,8 +52,6 @@ def inspect_artifacts():
         'district_flood_combined': ['event_district_id', 'combined_km2', 'satellite_source', 'route_reason',
                                     'sits_status', 'legacy_combined_km2'],
         'district_flood_area': ['event_district_id', 'flood_area_km2', 'satellite_status', 'satellite_source', 'spec_version'],
-        'track_agreement': ['event_district_id', 'identity_ok', 'identity_rel_err', 's1_c_km2', 'ndwi_c_km2'],
-        'district_article_counts_heuristic': ['event_district_id', 'final_article_count', 'collection_status'],
     }
     rows = []
     registry_path = data_path('event_districts')
@@ -92,8 +90,8 @@ def inspect_artifacts():
             except (ValueError, OSError) as exc:
                 status, details = 'invalid', str(exc)
         rows.append({'artifact': key, 'path': str(path), 'status': status, 'details': details})
-    rows.extend(_inspect_json(key, fields) for key, fields in JSON_ARTIFACTS.items())
-    rows.extend(_inspect_track_b(registry))
+    # Track B/SITS and heuristic staging files are optional research artifacts.
+    # The production contract is Track A plus frozen, validated LLM-QA counts.
     rows.extend(_inspect_article_qa(registry))
     from registry_audit import registry_drift
     try:
