@@ -8,9 +8,13 @@ the prespecified 14-day post-onset measurement.
   1191 eligible)
 - Sensitivity input: `data/results/sensitivity_14d/district_flood_articles.csv` (`79281623bc814617ac6906f6c0c44168872f9bc45cc60212ada92810067d35bd`,
   1553 rows, 1069 eligible)
-- Execution Git HEAD: `c0c390f5a434911723e89d119dadebf1c05b4083`
+- Execution Git HEAD: `d8150c5c6302b85c4e0741435aec6eefece10aa5`
 - Dirty worktree recorded: `true`
-- Exact source diff hash and dependency-lock hash are in `analysis_manifest.json`.
+- Exact source inventory (including untracked files), source diff hash and dependency-lock hash are in `analysis_manifest.json`.
+- This is an offline refit of the supplied joined inputs, not a new satellite/news collection.
+- Registry derivation differences are recorded in `analysis_manifest.json`; additional
+  unmeasured districts are not inserted as zero observations into the frozen cohort.
+- `source_snapshot.zip` preserves all inventoried sources, including untracked files.
 
 `key_results.csv` and `final_results_figure.png` are generated from the freshly fitted
 primary and sensitivity model tables. Full reports and figures live in this directory
