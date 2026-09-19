@@ -2,7 +2,7 @@
 
 News window: 14 days.
 
-Status: available. Input rows: 1548; eligible: 1069; source events: 63; scored: 1069.
+Status: available. Input rows: 1548; eligible: 1074; source events: 63; scored: 1074.
 
 Formula: `article_count ~ log_flood_area + log_population + year_c`. Estimated NB2 alpha; source-group five-fold OOF only.
 
@@ -26,8 +26,8 @@ Labels identify exploratory relative coverage candidates under the fitted observ
     "log_population": "log(total_population / 1000000)",
     "year_c": "start_date.year - 2020"
   },
-  "input_sha256": "75e245ed1bed5983be4398ca9bcf06caee52cfc2b7a0848b2513de7cec1d33ca",
-  "git_sha": "7865bb7f091f29c48439f224877d32c65ce6ab5f",
+  "input_sha256": "7262ac312d7e41f183e08ea3cf250c8ba74925bbfb3a78fce44f71a3da0a1c48",
+  "git_sha": "1c165dd92ffd843ccdf56f6bd17568cb31c3c495",
   "library_versions": {
     "numpy": "2.5.2",
     "pandas": "3.0.5",
@@ -47,88 +47,88 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
 {
   "diagnostics_available": {
     "nb2": {
-      "n_rows": 1069,
+      "n_rows": 1074,
       "n_sources": 63,
       "row_weighted": {
-        "mae": 42.586675635201146,
-        "mean_negative_log_predictive_probability": 3.746209471816397,
-        "coverage_90": 0.9382600561272217,
-        "mean_interval_width_90": 154.75210477081384,
-        "observed_zero_rate": 0.27502338634237605,
-        "mean_predicted_zero_probability": 0.30621914339040474
+        "mae": 42.41037832645906,
+        "mean_negative_log_predictive_probability": 3.7725297189044986,
+        "coverage_90": 0.9404096834264432,
+        "mean_interval_width_90": 150.42830540037244,
+        "observed_zero_rate": 0.2737430167597765,
+        "mean_predicted_zero_probability": 0.30698834314302387
       },
       "source_macro": {
-        "mae": 63.8763104204833,
-        "mean_negative_log_predictive_probability": 4.708550015791584,
-        "coverage_90": 0.872410552302058,
-        "mean_interval_width_90": 156.9517589212478,
-        "observed_zero_rate": 0.15439397979676356,
-        "mean_predicted_zero_probability": 0.3058898507191923
+        "mae": 63.86338574116464,
+        "mean_negative_log_predictive_probability": 4.776205563460848,
+        "coverage_90": 0.8803227676744804,
+        "mean_interval_width_90": 152.26698256943394,
+        "observed_zero_rate": 0.15410200713985536,
+        "mean_predicted_zero_probability": 0.3080532742929871
       }
     },
     "poisson": {
-      "n_rows": 1069,
+      "n_rows": 1074,
       "n_sources": 63,
       "row_weighted": {
-        "mae": 43.575218086899675,
-        "mean_negative_log_predictive_probability": 51.27250865840542,
-        "coverage_90": 0.07857811038353602,
-        "mean_interval_width_90": 18.41534144059869,
-        "observed_zero_rate": 0.27502338634237605,
-        "mean_predicted_zero_probability": 2.2120455639721796e-07
+        "mae": 43.15588497161878,
+        "mean_negative_log_predictive_probability": 53.60643843359867,
+        "coverage_90": 0.07355679702048418,
+        "mean_interval_width_90": 17.98324022346369,
+        "observed_zero_rate": 0.2737430167597765,
+        "mean_predicted_zero_probability": 4.1640640556500554e-08
       },
       "source_macro": {
-        "mae": 64.39700701542434,
-        "mean_negative_log_predictive_probability": 97.71138012040734,
-        "coverage_90": 0.09887445426084772,
-        "mean_interval_width_90": 18.743036722783398,
-        "observed_zero_rate": 0.15439397979676356,
-        "mean_predicted_zero_probability": 4.090641468873583e-07
+        "mae": 64.19365773655612,
+        "mean_negative_log_predictive_probability": 101.47086588557636,
+        "coverage_90": 0.08635701960163476,
+        "mean_interval_width_90": 18.28557492054114,
+        "observed_zero_rate": 0.15410200713985536,
+        "mean_predicted_zero_probability": 2.953593886486483e-07
       }
     }
   },
   "poisson_comparison_common_success": {
     "scope": "Only test rows with both NB2 and Poisson predictions; source_macro averages within source, then equally across sources.",
-    "n_rows": 1069,
+    "n_rows": 1074,
     "fraction_of_eligible": 1.0,
     "nb2": {
-      "n_rows": 1069,
+      "n_rows": 1074,
       "n_sources": 63,
       "row_weighted": {
-        "mae": 42.586675635201146,
-        "mean_negative_log_predictive_probability": 3.746209471816397,
-        "coverage_90": 0.9382600561272217,
-        "mean_interval_width_90": 154.75210477081384,
-        "observed_zero_rate": 0.27502338634237605,
-        "mean_predicted_zero_probability": 0.30621914339040474
+        "mae": 42.41037832645906,
+        "mean_negative_log_predictive_probability": 3.7725297189044986,
+        "coverage_90": 0.9404096834264432,
+        "mean_interval_width_90": 150.42830540037244,
+        "observed_zero_rate": 0.2737430167597765,
+        "mean_predicted_zero_probability": 0.30698834314302387
       },
       "source_macro": {
-        "mae": 63.8763104204833,
-        "mean_negative_log_predictive_probability": 4.708550015791584,
-        "coverage_90": 0.872410552302058,
-        "mean_interval_width_90": 156.9517589212478,
-        "observed_zero_rate": 0.15439397979676356,
-        "mean_predicted_zero_probability": 0.3058898507191923
+        "mae": 63.86338574116464,
+        "mean_negative_log_predictive_probability": 4.776205563460848,
+        "coverage_90": 0.8803227676744804,
+        "mean_interval_width_90": 152.26698256943394,
+        "observed_zero_rate": 0.15410200713985536,
+        "mean_predicted_zero_probability": 0.3080532742929871
       }
     },
     "poisson": {
-      "n_rows": 1069,
+      "n_rows": 1074,
       "n_sources": 63,
       "row_weighted": {
-        "mae": 43.575218086899675,
-        "mean_negative_log_predictive_probability": 51.27250865840542,
-        "coverage_90": 0.07857811038353602,
-        "mean_interval_width_90": 18.41534144059869,
-        "observed_zero_rate": 0.27502338634237605,
-        "mean_predicted_zero_probability": 2.2120455639721796e-07
+        "mae": 43.15588497161878,
+        "mean_negative_log_predictive_probability": 53.60643843359867,
+        "coverage_90": 0.07355679702048418,
+        "mean_interval_width_90": 17.98324022346369,
+        "observed_zero_rate": 0.2737430167597765,
+        "mean_predicted_zero_probability": 4.1640640556500554e-08
       },
       "source_macro": {
-        "mae": 64.39700701542434,
-        "mean_negative_log_predictive_probability": 97.71138012040734,
-        "coverage_90": 0.09887445426084772,
-        "mean_interval_width_90": 18.743036722783398,
-        "observed_zero_rate": 0.15439397979676356,
-        "mean_predicted_zero_probability": 4.090641468873583e-07
+        "mae": 64.19365773655612,
+        "mean_negative_log_predictive_probability": 101.47086588557636,
+        "coverage_90": 0.08635701960163476,
+        "mean_interval_width_90": 18.28557492054114,
+        "observed_zero_rate": 0.15410200713985536,
+        "mean_predicted_zero_probability": 2.953593886486483e-07
       }
     }
   },
@@ -136,205 +136,204 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
     "nb2": [
       {
         "bin": 0,
-        "n": 107,
-        "expected_min": 14.188008155397885,
-        "expected_max": 22.634961427762665,
-        "observed_mean": 51.44859813084112,
-        "expected_mean": 19.829810987371516
+        "n": 108,
+        "expected_min": 13.008530470991872,
+        "expected_max": 21.963018518854035,
+        "observed_mean": 88.68518518518519,
+        "expected_mean": 19.65849818446805
       },
       {
         "bin": 1,
         "n": 107,
-        "expected_min": 22.818718393280978,
-        "expected_max": 26.15177612426224,
-        "observed_mean": 58.71028037383178,
-        "expected_mean": 24.93575697982963
+        "expected_min": 21.967239359562154,
+        "expected_max": 24.239773458636044,
+        "observed_mean": 56.299065420560744,
+        "expected_mean": 23.302886283190873
       },
       {
         "bin": 2,
         "n": 107,
-        "expected_min": 26.15929115700508,
-        "expected_max": 27.637942772243065,
-        "observed_mean": 65.69158878504673,
-        "expected_mean": 26.93551575678841
+        "expected_min": 24.252639816191195,
+        "expected_max": 26.15814879037382,
+        "observed_mean": 27.747663551401867,
+        "expected_mean": 25.275910353197524
       },
       {
         "bin": 3,
-        "n": 107,
-        "expected_min": 27.6464598216227,
-        "expected_max": 28.86698227280931,
-        "observed_mean": 25.009345794392523,
-        "expected_mean": 28.231891964620438
+        "n": 108,
+        "expected_min": 26.180880627416457,
+        "expected_max": 27.863358980280776,
+        "observed_mean": 35.611111111111114,
+        "expected_mean": 27.033564877580766
       },
       {
         "bin": 4,
         "n": 107,
-        "expected_min": 28.87030270098578,
-        "expected_max": 30.463559306930364,
-        "observed_mean": 15.74766355140187,
-        "expected_mean": 29.76273891164146
+        "expected_min": 27.887864699596005,
+        "expected_max": 29.517896440615154,
+        "observed_mean": 25.214953271028037,
+        "expected_mean": 28.681413315253028
       },
       {
         "bin": 5,
-        "n": 106,
-        "expected_min": 30.471189144722022,
-        "expected_max": 31.94290404723541,
-        "observed_mean": 14.5,
-        "expected_mean": 31.214040665182914
+        "n": 107,
+        "expected_min": 29.524695340988572,
+        "expected_max": 31.395259532374435,
+        "observed_mean": 18.485981308411215,
+        "expected_mean": 30.433696442167815
       },
       {
         "bin": 6,
-        "n": 107,
-        "expected_min": 31.942989817691604,
-        "expected_max": 33.888000578963904,
-        "observed_mean": 23.38317757009346,
-        "expected_mean": 32.83158780364393
+        "n": 108,
+        "expected_min": 31.428221617041928,
+        "expected_max": 33.61213597744624,
+        "observed_mean": 18.564814814814813,
+        "expected_mean": 32.476388092686854
       },
       {
         "bin": 7,
         "n": 107,
-        "expected_min": 33.898283022218905,
-        "expected_max": 36.91089592825949,
-        "observed_mean": 13.644859813084112,
-        "expected_mean": 35.36694274052556
+        "expected_min": 33.6144702049313,
+        "expected_max": 36.230918948682415,
+        "observed_mean": 9.551401869158878,
+        "expected_mean": 34.863746748963074
       },
       {
         "bin": 8,
         "n": 107,
-        "expected_min": 36.915727999295186,
-        "expected_max": 42.74278870706927,
-        "observed_mean": 12.813084112149532,
-        "expected_mean": 39.5066595425757
+        "expected_min": 36.26480144158591,
+        "expected_max": 40.84305634904786,
+        "observed_mean": 5.747663551401869,
+        "expected_mean": 38.42404691458631
       },
       {
         "bin": 9,
-        "n": 107,
-        "expected_min": 42.86331817450719,
-        "expected_max": 69.87050484186372,
-        "observed_mean": 29.80373831775701,
-        "expected_mean": 48.41623275277146
+        "n": 108,
+        "expected_min": 40.88301254967885,
+        "expected_max": 79.47384469542459,
+        "observed_mean": 27.36111111111111,
+        "expected_mean": 48.17926655504178
       }
     ],
     "poisson": [
       {
         "bin": 0,
-        "n": 107,
-        "expected_min": 9.187997149574018,
-        "expected_max": 20.13079205378693,
-        "observed_mean": 52.05607476635514,
-        "expected_mean": 16.18620699799149
+        "n": 108,
+        "expected_min": 11.10971972047844,
+        "expected_max": 19.058377029757636,
+        "observed_mean": 63.120370370370374,
+        "expected_mean": 16.976427485310214
       },
       {
         "bin": 1,
         "n": 107,
-        "expected_min": 20.184544424209452,
-        "expected_max": 24.956722104995702,
-        "observed_mean": 49.2803738317757,
-        "expected_mean": 22.91780413018985
+        "expected_min": 19.062921793020525,
+        "expected_max": 22.334716673852803,
+        "observed_mean": 81.10280373831776,
+        "expected_mean": 20.73124972209564
       },
       {
         "bin": 2,
         "n": 107,
-        "expected_min": 24.985377784786603,
-        "expected_max": 26.77145878134495,
-        "observed_mean": 78.18691588785046,
-        "expected_mean": 25.963051971308627
+        "expected_min": 22.3955673049243,
+        "expected_max": 24.535913390498337,
+        "observed_mean": 38.90654205607477,
+        "expected_mean": 23.58231172497871
       },
       {
         "bin": 3,
-        "n": 107,
-        "expected_min": 26.775069700656953,
-        "expected_max": 28.352416779183926,
-        "observed_mean": 21.785046728971963,
-        "expected_mean": 27.53234958069836
+        "n": 108,
+        "expected_min": 24.55371476679139,
+        "expected_max": 26.296209630652065,
+        "observed_mean": 32.49074074074074,
+        "expected_mean": 25.420347389944318
       },
       {
         "bin": 4,
         "n": 107,
-        "expected_min": 28.362599772631135,
-        "expected_max": 30.068214919113316,
-        "observed_mean": 13.429906542056075,
-        "expected_mean": 29.213189841521594
+        "expected_min": 26.345738316732803,
+        "expected_max": 28.273099784607027,
+        "observed_mean": 17.411214953271028,
+        "expected_mean": 27.180360068169275
       },
       {
         "bin": 5,
-        "n": 106,
-        "expected_min": 30.073318093377015,
-        "expected_max": 32.18616144385489,
-        "observed_mean": 17.537735849056602,
-        "expected_mean": 31.125463662760026
+        "n": 107,
+        "expected_min": 28.2834499454126,
+        "expected_max": 30.460111829319885,
+        "observed_mean": 15.093457943925234,
+        "expected_mean": 29.236986649029223
       },
       {
         "bin": 6,
-        "n": 107,
-        "expected_min": 32.19253998840846,
-        "expected_max": 34.53174257441316,
-        "observed_mean": 17.49532710280374,
-        "expected_mean": 33.19778209088928
+        "n": 108,
+        "expected_min": 30.47555746924158,
+        "expected_max": 33.520432083257155,
+        "observed_mean": 21.50925925925926,
+        "expected_mean": 32.06376298821028
       },
       {
         "bin": 7,
         "n": 107,
-        "expected_min": 34.58300179434108,
-        "expected_max": 39.087794651604746,
-        "observed_mean": 10.392523364485982,
-        "expected_mean": 36.67776453611371
+        "expected_min": 33.538168321506625,
+        "expected_max": 37.97725201692343,
+        "observed_mean": 9.785046728971963,
+        "expected_mean": 35.513169619130686
       },
       {
         "bin": 8,
         "n": 107,
-        "expected_min": 39.200052424052224,
-        "expected_max": 47.83357864360328,
-        "observed_mean": 17.94392523364486,
-        "expected_mean": 43.204339571520876
+        "expected_min": 37.98418432579368,
+        "expected_max": 44.8401106025647,
+        "observed_mean": 5.644859813084112,
+        "expected_mean": 41.26830585190928
       },
       {
         "bin": 9,
-        "n": 107,
-        "expected_min": 47.87260225765734,
-        "expected_max": 101.31981406479485,
-        "observed_mean": 32.67289719626168,
-        "expected_mean": 57.899188742885066
+        "n": 108,
+        "expected_min": 44.85480373966039,
+        "expected_max": 127.31086059816188,
+        "observed_mean": 28.435185185185187,
+        "expected_mean": 57.49392442712031
       }
     ]
   },
   "folds": [
     {
       "fold_id": 0,
-      "n_train": 855,
-      "n_test": 214,
+      "n_train": 859,
+      "n_test": 215,
       "n_train_sources": 53,
       "n_test_sources": 10,
       "train_source_ids": [
+        "2015-0107-IND",
         "2015-0317-IND",
         "2015-0333-IND",
         "2015-0374-IND",
         "2015-0406-IND",
         "2015-0504-IND",
+        "2016-0139-IND",
         "2016-0267-IND",
         "2016-0271-IND",
         "2016-0554-IND",
         "2017-0180-IND",
         "2017-0289-IND",
         "2017-0290-IND",
-        "2017-0294-IND",
         "2017-0342-IND",
         "2017-0364-IND",
         "2017-0495-IND",
         "2017-0517-IND",
         "2018-0205-IND",
-        "2018-0213-IND",
+        "2018-0216-IND",
         "2018-0286-IND",
         "2018-0295-IND",
         "2018-0345-IND",
         "2018-0370-IND",
-        "2018-0372-IND",
         "2019-0288-IND",
+        "2019-0383-IND",
         "2019-0499-IND",
         "2019-0574-IND",
-        "2020-0206-IND",
         "2020-0304-IND",
-        "2020-0446-IND",
         "2021-0316-IND",
         "2021-0366-IND",
         "2021-0435-IND",
@@ -345,47 +344,48 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "2021-0722-IND",
         "2021-0748-IND",
         "2022-0293-IND",
+        "2022-0539-IND",
         "2022-0590-IND",
         "2023-0330-IND",
         "2023-0359-IND",
         "2023-0428-IND",
-        "2023-0486-IND",
         "2023-0846-IND",
         "2024-0399-IND",
         "2024-0481-IND",
-        "2024-0561-IND",
+        "2024-0624-IND",
         "2024-0647-IND",
         "2025-0402-IND",
         "2025-0469-IND",
+        "2025-0751-IND",
         "2025-0803-IND",
         "2025-0859-IND"
       ],
       "test_source_ids": [
-        "2015-0107-IND",
-        "2016-0139-IND",
         "2016-0239-IND",
-        "2018-0216-IND",
+        "2017-0294-IND",
+        "2018-0213-IND",
+        "2018-0372-IND",
         "2019-0331-IND",
-        "2019-0383-IND",
-        "2022-0539-IND",
-        "2024-0624-IND",
-        "2025-0690-IND",
-        "2025-0751-IND"
+        "2020-0206-IND",
+        "2020-0446-IND",
+        "2023-0486-IND",
+        "2024-0561-IND",
+        "2025-0690-IND"
       ],
       "models": {
         "nb2": {
           "status": "available",
           "converged": true,
-          "alpha": 4.0601841763260484,
+          "alpha": 3.950391500647346,
           "parameter_count": 5,
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.6740509405638804,
-            "log_flood_area": -0.11950623615964323,
-            "log_population": 0.3027618755502835,
-            "year_c": -0.032709622941413205,
-            "alpha": 4.0601841763260484
+            "Intercept": 3.7176440713660215,
+            "log_flood_area": -0.12466486259029905,
+            "log_population": 0.36972203996996356,
+            "year_c": -0.044395682145882555,
+            "alpha": 3.950391500647346
           }
         },
         "poisson": {
@@ -396,28 +396,26 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.987211973209329,
-            "log_flood_area": -0.20475709160116382,
-            "log_population": 0.3201681417178507,
-            "year_c": -0.06440893323493588
+            "Intercept": 4.076472132674385,
+            "log_flood_area": -0.224690837921027,
+            "log_population": 0.39242988419499564,
+            "year_c": -0.07882546989763567
           }
         }
       }
     },
     {
       "fold_id": 1,
-      "n_train": 855,
-      "n_test": 214,
+      "n_train": 859,
+      "n_test": 215,
       "n_train_sources": 51,
       "n_test_sources": 12,
       "train_source_ids": [
-        "2015-0107-IND",
         "2015-0317-IND",
         "2015-0333-IND",
         "2015-0374-IND",
         "2015-0406-IND",
         "2015-0504-IND",
-        "2016-0139-IND",
         "2016-0239-IND",
         "2016-0267-IND",
         "2016-0271-IND",
@@ -425,18 +423,23 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "2017-0180-IND",
         "2017-0289-IND",
         "2017-0290-IND",
+        "2017-0294-IND",
         "2017-0342-IND",
-        "2017-0364-IND",
         "2017-0495-IND",
+        "2017-0517-IND",
         "2018-0205-IND",
+        "2018-0213-IND",
         "2018-0216-IND",
         "2018-0286-IND",
         "2018-0295-IND",
         "2018-0345-IND",
+        "2018-0372-IND",
         "2019-0288-IND",
         "2019-0331-IND",
         "2019-0383-IND",
         "2019-0574-IND",
+        "2020-0206-IND",
+        "2020-0446-IND",
         "2021-0316-IND",
         "2021-0366-IND",
         "2021-0435-IND",
@@ -447,50 +450,47 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "2021-0722-IND",
         "2021-0748-IND",
         "2022-0293-IND",
-        "2022-0539-IND",
         "2023-0330-IND",
         "2023-0359-IND",
         "2023-0428-IND",
+        "2023-0486-IND",
         "2023-0846-IND",
         "2024-0399-IND",
         "2024-0481-IND",
-        "2024-0624-IND",
+        "2024-0561-IND",
         "2024-0647-IND",
-        "2025-0402-IND",
         "2025-0469-IND",
         "2025-0690-IND",
-        "2025-0751-IND",
-        "2025-0803-IND",
-        "2025-0859-IND"
+        "2025-0803-IND"
       ],
       "test_source_ids": [
-        "2017-0294-IND",
-        "2017-0517-IND",
-        "2018-0213-IND",
+        "2015-0107-IND",
+        "2016-0139-IND",
+        "2017-0364-IND",
         "2018-0370-IND",
-        "2018-0372-IND",
         "2019-0499-IND",
-        "2020-0206-IND",
         "2020-0304-IND",
-        "2020-0446-IND",
+        "2022-0539-IND",
         "2022-0590-IND",
-        "2023-0486-IND",
-        "2024-0561-IND"
+        "2024-0624-IND",
+        "2025-0402-IND",
+        "2025-0751-IND",
+        "2025-0859-IND"
       ],
       "models": {
         "nb2": {
           "status": "available",
           "converged": true,
-          "alpha": 3.878047927439639,
+          "alpha": 3.8570797859854316,
           "parameter_count": 5,
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.816987715502568,
-            "log_flood_area": -0.08045642053913539,
-            "log_population": 0.22080512872761973,
-            "year_c": -0.03928675241765001,
-            "alpha": 3.878047927439639
+            "Intercept": 3.8571482953854117,
+            "log_flood_area": -0.09209375135404606,
+            "log_population": 0.17289472792608168,
+            "year_c": -0.017125242337716166,
+            "alpha": 3.8570797859854316
           }
         },
         "poisson": {
@@ -501,30 +501,30 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 4.037565573872481,
-            "log_flood_area": -0.1443232844890029,
-            "log_population": 0.29068505432855424,
-            "year_c": -0.05995420691861638
+            "Intercept": 4.038102478531749,
+            "log_flood_area": -0.14616483328109436,
+            "log_population": 0.23375350586356047,
+            "year_c": -0.03501930070199899
           }
         }
       }
     },
     {
       "fold_id": 2,
-      "n_train": 855,
-      "n_test": 214,
+      "n_train": 859,
+      "n_test": 215,
       "n_train_sources": 49,
       "n_test_sources": 14,
       "train_source_ids": [
         "2015-0107-IND",
         "2015-0317-IND",
         "2015-0333-IND",
-        "2015-0374-IND",
         "2015-0406-IND",
         "2015-0504-IND",
         "2016-0139-IND",
         "2016-0239-IND",
-        "2016-0271-IND",
+        "2016-0267-IND",
+        "2016-0554-IND",
         "2017-0180-IND",
         "2017-0289-IND",
         "2017-0290-IND",
@@ -533,30 +533,29 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "2017-0364-IND",
         "2017-0495-IND",
         "2017-0517-IND",
-        "2018-0205-IND",
         "2018-0213-IND",
-        "2018-0216-IND",
+        "2018-0286-IND",
+        "2018-0345-IND",
         "2018-0370-IND",
         "2018-0372-IND",
         "2019-0288-IND",
         "2019-0331-IND",
-        "2019-0383-IND",
         "2019-0499-IND",
+        "2019-0574-IND",
         "2020-0206-IND",
         "2020-0304-IND",
         "2020-0446-IND",
         "2021-0316-IND",
+        "2021-0366-IND",
         "2021-0435-IND",
         "2021-0458-IND",
-        "2021-0677-IND",
-        "2021-0748-IND",
+        "2021-0585-IND",
         "2022-0293-IND",
         "2022-0539-IND",
         "2022-0590-IND",
-        "2023-0330-IND",
         "2023-0428-IND",
         "2023-0486-IND",
-        "2023-0846-IND",
+        "2024-0399-IND",
         "2024-0481-IND",
         "2024-0561-IND",
         "2024-0624-IND",
@@ -564,38 +563,39 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "2025-0469-IND",
         "2025-0690-IND",
         "2025-0751-IND",
-        "2025-0803-IND"
+        "2025-0803-IND",
+        "2025-0859-IND"
       ],
       "test_source_ids": [
-        "2016-0267-IND",
-        "2016-0554-IND",
-        "2018-0286-IND",
+        "2015-0374-IND",
+        "2016-0271-IND",
+        "2018-0205-IND",
+        "2018-0216-IND",
         "2018-0295-IND",
-        "2018-0345-IND",
-        "2019-0574-IND",
-        "2021-0366-IND",
-        "2021-0585-IND",
+        "2019-0383-IND",
+        "2021-0677-IND",
         "2021-0681-IND",
         "2021-0722-IND",
+        "2021-0748-IND",
+        "2023-0330-IND",
         "2023-0359-IND",
-        "2024-0399-IND",
-        "2024-0647-IND",
-        "2025-0859-IND"
+        "2023-0846-IND",
+        "2024-0647-IND"
       ],
       "models": {
         "nb2": {
           "status": "available",
           "converged": true,
-          "alpha": 3.897426335921003,
+          "alpha": 3.9378128040945826,
           "parameter_count": 5,
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.252547824923147,
-            "log_flood_area": 0.017219581823993795,
-            "log_population": 0.042464360153393665,
-            "year_c": 0.017828208557653706,
-            "alpha": 3.897426335921003
+            "Intercept": 2.9467207271956277,
+            "log_flood_area": 0.05991833351280431,
+            "log_population": -0.07428841511283123,
+            "year_c": -0.03782593547819947,
+            "alpha": 3.9378128040945826
           }
         },
         "poisson": {
@@ -606,30 +606,30 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.215713368526801,
-            "log_flood_area": 0.029027497543954103,
-            "log_population": 0.014067971291346347,
-            "year_c": 0.019120854820675527
+            "Intercept": 2.788288516847382,
+            "log_flood_area": 0.09715715498083143,
+            "log_population": -0.07996106727264808,
+            "year_c": -0.03733926180190575
           }
         }
       }
     },
     {
       "fold_id": 3,
-      "n_train": 855,
-      "n_test": 214,
+      "n_train": 859,
+      "n_test": 215,
       "n_train_sources": 49,
       "n_test_sources": 14,
       "train_source_ids": [
         "2015-0107-IND",
         "2015-0317-IND",
+        "2015-0333-IND",
         "2015-0374-IND",
         "2016-0139-IND",
         "2016-0239-IND",
         "2016-0267-IND",
         "2016-0271-IND",
-        "2016-0554-IND",
-        "2017-0289-IND",
+        "2017-0290-IND",
         "2017-0294-IND",
         "2017-0342-IND",
         "2017-0364-IND",
@@ -637,11 +637,11 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "2018-0205-IND",
         "2018-0213-IND",
         "2018-0216-IND",
-        "2018-0286-IND",
         "2018-0295-IND",
         "2018-0345-IND",
         "2018-0370-IND",
         "2018-0372-IND",
+        "2019-0288-IND",
         "2019-0331-IND",
         "2019-0383-IND",
         "2019-0499-IND",
@@ -650,8 +650,7 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "2020-0304-IND",
         "2020-0446-IND",
         "2021-0316-IND",
-        "2021-0366-IND",
-        "2021-0585-IND",
+        "2021-0458-IND",
         "2021-0677-IND",
         "2021-0681-IND",
         "2021-0722-IND",
@@ -667,23 +666,24 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "2024-0561-IND",
         "2024-0624-IND",
         "2024-0647-IND",
+        "2025-0402-IND",
         "2025-0690-IND",
         "2025-0751-IND",
         "2025-0859-IND"
       ],
       "test_source_ids": [
-        "2015-0333-IND",
         "2015-0406-IND",
         "2015-0504-IND",
+        "2016-0554-IND",
         "2017-0180-IND",
-        "2017-0290-IND",
+        "2017-0289-IND",
         "2017-0495-IND",
-        "2019-0288-IND",
+        "2018-0286-IND",
+        "2021-0366-IND",
         "2021-0435-IND",
-        "2021-0458-IND",
+        "2021-0585-IND",
         "2022-0293-IND",
         "2023-0428-IND",
-        "2025-0402-IND",
         "2025-0469-IND",
         "2025-0803-IND"
       ],
@@ -691,16 +691,16 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
         "nb2": {
           "status": "available",
           "converged": true,
-          "alpha": 4.22360228358368,
+          "alpha": 4.238786882698555,
           "parameter_count": 5,
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.8144669634699113,
-            "log_flood_area": -0.0865741367878204,
-            "log_population": 0.04395162110833944,
-            "year_c": -0.01783877817041523,
-            "alpha": 4.22360228358368
+            "Intercept": 3.85755403227857,
+            "log_flood_area": -0.10018712980928116,
+            "log_population": 0.11665491137173045,
+            "year_c": -0.008777482019728073,
+            "alpha": 4.238786882698555
           }
         },
         "poisson": {
@@ -711,62 +711,62 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.914250812164042,
-            "log_flood_area": -0.11795253577844926,
-            "log_population": 0.09349288389202663,
-            "year_c": -0.022647161708514593
+            "Intercept": 4.015109699050837,
+            "log_flood_area": -0.14624638886449548,
+            "log_population": 0.16144271202791866,
+            "year_c": -0.016844115057467107
           }
         }
       }
     },
     {
       "fold_id": 4,
-      "n_train": 856,
-      "n_test": 213,
+      "n_train": 860,
+      "n_test": 214,
       "n_train_sources": 50,
       "n_test_sources": 13,
       "train_source_ids": [
         "2015-0107-IND",
-        "2015-0333-IND",
+        "2015-0374-IND",
         "2015-0406-IND",
         "2015-0504-IND",
         "2016-0139-IND",
         "2016-0239-IND",
-        "2016-0267-IND",
+        "2016-0271-IND",
         "2016-0554-IND",
         "2017-0180-IND",
-        "2017-0290-IND",
+        "2017-0289-IND",
         "2017-0294-IND",
+        "2017-0364-IND",
         "2017-0495-IND",
-        "2017-0517-IND",
+        "2018-0205-IND",
         "2018-0213-IND",
         "2018-0216-IND",
         "2018-0286-IND",
         "2018-0295-IND",
-        "2018-0345-IND",
         "2018-0370-IND",
         "2018-0372-IND",
-        "2019-0288-IND",
         "2019-0331-IND",
         "2019-0383-IND",
         "2019-0499-IND",
-        "2019-0574-IND",
         "2020-0206-IND",
         "2020-0304-IND",
         "2020-0446-IND",
         "2021-0366-IND",
         "2021-0435-IND",
-        "2021-0458-IND",
         "2021-0585-IND",
+        "2021-0677-IND",
         "2021-0681-IND",
         "2021-0722-IND",
+        "2021-0748-IND",
         "2022-0293-IND",
         "2022-0539-IND",
         "2022-0590-IND",
+        "2023-0330-IND",
         "2023-0359-IND",
         "2023-0428-IND",
         "2023-0486-IND",
-        "2024-0399-IND",
+        "2023-0846-IND",
         "2024-0561-IND",
         "2024-0624-IND",
         "2024-0647-IND",
@@ -779,33 +779,33 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
       ],
       "test_source_ids": [
         "2015-0317-IND",
-        "2015-0374-IND",
-        "2016-0271-IND",
-        "2017-0289-IND",
+        "2015-0333-IND",
+        "2016-0267-IND",
+        "2017-0290-IND",
         "2017-0342-IND",
-        "2017-0364-IND",
-        "2018-0205-IND",
+        "2017-0517-IND",
+        "2018-0345-IND",
+        "2019-0288-IND",
+        "2019-0574-IND",
         "2021-0316-IND",
-        "2021-0677-IND",
-        "2021-0748-IND",
-        "2023-0330-IND",
-        "2023-0846-IND",
+        "2021-0458-IND",
+        "2024-0399-IND",
         "2024-0481-IND"
       ],
       "models": {
         "nb2": {
           "status": "available",
           "converged": true,
-          "alpha": 4.393925783141802,
+          "alpha": 4.355027621160563,
           "parameter_count": 5,
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.6940777607439683,
-            "log_flood_area": -0.10247854934713364,
-            "log_population": 0.09219730749414966,
-            "year_c": -0.053820912881723526,
-            "alpha": 4.393925783141802
+            "Intercept": 3.842064176542395,
+            "log_flood_area": -0.11759771259737913,
+            "log_population": 0.14672516824598908,
+            "year_c": -0.01720805334723157,
+            "alpha": 4.355027621160563
           }
         },
         "poisson": {
@@ -816,18 +816,18 @@ NB2/Poisson comparison uses common successful test rows only. Available-model di
           "required_train_rows": 30,
           "warnings": [],
           "coefficients": {
-            "Intercept": 3.90459126295327,
-            "log_flood_area": -0.17060572260230905,
-            "log_population": 0.18487538091719297,
-            "year_c": -0.0896751863458469
+            "Intercept": 4.044144241860749,
+            "log_flood_area": -0.1795730518624848,
+            "log_population": 0.20925256618634083,
+            "year_c": -0.04677637191750782
           }
         }
       }
     }
   ],
   "scoring_reason_counts": {
-    "oof_prediction_available": 1069,
-    "excluded_by_input_contract": 479
+    "oof_prediction_available": 1074,
+    "excluded_by_input_contract": 474
   }
 }
 ```
