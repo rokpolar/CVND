@@ -5,7 +5,7 @@ CVND는 EM-DAT 홍수의 event×district 단위에서 위성 관측 침수 면�
 ## 관측 계약
 
 - 레지스트리: `data/intermediate/event_districts.csv`만 권위 있는 event×district 레지스트리로 사용한다. 모호한 지역은 결측/audit 행으로 보존하고 state 값을 district로 확장하지 않는다.
-- 위성: 모든 유효 AOI에서 Sentinel-1(S1)을 먼저 실행한다. S1 면적이 결측인 키에만 Sentinel-2 NDWI(S2)를 실행한다. 유한한 `0 km²`는 성공한 관측이며 fallback 대상이 아니다. AOI 실패도 S2로 재시도하지 않는다. 기본 routing은 `sits_then_track_a`다: Track B(SITS)가 측정한 구역은 SITS, 나머지는 위 S1 → S2 순서(Track A)로 채운다.
+- 위성: 모든 유효 AOI에서 Sentinel-1(S1)을 먼저 실행한다. S1 면적이 결측인 키에만 Sentinel-2 NDWI(S2)를 실행한다. 유한한 `0 km²`는 성공한 관측이며 fallback 대상이 아니다. AOI 실패도 S2로 재시도하지 않는다. 기본값은 `SATELLITE_TRACK=A`, `SATELLITE_ROUTING=s1_then_s2`다. Track B/SITS는 명시적으로 선택할 때만 실행한다.
 - 기사: 30일까지 GDELT 후보를 수집한 뒤 multilingual flood heuristic을 통과한 후보만 LLM-QA로 보낸다. 같은 판정으로 `counts_30d.csv`와 `counts_14d.csv`를 만든다.
 - 기사 상태: `complete`와 `partial`은 분석 가능한 관측이다. `partial`은 `article_count_is_lower_bound=True`를 유지한다. `incomplete`는 정상 결측이며 파이프라인 손상으로 간주하지 않는다.
 - 모델: NB2 Model 2는 `article_count ~ log1p(flood_area_km2) + urban_population_share`이다. Model 1은 urban share를 제외하고 Model 3은 year fixed effects를 추가한다.
@@ -23,7 +23,7 @@ venv/bin/python -m unittest discover -s tests
 venv/bin/python -m compileall -q src tests scripts
 bash -n scripts/run_pipeline.sh
 
-# 인증된 실제 실행(기본 SKIP_GEE=0): Track A(S1 -> S1 결측에만 S2) + Track B(SITS) -> 기사 auto resume
+# 인증된 실제 실행(기본 SKIP_GEE=0): Track A(S1 -> S1 결측에만 S2) -> 기사 auto resume
 SETUP_DEPS=1 ARTICLE_PIPELINE_MODE=auto bash scripts/run_pipeline.sh
 
 # 위성 캐시 재사용, 기사 상태를 manifest/hash로 자동 판정

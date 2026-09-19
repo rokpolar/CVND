@@ -8,7 +8,8 @@
 
 - 현재 event×district registry와 source corpus hash
 - prompt와 model
-- request와 result hash
+- request와 result hash, 본문 SQLite/보조 WAL hash
+- district collection manifest와 두 count CSV 각각의 hash, count manifest와 QA manifest의 연결
 - `counts_30d.csv`, `counts_14d.csv`, `counts.manifest.json`의 키·window·상태 계약
 
 반환 상태는 다음과 같다.
@@ -18,6 +19,8 @@
 - `none`: stale/누락 상태이므로 GDELT·본문·heuristic부터 실행
 
 `complete`와 `partial`은 관측값으로 join한다. `partial`은 확정 relevant 수를 lower bound로 보존한다. `incomplete`는 article count가 결측인 정상 데이터 상태다. 해결되지 않은 후보를 irrelevant 또는 0으로 대체하지 않는다.
+
+수집 완전성은 구역별 district GDELT manifest로 판정한다. 한 구역의 미수집이 다른 구역의 관측값을 지우지 않는다. 성공적으로 완료된 구역 쿼리에 후보가 없으면 0이며, 쿼리 실패·누락이면 결측이다. 기본 source와 DB는 district corpus를 사용한다. 기존 state corpus를 사용하려면 `--source`, `--database`를 명시한다.
 
 ## 수동 실행
 
@@ -35,6 +38,7 @@ venv/bin/python src/article_qa.py state
 ```bash
 venv/bin/python src/article_qa.py supplement --maximum-tib 0.25
 venv/bin/python src/article_qa.py supplement --execute --maximum-tib 0.25
+venv/bin/python src/article_qa.py prepare
 venv/bin/python src/article_qa.py download-new
 venv/bin/python src/article_qa.py prepare
 ```
