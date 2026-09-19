@@ -15,9 +15,9 @@
     "rate": 0.9231266149870802
   },
   "satellite_observation": {
-    "success": 1470,
+    "success": 1477,
     "total": 1548,
-    "rate": 0.9496124031007752
+    "rate": 0.9541343669250646
   },
   "gdelt_collection": {
     "success": 1548,
@@ -40,11 +40,12 @@
     "rate": 0.8540051679586563
   },
   "final_analyzable": {
-    "success": 1191,
+    "success": 1198,
     "total": 1548,
-    "rate": 0.7693798449612403
+    "rate": 0.7739018087855297
   },
   "satellite_source_counts": {
-    "S1": 1191
+    "S1": 1191,
+    "NDWI": 7
   }
 }
