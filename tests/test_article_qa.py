@@ -58,6 +58,26 @@ class QATests(unittest.TestCase):
               evidence_source="body",evidence_excerpt="Flooding affected Puri")
               for d in request["districts"]]}
 
+    def make_legacy_snapshot(self):
+        _, requests, _ = self.prepare()
+        qa.save(self.args.work / "results.json", {requests[0]["custom_id"]: {
+            **self.valid(requests[0]), "usage": {}, "model": qa.MODEL,
+            "prompt_version": qa.PROMPT_VERSION,
+        }})
+        qa.counts(self.args)
+        for name in ("manifest.json", "counts.manifest.json"):
+            path = self.args.work / name
+            payload = qa.read(path)
+            payload["schema_version"] = 1
+            payload["primary_window_days"] = 14
+            payload["sensitivity_window_days"] = 30
+            for key in ("body_stores_sha256", "collection_manifest_sha256",
+                        "qa_manifest_sha256", "count_files_sha256",
+                        "supplement_manifest_sha256"):
+                payload.pop(key, None)
+            qa.save(path, payload)
+        return requests
+
     def test_reassignment_dedup_and_boundaries(self):
         row = dict(url="https://x/a", state="Odisha", source_record_id="old")
         self.write_articles([{**row,"published_at":"2020-01-15"}]*2)
@@ -115,6 +135,43 @@ class QATests(unittest.TestCase):
         self.write_articles([dict(url="https://x/changed", published_at="2020-01-03",
                                   state="Odisha", source_record_id="old")])
         self.assertEqual(qa.article_pipeline_state(self.args), "none")
+
+    def test_paid_legacy_qa_is_adopted_offline(self):
+        requests = self.make_legacy_snapshot()
+        self.assertEqual(qa.article_pipeline_state(self.args), "none")
+        self.assertTrue(qa.adopt_existing(self.args))
+        self.assertEqual(qa.article_pipeline_state(self.args), "llm_complete")
+        manifest = qa.read(self.args.work / "manifest.json")
+        self.assertEqual(manifest["schema_version"], 2)
+        self.assertEqual(manifest["primary_window_days"], 30)
+        self.assertEqual(manifest["sensitivity_window_days"], 14)
+        self.assertEqual(manifest["legacy_adoption"]["validated_requests"], len(requests))
+
+    def test_adopted_qa_follows_registry_additions_as_incomplete(self):
+        self.make_legacy_snapshot()
+        self.assertTrue(qa.adopt_existing(self.args))
+        self.rows.append({
+            **self.rows[0], "event_id": "E002", "event_district_id": "E002::cuttack",
+            "district": "Cuttack", "source_record_id": "added",
+        })
+        self.write_registry()
+        self.assertTrue(qa.adopt_existing(self.args))
+        self.assertEqual(qa.article_pipeline_state(self.args), "llm_complete")
+        for days in (30, 14):
+            frame = pd.read_csv(self.args.work / f"counts_{days}d.csv", dtype=str,
+                                keep_default_na=False).set_index("event_district_id")
+            self.assertEqual(frame.loc["E001::puri", "final_article_count"], "1")
+            self.assertEqual(frame.loc["E002::cuttack", "collection_status"], "incomplete")
+            self.assertEqual(frame.loc["E002::cuttack", "final_article_count"], "")
+
+    def test_adopted_qa_rejects_later_source_or_result_changes(self):
+        requests = self.make_legacy_snapshot()
+        self.assertTrue(qa.adopt_existing(self.args))
+        results = qa.read(self.args.work / "results.json")
+        results[requests[0]["custom_id"]]["decisions"][0]["verdict"] = "not_relevant"
+        qa.save(self.args.work / "results.json", results)
+        self.assertFalse(qa.adopt_existing(self.args))
+        self.assertNotEqual(qa.article_pipeline_state(self.args), "llm_complete")
 
     def test_count_tampering_and_reprepared_source_cannot_reuse_counts(self):
         _, requests, _ = self.prepare()

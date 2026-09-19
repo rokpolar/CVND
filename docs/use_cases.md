@@ -10,7 +10,7 @@
 
 ## UC-03 기사 heuristic → LLM-QA
 
-`src/district_articles.py`가 30일까지 후보를 수집하고 본문 heuristic을 계산한다. `src/article_qa.py`는 그 후보만 LLM-QA하고 30일/14일 count를 동시에 만든다. `ARTICLE_PIPELINE_MODE=auto`는 provenance가 유효한 완료 단계를 자동으로 생략한다.
+`src/district_articles.py`가 30일까지 후보를 수집하고 본문 heuristic을 계산한다. `src/article_qa.py`는 그 후보만 LLM-QA하고 30일/14일 count를 동시에 만든다. `ARTICLE_PIPELINE_MODE=auto`는 provenance가 유효한 완료 단계를 자동으로 생략하며, 검증 가능한 구형 유료 QA snapshot은 오프라인 승격 후 재사용한다.
 
 ## UC-04 join과 분석
 

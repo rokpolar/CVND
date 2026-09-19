@@ -13,6 +13,9 @@ SETUP_DEPS="${SETUP_DEPS:-0}"
 # the cached satellite tables instead.
 SKIP_GEE="${SKIP_GEE:-0}"
 ARTICLE_PIPELINE_MODE="${ARTICLE_PIPELINE_MODE:-auto}"
+# Offline one-time migration/revalidation of already-paid QA results. Set to 0
+# to require a fresh heuristic + LLM run when the current manifests are stale.
+ARTICLE_ADOPT_EXISTING_QA="${ARTICLE_ADOPT_EXISTING_QA:-1}"
 RUN_ARTICLE_SUPPLEMENT="${RUN_ARTICLE_SUPPLEMENT:-0}"
 GDELT_SUPPLEMENT_MAX_TIB="${GDELT_SUPPLEMENT_MAX_TIB:-0.25}"
 LLM_QA_MODEL="${LLM_QA_MODEL:-gpt-5.6-luna}"
@@ -40,6 +43,9 @@ if [[ "${1:-}" == "--dry-run" ]]; then DRY_RUN=1; shift; fi
 if [[ $# -ne 0 ]]; then echo 'Usage: run_pipeline.sh [--dry-run]' >&2; exit 2; fi
 if [[ "$ARTICLE_PIPELINE_MODE" != auto && "$ARTICLE_PIPELINE_MODE" != force && "$ARTICLE_PIPELINE_MODE" != skip ]]; then
   echo 'ARTICLE_PIPELINE_MODE must be auto, force, or skip' >&2; exit 2
+fi
+if [[ "$ARTICLE_ADOPT_EXISTING_QA" != 0 && "$ARTICLE_ADOPT_EXISTING_QA" != 1 ]]; then
+  echo 'ARTICLE_ADOPT_EXISTING_QA must be 0 or 1' >&2; exit 2
 fi
 # Interpreter: $PYTHON if given; else the project venv; else the first python
 # on PATH that has the pipeline's packages. On Windows `python3` can be the
@@ -227,6 +233,9 @@ if [[ "$ARTICLE_PIPELINE_MODE" == skip ]]; then
 elif [[ "$ARTICLE_PIPELINE_MODE" == force ]]; then
   ARTICLE_STATE=none
 else
+  if [[ "$ARTICLE_ADOPT_EXISTING_QA" == 1 ]]; then
+    run src/article_qa.py adopt-existing "${qa_args[@]}"
+  fi
   ARTICLE_STATE="$("$PYTHON" src/article_qa.py state "${qa_args[@]}")"
 fi
 echo "Article pipeline state: $ARTICLE_STATE"
