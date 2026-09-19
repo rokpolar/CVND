@@ -8,7 +8,7 @@ import sys
 import tempfile
 import unittest
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -115,6 +115,66 @@ class QATests(unittest.TestCase):
         self.write_articles([dict(url="https://x/changed", published_at="2020-01-03",
                                   state="Odisha", source_record_id="old")])
         self.assertEqual(qa.article_pipeline_state(self.args), "none")
+
+    def test_count_tampering_and_reprepared_source_cannot_reuse_counts(self):
+        _, requests, _ = self.prepare()
+        qa.save(self.args.work / 'results.json', {requests[0]['custom_id']: {
+            **self.valid(requests[0]), 'model': qa.MODEL}})
+        qa.counts(self.args)
+        path = self.args.work / 'counts_30d.csv'
+        frame = pd.read_csv(path)
+        frame['final_article_count'] = 999
+        frame.to_csv(path, index=False)
+        self.assertEqual(qa.article_pipeline_state(self.args), 'heuristic_complete')
+        qa.counts(self.args)
+        self.write_articles([dict(url='https://x/a', published_at='2020-01-03', state='Odisha')])
+        self.prepare()
+        self.assertEqual(qa.article_pipeline_state(self.args), 'heuristic_complete')
+
+    def test_body_change_invalidates_candidates(self):
+        self.prepare()
+        with sqlite3.connect(self.args.database) as con:
+            con.execute("UPDATE documents SET body_text='Changed article'")
+        self.assertEqual(qa.article_pipeline_state(self.args), 'none')
+
+    def test_preflight_uses_district_source_database_and_model(self):
+        import pipeline_preflight
+        self.args.work = self.root / 'article_qa'
+        self.test_validated_results_survive_unresolved_candidates_as_lower_bound()
+        paths = {'event_districts': self.args.registry,
+                 'district_gdelt_articles': self.args.source,
+                 'district_article_database': self.args.database}
+        with patch.object(pipeline_preflight, 'data_path', side_effect=paths.__getitem__), \
+             patch.dict('os.environ', {'LLM_QA_MODEL': qa.MODEL}):
+            records = pipeline_preflight._inspect_article_qa(qa.load_registry(self.args.registry))
+        self.assertEqual([r['status'] for r in records], ['present', 'present'])
+
+    def test_one_gap_does_not_remove_other_district_observation(self):
+        self.rows.append({**self.rows[0], 'event_district_id': 'E001::cuttack', 'district': 'Cuttack'})
+        self.write_registry()
+        _, requests, _ = self.prepare()
+        qa.save(self.args.work / 'results.json', {r['custom_id']: {
+            **self.valid(r), 'model': qa.MODEL} for r in requests})
+        qa.counts(self.args)
+        for days in (30, 14):
+            frame = pd.read_csv(self.args.work / f'counts_{days}d.csv').set_index('event_district_id')
+            self.assertEqual(frame.loc['E001::puri', 'final_article_count'], 1)
+            self.assertTrue(pd.isna(frame.loc['E001::cuttack', 'final_article_count']))
+
+    def test_complete_empty_district_query_is_zero(self):
+        self.write_articles([])
+        self.args.collection_manifest = self.root / 'collection.json'
+        qa.save(self.args.collection_manifest, {
+            'registry_sha256': qa.registry_fingerprint(qa.load_registry(self.args.registry)),
+            'window_days': 30, 'article_payload_sha256': qa.file_hash(self.args.source),
+            'entries': [{'event_district_id': 'E001::puri', 'collection_status': 'complete'}]})
+        self.prepare()
+        qa.counts(self.args)
+        for days in (30, 14):
+            row = pd.read_csv(self.args.work / f'counts_{days}d.csv').iloc[0]
+            self.assertEqual(row.collection_status, 'complete')
+            self.assertEqual(row.final_article_count, 0)
+        self.assertEqual(qa.article_pipeline_state(self.args), 'llm_complete')
 
     def test_schema_ids_and_evidence(self):
         _,requests,_=self.prepare()
