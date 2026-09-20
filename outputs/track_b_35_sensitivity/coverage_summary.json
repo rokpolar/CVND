@@ -1,0 +1,310 @@
+{
+  "window_days": 30,
+  "n_total": 1548,
+  "n_analyzable": 1198,
+  "n_excluded": 350,
+  "districts": 432,
+  "parent_events": 160,
+  "source_flood_events": 63,
+  "satellite_source_counts": {
+    "S1": 1158,
+    "SITS_NDWI": 29,
+    "NDWI": 7,
+    "SITS_NDWI_RESTORED": 4
+  },
+  "sensitivity_formulas": {
+    "model_2_source_fe": "article_count ~ log_flood_area + urban_population_share + C(satellite_source)"
+  },
+  "spearman": {
+    "rho": 0.1512970635,
+    "p_value": 1.428e-07
+  },
+  "distributions": {
+    "flood_area_km2": {
+      "count": 1198.0,
+      "mean": 184.0613254591,
+      "std": 367.9398013139,
+      "min": 0.0147,
+      "25%": 14.90785,
+      "50%": 68.5838,
+      "75%": 212.51525,
+      "max": 5894.8599
+    },
+    "article_count": {
+      "count": 1198.0,
+      "mean": 48.3739565943,
+      "std": 144.3466786315,
+      "min": 0.0,
+      "25%": 1.0,
+      "50%": 7.0,
+      "75%": 46.0,
+      "max": 3291.0
+    },
+    "urban_population_share": {
+      "count": 1198.0,
+      "mean": 0.2225157939,
+      "std": 0.195753362,
+      "min": 0.0,
+      "25%": 0.0876401087,
+      "50%": 0.1500736031,
+      "75%": 0.2892693567,
+      "max": 1.0
+    }
+  },
+  "missing_counts": {
+    "flood_area_km2": 71,
+    "article_count": 208,
+    "urban_population_share": 119
+  },
+  "exclusion_counts": {
+    "article_collection_incomplete": 208,
+    "article_count_missing_or_invalid": 208,
+    "census_unmatched": 119,
+    "census_invalid": 119,
+    "census_population_inconsistent": 119,
+    "satellite_missing_or_invalid": 71
+  },
+  "model_status": {
+    "model_1": "estimated",
+    "model_2": "estimated",
+    "model_3": "estimated",
+    "model_2_source_fe": "estimated (sensitivity)",
+    "model_2_by_source_SITS_NDWI": "estimated (sensitivity)",
+    "model_2_by_source_SITS_NDWI_RESTORED": "insufficient sample: N=4 < 20",
+    "model_2_by_source_S1": "estimated (sensitivity)",
+    "model_2_by_source_NDWI": "insufficient sample: N=7 < 20",
+    "model_2_sits_only": "estimated (sensitivity)",
+    "source_event_robustness": "estimated secondary unconditional source fixed-effects NB2; 60 source events",
+    "exposed_population_robustness": "not implemented: no verified flood-mask \u00d7 gridded-population input contract; area \u00d7 average density is never used"
+  },
+  "formulas": {
+    "model_1": "article_count ~ log_flood_area",
+    "model_2": "article_count ~ log_flood_area + urban_population_share",
+    "model_3": "article_count ~ log_flood_area + urban_population_share + C(year)"
+  },
+  "article_count_variance": 20835.9636319513,
+  "article_count_mean": 48.3739565943,
+  "stage_qc": {
+    "district_extraction": {
+      "success": 1548,
+      "total": 1548,
+      "rate": 1.0
+    },
+    "district_aoi_match": {
+      "success": 1548,
+      "total": 1548,
+      "rate": 1.0
+    },
+    "census_match": {
+      "success": 1429,
+      "total": 1548,
+      "rate": 0.923126615
+    },
+    "satellite_observation": {
+      "success": 1477,
+      "total": 1548,
+      "rate": 0.9541343669
+    },
+    "gdelt_collection": {
+      "success": 1548,
+      "total": 1548,
+      "rate": 1.0
+    },
+    "article_observation": {
+      "success": 1340,
+      "total": 1548,
+      "rate": 0.8656330749
+    },
+    "article_complete": {
+      "success": 18,
+      "total": 1548,
+      "rate": 0.011627907
+    },
+    "article_partial_lower_bound": {
+      "success": 1322,
+      "total": 1548,
+      "rate": 0.854005168
+    },
+    "final_analyzable": {
+      "success": 1198,
+      "total": 1548,
+      "rate": 0.7739018088
+    },
+    "satellite_source_counts": {
+      "S1": 1158,
+      "SITS_NDWI": 29,
+      "NDWI": 7,
+      "SITS_NDWI_RESTORED": 4
+    }
+  },
+  "available_input_distributions": {
+    "flood_area_km2": {
+      "count": 1477.0,
+      "mean": 171.6973004062,
+      "std": 348.9887699761,
+      "min": 0.0028,
+      "25%": 13.9896,
+      "50%": 61.2126,
+      "75%": 181.0263,
+      "max": 5894.8599
+    },
+    "article_count": {
+      "count": 1340.0,
+      "mean": 47.1604477612,
+      "std": 138.0509060239,
+      "min": 0.0,
+      "25%": 1.0,
+      "50%": 8.0,
+      "75%": 45.0,
+      "max": 3291.0
+    },
+    "urban_population_share": {
+      "count": 1429.0,
+      "mean": 0.2167205578,
+      "std": 0.1918490889,
+      "min": 0.0,
+      "25%": 0.0876401087,
+      "50%": 0.1486321135,
+      "75%": 0.2804554824,
+      "max": 1.0
+    }
+  },
+  "estimated_dispersion": {
+    "model_1": 3.6075585728,
+    "model_2": 3.5193002226,
+    "model_3": 3.2755374637
+  },
+  "warnings": [
+    "Associational analysis: flood extent does not control all disaster impacts, outlet availability, population size, or media access.",
+    "Census 2011 and GAUL 2015 may not represent event-year district boundaries or urbanization.",
+    "GDELT-indexed district-explicit coverage is not all disaster reporting; location extraction and language coverage can affect selection.",
+    "District rows within a source flood and repeated districts may be dependent; state clustering is only a partial correction.",
+    "244 registry onset dates are month-imputed; their 30-day news windows have timing uncertainty.",
+    "Article counts use the local state corpus plus targeted BigQuery supplementation of districts without usable local candidates. This is conditional corpus coverage, not exhaustive district recollection; districts with some local coverage may still have missed articles.",
+    "1322 article counts are observed LLM-QA lower bounds: validated relevant decisions are counted, while unavailable-body, uncertain and unsubmitted candidates remain unresolved and are not imputed as zero.",
+    "model_2_by_source_SITS_NDWI: 10 state clusters / N=29; require >= 20 clusters and N > 2G; ordinary SE used and independence assumption is a limitation",
+    "model_2_sits_only: 10 state clusters / N=33; require >= 20 clusters and N > 2G; ordinary SE used and independence assumption is a limitation",
+    "Default flood area is Sentinel-1 new water over the eligible AOI, with Track A S2 NDWI only where S1 is missing. Observed S1 zero is retained. Historical inputs retain their recorded sources. Under opt-in sits_primary routing, SITS-NDWI is used on retained clear tiles with Sentinel-1 converted to the SITS-NDWI scale (S1_TO_SITS) where SITS cannot measure the district; the satellite-source fixed effect, by-source and SITS-only subsamples are sensitivity analyses, not a correction.",
+    "Source fixed-effects NB2 is secondary and susceptible to incidental-parameter bias; ordinary SE are reported.",
+    "district-based urbanization tercile cutpoints: [0.1369414084546159, 0.2557930624760398]; unknown Census matches cannot be assigned an urbanization level"
+  ],
+  "conclusion_candidate": "H1 is not supported. Higher urbanization is associated with greater expected coverage at similar observed flood extent; this supports H2 alone.",
+  "input_sha256": "f0a5e636b8cd3df9778fdcf63bbdb8e1741d5c447f42accbe480f9a3a31db3aa",
+  "model_results_sha256": "ef8ba23352d85013299cea2452ec9b8c0639d11cc42c523c3c7d7d6105df15c7",
+  "source_provenance": {
+    "git_head": "3c833e2370fb8b86e1d2cdc539d7ad72e69bb2b6",
+    "git_dirty": true,
+    "source_files_sha256": {
+      "PROJECT_CONTEXT.md": "199a966e2bf7880a8ef694aea71b5469b31560fd1c191ece6b10ec29353ff498",
+      "README.md": "c9ae54c333124789520b3927a034f1b9d30e95bdd1861eb070e1a8b490d3d0c9",
+      "docs/article_qa.md": "d848a52c95de27339c1e44e3da9d0b68cde553b34f9daf6d7a88c1984d3fe737",
+      "docs/census_recovery.md": "01c87194c9f3872a332d8c72bf77488424863056a549b72f539dab5cfff9c052",
+      "docs/copernicus_local_backend.md": "091c94f280a06ba47d93c7f2e69533ebbfc873893f8764f34b5c9479042fd833",
+      "docs/coverage_scoring_methodology.md": "a0d2b277f1e5c85d8190c1f5f520f8055ad9b84bab166ee26d3899a61f3087bf",
+      "docs/district_methodology.md": "992ee4974404bb8da0baac7177eb6186b03b846f40dc28a4a8f945f64c55c9d4",
+      "docs/district_recovery.md": "52f196e188e1fe9a088914a5c0febc04060a2f77307376380e3c8f1c88329571",
+      "docs/implementation_validation.md": "59e3e369359e24ffe7825943e58fe3d3ad9e9e09f8fea670b9a4d8eed2ba66de",
+      "docs/use_cases.md": "84d2e36cc9e96b8573193969a5d94a90a9723351ae979f93e163a71b1c261198",
+      "requirements-lock.txt": "e551abac63ef8150d67334d62249076d858422d6c70b5e1ce0f8dfc2658f02e6",
+      "requirements.txt": "930ede410dc48c3bf54fda36614657d5c40d0e1554b2b8274ba4f9a96b61f339",
+      "scripts/audit_reference_overlap.py": "44da327fa7b2b88021c9511b6cab7f45d54992948743f7bd56300a51f2eb5158",
+      "scripts/build_analysis_package.py": "8adbb14ace580a4608bfbaf975dac52d7240ef75f509af2e04ae358014cb912d",
+      "scripts/build_boundary_manifest.py": "bc585d7ff0e24f73531ea335ee23c9553d1ec9e0acc8358c3ff0512f8ab33ce6",
+      "scripts/build_osm_manifest.py": "d6fa3a7b71012ab198a18e7780c0edd7336a46fda34c48e41ddd9bcdbb6d2177",
+      "scripts/build_track_b_35_package.py": "cfa517921ac742ac792cd4c73b2c7e1ada6645af3a3267957185d213b85c45c8",
+      "scripts/inspect_supplemental_boundaries.py": "fb70d0e1de852fe8e7cd401f21a72ab7fb361be2479f484fec0316a60630e3c8",
+      "scripts/migrate_track_a_attempt_markers.py": "34add88a3cc1ac1203e38a838c6be6f4521484676c55f20043fd3505878fba3d",
+      "scripts/monitor_pipeline.py": "d2729ecea285275c0263fb00d1ccc4db642fa78040679a7efeca640bf6fd58b9",
+      "scripts/prepare_boundary_recovery.py": "9e1df51d8251f896d3dad07fae3b4569dad833a3369901387ed46f238b96725e",
+      "scripts/recover_aoi_matching.py": "7a7e3409be3881c7f08fee9cfef35380b0e4b5a777d456bc793369512bf34fe7",
+      "scripts/run_boundary_recovery.py": "b76bbd04c7512a7d9a13a11f7d7dc237d95158c18d44ef4926fb91e7b9d9dcda",
+      "scripts/run_pipeline.sh": "cd7dcd3e8abbfbb8911763a2e54e4a6c8aa253e9127ff22fcb91e186677db0cf",
+      "scripts/start_supervised_pipeline.sh": "88558caaea08e6ba91b0648b3de496571afc9de43bb79fb813b2a2e530000316",
+      "scripts/track_b_pending.py": "74a62c2e19442669bf541d7a7f29333d121e20d513574a9d0ecca3f361ed586d",
+      "scripts/verify_aoi_recovery.py": "da72d113bda1aa2c00f46b0fb5b0eb85d45d2cfc646811d7e514e8912af1d56a",
+      "scripts/verify_reference_recovery.py": "5a95a3a42365b5412e1575d39cd61977bba9222dec868ef225d1e269de184984",
+      "scripts/watch_sits_inference.py": "17e4cdd02a9fce2847a310948fcc25a8584f93ac0aefbb3714e7c0d7ae93fb23",
+      "src/analyze_coverage_disparity.py": "439c7778d6b17e0fee9c031fa8b333696a593d825e88a8ed8fc6ad71a8ca1bf6",
+      "src/archive/README.md": "d6567778a9c4accf4046cb5c4ccfb0c442bc075d23a8b4dcd885201a94302ff0",
+      "src/archive/build_events.py": "e48156ae47eda1050d3792de68e2b182b941d5d48ec36e8277f6a388fb33e746",
+      "src/archive/fix_districts.py": "c467f6d7016917f26731f976bbbbef40371af6fb09d6f464605617a1841291b6",
+      "src/archive/test_gee.py": "e44f63ca10eb2ba65b232c719e2f620b03803449f42455bec5d8f93a1c761eef",
+      "src/article_extractor.py": "fc0482f671256e9d00b6e03e12a754e2f70c67c0dea5c46b62dfd71307789a6b",
+      "src/article_fetcher.py": "2cfa16aaf401eb4826c420685e96ec5b87a5e8b3bee7fbc2099b32d4d514708c",
+      "src/article_qa.py": "9bb1b3813db22ffaa4c5367048fb135e8efb0e10a73abb969722c48339f979f7",
+      "src/boundary_recovery.py": "85ef759a32c427819bc88ddebf1dd6e37cdb3c27a3487e94617f20ddf9e1fa8b",
+      "src/build_district_covariates.py": "a2aaa5efc7d1794f8fc8c41ca2dd6865b12c5768c1c9081f5b7b45357e83e0d1",
+      "src/build_emdat_events.py": "8abf0d4dc57f1d728129e2e44439ab0cdab8ed994b998c7fa23c05e1a3095025",
+      "src/build_flood_area_table.py": "cda03b6fee705cdf07b59a0d756b8e5276b3d1aa21bdcc33975dbd61f038eef5",
+      "src/collect_emdat.py": "d55d26484eb1386d8ba0a5a8ce66d3b244d1bfada61ede30d0e9e1d60b83c526",
+      "src/compare_tracks.py": "db4e1a208c882e37bb6dd7d82a94c7a3e304ce99f1836b0eed3c2ba9aa50bd1d",
+      "src/copernicus_local.py": "c2bedc2d91cf8fb305c980409305a96443d9d99b858743777c8a6c73837caed4",
+      "src/cvnd_config.py": "e9ee03bf15bac91a02c34530412130c26ad274106695ac41dcc1fe2cbb653b1c",
+      "src/cvnd_layout.py": "cbe0e4b8db90455f2b44423ff691a31d223262c5e2323a19f4725ff425954242",
+      "src/district_articles.py": "878679fda9c6cf93334f158b0f7bf051188bfac580de100de05f114158975827",
+      "src/district_heuristics.py": "546ef7109154491c0e9c726b049ee7a5fa4622cc687294ec10472480826525db",
+      "src/district_keys.py": "1a247fd9676a8a1275a88c2ac8e54371e648886581dc135183aee2fb0ead4733",
+      "src/district_recovery.py": "01887b470a85f66f7ee8f0d748b3d0e7d0cab37760de14fe2725639a3ac82c84",
+      "src/download_articles.py": "b245e766ab35714f2dbea9e6cf582996266affb342dbcfc75c61fb0805a3a8eb",
+      "src/estimate_blocks.py": "4fea3b0bba85bbdb78ad6255b10311e55c4e305998267b9da230839c074f1355",
+      "src/event_aoi_area.py": "50aa39a539242d92783fe882f7ee1f50d35ead6acebd32308a81edc74591ef1e",
+      "src/flood_spec.py": "1bc33767a40fbc0673d113f41cf4c2be4a363c0e4a65806a847feb5648d3c53b",
+      "src/gdelt_backend.py": "db525c7fa0f3e286bcd35b91a7e0f75a2c9433813bf5b5bcf4b4b0f923bc5e41",
+      "src/gee_config.py": "3dde76a7851285e924b663d2684bf0b9ea5ec6546b8e6a465521d50564a48424",
+      "src/join_district_flood_articles.py": "e624ce70b50fc5d107807ec63265313a817d2b0aa1d16fe004fca52978fed386",
+      "src/merge_results.py": "6f05ae6143f646bab960f720b5416561250298ecd4dfebd21188567fb37c635d",
+      "src/pipeline_preflight.py": "fa3862866c9d6d87eaf429bca92c065432adda2e67d77c0ce313417fd508b194",
+      "src/registry_audit.py": "67b5c361f1d359d9ec208227448b6827b1b260d7dd9f175343a54bb471ed7820",
+      "src/registry_cache.py": "a8f089dd49956ce2ad52e03f9c6ea2ffecabe98257215a38890a273c330450b6",
+      "src/repair_article_database.py": "59cb81b293cf05d96ff3ed877f656450b0d13344341d37dd3698b9c9c03d4b1a",
+      "src/reuse_state_articles.py": "d6cf23e77e0f8f33e8d1a6d4b04e024fa3b60b6980d75d74cfbf5c65c13d93f2",
+      "src/run_provenance.py": "203932dc70164ccfd1486d2978983960bb09ae7b31a1b5d751bdc071cc13ba0c",
+      "src/run_sits_inference.py": "9be4d8de5a429d3c175e8d77935d0934f195506cc22d4e14b693e3b384a189f4",
+      "src/s1_converter.py": "bfd96dd5a72e06948ed31610503bc991085497517c775d0d408eee159bc8f7d1",
+      "src/satellite.py": "3bc46bf1f3b8bb99b39c1f0f32dcdf6cb16f2d62e581d9ba0a59ab8e1a77f048",
+      "src/score_coverage.py": "aab62ec0bdb32563faccc436812be22f9185fb1036988ca672cbb8a7e9b0d68b",
+      "src/sits_extreme_vendor/LICENSE": "9dc9d98db310a50f62b3d8a6df17b830fb443e177ebe95c8347e231d2bf19a7d",
+      "src/sits_extreme_vendor/NOTICE.md": "392768e27c1e9955439b167de7b3d6906a8bb4c8af63533dc77102c24d74cb17",
+      "src/sits_extreme_vendor/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/sits_extreme_vendor/helper.py": "76d6cfb2ae0d9377b4bbc71d307a7363a16e8df5e21e4abadad9a7f0a078d17f",
+      "src/sits_extreme_vendor/transformer_decoder.py": "06eb133a66d9a81342e584c83636597d328399054eccf9b4a1253f4e1a6069f3",
+      "src/sits_extreme_vendor/utils.py": "757cd605c1e2d5efdb2083a23701e887ade61d0b8a545ebbdbda87080a8bd4ef",
+      "src/sits_extreme_vendor/vae_variants.py": "41f42c75326f84d280e1624c50823924080b611e986f91796bd92ae39cb997f9",
+      "src/sits_extreme_vendor/vision_transformer.py": "dee6d7060d9d79dfac949c75a1b35e5a223ad48dac9813dd4f5d4b90886c726f",
+      "src/sits_feasibility.py": "6968c8358c577c298b84f3d93a8c7e0b3329daf7fbbdacb75cf2f9be25531f66",
+      "src/sits_measure.py": "1351fa47a10a776c7b67fbff6c9719c7122c95cda4e5d7122c6bee5e2cfcfcef",
+      "src/sits_screen.py": "0aa973651b5b7751bc92afb25d767d97ae3a202aab31883ea447a94b8ebe4604",
+      "tests/fake_ee.py": "512cd0d7e97d44ab204ac3e4182f0cbca8a8b61626cdb872cfe27f51131f3b62",
+      "tests/test_aoi_spacing.py": "5dc6eb0a427945204df7a687613539ec998536c44e63d5cbea7fc922642d5741",
+      "tests/test_article_qa.py": "c7a155dc4d7bbdef2f131bc5f6aa971cfab163d4998596a502dfa20af4a090c1",
+      "tests/test_boundary_recovery.py": "00f621113b3772719fe8782f4385e3bcba4b91e0fc1307b33d6cf8abcca9b5cc",
+      "tests/test_build_emdat_events.py": "f5b3f2ad8a3d6f7118e7d20961052da3acceee896ae251462d1fbb240de758e2",
+      "tests/test_census_recovery.py": "6f2089bc7353e0490a875c24806d6831d06160037c5ce589fac82c6dfc84b79a",
+      "tests/test_collect_emdat.py": "51037019ae3d706da67f9d7f6375bf2de7b420cfcf6798d375f08c814584c032",
+      "tests/test_compare_tracks.py": "313ed5c288f8f9051cbce95b9412fa1b8207e1beffec26d0ce252e001766baa3",
+      "tests/test_copernicus_local.py": "6ae48398bbd9360d3242ec1405cc31482690fd34b9ab36294ca2691df2af9a6d",
+      "tests/test_coverage_disparity.py": "0170f1f86d4786d514789c1d6afe4ff370c6108a067dad4e45adf2095e0e3146",
+      "tests/test_coverage_scoring.py": "a3317c1374bd1bd52aceafe328b1bd534f9cd14177119c96992a29775e429d28",
+      "tests/test_district_articles.py": "4bd84dadee5f016fb7b300c2c7b19b878b07f16b341a321d300b9cad5c1d0832",
+      "tests/test_district_join.py": "c88949c3e94b72164f848a54f4c6991c8fc10c6e2b7ac29259320a2b2b3cc713",
+      "tests/test_district_observation_contract.py": "40df692582cce3668e5105b8ec5a2fc8bef59a73dfb0d27c2c0d0292d853f207",
+      "tests/test_district_recovery.py": "0c4204f7552ed612e5bee3189e0773e06b3af37e0e76e9ef097fc48a55a6d080",
+      "tests/test_district_registry_covariates.py": "d262b4c2a7e60b2f03d8e76b419d0c6209bd1231e8f9daeadc3ad91ae6233fa1",
+      "tests/test_district_satellite.py": "6a5c9099e86e498bf2e64154e9e3156ec837dbfd23f638a1dee35e123ec543a1",
+      "tests/test_download_articles.py": "9f00ba171ce92018af498a46b2dc68d510c4dade7911ade86453d2e7cacae8a8",
+      "tests/test_flood_spec.py": "0dc838a959ddf80c169f664d208441e70a2994b46a13e07e01f3598ae7e06f9a",
+      "tests/test_merge_routing.py": "103d92b0fa0db48f908b2d3eed06e39feb61b5cf72154518e7a143c449361007",
+      "tests/test_pipeline_preflight.py": "8dac7a76034aa7882e088ad2c82d85f1f8a561aaf7c9e753f6c3433591873bc9",
+      "tests/test_registry_cache.py": "23637ec258cd32f239b4af158f5e084021320bd27decbe77a1c6393b6cbf8812",
+      "tests/test_reuse_state_articles.py": "f62eb7155e175161882be48b422153e404c6d530f1adc12022367f2e66307e74",
+      "tests/test_run_provenance.py": "924891154ba0519a3b8ac2b7b7f8c9f021b1b2f1818c4eb5ccf9cb77ee7156f5",
+      "tests/test_run_sits_inference.py": "4a43f27de4ee45f5f97da82c9b6c0be877b35478a68ebb6886b18e39a9f63197",
+      "tests/test_sits_feasibility.py": "ff1db206aec62fca1a8bd28c7bb6631ca835e05140d772a02d35946e6a32521a",
+      "tests/test_sits_screen.py": "d44b609dae08ff0a781fe55c960831d4b7e7dcae5a4b2074c761580d6cba75e3",
+      "tests/test_split_reduction.py": "59c7ef91656197a484c0f86054c8658e9dc4e24ebe49f6ff363907083638459d",
+      "tests/test_track_separation.py": "db343fc706b99df2c29663ad0d2ee3a8a96edd76c3b36fce7c456345e71da74c"
+    },
+    "source_tree_sha256": "704eca721009c57428fa0cfedc76e671bd97ac1839527f062d0c762a161ee6be",
+    "source_diff_sha256": "a756a6b3189fefd40621d845da1d3359b985ff081b2dbda03320d32d52433668"
+  }
+}
