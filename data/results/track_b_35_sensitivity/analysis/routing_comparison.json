@@ -1,0 +1,96 @@
+{
+  "note": "(a) legacy: pre-refactor routing (S1 whenever SITS was not run, a 60% cloud cut); (b) primary: the routing recorded in the supplied input, not a newly executed satellite measurement; (c) the primary sample restricted to SITS sources (possibly empty); (d) a Track A spec variant applied as the relative change of the routed sensor (NDWI for SITS rows, S1 for S1_TO_SITS rows): area_b x (variant + o) / (primary + o), a first-order approximation because Track B is not rerun under variants. Robust when |coef_a - coef_b| < half the width of the 95% CI of (b).",
+  "variants_available": [],
+  "variants_defined": [
+    "jrc_seasonal_10",
+    "mndwi",
+    "pre_same_season_3y"
+  ],
+  "definitions": {
+    "b_primary": {
+      "status": "estimated",
+      "n": 1198,
+      "se_type": "state_clustered",
+      "urban_coefficient": 1.3836943263,
+      "urban_ci": [
+        0.4747072382,
+        2.2926814144
+      ],
+      "urban_p": 0.0041364738,
+      "log_area_coefficient": -0.01262498,
+      "log_area_ci": [
+        -0.2228521457,
+        0.1976021856
+      ]
+    },
+    "c_sits_only": {
+      "status": "estimated",
+      "n": 33,
+      "se_type": "ordinary",
+      "urban_coefficient": -3.6934873042,
+      "urban_ci": [
+        -6.6819911179,
+        -0.7049834905
+      ],
+      "urban_p": 0.0154219123,
+      "log_area_coefficient": 0.2617194713,
+      "log_area_ci": [
+        -0.037074713,
+        0.5605136556
+      ]
+    },
+    "a_legacy": {
+      "status": "estimated",
+      "n": 1196,
+      "se_type": "state_clustered",
+      "urban_coefficient": 1.3937864776,
+      "urban_ci": [
+        0.4628889191,
+        2.3246840362
+      ],
+      "urban_p": 0.0047055453,
+      "log_area_coefficient": -0.0011984168,
+      "log_area_ci": [
+        -0.2234254384,
+        0.2210286048
+      ]
+    },
+    "a_legacy_common": {
+      "status": "estimated",
+      "n": 1196,
+      "se_type": "state_clustered",
+      "urban_coefficient": 1.3937864776,
+      "urban_ci": [
+        0.4628889191,
+        2.3246840362
+      ],
+      "urban_p": 0.0047055453,
+      "log_area_coefficient": -0.0011984168,
+      "log_area_ci": [
+        -0.2234254384,
+        0.2210286048
+      ]
+    },
+    "b_primary_common": {
+      "status": "estimated",
+      "n": 1196,
+      "se_type": "state_clustered",
+      "urban_coefficient": 1.3943542602,
+      "urban_ci": [
+        0.4634986977,
+        2.3252098227
+      ],
+      "urban_p": 0.004689177,
+      "log_area_coefficient": -0.0009961311,
+      "log_area_ci": [
+        -0.2229969337,
+        0.2210046715
+      ]
+    }
+  },
+  "verdict": {
+    "urban_coefficient_difference": 0.0100921513,
+    "primary_ci_half_width": 0.9089870881,
+    "result": "legacy result is robust to the routing change"
+  }
+}

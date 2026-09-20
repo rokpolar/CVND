@@ -1,0 +1,46 @@
+{
+  "cohort_rule": {
+    "aoi_status": "matched",
+    "current_registry_rows": 35,
+    "source": "data/results/sits_feasibility.csv",
+    "sr_status": "ok",
+    "sr_usable_frac_min": 0.4
+  },
+  "comparison": {
+    "track_a_median_km2": 83.4515,
+    "track_a_sum_km2": 8953.895300000002,
+    "track_b_higher_rows": 3,
+    "track_b_lower_rows": 32,
+    "track_b_median_km2": 16.4317,
+    "track_b_sum_km2": 2701.1158,
+    "track_b_to_a_ratio_median": 0.28135984681350557
+  },
+  "files_sha256": {
+    "data/results/track_b_35_sensitivity/cohort.csv": "92db483fa3ecddd7487a7cb5dd0c35f78e40cb0562ff9251aac01bb03199c519",
+    "data/results/track_b_35_sensitivity/district_flood_area.csv": "665ddbe788caab61b960afb912f16b9acf55f529e5c6aa258d7392056bfed4c5",
+    "data/results/track_b_35_sensitivity/district_flood_articles_30d.csv": "f0a5e636b8cd3df9778fdcf63bbdb8e1741d5c447f42accbe480f9a3a31db3aa",
+    "data/results/track_b_35_sensitivity/district_flood_combined.csv": "29b9c5cc98bbde1ccd7abacdf2fcdee3ffa43d2dc693a8aa501eb9f299369f99",
+    "data/results/track_b_35_sensitivity/district_sits_measurements.csv": "3b1120d5f7f7df8ee2d373d6d11b75eb2e61a64e5bf46b1eebec500a50fe2109",
+    "data/results/track_b_35_sensitivity/track_a_vs_track_b.csv": "a5c3b8124a32121c806052263215749d9285350a32964f4adb8d821b4474f5f1"
+  },
+  "news_window_days": 30,
+  "purpose": "Opt-in Track-B/SITS sensitivity; production remains Track A s1_then_s2",
+  "routing": "sits_primary",
+  "rows": {
+    "analysis_eligible": 1198,
+    "cohort": 35,
+    "joined_input": 1548,
+    "track_b_observed": 35
+  },
+  "satellite_post_window_days": 14,
+  "satellite_sources": {
+    "SITS_NDWI": 31,
+    "SITS_NDWI_RESTORED": 4
+  },
+  "sits_methods": {
+    "low-conf": 2,
+    "ndwi-calib": 26,
+    "otsu": 7
+  },
+  "sits_usable_min_frac_override": 0.0
+}
