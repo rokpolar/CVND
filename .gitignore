@@ -5,6 +5,8 @@ __pycache__/
 .env
 .omc/
 .DS_Store
+pipeline.log
+data/intermediate/district_aoi.bak.csv
 # large generated SITS patch files (h5) + SITS outputs
 data/sits_patches/
 data/cache/

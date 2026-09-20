@@ -18,6 +18,8 @@
 - Sensitivity data/results: `data/results/sensitivity_14d/`
 - Primary report/package: `outputs/primary_30d/`
 - Sensitivity report: `outputs/sensitivity_14d/`
+- Opt-in Track B 35-district data: `data/results/track_b_35_sensitivity/`
+- Opt-in Track B report: `outputs/track_b_35_sensitivity/`
 - Reproducible environment: `requirements-lock.txt`
 
 Legacy `data/raw/events.csv`, flat analysis outputs, `sensitivity_30d/`, and `final_30d_primary/` are unsupported and must not be recreated.
@@ -32,7 +34,7 @@ The standard sequence is registry → covariates/AOI → S1 → S2 fallback → 
 
 `outputs/primary_30d/analysis_manifest.json` records both input hashes and row counts, Git HEAD/dirty state, source diff hash, and lock-file hash. The package must be regenerated from the current canonical joined inputs after code or dependency changes.
 
-Offline refits preserve the existing 1,553-row joined snapshots (1,191 primary / 1,069 sensitivity eligible). Their recorded satellite routing is historical `interim_s1_only`, not evidence of a fresh S1/S2 run. Current registry derivation yields 1,555 rows: `E189::south%20garo%20hills` and `E189::west%20garo%20hills` are additional reviewed recoveries in `data/review/reviewed_district_recoveries.json`. They have not been newly measured/QA-reviewed during offline validation. Preflight reports this drift and package manifests record both registry fingerprints. Do not fill these districts with zero or silently relabel the frozen inputs as current end-to-end results. The authenticated pipeline rebuilds the registry before collection.
+The current canonical Track-A joined inputs contain 1,548 rows: 1,198 are eligible in the 30-day primary analysis and 1,074 in the 14-day sensitivity. Article counts are the frozen lower-bound QA observations. The separate 35-district Track-B package is an opt-in measurement sensitivity, selected for optical feasibility; it must not be treated as a representative replacement for production Track A.
 
 Analysis and scoring summaries bind their input hash to the current source-tree hash. Packaging rejects stale summaries/model tables. `source.patch` includes staged changes; `source_snapshot.zip` also preserves untracked implementation files.
 
