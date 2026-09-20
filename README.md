@@ -75,6 +75,18 @@ venv/bin/python src/satellite.py --track B --screen-only --rescreen # 이미 판
 
 `screen_result`는 `sits_expected`(다운로드하면 SITS가 쓰임) 또는 `track_a_expected`(쓰이지 않음, 이유는 `screen_reason`: `no_post_imagery`, `no_pre_imagery`, `no_clear_baseline`, `no_retained_tiles`, `no_usable_pixels`, `usable_below_min`)이며, 판정이 안 된 구역은 `error`다. 이 판정을 Track B 다운로드 대상 선정에 쓸지는 아직 연결하지 않았다.
 
+**완료된 35구역 Track B sensitivity.** 기존 feasibility 조사에서 AOI 매칭, Sentinel-2 SR 조사 성공, usable fraction 40% 이상을 모두 만족하고 현재 registry에도 존재하는 35개 event×district를 Track B로 측정했다. 35개 모두 H5 준비와 SITS 추론을 완료했으며, production Track A 결과를 대체하지 않는 별도 sensitivity package로 보존한다.
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/build_track_b_35_package.py
+venv/bin/python src/analyze_coverage_disparity.py \
+  --input data/results/track_b_35_sensitivity/district_flood_articles_30d.csv \
+  --results-dir data/results/track_b_35_sensitivity/analysis \
+  --output-dir outputs/track_b_35_sensitivity
+```
+
+측정·병합·30일 overlay·Track A 비교표는 `data/results/track_b_35_sensitivity/`, 해석 보고서와 그림은 `outputs/track_b_35_sensitivity/`에 있다. 175GB H5 패치와 로컬 NPZ score cache는 `data/cache/` 정책에 따라 Git에 포함하지 않으며, Git에는 H5/checkpoint SHA-256을 가진 durable measurement table을 기록한다.
+
 **SITS 체크포인트.** 파이프라인은 체크포인트를 내려받지 않고 SHA-256으로 검증한다. [hfangcat/SITS-ExtremeEvents](https://github.com/hfangcat/SITS-ExtremeEvents) (commit `637423d6370a31701612fc258782615c0c82e4e9`)의 `checkpoint_vae_contrastive_42.pth`, `_43.pth`, `_44.pth`를 받아 아래 순서로 찾는 위치 중 하나에 둔다.
 
 1. `--checkpoint PATH` (`.pth` 파일 또는 그 디렉터리)
@@ -93,8 +105,10 @@ CVND_SITS_CHECKPOINT=/path/to/checkpoints/ravaen venv/bin/python src/run_sits_in
 ```text
 data/results/primary_30d/          # 30일 join, model, OOF scoring
 data/results/sensitivity_14d/      # 14일 join, model, OOF scoring
+data/results/track_b_35_sensitivity/ # 35구역 Track B 측정/병합/비교 입력
 outputs/primary_30d/               # primary 보고서, 그림, final package
 outputs/sensitivity_14d/           # sensitivity 보고서와 그림
+outputs/track_b_35_sensitivity/    # Track A 대비 Track B robustness 보고서
 ```
 
 `outputs/primary_30d/analysis_manifest.json`은 입력 SHA-256, 행 수와 eligible 수, 실행 Git HEAD/dirty 상태, source diff hash, dependency-lock hash를 기록한다. `key_results.csv`와 `final_results_figure.png`는 두 window를 새로 적합한 결과에서 생성한다. legacy flat output이나 `sensitivity_30d`, `final_30d_primary` 별칭은 만들지 않는다.
