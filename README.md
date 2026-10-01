@@ -1,16 +1,28 @@
-# CVND: flood extent and district news visibility
+# CVND: Urbanization Disparities in Flood News Coverage in India: Combining Satellite-observed Inundation and LLM-Based Article Verification
 
-CVND는 EM-DAT 홍수의 event×district 단위에서 위성 관측 침수 면적과 뉴스 가시성의 관계를 분석한다. 기본 분석은 **발생일부터 30일간의 뉴스 반응(primary)**이며, 같은 후보 집합의 **14일 뉴스 반응(sensitivity)**을 함께 산출한다. 위성 노출은 별도의 사전 지정된 **발생 후 14일 관측창**이다. 따라서 핵심 분석 정의는 “14일 침수 강도에 대한 30일 뉴스 반응”이다.
+본 연구는 홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지 살펴보고자 한다. 
+인도의 홍수 사건을 대상으로 Sentinel-1/2 위성 영상에서관측한 침수 면적과 지역별 관련 기사 수, 도시 인구 비율을
+연결하는 분석 방법을 제안한다. 기사는 키워드 필터링과 LLM QA를 통하여 해당 재해 사건과 지역을 연관성을 판별한다. 
+이후 침수 면적과 보도량의 관계, 침수 면적을 고려한 도시 인구 비율과 보도량의 관계를 회귀분석으로 검토한다.
 
-## 관측 계약
+## 사용 데이터 
+### 재해 사건
+  -재난 데이터베이스 EM-DAT에 기록된 2015년부터 2025년까지의 인도 지역의 홍수 사건을 대상
+  -단위는 지역(district) 단위를 사용 
+  -동일한 홍수가 여러 지역에 영향을 준 경우 지역별로 별도의 관측치를 구성
+  -도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 도시인구와 총인구를 사용
 
-- 레지스트리: `data/intermediate/event_districts.csv`만 권위 있는 event×district 레지스트리로 사용한다. 모호한 지역은 결측/audit 행으로 보존하고 state 값을 district로 확장하지 않는다.
-- 위성: 전체 파이프라인은 Track A만 사용한다. 모든 유효 AOI에 S1을 먼저 실행하고 S1 면적이 결측인 키에만 S2 NDWI를 실행한다. 유한한 `0 km²`는 성공이며 AOI 실패는 fallback하지 않는다. Track B/SITS 코드와 기존 산출물은 연구 참고용으로만 남고 전체 파이프라인에서는 사용하지 않는다.
-- 기사: 기존 LLM-QA 결과를 lower-bound 관측으로 동결한다. 기본 `ARTICLE_PIPELINE_MODE=frozen`은 30d/14d count와 provenance가 `llm_complete`일 때만 join·분석을 계속하며 수집·본문·heuristic·LLM을 수정하지 않는다.
-- 기사 상태: `complete`와 `partial`은 분석 가능한 관측이다. `partial`은 `article_count_is_lower_bound=True`를 유지한다. `incomplete`는 정상 결측이며 파이프라인 손상으로 간주하지 않는다.
-- 모델: NB2 Model 2는 `article_count ~ log1p(flood_area_km2) + urban_population_share`이다. Model 1은 urban share를 제외하고 Model 3은 year fixed effects를 추가한다.
+### 침수 면적
+-Sentinel-1을 기본으로 사용
+-사건 전후 Sentinel-2 영상이 존재하고, 사건전 각 시점에서 구름 없는 면적이 50% 이상,구름 없는 화소가 행정구역 분석 가능 면적의 40%이상인 지역은 Sentinel-2 기반 SITS-Extreme
+-VAE와 NDWI로 산출
+-Sentinel-1 관측이 없는 지역은 NDWI로 산출
 
-위성 측정식은 `src/flood_spec.py`의 `MeasurementSpec`과 `spec_version`으로 고정한다. post `[onset, onset+14d)`, pre `[onset-30d, onset)`, JRC permanent-water·slope·India mask, 10 m 면적 합산을 Track A의 S1/S2 경로에 동일하게 적용한다.
+### 보도량
+-보도량은 GDELT 2.0 GKG에서 수집
+-LLM 질의응답(LLM-QA)에 GPT-5.6-Luna를 사용
+- 연도에 따른 뉴스 수집 능력의 발달을 고려하여 연도에 따른 모델을 별도로 구성
+
 
 ## 실행
 
@@ -30,77 +42,7 @@ SETUP_DEPS=1 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 SKIP_GEE=1 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 ```
 
-과거 `s1_attempted`/`s2_attempted` 필드 도입 전에 완료된 Track A 체크포인트를 가져온 경우에만 `venv/bin/python scripts/migrate_track_a_attempt_markers.py`를 한 번 실행한다. 현재 registry·spec·체크포인 키가 완전히 일치할 때만 S1 전체와 S1 결측 fallback 집합의 S2 시도 표시를 복원한다.
-
-`frozen`은 기존 두 window count와 registry/source/request/result/prompt/model hash가 모두 유효해 `llm_complete`일 때만 통과한다. `adopt-existing`을 포함한 어떤 기사 쓰기 단계도 실행하지 않는다. 재수집이 필요한 별도 연구에서만 `auto`를 명시하며, 그 상태 전이는 다음과 같다.
-
-1. 두 window count와 manifest가 registry/source/request/result/prompt/model hash에 맞으면 heuristic과 LLM-QA를 모두 생략한다.
-2. 검증된 heuristic 산출물만 있으면 heuristic을 생략하고 LLM-QA부터 재개한다.
-3. 산출물이 없거나 stale이면 GDELT 수집·본문·heuristic부터 수행한 뒤 LLM-QA를 실행한다.
-
-이미 비용을 지불한 구형 QA snapshot은 auto 모드가 요청·응답·count를 오프라인 검증한 뒤 현재 manifest로 한 번 승격해 재사용한다. 이후 source, 본문, prompt/model, 응답 또는 count가 바뀌면 다시 무효화된다. 이 승격을 끄려면 `ARTICLE_ADOPT_EXISTING_QA=0`을 지정한다.
-
-`force`는 기사 파이프라인을 처음부터 재실행하고 `skip`은 기사 join·분석을 수행하지 않는다. 이 두 모드와 `auto`는 비용이 들 수 있는 비기본 연구 모드다. `SETUP_DEPS=1`은 `requirements-lock.txt`를 설치한다.
-
-## 위성 트랙 분리 저장과 재병합
-
-전체 파이프라인은 Track A와 `s1_then_s2` 병합만 실행하며 다른 `SATELLITE_TRACK`/라우팅 값을 거부한다. 아래 Track B 도구는 사용하지 않는 연구 참고용으로만 보존된다.
-
-| 단계 | 쓰는 파일 | 읽는 것 |
-|---|---|---|
-| Track A (`satellite.py --track A`) | `data/cache/district/flood_extent.csv` | Earth Engine |
-| Track B 패치 (`satellite.py --track B`) | `data/cache/district/sits_patches/*.h5`, `sits_patches_index.csv` | Earth Engine / CDSE |
-| Track B 측정 (`run_sits_inference.py`) | `data/results/district_sits_measurements.csv` (구역당 1행, upsert), `data/cache/district/sits_scores/*.npz` (타일 상세) | H5, 체크포인트 |
-| 병합 (`merge_results.py`) | `--output`만 (기본 `data/intermediate/district_flood_combined.csv`) | 위 테이블, registry, AOI, converter |
-| 면적표 (`build_flood_area_table.py`) | `--output`만 | 병합 출력 |
-
-병합은 Earth Engine·모델·NPZ 없이 테이블만 읽고 registry의 모든 행을 쓴다. 실행되지 않은 단계는 행 삭제가 아니라 `track_a_status`(`measured`/`error`/`not_run`), `track_b_patch_status`(`ok`/`incomplete`/`error`/`not_run`), `sits_measure_status`(`measured`/`not_run`)로 기록한다. 측정 행은 현재 디스크의 H5와 `patches_sha256`이 다르거나, RGB 전용 H5인데 `tile_selection_rule`이 현행 규칙과 다르면 쓰지 않는다. H5가 삭제된 경우에는 테이블이 측정 기록으로 남는다. 같은 측정으로 라우팅을 비교하려면 출력 파일을 나눠 병합만 다시 돌린다.
-
-```bash
-venv/bin/python src/merge_results.py --routing sits_then_track_a --output data/intermediate/district_flood_combined.sits_then_track_a.csv
-venv/bin/python src/merge_results.py --routing s1_then_s2   --output data/intermediate/district_flood_combined.s1_then_s2.csv
-venv/bin/python src/merge_results.py --routing sits_primary --output data/intermediate/district_flood_combined.sits.csv
-```
-
-`--recompute-from-npz`는 측정 테이블 대신 NPZ에서 Track B 값을 다시 계산한다(측정 테이블은 쓰지 않는다). `build_flood_area_table.py`는 병합 입력이 0행이면 실패하고, 기존 출력의 측정값을 NA/NONE으로 강등하는 덮어쓰기는 `--allow-demotion` 없이는 거부한다.
-
-시작 배너의 `S2/SITS:` 한 줄은 Track A의 S1 우선·S2 결측 fallback 계약을 표시한다.
-
-**Track B 사전 판정 (다운로드 없음).** Track B는 다운로드 전에 이미 사후·사전 영상 유무(B1, B2)와 맑은 기준월(B3)을 검사하지만, 남는 타일의 사용 가능 픽셀이 측정 대상 면적의 40%(`sits_usable_min_frac`)를 넘는지는 다운로드 뒤에야 알았다. 이 비율을 못 넘은 구역은 병합에서 결국 Track A로 채워진다. `--screen-only`는 B1–B3를 Track B와 같은 함수로 실행하고, 남는 타일과 사용 가능 면적을 같은 격자에서 서버 계산만으로 구해 구역별로 `data/cache/district/sits_screen.csv`에 기록한다. H5·색인·체크포인트는 건드리지 않고, 중단 후 다시 실행하면 이어서 판정하며, 오류 행은 재시도한다.
-
-```bash
-venv/bin/python src/satellite.py --track B --screen-only            # 전 구역 판정만
-venv/bin/python src/satellite.py --track B --screen-only --rescreen # 이미 판정한 구역도 다시
-```
-
-`screen_result`는 `sits_expected`(다운로드하면 SITS가 쓰임) 또는 `track_a_expected`(쓰이지 않음, 이유는 `screen_reason`: `no_post_imagery`, `no_pre_imagery`, `no_clear_baseline`, `no_retained_tiles`, `no_usable_pixels`, `usable_below_min`)이며, 판정이 안 된 구역은 `error`다. 이 판정을 Track B 다운로드 대상 선정에 쓸지는 아직 연결하지 않았다.
-
-**완료된 35구역 Track B sensitivity.** 기존 feasibility 조사에서 AOI 매칭, Sentinel-2 SR 조사 성공, usable fraction 40% 이상을 모두 만족하고 현재 registry에도 존재하는 35개 event×district를 Track B로 측정했다. 35개 모두 H5 준비와 SITS 추론을 완료했으며, production Track A 결과를 대체하지 않는 별도 sensitivity package로 보존한다.
-
-```bash
-PYTHONPATH=src venv/bin/python scripts/build_track_b_35_package.py
-venv/bin/python src/analyze_coverage_disparity.py \
-  --input data/results/track_b_35_sensitivity/district_flood_articles_30d.csv \
-  --results-dir data/results/track_b_35_sensitivity/analysis \
-  --output-dir outputs/track_b_35_sensitivity
-```
-
-측정·병합·30일 overlay·Track A 비교표는 `data/results/track_b_35_sensitivity/`, 해석 보고서와 그림은 `outputs/track_b_35_sensitivity/`에 있다. 175GB H5 패치와 로컬 NPZ score cache는 `data/cache/` 정책에 따라 Git에 포함하지 않으며, Git에는 H5/checkpoint SHA-256을 가진 durable measurement table을 기록한다.
-
-**SITS 체크포인트.** 파이프라인은 체크포인트를 내려받지 않고 SHA-256으로 검증한다. [hfangcat/SITS-ExtremeEvents](https://github.com/hfangcat/SITS-ExtremeEvents) (commit `637423d6370a31701612fc258782615c0c82e4e9`)의 `checkpoint_vae_contrastive_42.pth`, `_43.pth`, `_44.pth`를 받아 아래 순서로 찾는 위치 중 하나에 둔다.
-
-1. `--checkpoint PATH` (`.pth` 파일 또는 그 디렉터리)
-2. 환경변수 또는 `.env`의 `CVND_SITS_CHECKPOINT=PATH` — 클론한 사용자의 기본 방법
-3. 저장소 안의 `SITS-ExtremeEvents-main/checkpoints/ravaen/`
-4. 저장소 옆의 `SITS-ExtremeEvents-main/checkpoints/ravaen/`
-
-체크포인트는 다른 무엇보다 먼저 확인하므로, 추론할 패치가 없어도 체크포인트가 없으면 시도한 경로를 모두 출력하고 실패한다. `--events`를 줬는데 완성된 H5가 하나도 없으면 nonzero로 끝나며 구역별 사유를 출력한다.
-
-```bash
-CVND_SITS_CHECKPOINT=/path/to/checkpoints/ravaen venv/bin/python src/run_sits_inference.py
-```
-
-## canonical 산출물
+## 산출물
 
 ```text
 data/results/primary_30d/          # 30일 join, model, OOF scoring
@@ -110,8 +52,6 @@ outputs/primary_30d/               # primary 보고서, 그림, final package
 outputs/sensitivity_14d/           # sensitivity 보고서와 그림
 outputs/track_b_35_sensitivity/    # Track A 대비 Track B robustness 보고서
 ```
-
-`outputs/primary_30d/analysis_manifest.json`은 입력 SHA-256, 행 수와 eligible 수, 실행 Git HEAD/dirty 상태, source diff hash, dependency-lock hash를 기록한다. `key_results.csv`와 `final_results_figure.png`는 두 window를 새로 적합한 결과에서 생성한다. legacy flat output이나 `sensitivity_30d`, `final_30d_primary` 별칭은 만들지 않는다.
 
 기사 운영 절차는 [Article QA operations](docs/article_qa.md), 세부 관측 규칙은 [District methodology](docs/district_methodology.md), 상대 coverage score는 [Scoring methodology](docs/coverage_scoring_methodology.md)를 참고한다.
 
