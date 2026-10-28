@@ -1,15 +1,30 @@
 # CVND: Urbanization Disparities in Flood News Coverage in India, Combining Satellite-observed Inundation and LLM-Based Article Verification
 
-본 연구는 홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지 살펴보고자 한다. 
+### Overview
+ 본 연구는 홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지 살펴보고자 한다. 
 인도의 홍수 사건을 대상으로 Sentinel-1/2 위성 영상에서관측한 침수 면적과 지역별 관련 기사 수, 도시 인구 비율을
 연결하는 분석 방법을 제안한다. 기사는 키워드 필터링과 LLM QA를 통하여 해당 재해 사건과 지역을 연관성을 판별한다. 
 이후 침수 면적과 보도량의 관계, 침수 면적을 고려한 도시 인구 비율과 보도량의 관계를 회귀분석으로 검토한다.
 
-## 사용 데이터 
+This study investigates whether the volume of news coverage varies with the degree of urbanization across regions experiencing similar levels of flood inundation.
+
+Focusing on flood events in India, we propose an analytical framework that integrates inundation areas derived from Sentinel-1/2 satellite imagery, the number of relevant news articles, and regional urban population ratios.
+
+News articles are identified and linked to specific flood events and affected regions through keyword-based filtering and large language model (LLM)-based question answering (QA).
+
+We then employ regression analysis to examine the relationship between inundation area and news coverage, as well as the association between urban population ratio and news coverage while controlling for inundation area.
+
+
+##### Published at...
+ICCJ 2026, International Conference on Climate Justice, CHRIST(deemed to be University) Bangaluru, India
+한국정보처리학회 ACK 2026
+
+### Architecture
+<img width="893" height="275" alt="스크린샷 2026-10-28 오후 1 40 33" src="https://github.com/user-attachments/assets/d46f6255-1239-47ac-a869-6ed3ea374f88" />
+
+## Datasets
 ### 재해 사건
-  -재난 데이터베이스 EM-DAT에 기록된 2015년부터 2025년까지의 인도 지역의 홍수 사건을 대상
-  -단위는 지역(district) 단위를 사용 
-  -동일한 홍수가 여러 지역에 영향을 준 경우 지역별로 별도의 관측치를 구성
+  -재난 데이터베이스 EM-DAT에 기록된 지역(district) 단위의 2015 ~ 2025년까지의 인도 지역의 홍수 사건을 대상
   -도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 도시인구와 총인구를 사용
 
 ### 침수 면적
@@ -52,8 +67,6 @@ outputs/primary_30d/               # primary 보고서, 그림, final package
 outputs/sensitivity_14d/           # sensitivity 보고서와 그림
 outputs/track_b_35_sensitivity/    # Track A 대비 Track B robustness 보고서
 ```
-
-기사 운영 절차는 [Article QA operations](docs/article_qa.md), 세부 관측 규칙은 [District methodology](docs/district_methodology.md), 상대 coverage score는 [Scoring methodology](docs/coverage_scoring_methodology.md)를 참고한다.
 
 ## 결론
  본 연구에서는 위성 영상으로 관측한 침수면적과 도시인구 비율, LLM 기반 질의응답으로 선별한관련 보도량을 
