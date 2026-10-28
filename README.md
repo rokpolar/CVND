@@ -18,8 +18,8 @@ We then employ regression analysis to examine the relationship between inundatio
 
 
 ##### Published at...
-#####ICCJ 2026, International Conference on Climate Justice, CHRIST(deemed to be University) Bangaluru, India
-#####한국정보처리학회 ACK 2026
+##### ICCJ 2026, International Conference on Climate Justice, CHRIST(deemed to be University) Bangaluru, India
+##### 한국정보처리학회 ACK 2026
 
 ### Architecture
 <img width="893" height="275" alt="스크린샷 2026-10-28 오후 1 40 33" src="https://github.com/user-attachments/assets/d46f6255-1239-47ac-a869-6ed3ea374f88" />
