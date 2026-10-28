@@ -1,5 +1,8 @@
 # CVND: Urbanization Disparities in Flood News Coverage in India, Combining Satellite-observed Inundation and LLM-Based Article Verification
 
+홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지가?
+Does the volume of news coverage vary with the degree of urbanization across regions experiencing similar levels of flood inundation?
+
 ## Overview
    본 연구는 홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지 살펴보고자 한다. 인도의 홍수 사건을 대상으로 Sentinel-1/2 위성 영상에서관측한 침수 면적과 지역별 관련 기사 수, 도시 인구 비율을 연결하는 분석 방법을 제안한다. 기사는 키워드 필터링과 LLM QA를 통하여 해당 재해 사건과 지역을 연관성을 판별한하고, 이후 침수 면적과 보도량의 관계, 침수 면적을 고려한 도시 인구 비율과 보도량의 관계를 회귀분석으로 검토한다.
 
