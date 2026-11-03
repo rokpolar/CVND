@@ -1,6 +1,6 @@
 # CVND: Urbanization Disparities in Flood News Coverage in India, Combining Satellite-observed Inundation and LLM-Based Article Verification
 
-홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지가?
+홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지가?<br><br>
 Does the volume of news coverage vary with the degree of urbanization across regions experiencing similar levels of flood inundation?
 
 ## Overview
@@ -9,10 +9,10 @@ Does the volume of news coverage vary with the degree of urbanization across reg
 &nbsp;&nbsp;This study investigates whether the volume of news coverage varies with the degree of urbanization across regions experiencing similar levels of flood inundation. Focusing on flood events in India, we propose an analytical framework that integrates inundation areas derived from Sentinel-1/2 satellite imagery, the number of relevant news articles, and regional urban population ratios. News articles are identified and linked to specific flood events and affected regions through keyword-based filtering and large language model based question answering (LLM-QA). <br>&nbsp;&nbsp; We then employ regression analysis to examine the relationship between inundation area and news coverage, as well as the association between urban population ratio and news coverage while controlling for inundation area.
 
 
-#### Published at...
-
-#### ICCJ 2026, International Conference on Climate Justice, CHRIST(deemed to be University) Bangaluru, India
-#### 한국정보처리학회 ACK 2026
+Published at...
+<br><br>
+ICCJ 2026, International Conference on Climate Justice, CHRIST(deemed to be University) Bangaluru, India
+한국정보처리학회 ACK 2026
 
 ## Architecture
 <img width="893" height="275" alt="스크린샷 2026-10-28 오후 1 40 33" src="https://github.com/user-attachments/assets/d46f6255-1239-47ac-a869-6ed3ea374f88" />
