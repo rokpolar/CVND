@@ -10,9 +10,9 @@ Does the volume of news coverage vary with the degree of urbanization across reg
 
 
 
-##### Published at...
-##### ICCJ 2026, International Conference on Climate Justice, CHRIST(deemed to be University) Bangaluru, India
-##### 한국정보처리학회 ACK 2026
+#### Published at...
+#### ICCJ 2026, International Conference on Climate Justice, CHRIST(deemed to be University) Bangaluru, India
+#### 한국정보처리학회 ACK 2026
 
 ## Architecture
 <img width="893" height="275" alt="스크린샷 2026-10-28 오후 1 40 33" src="https://github.com/user-attachments/assets/d46f6255-1239-47ac-a869-6ed3ea374f88" />
@@ -23,15 +23,15 @@ Does the volume of news coverage vary with the degree of urbanization across reg
   -도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 도시인구와 총인구를 사용
 
 ### 침수 면적
--Sentinel-1을 기본으로 사용
--사건 전후 Sentinel-2 영상이 존재하고, 사건전 각 시점에서 구름 없는 면적이 50% 이상,구름 없는 화소가 행정구역 분석 가능 면적의 40%이상인 지역은 Sentinel-2 기반 SITS-Extreme
--VAE와 NDWI로 산출
--Sentinel-1 관측이 없는 지역은 NDWI로 산출
+   -Sentinel-1을 기본으로 사용
+   -사건 전후 Sentinel-2 영상이 존재하고, 사건전 각 시점에서 구름 없는 면적이 50% 이상,구름 없는 화소가 행정구역 분석 가능 면적의 40%이상인 지역은 Sentinel-2 기반 SITS-Extreme
+   -VAE와 NDWI로 산출
+   -Sentinel-1 관측이 없는 지역은 NDWI로 산출
 
 ### 보도량
--보도량은 GDELT 2.0 GKG에서 수집
--LLM 질의응답(LLM-QA)에 GPT-5.6-Luna를 사용
-- 연도에 따른 뉴스 수집 능력의 발달을 고려하여 연도에 따른 모델을 별도로 구성
+   -보도량은 GDELT 2.0 GKG에서 수집
+   -LLM 질의응답(LLM-QA)에 GPT-5.6-Luna를 사용
+   -연도에 따른 뉴스 수집 능력의 발달을 고려하여 연도에 따른 모델을 별도로 구성
 
 
 ## 실행
@@ -52,22 +52,13 @@ SETUP_DEPS=1 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 SKIP_GEE=1 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 ```
 
-## 산출물
-
-```text
-data/results/primary_30d/          # 30일 join, model, OOF scoring
-data/results/sensitivity_14d/      # 14일 join, model, OOF scoring
-data/results/track_b_35_sensitivity/ # 35구역 Track B 측정/병합/비교 입력
-outputs/primary_30d/               # primary 보고서, 그림, final package
-outputs/sensitivity_14d/           # sensitivity 보고서와 그림
-outputs/track_b_35_sensitivity/    # Track A 대비 Track B robustness 보고서
-```
 
 ## 결론
  본 연구에서는 위성 영상으로 관측한 침수면적과 도시인구 비율, LLM 기반 질의응답으로 선별한관련 보도량을 
 결합하여 인도 지역의 재해 보도량을 분석하였다. 분석 결과, 침수 면적을 고려한 이후에도 도시화 수준이 높은 지역에서 
 더 많은 보도가 나타나는 것을 통계적으로 확인했지만, 침수면적과 보도량과의 관계는 확인할 수 없었다. 연도별 차이를
 고려한 모델에서도 이러한 관계가 유지되었다. 
+<br>
  침수 면적을 고려한 이후에도 도시화율이 높은 지역에서 더 많은 보도가 
 관찰되었다는 결과는 뉴스 보도량만으로 재난의 심각성이나 사회적 관심도를 판단할 경우 지역별 격차가 발생할 가능성을 
 보여준다. 이에 언론 보도량에 의존하지 않고 위성 관측을 이용해 재난 규모를 독립적으로 비교하는 방법을 제시하였다. 
