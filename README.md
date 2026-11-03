@@ -19,7 +19,7 @@ Does the volume of news coverage vary with the degree of urbanization across reg
 
 ## Datasets
 ### 재해 사건
-&nbsp;&nbsp;-재난 데이터베이스 EM-DAT에 기록된 지역(district) 단위의 2015~2025년까지의 인도 지역의 홍수 사건을 대상<br>
+&nbsp;&nbsp;-&nbsp;재난 데이터베이스 EM-DAT에 기록된 지역(district) 단위의 2015~2025년까지의 인도 지역의 홍수 사건을 대상<br>
 &nbsp;&nbsp;-EM-DAT의 발생일로 사건을 구분, 사건 x district 단위로 분석 데이터를 구성<br>
 &nbsp;&nbsp;429개의 district x 160개의 재해 이벤트 -> 1,191개 관측치를 구성
 &nbsp;&nbsp;-도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 district 별 (도시인구 수)/(총 인구) 로 산출
