@@ -19,18 +19,18 @@ Does the volume of news coverage vary with the degree of urbanization across reg
 
 ## Datasets
 ### 재해 사건
-&nbsp;&nbsp;-재난 데이터베이스 EM-DAT에 기록된 지역(district) 단위의 2015 ~ 2025년까지의 인도 지역의 홍수 사건을 대상
+&nbsp;&nbsp;-재난 데이터베이스 EM-DAT에 기록된 지역(district) 단위의 2015 ~ 2025년까지의 인도 지역의 홍수 사건을 대상<br>
 &nbsp;&nbsp;-도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 도시인구와 총인구를 사용
 
 ### 침수 면적
-&nbsp;&nbsp;-Sentinel-1을 기본으로 사용
-&nbsp;&nbsp;-사건 전후 Sentinel-2 영상이 존재하고, 사건전 각 시점에서 구름 없는 면적이 50% 이상,구름 없는 화소가 행정구역 분석 가능 면적의 40%이상인 지역은 Sentinel-2 기반 SITS-Extreme
-&nbsp;&nbsp;-VAE와 NDWI로 산출
+&nbsp;&nbsp;-Sentinel-1을 기본으로 사용<br>
+&nbsp;&nbsp;-사건 전후 Sentinel-2 영상이 존재하고, 사건전 각 시점에서 구름 없는 면적이 50% 이상,구름 없는 화소가 행정구역 분석 가능 면적의 40%이상인 지역은 Sentinel-2 기반 SITS-Extreme<br>
+&nbsp;&nbsp;-VAE와 NDWI로 산출<br>
 &nbsp;&nbsp;-Sentinel-1 관측이 없는 지역은 NDWI로 산출
 
 ### 보도량
-&nbsp;&nbsp;-보도량은 GDELT 2.0 GKG에서 수집
-&nbsp;&nbsp;-LLM 질의응답(LLM-QA)에 GPT-5.6-Luna를 사용
+&nbsp;&nbsp;-보도량은 GDELT 2.0 GKG에서 수집<br>
+&nbsp;&nbsp;-LLM 질의응답(LLM-QA)에 GPT-5.6-Luna를 사용<br>
 &nbsp;&nbsp;-연도에 따른 뉴스 수집 능력의 발달을 고려하여 연도에 따른 모델을 별도로 구성
 
 
