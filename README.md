@@ -20,21 +20,21 @@ Does the volume of news coverage vary with the degree of urbanization across reg
 ## Datasets
 ### 재해 사건
 &nbsp;&nbsp;-&nbsp;재난 데이터베이스 EM-DAT에 기록된 지역(district) 단위의 2015~2025년까지의 인도 지역의 홍수 사건을 대상<br>
-&nbsp;&nbsp;-EM-DAT의 발생일로 사건을 구분, 사건 x district 단위로 분석 데이터를 구성<br>
+&nbsp;&nbsp;-&nbsp;EM-DAT의 발생일로 사건을 구분, 사건 x district 단위로 분석 데이터를 구성<br>
 &nbsp;&nbsp;429개의 district x 160개의 재해 이벤트 -> 1,191개 관측치를 구성
-&nbsp;&nbsp;-도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 district 별 (도시인구 수)/(총 인구) 로 산출
+&nbsp;&nbsp;-&nbsp;도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 district 별 (도시인구 수)/(총 인구) 로 산출
 
 ### 침수 면적
-&nbsp;&nbsp;-Google Earth Engine에서 Sentinel-1 SAR영상의 VV편파를 사용하여 침수면적을 산출<br>
-&nbsp;&nbsp;-Sentinel-1에는 Otsu threshold를 적용하여 관측값이 없으면 Sentinel-2의 NDWI를 활용<br>
-&nbsp;&nbsp;-Sentinel-2는 녹색광(B3)와 근적외선(B8)을 이용하여 NDWI를 계산하고 사건 전후 수역 변화를 비교
+&nbsp;&nbsp;-&nbsp;Google Earth Engine에서 Sentinel-1 SAR영상의 VV편파를 사용하여 침수면적을 산출<br>
+&nbsp;&nbsp;-&nbsp;Sentinel-1에는 Otsu threshold를 적용하여 관측값이 없으면 Sentinel-2의 NDWI를 활용<br>
+&nbsp;&nbsp;-&nbsp;Sentinel-2는 녹색광(B3)와 근적외선(B8)을 이용하여 NDWI를 계산하고 사건 전후 수역 변화를 비교
 
 ### 보도량
-&nbsp;&nbsp;-보도량은 GDELT 2.0 Global Knowledge Graph(GKG)의 BigQuery 데이터를 사용<br>
-&nbsp;&nbsp;-홍수 관련 GKG title tag와 인도 현지 언어를 이용하여 기사 후보를 검색<br>
-&nbsp;&nbsp;-기사 원문을 수집한 후 키워드 기반 heuristic filter를 사용하여 LLM 검증 대상 기사 선정<br>
-&nbsp;&nbsp;-LLM 질의응답(LLM-QA)은 gpt-5.6-luna를 사용하여 '기사 a가 지역 l의 재해 d를 보도하는가?'를 y/n로 판단<br>
-&nbsp;&nbsp;-연도에 따른 뉴스 수집 능력의 발달을 고려하여 기본 회귀모형과 연도 고정효과를 포함한 모형을 비교
+&nbsp;&nbsp;-&nbsp;보도량은 GDELT 2.0 Global Knowledge Graph(GKG)의 BigQuery 데이터를 사용<br>
+&nbsp;&nbsp;-&nbsp;홍수 관련 GKG title tag와 인도 현지 언어를 이용하여 기사 후보를 검색<br>
+&nbsp;&nbsp;-&nbsp;기사 원문을 수집한 후 키워드 기반 heuristic filter를 사용하여 LLM 검증 대상 기사 선정<br>
+&nbsp;&nbsp;-&nbsp;LLM 질의응답(LLM-QA)은 gpt-5.6-luna를 사용하여 '기사 a가 지역 l의 재해 d를 보도하는가?'를 y/n로 판단<br>
+&nbsp;&nbsp;-&nbsp;연도에 따른 뉴스 수집 능력의 발달을 고려하여 기본 회귀모형과 연도 고정효과를 포함한 모형을 비교
 
 
 ## 실행
