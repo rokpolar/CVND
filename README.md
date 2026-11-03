@@ -1,12 +1,12 @@
 # CVND: Urbanization Disparities in Flood News Coverage in India, Combining Satellite-observed Inundation and LLM-Based Article Verification
 
-홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지가?
+&nbsp;&nbsp;홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지가?
 Does the volume of news coverage vary with the degree of urbanization across regions experiencing similar levels of flood inundation?
 
 ## Overview
-   본 연구는 홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지 살펴보고자 한다. 인도의 홍수 사건을 대상으로 Sentinel-1/2 위성 영상에서관측한 침수 면적과 지역별 관련 기사 수, 도시 인구 비율을 연결하는 분석 방법을 제안한다. 기사는 키워드 필터링과 LLM QA를 통하여 해당 재해 사건과 지역을 연관성을 판별한하고, 이후 침수 면적과 보도량의 관계, 침수 면적을 고려한 도시 인구 비율과 보도량의 관계를 회귀분석으로 검토한다.
-
-   This study investigates whether the volume of news coverage varies with the degree of urbanization across regions experiencing similar levels of flood inundation. Focusing on flood events in India, we propose an analytical framework that integrates inundation areas derived from Sentinel-1/2 satellite imagery, the number of relevant news articles, and regional urban population ratios.News articles are identified and linked to specific flood events and affected regions through keyword-based filtering and large language model (LLM)-based question answering (QA).We then employ regression analysis to examine the relationship between inundation area and news coverage, as well as the association between urban population ratio and news coverage while controlling for inundation area.
+&nbsp;&nbsp;본 연구는 홍수로 인한 침수 피해가 비슷한 지역에서 도시화 정도에 따라 뉴스 보도량이 달라지는지 살펴보고자 한다. 인도의 홍수 사건을 대상으로 Sentinel-1/2 위성 영상에서관측한 침수 면적과 지역별 관련 기사 수, 도시 인구 비율을 연결하는 분석 방법을 제안한다. 기사는 키워드 필터링과 LLM QA를 통하여 해당 재해 사건과 지역을 연관성을 판별한하고, 이후 침수 면적과 보도량의 관계, 침수 면적을 고려한 도시 인구 비율과 보도량의 관계를 회귀분석으로 검토한다.
+<br><br>
+&nbsp;&nbsp;This study investigates whether the volume of news coverage varies with the degree of urbanization across regions experiencing similar levels of flood inundation. Focusing on flood events in India, we propose an analytical framework that integrates inundation areas derived from Sentinel-1/2 satellite imagery, the number of relevant news articles, and regional urban population ratios.News articles are identified and linked to specific flood events and affected regions through keyword-based filtering and large language model (LLM)-based question answering (QA).We then employ regression analysis to examine the relationship between inundation area and news coverage, as well as the association between urban population ratio and news coverage while controlling for inundation area.
 
 
 
@@ -19,19 +19,19 @@ Does the volume of news coverage vary with the degree of urbanization across reg
 
 ## Datasets
 ### 재해 사건
-  -재난 데이터베이스 EM-DAT에 기록된 지역(district) 단위의 2015 ~ 2025년까지의 인도 지역의 홍수 사건을 대상
-  -도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 도시인구와 총인구를 사용
+&nbsp;&nbsp;-재난 데이터베이스 EM-DAT에 기록된 지역(district) 단위의 2015 ~ 2025년까지의 인도 지역의 홍수 사건을 대상
+&nbsp;&nbsp;-도시화 수준은 인도의 인구총조사국이 2011년 수행한 Census of India의 도시인구와 총인구를 사용
 
 ### 침수 면적
-   -Sentinel-1을 기본으로 사용
-   -사건 전후 Sentinel-2 영상이 존재하고, 사건전 각 시점에서 구름 없는 면적이 50% 이상,구름 없는 화소가 행정구역 분석 가능 면적의 40%이상인 지역은 Sentinel-2 기반 SITS-Extreme
-   -VAE와 NDWI로 산출
-   -Sentinel-1 관측이 없는 지역은 NDWI로 산출
+&nbsp;&nbsp;-Sentinel-1을 기본으로 사용
+&nbsp;&nbsp;-사건 전후 Sentinel-2 영상이 존재하고, 사건전 각 시점에서 구름 없는 면적이 50% 이상,구름 없는 화소가 행정구역 분석 가능 면적의 40%이상인 지역은 Sentinel-2 기반 SITS-Extreme
+&nbsp;&nbsp;-VAE와 NDWI로 산출
+&nbsp;&nbsp;-Sentinel-1 관측이 없는 지역은 NDWI로 산출
 
 ### 보도량
-   -보도량은 GDELT 2.0 GKG에서 수집
-   -LLM 질의응답(LLM-QA)에 GPT-5.6-Luna를 사용
-   -연도에 따른 뉴스 수집 능력의 발달을 고려하여 연도에 따른 모델을 별도로 구성
+&nbsp;&nbsp;-보도량은 GDELT 2.0 GKG에서 수집
+&nbsp;&nbsp;-LLM 질의응답(LLM-QA)에 GPT-5.6-Luna를 사용
+&nbsp;&nbsp;-연도에 따른 뉴스 수집 능력의 발달을 고려하여 연도에 따른 모델을 별도로 구성
 
 
 ## 실행
@@ -54,12 +54,12 @@ SKIP_GEE=1 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 
 
 ## 결론
- 본 연구에서는 위성 영상으로 관측한 침수면적과 도시인구 비율, LLM 기반 질의응답으로 선별한관련 보도량을 
+&nbsp;&nbsp;본 연구에서는 위성 영상으로 관측한 침수면적과 도시인구 비율, LLM 기반 질의응답으로 선별한관련 보도량을 
 결합하여 인도 지역의 재해 보도량을 분석하였다. 분석 결과, 침수 면적을 고려한 이후에도 도시화 수준이 높은 지역에서 
 더 많은 보도가 나타나는 것을 통계적으로 확인했지만, 침수면적과 보도량과의 관계는 확인할 수 없었다. 연도별 차이를
 고려한 모델에서도 이러한 관계가 유지되었다. 
 <br><br>
- 침수 면적을 고려한 이후에도 도시화율이 높은 지역에서 더 많은 보도가 
+&nbsp;&nbsp;침수 면적을 고려한 이후에도 도시화율이 높은 지역에서 더 많은 보도가 
 관찰되었다는 결과는 뉴스 보도량만으로 재난의 심각성이나 사회적 관심도를 판단할 경우 지역별 격차가 발생할 가능성을 
 보여준다. 이에 언론 보도량에 의존하지 않고 위성 관측을 이용해 재난 규모를 독립적으로 비교하는 방법을 제시하였다. 
 이를 통해 재난의 물리적 규모와 언론의 관심 사이의 지역적 불균형을 정량적으로 분석하고 상대적으로 보도가 부족한
@@ -68,4 +68,4 @@ SKIP_GEE=1 ARTICLE_PIPELINE_MODE=frozen bash scripts/run_pipeline.sh
 
 ## 해석 제한
 
-결과는 관측된 침수 면적이 비슷한 district 사이의 뉴스 가시성 연관만 설명한다. 의도적 방치, 차별 또는 인과효과를 증명하지 않는다. Census 2011·GAUL 2015·사건 당시 경계의 불일치, EM-DAT 날짜 보정, GDELT 위치 추출, 원문 생존과 LLM 판정, 위성 가용성이 선택 편향을 만들 수 있다. 결측은 0으로 대체하지 않으며 모든 제외 사유를 남긴다.
+&nbsp;&nbsp;결과는 관측된 침수 면적이 비슷한 district 사이의 뉴스 가시성 연관만 설명한다. 의도적 방치, 차별 또는 인과효과를 증명하지 않는다. Census 2011·GAUL 2015·사건 당시 경계의 불일치, EM-DAT 날짜 보정, GDELT 위치 추출, 원문 생존과 LLM 판정, 위성 가용성이 선택 편향을 만들 수 있다. 결측은 0으로 대체하지 않으며 모든 제외 사유를 남긴다.
